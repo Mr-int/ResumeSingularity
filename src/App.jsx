@@ -3,6 +3,7 @@ import Home from './pages/Home.jsx';
 import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
                 </ProtectedRoute>
             } />
         </Routes>
+        <FloatingButton />
     </Router>
   )
 }

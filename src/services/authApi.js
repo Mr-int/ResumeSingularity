@@ -74,15 +74,39 @@ export const login = async (username, password) => {
 };
 
 /**
+ * Проверка наличия cookies авторизации
+ * @returns {boolean} true если есть cookies авторизации
+ */
+const hasAuthCookies = () => {
+    const cookies = document.cookie.split(';');
+    // Проверяем наличие любых cookies (обычно API устанавливает session или auth cookies)
+    return cookies.some(cookie => {
+        const trimmed = cookie.trim();
+        // Проверяем наличие непустых cookies (кроме технических)
+        return trimmed.length > 0 && !trimmed.startsWith('_') && trimmed.includes('=');
+    });
+};
+
+/**
  * Проверка, авторизован ли пользователь
  * @returns {boolean} true если пользователь авторизован
  */
 export const isAuthenticated = () => {
-    // Проверяем флаг в localStorage (сохраняется между сессиями)
+    // Проверяем наличие cookies авторизации (основная проверка)
+    const hasCookies = hasAuthCookies();
+    
+    // Проверяем флаг в localStorage (дополнительная проверка)
     const authFlag = localStorage.getItem(AUTH_FLAG_KEY);
-    // Также проверяем наличие cookies (дополнительная проверка)
-    const hasCookies = document.cookie.length > 0;
-    return authFlag === 'true' || hasCookies;
+    
+    // Пользователь авторизован только если есть cookies ИЛИ есть флаг в localStorage
+    // Но если cookies удалены, флаг не должен работать
+    if (!hasCookies && authFlag === 'true') {
+        // Если cookies удалены, но флаг есть - очищаем флаг
+        localStorage.removeItem(AUTH_FLAG_KEY);
+        return false;
+    }
+    
+    return hasCookies || authFlag === 'true';
 };
 
 /**

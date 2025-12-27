@@ -499,3 +499,55 @@
         min-height: 400px;
     }
 }
+
+.StudentResume__similarSection {
+    width: 100%;
+    margin-top: 60px;
+    margin-bottom: 80px;
+}
+
+.StudentResume__similarTitle {
+    color: #fff;
+    font-size: 40px;
+    font-family: 'StratosSkyeng', sans-serif;
+    margin-bottom: 40px;
+    text-align: left;
+    font-weight: 300;
+}
+
+.StudentResume__similarList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 30px;
+    width: 100%;
+}
+
+.StudentResume__similarLink {
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s;
+}
+
+.StudentResume__similarLink:hover {
+    transform: scale(1.05);
+}
+
+@media (max-width: 1024px) {
+    .StudentResume__similarList {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .StudentResume__similarTitle {
+        font-size: 32px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .StudentResume__similarList {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+}

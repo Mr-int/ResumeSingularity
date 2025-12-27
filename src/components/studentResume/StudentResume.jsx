@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
 import face from "../../assets/other/test.png";
 import mailIcon from "../../assets/icons/mailIcon.svg";
-import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience } from "../../services/studentApi.js";
+import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience, getAllStudents } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
+import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -17,6 +18,8 @@ const StudentResume = () => {
     const [portfolio, setPortfolio] = useState([]);
     const [educationDetails, setEducationDetails] = useState([]);
     const [experienceDetails, setExperienceDetails] = useState([]);
+    const [similarStudents, setSimilarStudents] = useState([]);
+    const [showApplicationForm, setShowApplicationForm] = useState(false);
 
     useEffect(() => {
         const fetchStudent = async () => {
@@ -64,6 +67,18 @@ const StudentResume = () => {
                 } catch (err) {
                     console.error('Failed to fetch experience:', err);
                     setExperienceDetails([]);
+                }
+
+                // Fetch similar students (exclude current student)
+                try {
+                    const allStudents = await getAllStudents();
+                    const similar = allStudents
+                        .filter(s => s.id !== parseInt(id) && s.id !== id)
+                        .slice(0, 6); // Берем до 6 похожих студентов
+                    setSimilarStudents(similar || []);
+                } catch (err) {
+                    console.error('Failed to fetch similar students:', err);
+                    setSimilarStudents([]);
                 }
             } catch (err) {
                 setError(err.message);
@@ -136,7 +151,10 @@ const StudentResume = () => {
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
                                     <p>{student.speciality || 'Специальность не указана'}</p>
-                                    <button className="StudentResume__sendBid">
+                                    <button 
+                                        className="StudentResume__sendBid"
+                                        onClick={() => setShowApplicationForm(true)}
+                                    >
                                         Оставить заявку
                                         <img src={mailIcon} alt="Иконка почты"/>
                                     </button>
@@ -202,7 +220,10 @@ const StudentResume = () => {
                                 </div>
                             </div>
 
-                            <button className="StudentResume__sendBid">
+                            <button 
+                                className="StudentResume__sendBid"
+                                onClick={() => setShowApplicationForm(true)}
+                            >
                                 Оставить заявку
                                 <img src={mailIcon} alt="Иконка почты"/>
                             </button>
@@ -283,14 +304,44 @@ const StudentResume = () => {
                     <h2 className="StudentResume__contactTitle">Свяжитесь со студентом</h2>
                     <div className="StudentResume__contactContent">
                         <div className="StudentResume__contactSlider">
-                            <StudentSliderCard />
+                            {student && <StudentSliderCard student={student} />}
                         </div>
                         <div className="StudentResume__contactInfo">
                             <p>Готов проходить стажировку в вашей компании!</p>
                         </div>
                     </div>
                 </div>
+
+                {similarStudents.length > 0 && (
+                    <div className="StudentResume__similarSection">
+                        <h2 className="StudentResume__similarTitle">Похожие студенты</h2>
+                        <div className="StudentResume__similarList">
+                            {similarStudents.map((similarStudent) => (
+                                <Link 
+                                    key={similarStudent.id} 
+                                    to={`/studentsResume/${similarStudent.id}`}
+                                    className="StudentResume__similarLink"
+                                >
+                                    <StudentSliderCard 
+                                        student={similarStudent}
+                                        onClick={(e) => e.preventDefault()}
+                                    />
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
+            {showApplicationForm && (
+                <ApplicationForm
+                    studentName={fullName}
+                    onClose={() => setShowApplicationForm(false)}
+                    onSubmit={async (formData) => {
+                        console.log('Application for student:', fullName, formData);
+                        // Здесь можно добавить отправку на сервер
+                    }}
+                />
+            )}
         </section>
     );
 };

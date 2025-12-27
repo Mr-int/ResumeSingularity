@@ -1,0 +1,180 @@
+.applicationForm__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.applicationForm__content {
+    background: #1a1a1a;
+    border: 2px solid #fff;
+    border-radius: 20px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideIn 0.3s ease-in-out;
+}
+
+.applicationForm__close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s;
+}
+
+.applicationForm__close:hover {
+    opacity: 0.7;
+}
+
+.applicationForm__title {
+    color: #fff;
+    font-size: 32px;
+    margin: 0 0 10px 0;
+    text-align: center;
+    font-family: 'Sansation', sans-serif;
+}
+
+.applicationForm__subtitle {
+    color: #bdf7ff;
+    font-size: 16px;
+    margin: 0 0 30px 0;
+    text-align: center;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__subtitle strong {
+    color: #fff;
+}
+
+.applicationForm__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.applicationForm__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.applicationForm__field label {
+    color: #fff;
+    font-size: 18px;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__field input,
+.applicationForm__field textarea {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #fff;
+    font-size: 16px;
+    font-family: 'StratosSkyeng', sans-serif;
+    transition: border-color 0.3s;
+    resize: vertical;
+}
+
+.applicationForm__field input:focus,
+.applicationForm__field textarea:focus {
+    outline: none;
+    border-color: #4655FF;
+}
+
+.applicationForm__field input:disabled,
+.applicationForm__field textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.applicationForm__field input::placeholder,
+.applicationForm__field textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.applicationForm__error {
+    color: #E95A57;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px;
+    background: rgba(233, 90, 87, 0.1);
+    border-radius: 8px;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__submit {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border: none;
+    border-radius: 100px;
+    color: #fff;
+    font-family: 'Sansation', sans-serif;
+    font-size: 20px;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    margin-top: 10px;
+}
+
+.applicationForm__submit:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+
+.applicationForm__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .applicationForm__content {
+        padding: 30px 20px;
+    }
+
+    .applicationForm__title {
+        font-size: 28px;
+    }
+}
+
