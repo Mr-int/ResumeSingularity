@@ -158,6 +158,7 @@ export const isAuthenticated = () => {
  */
 export const logout = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
+    localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     // Cookies будут удалены сервером или можно удалить вручную
     // Очищаем все cookies
     document.cookie.split(";").forEach((c) => {
@@ -165,5 +166,6 @@ export const logout = () => {
             .replace(/^ +/, "")
             .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
     });
+    console.log('[AUTH] Logged out, cleared all auth data');
 };
 

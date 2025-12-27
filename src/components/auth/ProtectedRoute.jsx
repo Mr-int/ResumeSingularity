@@ -14,18 +14,39 @@ const ProtectedRoute = ({ children }) => {
         // Проверяем авторизацию при монтировании компонента и при изменении location
         const checkAuth = () => {
             const authStatus = isAuthenticated();
-            console.log('[ProtectedRoute] Auth status:', authStatus, 'location:', location.pathname);
+            const showLoginFlag = sessionStorage.getItem('showLoginAfter403');
+            
+            console.log('[ProtectedRoute] Auth status:', authStatus, 'location:', location.pathname, 'showLoginFlag:', showLoginFlag);
+            
             setAuthenticated(authStatus);
             setLoading(false);
             
-            if (!authStatus) {
+            // Показываем форму входа если не авторизован или был 403
+            if (!authStatus || showLoginFlag === 'true') {
                 setShowLogin(true);
+                // Очищаем флаг после использования
+                if (showLoginFlag === 'true') {
+                    sessionStorage.removeItem('showLoginAfter403');
+                }
             } else {
                 setShowLogin(false);
             }
         };
 
         checkAuth();
+        
+        // Слушаем события storage для синхронизации между вкладками
+        const handleStorageChange = (e) => {
+            if (e.key === 'showLoginAfter403') {
+                checkAuth();
+            }
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, [location.pathname]);
 
     const handleLoginSuccess = () => {

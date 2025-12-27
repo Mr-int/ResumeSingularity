@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config/api.js';
+import { apiClientJson } from '../utils/apiClient.js';
 
 /**
  * Получить список всех студентов
@@ -6,29 +7,21 @@ import { API_BASE_URL } from '../config/api.js';
  */
 export const getAllStudents = async () => {
     try {
-        const url = `${API_BASE_URL}student/getAll`;
+        const url = `student/getAll`;
         console.log('[API] Fetching students from:', url);
-        console.log('[API] Current cookies:', document.cookie);
         
-        const response = await fetch(url, {
+        const data = await apiClientJson(url, {
             method: 'GET',
-            credentials: 'include', // Важно для передачи cookies
         });
         
-        console.log('[API] Response status:', response.status);
-        console.log('[API] Response headers:', Object.fromEntries(response.headers.entries()));
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[API] Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-        }
-        
-        const data = await response.json();
         console.log('[API] Students fetched successfully, count:', data?.length || 0);
         return data;
     } catch (error) {
         console.error('[API] Error fetching students:', error);
+        // Если это ошибка авторизации, пробрасываем дальше
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };
@@ -40,17 +33,15 @@ export const getAllStudents = async () => {
  */
 export const getStudentById = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}student/getById/${id}`, {
+        const data = await apiClientJson(`student/getById/${id}`, {
             method: 'GET',
-            credentials: 'include', // Важно для передачи cookies
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error fetching student by id:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };
@@ -62,17 +53,15 @@ export const getStudentById = async (id) => {
  */
 export const getPortfolioByStudentId = async (studentId) => {
     try {
-        const response = await fetch(`${API_BASE_URL}portfolio/getAllByStudentId/${studentId}`, {
+        const data = await apiClientJson(`portfolio/getAllByStudentId/${studentId}`, {
             method: 'GET',
-            credentials: 'include', // Важно для передачи cookies
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error fetching portfolio:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };
@@ -127,17 +116,15 @@ export const getExperienceById = async (id) => {
  */
 export const getAllEducation = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}education/getAll`, {
+        const data = await apiClientJson(`education/getAll`, {
             method: 'GET',
-            credentials: 'include', // Важно для передачи cookies
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error fetching all education:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };
@@ -148,17 +135,15 @@ export const getAllEducation = async () => {
  */
 export const getAllExperience = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}experience/getAll`, {
+        const data = await apiClientJson(`experience/getAll`, {
             method: 'GET',
-            credentials: 'include', // Важно для передачи cookies
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error fetching all experience:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };
