@@ -14,7 +14,7 @@ const StudentsListCard = ({ student }) => {
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
     
     // Получаем изображение студента через API эндпоинт или используем дефолтное
-    const imagePath = student.image || student.imagePath;
+    const imagePath = student.imagePath || student.image;
     const imageSrc = imagePath ? getImageUrl(imagePath) : test;
     
     // Обрезаем биографию для предпросмотра

@@ -176,8 +176,11 @@ const StudentResume = () => {
     }
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
-    const imagePath = student.image || student.imagePath;
+    // Используем imagePath (приоритет) или image (fallback)
+    const imagePath = student.imagePath || student.image;
+    console.log('[StudentResume] Student imagePath:', imagePath, 'student object:', student);
     const imageSrc = imagePath ? getImageUrl(imagePath) : face;
+    console.log('[StudentResume] Final imageSrc:', imageSrc);
     const age = calculateAge(student.birthDate);
     const ageText = age ? `${age}лет` : '';
 
