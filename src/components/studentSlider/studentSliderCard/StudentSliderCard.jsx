@@ -25,10 +25,16 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         return courseMap[course] || 'курс';
     };
 
+    const handleClick = (e) => {
+        if (onClick) {
+            onClick(e);
+        }
+    };
+
     return (
         <div
             className={`student-slider-card ${isActive ? 'student-slider-card--active' : ''}`}
-            onClick={onClick}
+            onClick={handleClick}
             style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <div className="student-slider-card__photoWrapper">

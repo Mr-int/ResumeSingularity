@@ -387,7 +387,6 @@ const StudentResume = () => {
                                 >
                                     <StudentSliderCard 
                                         student={similarStudent}
-                                        onClick={() => {}} // Пустой обработчик, чтобы не конфликтовал с Link
                                     />
                                 </Link>
                             ))}
