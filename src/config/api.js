@@ -2,7 +2,7 @@ export const API_BASE_URL = '/api/';
 
 /**
  * Получить URL изображения через эндпоинт /main/photo/{image_path}
- * @param {string} imagePath - Путь к изображению из поля image в теле ответа
+ * @param {string} imagePath - Путь к изображению из поля imagePath в теле ответа
  * @returns {string} Полный URL изображения
  */
 export const getImageUrl = (imagePath) => {
@@ -15,21 +15,10 @@ export const getImageUrl = (imagePath) => {
         return imagePath;
     }
     
-    // Если путь начинается с /main/photo/, убираем /main/photo/ и используем только путь
-    if (imagePath.includes('/main/photo/')) {
-        const pathAfterPhoto = imagePath.split('/main/photo/')[1];
-        const cleanPath = pathAfterPhoto.startsWith('/') ? pathAfterPhoto.slice(1) : pathAfterPhoto;
-        return `${API_BASE_URL}main/photo/${cleanPath}`;
-    }
-    
-    // Если путь начинается с /main/photo/, используем его напрямую
-    if (imagePath.startsWith('/main/photo/')) {
-        const cleanPath = imagePath.replace(/^\/main\/photo\//, '');
-        return `${API_BASE_URL}main/photo/${cleanPath}`;
-    }
-    
-    // Иначе добавляем /main/photo/ перед путем
+    // Убираем начальный слеш, если он есть
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
+    
+    // Формируем URL: /api/main/photo/{imagePath}
     return `${API_BASE_URL}main/photo/${cleanPath}`;
 };
 
