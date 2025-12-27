@@ -18,6 +18,7 @@ const LoginModal = ({ onClose, onSuccess }) => {
             // Cookies будут сохранены автоматически благодаря credentials: 'include'
             // Небольшая задержка для гарантии обновления localStorage
             setTimeout(() => {
+                setLoading(false);
                 onSuccess();
             }, 100);
         } catch (err) {
