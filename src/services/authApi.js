@@ -34,12 +34,39 @@ export const login = async (username, password) => {
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
 
-        const data = await response.json();
+        // Проверяем, есть ли тело ответа
+        const contentType = response.headers.get('content-type');
+        const contentLength = response.headers.get('content-length');
+        
+        let data = null;
+        
+        // Если есть тело и это JSON, парсим его
+        if (contentLength && parseInt(contentLength) > 0) {
+            if (contentType && contentType.includes('application/json')) {
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    console.warn('[AUTH] Failed to parse JSON, response might be empty');
+                }
+            } else {
+                // Если не JSON, читаем как текст
+                const text = await response.text();
+                if (text) {
+                    try {
+                        data = JSON.parse(text);
+                    } catch (e) {
+                        data = { message: text };
+                    }
+                }
+            }
+        }
+        
         console.log('[AUTH] Login successful, cookies:', document.cookie);
+        console.log('[AUTH] Response data:', data);
         
         // Сохраняем флаг успешной авторизации в localStorage для постоянного хранения
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
-        return data;
+        return data || { success: true };
     } catch (error) {
         console.error('[AUTH] Error during login:', error);
         throw error;
