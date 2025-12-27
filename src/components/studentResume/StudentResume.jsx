@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import "./studentResume.css";
 import face from "../../assets/other/test.png";
 import mailIcon from "../../assets/icons/mailIcon.svg";
-import { getStudentById, getPortfolioByStudentId, getInstitutionById, getExperienceById } from "../../services/studentApi.js";
+import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 
@@ -40,46 +40,30 @@ const StudentResume = () => {
                     setPortfolio([]);
                 }
 
-                // Fetch education details if education IDs exist
-                if (data.education && data.education.length > 0) {
-                    const educationPromises = data.education
-                        .filter(edu => edu.id || edu.institutionId)
-                        .map(async (edu) => {
-                            try {
-                                const eduId = edu.id || edu.institutionId;
-                                if (eduId) {
-                                    const eduDetails = await getInstitutionById(eduId);
-                                    return { ...edu, details: eduDetails };
-                                }
-                                return edu;
-                            } catch (err) {
-                                console.error('Failed to fetch education details:', err);
-                                return edu;
-                            }
-                        });
-                    const educationWithDetails = await Promise.all(educationPromises);
-                    setEducationDetails(educationWithDetails);
+                // Fetch all education and filter by studentId
+                try {
+                    const allEducation = await getAllEducation();
+                    // Фильтруем образование по studentId
+                    const studentEducation = allEducation.filter(edu => 
+                        edu.studentId === parseInt(id) || edu.studentId === id || edu.student?.id === parseInt(id) || edu.student?.id === id
+                    );
+                    setEducationDetails(studentEducation || []);
+                } catch (err) {
+                    console.error('Failed to fetch education:', err);
+                    setEducationDetails([]);
                 }
 
-                // Fetch experience details if experience IDs exist
-                if (data.experience && data.experience.length > 0) {
-                    const experiencePromises = data.experience
-                        .filter(exp => exp.id || exp.experienceId)
-                        .map(async (exp) => {
-                            try {
-                                const expId = exp.id || exp.experienceId;
-                                if (expId) {
-                                    const expDetails = await getExperienceById(expId);
-                                    return { ...exp, details: expDetails };
-                                }
-                                return exp;
-                            } catch (err) {
-                                console.error('Failed to fetch experience details:', err);
-                                return exp;
-                            }
-                        });
-                    const experienceWithDetails = await Promise.all(experiencePromises);
-                    setExperienceDetails(experienceWithDetails);
+                // Fetch all experience and filter by studentId
+                try {
+                    const allExperience = await getAllExperience();
+                    // Фильтруем опыт работы по studentId
+                    const studentExperience = allExperience.filter(exp => 
+                        exp.studentId === parseInt(id) || exp.studentId === id || exp.student?.id === parseInt(id) || exp.student?.id === id
+                    );
+                    setExperienceDetails(studentExperience || []);
+                } catch (err) {
+                    console.error('Failed to fetch experience:', err);
+                    setExperienceDetails([]);
                 }
             } catch (err) {
                 setError(err.message);
@@ -236,33 +220,19 @@ const StudentResume = () => {
                         {expandedExperience && (
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--bordered">
                                 {experienceDetails.length > 0 ? (
-                                    experienceDetails.map((exp, index) => {
-                                        const expData = exp.details || exp;
-                                        return (
-                                            <div key={exp.id || index} style={{ marginBottom: '30px' }}>
-                                                {expData.position && <h3>{expData.position}</h3>}
-                                                {expData.company && <h2>{expData.company}</h2>}
-                                                {expData.description && <p>{expData.description}</p>}
-                                                {expData.startDate && expData.endDate && (
-                                                    <p>{expData.startDate} - {expData.endDate}</p>
-                                                )}
-                                                {!expData.startDate && expData.endDate && (
-                                                    <p>До {expData.endDate}</p>
-                                                )}
-                                                {expData.startDate && !expData.endDate && (
-                                                    <p>С {expData.startDate}</p>
-                                                )}
-                                            </div>
-                                        );
-                                    })
-                                ) : student.experience && student.experience.length > 0 ? (
-                                    student.experience.map((exp, index) => (
-                                        <div key={index} style={{ marginBottom: '30px' }}>
+                                    experienceDetails.map((exp, index) => (
+                                        <div key={exp.id || index} style={{ marginBottom: '30px' }}>
                                             {exp.position && <h3>{exp.position}</h3>}
                                             {exp.company && <h2>{exp.company}</h2>}
                                             {exp.description && <p>{exp.description}</p>}
                                             {exp.startDate && exp.endDate && (
                                                 <p>{exp.startDate} - {exp.endDate}</p>
+                                            )}
+                                            {!exp.startDate && exp.endDate && (
+                                                <p>До {exp.endDate}</p>
+                                            )}
+                                            {exp.startDate && !exp.endDate && (
+                                                <p>С {exp.startDate}</p>
                                             )}
                                         </div>
                                     ))
@@ -282,37 +252,22 @@ const StudentResume = () => {
                         {expandedEducation && (
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--no-border">
                                 {educationDetails.length > 0 ? (
-                                    educationDetails.map((edu, index) => {
-                                        const eduData = edu.details || edu;
-                                        return (
-                                            <div key={edu.id || index} style={{ marginBottom: '30px' }}>
-                                                {eduData.name || eduData.institution ? (
-                                                    <h2>{eduData.name || eduData.institution}</h2>
-                                                ) : null}
-                                                {eduData.speciality && (
-                                                    <p className="StudentResume__educationSubtitle">{eduData.speciality}</p>
-                                                )}
-                                                {eduData.startDate && eduData.endDate && (
-                                                    <p>{eduData.startDate} - {eduData.endDate}</p>
-                                                )}
-                                                {!eduData.startDate && eduData.endDate && (
-                                                    <p>До {eduData.endDate}</p>
-                                                )}
-                                                {eduData.startDate && !eduData.endDate && (
-                                                    <p>С {eduData.startDate}</p>
-                                                )}
-                                            </div>
-                                        );
-                                    })
-                                ) : student.education && student.education.length > 0 ? (
-                                    student.education.map((edu, index) => (
-                                        <div key={index} style={{ marginBottom: '30px' }}>
-                                            {edu.institution && <h2>{edu.institution}</h2>}
+                                    educationDetails.map((edu, index) => (
+                                        <div key={edu.id || index} style={{ marginBottom: '30px' }}>
+                                            {edu.name || edu.institution ? (
+                                                <h2>{edu.name || edu.institution}</h2>
+                                            ) : null}
                                             {edu.speciality && (
                                                 <p className="StudentResume__educationSubtitle">{edu.speciality}</p>
                                             )}
                                             {edu.startDate && edu.endDate && (
                                                 <p>{edu.startDate} - {edu.endDate}</p>
+                                            )}
+                                            {!edu.startDate && edu.endDate && (
+                                                <p>До {edu.endDate}</p>
+                                            )}
+                                            {edu.startDate && !edu.endDate && (
+                                                <p>С {edu.startDate}</p>
                                             )}
                                         </div>
                                     ))

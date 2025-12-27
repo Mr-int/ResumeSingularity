@@ -121,3 +121,45 @@ export const getExperienceById = async (id) => {
     }
 };
 
+/**
+ * Получить все записи об образовании
+ * @returns {Promise<Array>} Массив всех образований
+ */
+export const getAllEducation = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}education/getAll`, {
+            method: 'GET',
+            credentials: 'include', // Важно для передачи cookies
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching all education:', error);
+        throw error;
+    }
+};
+
+/**
+ * Получить все записи об опыте работы
+ * @returns {Promise<Array>} Массив всего опыта работы
+ */
+export const getAllExperience = async () => {
+    try {
+        const response = await fetch(`${API_BASE_URL}experience/getAll`, {
+            method: 'GET',
+            credentials: 'include', // Важно для передачи cookies
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching all experience:', error);
+        throw error;
+    }
+};
+
