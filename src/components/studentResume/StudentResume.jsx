@@ -43,63 +43,71 @@ const StudentResume = () => {
                     setPortfolio([]);
                 }
 
-                // Fetch all education and filter by studentId, then get details
+                // Fetch education details using IDs from student data
                 try {
-                    const allEducation = await getAllEducation();
-                    // Фильтруем образование по studentId
-                    const studentEducation = allEducation.filter(edu => 
-                        edu.studentId === parseInt(id) || edu.studentId === id || edu.student?.id === parseInt(id) || edu.student?.id === id
-                    );
-                    
-                    // Получаем детали для каждого образования через /institution/getById/{id}
-                    const educationWithDetails = await Promise.all(
-                        studentEducation.map(async (edu) => {
-                            try {
-                                const institutionId = edu.institutionId || edu.id;
-                                if (institutionId) {
-                                    const details = await getInstitutionById(institutionId);
-                                    return { ...edu, ...details };
+                    if (data.education && Array.isArray(data.education) && data.education.length > 0) {
+                        console.log('[StudentResume] Student education IDs:', data.education);
+                        
+                        // Получаем детали для каждого образования через /institution/getById/{id}
+                        const educationWithDetails = await Promise.all(
+                            data.education.map(async (edu) => {
+                                try {
+                                    // edu может быть объектом с id или просто id
+                                    const institutionId = edu?.id || edu?.institutionId || edu;
+                                    if (institutionId) {
+                                        console.log('[StudentResume] Fetching institution details for ID:', institutionId);
+                                        const details = await getInstitutionById(institutionId);
+                                        console.log('[StudentResume] Institution details:', details);
+                                        return details || edu;
+                                    }
+                                    return edu;
+                                } catch (err) {
+                                    console.error('Failed to fetch institution details:', err);
+                                    return edu;
                                 }
-                                return edu;
-                            } catch (err) {
-                                console.error('Failed to fetch institution details:', err);
-                                return edu;
-                            }
-                        })
-                    );
-                    
-                    setEducationDetails(educationWithDetails || []);
+                            })
+                        );
+                        
+                        setEducationDetails(educationWithDetails || []);
+                    } else {
+                        console.log('[StudentResume] No education data in student object');
+                        setEducationDetails([]);
+                    }
                 } catch (err) {
                     console.error('Failed to fetch education:', err);
                     setEducationDetails([]);
                 }
 
-                // Fetch all experience and filter by studentId, then get details
+                // Fetch experience details using IDs from student data
                 try {
-                    const allExperience = await getAllExperience();
-                    // Фильтруем опыт работы по studentId
-                    const studentExperience = allExperience.filter(exp => 
-                        exp.studentId === parseInt(id) || exp.studentId === id || exp.student?.id === parseInt(id) || exp.student?.id === id
-                    );
-                    
-                    // Получаем детали для каждого опыта через /experience/getById/{id}
-                    const experienceWithDetails = await Promise.all(
-                        studentExperience.map(async (exp) => {
-                            try {
-                                const experienceId = exp.experienceId || exp.id;
-                                if (experienceId) {
-                                    const details = await getExperienceById(experienceId);
-                                    return { ...exp, ...details };
+                    if (data.experience && Array.isArray(data.experience) && data.experience.length > 0) {
+                        console.log('[StudentResume] Student experience IDs:', data.experience);
+                        
+                        // Получаем детали для каждого опыта через /experience/getById/{id}
+                        const experienceWithDetails = await Promise.all(
+                            data.experience.map(async (exp) => {
+                                try {
+                                    // exp может быть объектом с id или просто id
+                                    const experienceId = exp?.id || exp?.experienceId || exp;
+                                    if (experienceId) {
+                                        console.log('[StudentResume] Fetching experience details for ID:', experienceId);
+                                        const details = await getExperienceById(experienceId);
+                                        console.log('[StudentResume] Experience details:', details);
+                                        return details || exp;
+                                    }
+                                    return exp;
+                                } catch (err) {
+                                    console.error('Failed to fetch experience details:', err);
+                                    return exp;
                                 }
-                                return exp;
-                            } catch (err) {
-                                console.error('Failed to fetch experience details:', err);
-                                return exp;
-                            }
-                        })
-                    );
-                    
-                    setExperienceDetails(experienceWithDetails || []);
+                            })
+                        );
+                        
+                        setExperienceDetails(experienceWithDetails || []);
+                    } else {
+                        console.log('[StudentResume] No experience data in student object');
+                        setExperienceDetails([]);
+                    }
                 } catch (err) {
                     console.error('Failed to fetch experience:', err);
                     setExperienceDetails([]);
