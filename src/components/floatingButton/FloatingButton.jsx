@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import ApplicationForm from '../applicationForm/ApplicationForm.jsx';
 import { getStudentById } from '../../services/studentApi.js';
 import './floatingButton.css';
@@ -8,11 +8,10 @@ const FloatingButton = () => {
     const [showForm, setShowForm] = useState(false);
     const [studentName, setStudentName] = useState(null);
     const location = useLocation();
-    const params = useParams();
     
     // Проверяем, находимся ли мы на странице резюме студента
     const isStudentPage = location.pathname.includes('/studentsResume/');
-    const studentId = isStudentPage ? (params.id || location.pathname.split('/studentsResume/')[1]) : null;
+    const studentId = isStudentPage ? location.pathname.split('/studentsResume/')[1]?.split('/')[0] : null;
 
     useEffect(() => {
         // Если мы на странице студента, получаем его имя
