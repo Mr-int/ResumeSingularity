@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
 import face from "../../assets/other/test.png";
 import mailIcon from "../../assets/icons/mailIcon.svg";
-import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience, getAllStudents } from "../../services/studentApi.js";
+import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience, getAllStudents, getInstitutionById, getExperienceById } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
@@ -383,10 +383,11 @@ const StudentResume = () => {
                                     key={similarStudent.id} 
                                     to={`/studentsResume/${similarStudent.id}`}
                                     className="StudentResume__similarLink"
+                                    style={{ textDecoration: 'none', color: 'inherit' }}
                                 >
                                     <StudentSliderCard 
                                         student={similarStudent}
-                                        onClick={(e) => e.preventDefault()}
+                                        onClick={() => {}} // Пустой обработчик, чтобы не конфликтовал с Link
                                     />
                                 </Link>
                             ))}

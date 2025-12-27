@@ -550,10 +550,17 @@
     text-decoration: none;
     color: inherit;
     transition: transform 0.3s;
+    display: block;
+    cursor: pointer;
 }
 
 .StudentResume__similarLink:hover {
     transform: scale(1.05);
+}
+
+.StudentResume__similarLink .student-slider-card {
+    cursor: pointer;
+    pointer-events: auto;
 }
 
 @media (max-width: 1024px) {

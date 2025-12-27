@@ -29,6 +29,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         <div
             className={`student-slider-card ${isActive ? 'student-slider-card--active' : ''}`}
             onClick={onClick}
+            style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <div className="student-slider-card__photoWrapper">
                 <img src={imageSrc} alt={`Фото ${fullName}`} className="student-slider-card__photo"/>
