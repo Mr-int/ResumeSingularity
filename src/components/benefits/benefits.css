@@ -1,0 +1,166 @@
+.benefits {
+    width: 100%;
+    height: fit-content;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 80px;
+}
+
+.benefits__wrapper {
+    width: 90%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.benefits__title {
+    color: #fff;
+    font-size: 30px;
+    font-family: 'StratosSkyeng';
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-weight: 300;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    display: inline-block;
+}
+
+.gradient-circle {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gradient-circle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
+    -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
+.benefits__cards {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px 0;
+    width: 100%;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.benefits__cards::-webkit-scrollbar {
+    display: none;
+}
+
+.benefits__card {
+    flex: 0 0 auto;
+    width: 600px;
+    height: 300px;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    font-size: 24px;
+    color: #333;
+    gap: 10px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.benefits__card__purple {
+    background-image: url("../../assets/other/purpleBenefit.png");
+    background-size: 100% 100%;
+}
+
+.benefits__card__green {
+    background-image: url("../../assets/other/greenBenefit.png");
+    background-size: 100% 100%;
+}
+
+.benefits__card__blue {
+    background-image: url("../../assets/other/blueBenefit.png");
+    background-size: 100% 100%;
+}
+
+.benefits__card__orange {
+    background-image: url("../../assets/other/orangeBenefit.png");
+    background-size: 100% 100%;
+}
+
+.benefits__card-title {
+    font-family: 'StratosSkyeng';
+    font-size: 26px;
+    text-align: left;
+    font-weight: 400;
+}
+
+.benefits__card span {
+    font-family: "Sansation", sans-serif;
+    font-size: 18px;
+    width: 70%;
+}
+
+.benefits__card__img {
+    position: absolute;
+    right: 0;
+}
+
+.benefits__card__purple img {
+    width: 230px;
+    height: 270px;
+    bottom: 0;
+}
+
+.benefits__card__green img {
+    width: 250px;
+    height: 250px;
+    top: 8%;
+    right: -10%;
+    transform: rotate(45deg);
+}
+
+.benefits__card__blue img {
+    width: 230px;
+    height: 260px;
+    top: 8%;
+    right: -10%;
+    transform: rotate(12deg);
+}
+
+.benefits__card__orange img {
+    width: 240px;
+    height: 240px;
+    right: -5%;
+    transform: rotate(34deg);
+}

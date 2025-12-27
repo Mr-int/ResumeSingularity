@@ -1,0 +1,687 @@
+.studentSlider {
+    width: 100%;
+    height: fit-content;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.studentSlider__content {
+    width: 90%;
+    height: 100%;
+    position: relative;
+    border-radius: 32px;
+    padding: 35px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+}
+
+.studentSlider__content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+            linear-gradient(48deg, #E271D6, #80ACFF) padding-box,
+            linear-gradient(to right, #E95A57, #E53BCF, #3E8EFF) border-box;
+    border-radius: 32px;
+    border: 3px solid transparent;
+    z-index: 1;
+}
+
+.studentSlider__content::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 29px;
+    z-index: 2;
+}
+
+.studentSlider__content > * {
+    position: relative;
+    z-index: 3;
+}
+
+.studentSlider__header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.studentSlider__title {
+    color: #fff;
+    font-size: 26px;
+    font-family: Sansation, sans-serif;
+    font-weight: 500;
+}
+
+.studentSlider__search, .studentSlider__filter {
+    width: 200px;
+    height: 45px;
+    border-radius: 100px;
+    font-family: Sansation, sans-serif;
+    font-size: 24px;
+    box-sizing: border-box;
+}
+
+.studentSlider__search {
+    background: none;
+    border: 2px solid gray;
+    color: #fff;
+    padding-left: 14px;
+    padding-right: 45px;
+    font-family: 'StratosSkyeng';
+    font-size: 20px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+/* Убираем placeholder полностью на всех устройствах в адаптиве */
+.studentSlider__search::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 20px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.studentSlider__inputWrapper {
+    position: relative;
+    width: 200px;
+}
+
+.studentSlider__searchIcon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    width: 20px;
+    height: 20px;
+}
+
+.studentSlider__filter {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    color: #fff;
+    border: none;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.studentSlider__filter span {
+    transition: opacity 0.3s ease;
+}
+
+.studentSlider__filter img {
+    transition: all 0.3s ease;
+}
+
+.studentSlider__list, .studentSlider__listWrapper  {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 35px;
+}
+
+.studentSlider__listWrapper {
+    gap: 25px;
+}
+
+.studentSlider__listButton {
+    width: 45px;
+    height: 45px;
+    background: none;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.studentSlider__listButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.rotateRight {
+    transform: scaleX(-1);
+}
+
+.studentSlider__listInfo {
+    width: 80%;
+    border: 1px solid #fff;
+    border-radius: 22px;
+}
+
+.studentSlider__button {
+    width: 430px;
+    height: 46px;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border: none;
+    border-radius: 100px;
+    color: #fff;
+    font-family: "Sansation", sans-serif;
+    font-size: 24px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.studentSlider__button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(233, 90, 87, 0.3);
+}
+
+/* Адаптив для планшетов (1024px и меньше) */
+@media (max-width: 1024px) {
+    .studentSlider__content {
+        padding: 30px 35px;
+        gap: 28px;
+    }
+
+    .studentSlider__title {
+        font-size: 24px;
+    }
+
+    .studentSlider__search, .studentSlider__filter {
+        width: 180px;
+        height: 42px;
+        font-size: 22px;
+    }
+
+    .studentSlider__search {
+        font-size: 19px;
+        padding-right: 40px;
+    }
+
+    .studentSlider__inputWrapper {
+        width: 180px;
+    }
+
+    .studentSlider__searchIcon {
+        right: 12px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .studentSlider__filter {
+        padding: 0 18px;
+        gap: 12px;
+        font-size: 20px;
+    }
+
+    .studentSlider__list, .studentSlider__listWrapper {
+        gap: 25px;
+    }
+
+    .studentSlider__listWrapper {
+        gap: 20px;
+    }
+
+    .studentSlider__listButton {
+        width: 42px;
+        height: 42px;
+    }
+
+    .studentSlider__button {
+        width: 380px;
+        height: 44px;
+        font-size: 22px;
+    }
+}
+
+/* Планшеты (768px и меньше) - делаем иконки */
+@media (max-width: 768px) {
+    .studentSlider__content {
+        padding: 25px 30px;
+        gap: 24px;
+        border-radius: 28px;
+    }
+
+    .studentSlider__content::before,
+    .studentSlider__content::after {
+        border-radius: 28px;
+    }
+
+    .studentSlider__content::after {
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        border-radius: 26px;
+    }
+
+    .studentSlider__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+    /* Заголовок уменьшаем */
+    .studentSlider__title {
+        font-size: 22px;
+        white-space: nowrap;
+        margin: 0;
+    }
+
+    /* Убираем placeholder на планшетах и мобильных */
+    .studentSlider__search::placeholder {
+        display: none;
+        content: none;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    /* Инпут поиска - делаем иконкой */
+    .studentSlider__search {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        padding: 0;
+        border: none;
+        background: none;
+        border-radius: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .studentSlider__search:focus,
+    .studentSlider__search.search-expanded {
+        width: 180px;
+        padding-left: 40px;
+        padding-right: 40px;
+        cursor: text;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 25px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Убираем placeholder даже при фокусе */
+    .studentSlider__search:focus::placeholder,
+    .studentSlider__search.search-expanded::placeholder {
+        display: none;
+        content: none;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .studentSlider__inputWrapper {
+        width: 50px;
+        min-width: 50px;
+        transition: width 0.3s ease;
+    }
+
+    .studentSlider__searchIcon {
+        right: 50%;
+        top: 50%;
+        transform: translate(50%, -50%);
+        width: 24px;
+        height: 24px;
+        transition: all 0.3s ease;
+    }
+
+    .studentSlider__search:focus ~ .studentSlider__searchIcon,
+    .studentSlider__search.search-expanded ~ .studentSlider__searchIcon {
+        right: 15px;
+        transform: translateY(-50%);
+    }
+
+    /* Кнопка фильтра - делаем иконкой без фона */
+    .studentSlider__filter {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        padding: 0;
+        border-radius: 0;
+        justify-content: center;
+        background: none;
+        border: none;
+    }
+
+    .studentSlider__filter:hover {
+        opacity: 0.8;
+    }
+
+    .studentSlider__filter span {
+        display: none;
+    }
+
+    .studentSlider__filter img {
+        margin: 0;
+        width: 24px;
+        height: 24px;
+        filter: brightness(0) invert(1);
+    }
+
+    .studentSlider__list, .studentSlider__listWrapper {
+        gap: 20px;
+    }
+
+    .studentSlider__listWrapper {
+        gap: 15px;
+    }
+
+    .studentSlider__listButton {
+        width: 40px;
+        height: 40px;
+    }
+
+    .studentSlider__listInfo {
+        width: 85%;
+    }
+
+    .studentSlider__button {
+        width: 320px;
+        height: 42px;
+        font-size: 20px;
+    }
+}
+
+/* Планшеты (600px и меньше) */
+@media (max-width: 600px) {
+    .studentSlider__content {
+        padding: 22px 25px;
+        gap: 22px;
+    }
+
+    .studentSlider__title {
+        font-size: 20px;
+    }
+
+    .studentSlider__search {
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+    }
+
+    .studentSlider__search:focus,
+    .studentSlider__search.search-expanded {
+        width: 160px;
+        padding-left: 15px;
+        padding-right: 40px;
+    }
+
+    .studentSlider__inputWrapper {
+        width: 45px;
+        min-width: 45px;
+    }
+
+    .studentSlider__searchIcon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .studentSlider__filter {
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+    }
+
+    .studentSlider__filter img {
+        width: 22px;
+        height: 22px;
+    }
+
+    .studentSlider__button {
+        width: 280px;
+        height: 40px;
+        font-size: 18px;
+    }
+}
+
+/* Мобильные устройства (480px и меньше) */
+@media (max-width: 480px) {
+    .studentSlider__content {
+        padding: 20px;
+        gap: 20px;
+        border-radius: 24px;
+        width: 95%;
+    }
+
+    .studentSlider__content::before,
+    .studentSlider__content::after {
+        border-radius: 24px;
+    }
+
+    .studentSlider__content::after {
+        border-radius: 22px;
+    }
+
+    .studentSlider__header {
+        gap: 12px;
+    }
+
+    .studentSlider__title {
+        font-size: 18px;
+    }
+
+    .studentSlider__search {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+
+    .studentSlider__search:focus,
+    .studentSlider__search.search-expanded {
+        width: 140px;
+        padding-left: 15px;
+        padding-right: 35px;
+    }
+
+    .studentSlider__inputWrapper {
+        width: 40px;
+        min-width: 40px;
+    }
+
+    .studentSlider__searchIcon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .studentSlider__filter {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+
+    .studentSlider__filter img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .studentSlider__list, .studentSlider__listWrapper {
+        gap: 15px;
+    }
+
+    .studentSlider__listWrapper {
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .studentSlider__listButton {
+        width: 38px;
+        height: 38px;
+    }
+
+    .studentSlider__listInfo {
+        width: 90%;
+    }
+
+    .studentSlider__button {
+        width: 250px;
+        height: 40px;
+        font-size: 16px;
+        gap: 8px;
+    }
+
+    .button__icon {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Мобильные устройства (400px и меньше) */
+@media (max-width: 400px) {
+    .studentSlider__content {
+        padding: 18px 15px;
+        gap: 18px;
+    }
+
+    .studentSlider__title {
+        font-size: 17px;
+    }
+
+    .studentSlider__search:focus,
+    .studentSlider__search.search-expanded {
+        width: 120px;
+        padding-left: 12px;
+        padding-right: 35px;
+    }
+
+    .studentSlider__listWrapper {
+        gap: 10px;
+    }
+
+    .studentSlider__listButton {
+        width: 36px;
+        height: 36px;
+    }
+
+    .studentSlider__button {
+        width: 220px;
+        height: 38px;
+        font-size: 15px;
+    }
+}
+
+/* Очень маленькие экраны (360px и меньше) */
+@media (max-width: 360px) {
+    .studentSlider__content {
+        padding: 15px 12px;
+        gap: 16px;
+    }
+
+    .studentSlider__title {
+        font-size: 16px;
+        white-space: normal;
+        text-align: center;
+        flex: 1;
+    }
+
+    .studentSlider__search {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+    }
+
+    .studentSlider__search:focus,
+    .studentSlider__search.search-expanded {
+        width: 100px;
+        padding-left: 10px;
+        padding-right: 30px;
+    }
+
+    .studentSlider__inputWrapper {
+        width: 35px;
+        min-width: 35px;
+    }
+
+    .studentSlider__searchIcon {
+        width: 18px;
+        height: 18px;
+    }
+
+    .studentSlider__filter {
+        width: 35px;
+        height: 35px;
+        min-width: 35px;
+    }
+
+    .studentSlider__filter img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .studentSlider__listWrapper {
+        gap: 8px;
+    }
+
+    .studentSlider__listInfo {
+        width: 95%;
+    }
+
+    .studentSlider__button {
+        width: 200px;
+        height: 36px;
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+}
+
+/* Портретная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: portrait) {
+    .studentSlider__listWrapper {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 10px 5px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .studentSlider__listWrapper::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-width: 896px) and (orientation: landscape) {
+    .studentSlider__content {
+        padding: 20px 25px;
+    }
+
+    .studentSlider__title {
+        font-size: 18px;
+    }
+
+    .studentSlider__search:focus,
+    .studentSlider__search.search-expanded {
+        width: 150px;
+    }
+}

@@ -1,0 +1,220 @@
+.banner {
+    width: 100%;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 60px 0;
+}
+
+.banner__wrapper {
+    width: 90%;
+    border: double 3px transparent;
+    border-radius: 32px;
+    background-image:
+            linear-gradient(black, black),
+            linear-gradient(90deg, #3E8EFF, #E53BCF, #E95A57);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.banner__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background-image: url("../../assets/other/bannerDiamondGradient.png");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.banner__left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding: 50px 72px;
+}
+
+.banner__title {
+    color: #FFFFFF;
+    font-family: "Sansation", sans-serif;
+    font-size: 48px;
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.banner__text {
+    color: rgba(255, 255, 255, 0.9);
+    font-family: 'StratosSkyeng';
+    font-size: 20px;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 480px;
+}
+
+.banner__button {
+    width: 300px;
+    height: 50px;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border: none;
+    border-radius: 100px;
+    color: #fff;
+    font-family: "Sansation", sans-serif;
+    font-size: 24px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s ease;
+    margin-top: 10px;
+}
+
+.banner__button:hover {
+    transform: translateY(-2px);
+}
+
+.banner__img {
+    height: auto;
+    max-width: 100%;
+}
+
+.banner__br {
+    display: block;
+}
+
+@media (max-width: 1200px) {
+    .banner__left {
+        padding: 40px 50px;
+    }
+
+    .banner__content {
+        padding-right: 50px;
+    }
+}
+
+@media (max-width: 992px) {
+    .banner {
+        padding: 40px 0;
+    }
+
+    .banner__wrapper {
+        width: 95%;
+    }
+
+    .banner__title {
+        font-size: 40px;
+    }
+
+    .banner__text {
+        font-size: 18px;
+    }
+
+    .banner__button {
+        width: 280px;
+        height: 48px;
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner__content {
+        flex-direction: column;
+        align-items: center;
+        background-size: cover;
+        padding-right: 0;
+        padding-top: 0;
+    }
+
+    .banner__left {
+        padding: 40px 30px;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .banner__title {
+        font-size: 36px;
+    }
+
+    .banner__text {
+        max-width: 100%;
+        font-size: 18px;
+    }
+
+    .banner__button {
+        width: 260px;
+    }
+
+    .banner__img {
+        order: 3;
+        width: 80%;
+        max-width: 400px;
+    }
+
+    .banner__br {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .banner {
+        padding: 30px 0;
+    }
+
+    .banner__wrapper {
+        width: 92%;
+        border-radius: 24px;
+    }
+
+    .banner__left {
+        padding: 30px 20px;
+        gap: 24px;
+    }
+
+    .banner__title {
+        font-size: 28px;
+        line-height: 1.3;
+    }
+
+    .banner__text {
+        font-size: 16px;
+        line-height: 1.4;
+    }
+
+    .banner__button {
+        width: 240px;
+        height: 44px;
+        font-size: 20px;
+        margin-top: 0;
+    }
+
+    .banner__img {
+        width: 90%;
+    }
+}
+
+@media (max-width: 400px) {
+    .banner__title {
+        font-size: 24px;
+    }
+
+    .banner__text {
+        font-size: 15px;
+    }
+
+    .banner__button {
+        width: 220px;
+        height: 42px;
+        font-size: 18px;
+    }
+
+    .banner__left {
+        padding: 25px 15px;
+    }
+}
