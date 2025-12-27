@@ -74,17 +74,31 @@ export const login = async (username, password) => {
 };
 
 /**
+ * Получить значение cookie по имени
+ * @param {string} name - Имя cookie
+ * @returns {string|null} Значение cookie или null
+ */
+const getCookie = (name) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+        return parts.pop().split(';').shift();
+    }
+    return null;
+};
+
+/**
  * Проверка наличия cookies авторизации
- * @returns {boolean} true если есть cookies авторизации
+ * @returns {boolean} true если есть ACCESS_TOKEN или REFRESH_TOKEN
  */
 const hasAuthCookies = () => {
-    const cookies = document.cookie.split(';');
-    // Проверяем наличие любых cookies (обычно API устанавливает session или auth cookies)
-    return cookies.some(cookie => {
-        const trimmed = cookie.trim();
-        // Проверяем наличие непустых cookies (кроме технических)
-        return trimmed.length > 0 && !trimmed.startsWith('_') && trimmed.includes('=');
-    });
+    const accessToken = getCookie('ACCESS_TOKEN');
+    const refreshToken = getCookie('REFRESH_TOKEN');
+    const hasTokens = !!(accessToken || refreshToken);
+    
+    console.log('[AUTH] Cookie check - ACCESS_TOKEN:', !!accessToken, 'REFRESH_TOKEN:', !!refreshToken);
+    
+    return hasTokens;
 };
 
 /**
@@ -92,21 +106,25 @@ const hasAuthCookies = () => {
  * @returns {boolean} true если пользователь авторизован
  */
 export const isAuthenticated = () => {
-    // Проверяем наличие cookies авторизации (основная проверка)
-    const hasCookies = hasAuthCookies();
+    // Проверяем наличие токенов в cookies (основная проверка)
+    const hasTokens = hasAuthCookies();
     
     // Проверяем флаг в localStorage (дополнительная проверка)
     const authFlag = localStorage.getItem(AUTH_FLAG_KEY);
     
-    // Пользователь авторизован только если есть cookies ИЛИ есть флаг в localStorage
-    // Но если cookies удалены, флаг не должен работать
-    if (!hasCookies && authFlag === 'true') {
-        // Если cookies удалены, но флаг есть - очищаем флаг
+    console.log('[AUTH] isAuthenticated - hasTokens:', hasTokens, 'authFlag:', authFlag);
+    
+    // Пользователь авторизован если есть токены ИЛИ есть флаг
+    const isAuth = hasTokens || authFlag === 'true';
+    
+    // Если токены удалены, но флаг есть - очищаем флаг
+    if (!hasTokens && authFlag === 'true') {
+        console.log('[AUTH] Tokens removed, clearing flag');
         localStorage.removeItem(AUTH_FLAG_KEY);
         return false;
     }
     
-    return hasCookies || authFlag === 'true';
+    return isAuth;
 };
 
 /**

@@ -308,6 +308,32 @@ const StudentResume = () => {
                         </div>
                         <div className="StudentResume__contactInfo">
                             <p>Готов проходить стажировку в вашей компании!</p>
+                            {(educationDetails.length > 0 || experienceDetails.length > 0) && (
+                                <div className="StudentResume__contactDetails">
+                                    {educationDetails.length > 0 && (
+                                        <div className="StudentResume__contactDetailItem">
+                                            <h4>Образование:</h4>
+                                            {educationDetails.slice(0, 2).map((edu, index) => (
+                                                <p key={index}>
+                                                    {edu.name || edu.institution || 'Образовательное учреждение'}
+                                                    {edu.speciality && ` - ${edu.speciality}`}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {experienceDetails.length > 0 && (
+                                        <div className="StudentResume__contactDetailItem">
+                                            <h4>Опыт работы:</h4>
+                                            {experienceDetails.slice(0, 2).map((exp, index) => (
+                                                <p key={index}>
+                                                    {exp.position || 'Должность'}
+                                                    {exp.company && ` в ${exp.company}`}
+                                                </p>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

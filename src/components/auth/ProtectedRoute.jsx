@@ -11,27 +11,44 @@ const ProtectedRoute = ({ children }) => {
     const location = useLocation();
 
     useEffect(() => {
-        // Проверяем авторизацию при монтировании компонента
+        // Проверяем авторизацию при монтировании компонента и при изменении location
         const checkAuth = () => {
             const authStatus = isAuthenticated();
-            console.log('[ProtectedRoute] Auth status:', authStatus);
+            console.log('[ProtectedRoute] Auth status:', authStatus, 'location:', location.pathname);
             setAuthenticated(authStatus);
             setLoading(false);
             
             if (!authStatus) {
                 setShowLogin(true);
+            } else {
+                setShowLogin(false);
             }
         };
 
         checkAuth();
-    }, []);
+    }, [location.pathname]);
 
     const handleLoginSuccess = () => {
         console.log('[ProtectedRoute] Login successful, updating state');
-        // Обновляем состояние после успешного входа
-        const authStatus = isAuthenticated();
-        setAuthenticated(authStatus);
-        setShowLogin(false);
+        // Небольшая задержка для гарантии обновления localStorage и cookies
+        setTimeout(() => {
+            // Обновляем состояние после успешного входа
+            const authStatus = isAuthenticated();
+            console.log('[ProtectedRoute] After login - auth status:', authStatus);
+            
+            if (authStatus) {
+                setAuthenticated(true);
+                setShowLogin(false);
+            } else {
+                // Если все еще не авторизован, проверяем еще раз через больший интервал
+                setTimeout(() => {
+                    const recheckStatus = isAuthenticated();
+                    console.log('[ProtectedRoute] Recheck - auth status:', recheckStatus);
+                    setAuthenticated(recheckStatus);
+                    setShowLogin(!recheckStatus);
+                }, 500);
+            }
+        }, 200);
     };
 
     const handleCloseLogin = () => {
