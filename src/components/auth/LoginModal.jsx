@@ -16,11 +16,13 @@ const LoginModal = ({ onClose, onSuccess }) => {
         try {
             await login(username, password);
             // Cookies будут сохранены автоматически благодаря credentials: 'include'
-            onSuccess();
+            // Небольшая задержка для гарантии обновления localStorage
+            setTimeout(() => {
+                onSuccess();
+            }, 100);
         } catch (err) {
             setError('Неверное имя пользователя или пароль');
             console.error('Login error:', err);
-        } finally {
             setLoading(false);
         }
     };

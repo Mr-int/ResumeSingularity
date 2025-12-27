@@ -2,6 +2,12 @@ import { API_BASE_URL } from '../config/api.js';
 
 const AUTH_FLAG_KEY = 'isAuthenticated';
 
+/**
+ * Авторизация пользователя
+ * @param {string} username - Имя пользователя
+ * @param {string} password - Пароль
+ * @returns {Promise<Object>} Ответ сервера
+ */
 export const login = async (username, password) => {
     try {
         const url = `${API_BASE_URL}auth/login`;
@@ -31,8 +37,8 @@ export const login = async (username, password) => {
         const data = await response.json();
         console.log('[AUTH] Login successful, cookies:', document.cookie);
         
-        // Сохраняем флаг успешной авторизации
-        sessionStorage.setItem(AUTH_FLAG_KEY, 'true');
+        // Сохраняем флаг успешной авторизации в localStorage для постоянного хранения
+        localStorage.setItem(AUTH_FLAG_KEY, 'true');
         return data;
     } catch (error) {
         console.error('[AUTH] Error during login:', error);
@@ -45,16 +51,24 @@ export const login = async (username, password) => {
  * @returns {boolean} true если пользователь авторизован
  */
 export const isAuthenticated = () => {
-    // Проверяем флаг в sessionStorage (сохраняется только на время сессии)
-    const authFlag = sessionStorage.getItem(AUTH_FLAG_KEY);
-    return authFlag === 'true';
+    // Проверяем флаг в localStorage (сохраняется между сессиями)
+    const authFlag = localStorage.getItem(AUTH_FLAG_KEY);
+    // Также проверяем наличие cookies (дополнительная проверка)
+    const hasCookies = document.cookie.length > 0;
+    return authFlag === 'true' || hasCookies;
 };
 
 /**
  * Выход из системы
  */
 export const logout = () => {
-    sessionStorage.removeItem(AUTH_FLAG_KEY);
+    localStorage.removeItem(AUTH_FLAG_KEY);
     // Cookies будут удалены сервером или можно удалить вручную
+    // Очищаем все cookies
+    document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+            .replace(/^ +/, "")
+            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
 };
 
