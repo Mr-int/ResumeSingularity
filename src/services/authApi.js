@@ -61,11 +61,21 @@ export const login = async (username, password) => {
             }
         }
         
-        console.log('[AUTH] Login successful, cookies:', document.cookie);
+        // Проверяем cookies после успешного входа
+        const cookiesAfterLogin = document.cookie;
+        console.log('[AUTH] Login successful, cookies:', cookiesAfterLogin);
         console.log('[AUTH] Response data:', data);
+        
+        // Проверяем наличие токенов в Set-Cookie заголовках
+        const setCookieHeader = response.headers.get('set-cookie');
+        console.log('[AUTH] Set-Cookie header:', setCookieHeader);
         
         // Сохраняем флаг успешной авторизации в localStorage для постоянного хранения
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
+        
+        // Также сохраняем время входа для проверки актуальности
+        localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+        
         return data || { success: true };
     } catch (error) {
         console.error('[AUTH] Error during login:', error);
@@ -106,25 +116,41 @@ const hasAuthCookies = () => {
  * @returns {boolean} true если пользователь авторизован
  */
 export const isAuthenticated = () => {
-    // Проверяем наличие токенов в cookies (основная проверка)
+    // Проверяем флаг в localStorage (основная проверка)
+    const authFlag = localStorage.getItem(AUTH_FLAG_KEY);
+    const authTime = localStorage.getItem(`${AUTH_FLAG_KEY}_time`);
+    
+    // Проверяем наличие токенов в cookies (дополнительная проверка)
     const hasTokens = hasAuthCookies();
     
-    // Проверяем флаг в localStorage (дополнительная проверка)
-    const authFlag = localStorage.getItem(AUTH_FLAG_KEY);
+    console.log('[AUTH] isAuthenticated - hasTokens:', hasTokens, 'authFlag:', authFlag, 'authTime:', authTime);
     
-    console.log('[AUTH] isAuthenticated - hasTokens:', hasTokens, 'authFlag:', authFlag);
-    
-    // Пользователь авторизован если есть токены ИЛИ есть флаг
-    const isAuth = hasTokens || authFlag === 'true';
-    
-    // Если токены удалены, но флаг есть - очищаем флаг
-    if (!hasTokens && authFlag === 'true') {
-        console.log('[AUTH] Tokens removed, clearing flag');
-        localStorage.removeItem(AUTH_FLAG_KEY);
-        return false;
+    // Если флаг установлен, пользователь авторизован
+    // Cookies могут быть HttpOnly и недоступны через document.cookie
+    if (authFlag === 'true') {
+        // Проверяем, не истекла ли сессия (например, 24 часа)
+        if (authTime) {
+            const timeDiff = Date.now() - parseInt(authTime);
+            const hours24 = 24 * 60 * 60 * 1000;
+            if (timeDiff > hours24) {
+                console.log('[AUTH] Session expired, clearing flag');
+                localStorage.removeItem(AUTH_FLAG_KEY);
+                localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+                return false;
+            }
+        }
+        return true;
     }
     
-    return isAuth;
+    // Если флага нет, но есть токены - устанавливаем флаг
+    if (hasTokens) {
+        console.log('[AUTH] Tokens found, setting flag');
+        localStorage.setItem(AUTH_FLAG_KEY, 'true');
+        localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+        return true;
+    }
+    
+    return false;
 };
 
 /**

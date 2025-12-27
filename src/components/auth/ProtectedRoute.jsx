@@ -30,25 +30,25 @@ const ProtectedRoute = ({ children }) => {
 
     const handleLoginSuccess = () => {
         console.log('[ProtectedRoute] Login successful, updating state');
-        // Небольшая задержка для гарантии обновления localStorage и cookies
+        // После успешного входа сразу устанавливаем авторизацию
+        // Флаг уже установлен в login(), cookies могут быть HttpOnly
+        setAuthenticated(true);
+        setShowLogin(false);
+        
+        // Дополнительная проверка через небольшую задержку
         setTimeout(() => {
-            // Обновляем состояние после успешного входа
             const authStatus = isAuthenticated();
-            console.log('[ProtectedRoute] After login - auth status:', authStatus);
-            
-            if (authStatus) {
-                setAuthenticated(true);
-                setShowLogin(false);
-            } else {
-                // Если все еще не авторизован, проверяем еще раз через больший интервал
+            console.log('[ProtectedRoute] After login check - auth status:', authStatus);
+            if (!authStatus) {
+                // Если проверка не прошла, проверяем еще раз
                 setTimeout(() => {
                     const recheckStatus = isAuthenticated();
                     console.log('[ProtectedRoute] Recheck - auth status:', recheckStatus);
                     setAuthenticated(recheckStatus);
                     setShowLogin(!recheckStatus);
-                }, 500);
+                }, 300);
             }
-        }, 200);
+        }, 100);
     };
 
     const handleCloseLogin = () => {
