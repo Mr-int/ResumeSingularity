@@ -73,17 +73,15 @@ export const getPortfolioByStudentId = async (studentId) => {
  */
 export const getInstitutionById = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}institution/getById/${id}`, {
+        const data = await apiClientJson(`institution/getById/${id}`, {
             method: 'GET',
-            credentials: 'include', // Важно для передачи cookies
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error fetching institution:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };
@@ -95,17 +93,15 @@ export const getInstitutionById = async (id) => {
  */
 export const getExperienceById = async (id) => {
     try {
-        const response = await fetch(`${API_BASE_URL}experience/getById/${id}`, {
+        const data = await apiClientJson(`experience/getById/${id}`, {
             method: 'GET',
-            credentials: 'include', // Важно для передачи cookies
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
         return data;
     } catch (error) {
         console.error('Error fetching experience:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };

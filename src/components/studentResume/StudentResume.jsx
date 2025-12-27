@@ -43,27 +43,63 @@ const StudentResume = () => {
                     setPortfolio([]);
                 }
 
-                // Fetch all education and filter by studentId
+                // Fetch all education and filter by studentId, then get details
                 try {
                     const allEducation = await getAllEducation();
                     // Фильтруем образование по studentId
                     const studentEducation = allEducation.filter(edu => 
                         edu.studentId === parseInt(id) || edu.studentId === id || edu.student?.id === parseInt(id) || edu.student?.id === id
                     );
-                    setEducationDetails(studentEducation || []);
+                    
+                    // Получаем детали для каждого образования через /institution/getById/{id}
+                    const educationWithDetails = await Promise.all(
+                        studentEducation.map(async (edu) => {
+                            try {
+                                const institutionId = edu.institutionId || edu.id;
+                                if (institutionId) {
+                                    const details = await getInstitutionById(institutionId);
+                                    return { ...edu, ...details };
+                                }
+                                return edu;
+                            } catch (err) {
+                                console.error('Failed to fetch institution details:', err);
+                                return edu;
+                            }
+                        })
+                    );
+                    
+                    setEducationDetails(educationWithDetails || []);
                 } catch (err) {
                     console.error('Failed to fetch education:', err);
                     setEducationDetails([]);
                 }
 
-                // Fetch all experience and filter by studentId
+                // Fetch all experience and filter by studentId, then get details
                 try {
                     const allExperience = await getAllExperience();
                     // Фильтруем опыт работы по studentId
                     const studentExperience = allExperience.filter(exp => 
                         exp.studentId === parseInt(id) || exp.studentId === id || exp.student?.id === parseInt(id) || exp.student?.id === id
                     );
-                    setExperienceDetails(studentExperience || []);
+                    
+                    // Получаем детали для каждого опыта через /experience/getById/{id}
+                    const experienceWithDetails = await Promise.all(
+                        studentExperience.map(async (exp) => {
+                            try {
+                                const experienceId = exp.experienceId || exp.id;
+                                if (experienceId) {
+                                    const details = await getExperienceById(experienceId);
+                                    return { ...exp, ...details };
+                                }
+                                return exp;
+                            } catch (err) {
+                                console.error('Failed to fetch experience details:', err);
+                                return exp;
+                            }
+                        })
+                    );
+                    
+                    setExperienceDetails(experienceWithDetails || []);
                 } catch (err) {
                     console.error('Failed to fetch experience:', err);
                     setExperienceDetails([]);
