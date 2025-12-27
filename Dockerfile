@@ -1,7 +1,8 @@
 # Многоступенчатая сборка для React/Vite приложения
+# Vite 7 требует Node.js 20.19+ или 22.12+
 
 # Этап 1: Сборка приложения
-FROM node:18-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
