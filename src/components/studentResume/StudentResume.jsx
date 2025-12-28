@@ -7,7 +7,6 @@ import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
 import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getExperienceByStudentId, getAllStudents } from "../../services/studentApi.js";
-import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 
@@ -147,6 +146,38 @@ const StudentResume = () => {
         return portfolioBackgrounds[index % portfolioBackgrounds.length];
     };
 
+    // Функция для получения URL картинки
+    const getStudentImageUrl = (studentData) => {
+        if (!studentData) return face;
+
+        // Проверяем разные возможные поля с изображением
+        const imagePath = studentData.imagePath || studentData.image || studentData.photo;
+
+        if (!imagePath) return face;
+
+        // Если imagePath уже полный URL, возвращаем его
+        if (imagePath.startsWith('http')) {
+            return imagePath;
+        }
+
+        // Формируем URL по заданному формату
+        // https://api.singularity-resume.ru/main/photo/{id}.jpg
+        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
+
+        // Извлекаем ID из imagePath или используем student ID
+        let studentId = id;
+        if (imagePath.includes('/')) {
+            // Если в imagePath есть путь, берем последнюю часть
+            const parts = imagePath.split('/');
+            studentId = parts[parts.length - 1].replace('.jpg', '').replace('.png', '').replace('.jpeg', '');
+        } else if (imagePath.includes('.')) {
+            // Если есть расширение, убираем его
+            studentId = imagePath.split('.')[0];
+        }
+
+        return `${baseUrl}/${studentId}.jpg`;
+    };
+
     if (loading) {
         return (
             <section className="StudentResume">
@@ -168,8 +199,7 @@ const StudentResume = () => {
     }
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
-    const imagePath = student.imagePath || student.image;
-    const imageSrc = imagePath ? getImageUrl(imagePath) : face;
+    const imageSrc = getStudentImageUrl(student);
     const age = calculateAge(student.birthDate);
     const ageText = age ? `${age}лет` : '';
 

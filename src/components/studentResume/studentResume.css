@@ -172,7 +172,6 @@
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 25px;
     min-height: 200px;
-    padding: 25px;
 }
 
 .StudentResume__portfolioItem {
@@ -646,7 +645,6 @@
     .StudentResume__portfolio {
         grid-template-columns: 1fr;
         gap: 20px;
-        padding: 20px;
     }
 
     .StudentResume__portfolioItem {
@@ -746,7 +744,6 @@
     .StudentResume__portfolio {
         grid-template-columns: 1fr;
         gap: 15px;
-        padding: 15px;
     }
 
     .StudentResume__portfolioItem {
