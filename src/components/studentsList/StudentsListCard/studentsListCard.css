@@ -141,7 +141,6 @@
     font-weight: 300;
     flex-shrink: 0;
     transition: all 0.3s ease;
-    align-self: flex-end;
 }
 
 .studentsCard__button:hover {

@@ -3,7 +3,6 @@ import test from "../../../assets/other/test.png";
 import { Link } from "react-router-dom";
 import './studentsListCard.css';
 import course4 from "../../../assets/other/course4.png";
-import { getImageUrl } from "../../../config/api.js";
 
 const StudentsListCard = ({ student }) => {
     const [showFullBio, setShowFullBio] = useState(false);
@@ -12,9 +11,27 @@ const StudentsListCard = ({ student }) => {
         return null;
     }
 
+    const getStudentImageUrl = (studentData) => {
+        if (!studentData) return test;
+
+        const imagePath = studentData.imagePath || studentData.image || studentData.photo;
+
+        if (!imagePath) return test;
+
+        if (imagePath.startsWith('http')) {
+            return imagePath;
+        }
+
+        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
+        const studentId = studentData.id;
+
+        if (!studentId) return test;
+
+        return `${baseUrl}/${studentId}.jpg`;
+    };
+
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
-    const imagePath = student.imagePath || student.image;
-    const imageSrc = imagePath ? getImageUrl(imagePath) : test;
+    const imageSrc = getStudentImageUrl(student);
 
     const isBioTruncated = student.bio && student.bio.length > 150;
     const bioPreview = student.bio
