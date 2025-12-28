@@ -388,20 +388,21 @@
 }
 
 .StudentResume__cloudMailIcon {
-    position: relative;
+    position: absolute;
     bottom: 0;
     right: 0;
 }
 
-.StudentResume__cloudMailIcon {
-    position: absolute;
-}
-
 .StudentResume__sunIcon {
     position: absolute;
-    top: -15%;
-    left: -15%;
     overflow: hidden;
+    left: 0;
+    top: 0;
+}
+
+.StudentResume__sunIcon img {
+    position: absolute;
+    left: -20%;
 }
 
 .StudentResume__contactDetails {
