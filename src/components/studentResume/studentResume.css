@@ -395,8 +395,9 @@
 
 .StudentResume__sunIcon {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: -15%;
+    left: -15%;
+    overflow: hidden;
 }
 
 .StudentResume__contactDetails {
@@ -770,7 +771,7 @@
     }
 
     .StudentResume__skills {
-        justify-content: center;
+        justify-content: flex-start;
         gap: 8px;
     }
 

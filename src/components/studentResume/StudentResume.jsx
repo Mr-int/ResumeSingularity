@@ -410,7 +410,7 @@ const StudentResume = () => {
                             {student && <StudentSliderCard student={student} />}
                         </div>
                         <div className="StudentResume__contactInfo">
-                            <img src={sunIcon} alt="" className="StudentResume__sunIcon"/>
+                            <div className="StudentResume__sunIcon"><img src={sunIcon} alt=""/></div>
                             <div className="StudentResume__contactWrapper">
                                 <p>Готов проходить стажировку в вашей компании!</p>
                                 <button>Связаться <img src={mailIcon} alt=""/></button>
@@ -422,7 +422,7 @@ const StudentResume = () => {
 
                 {similarStudents.length > 0 && (
                     <div className="StudentResume__similarSection">
-                        <h2 className="StudentResume__similarTitle">Похожие студенты</h2>
+                        <h2 className="StudentResume__similarTitle">Студенты с похожими навыками</h2>
                         <div className="StudentResume__similarList">
                             {similarStudents.map((similarStudent) => (
                                 <Link
