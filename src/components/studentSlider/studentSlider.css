@@ -822,9 +822,3 @@
         display: flex;
     }
 }
-
-@media (min-width: 769px) {
-    .studentSlider__mobileControls {
-        display: none !important;
-    }
-}
