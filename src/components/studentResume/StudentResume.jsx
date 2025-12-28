@@ -38,6 +38,7 @@ const StudentResume = () => {
                 setLoading(true);
                 const data = await getStudentById(id);
                 setStudent(data);
+                console.log('Student data:', data);
 
                 try {
                     const portfolioData = await getPortfolioByStudentId(id);
@@ -49,14 +50,21 @@ const StudentResume = () => {
 
                 try {
                     const educationIds = data.education || [];
+                    console.log('Education IDs from student data:', educationIds);
+
                     if (!Array.isArray(educationIds) || educationIds.length === 0) {
+                        console.log('No education IDs found');
                         setEducationDetails([]);
                     } else {
+                        console.log('Starting to fetch education details for', educationIds.length, 'institutions');
+
                         const educationWithDetails = await Promise.all(
                             educationIds.map(async (eduId) => {
                                 try {
+                                    console.log('Making request to /institution/getById/', eduId);
                                     const details = await getInstitutionById(eduId);
                                     console.log('Response from /institution/getById/', eduId, ':', details);
+
                                     return {
                                         id: eduId,
                                         ...details,
@@ -64,6 +72,7 @@ const StudentResume = () => {
                                     };
                                 } catch (err) {
                                     console.error('Failed to fetch institution:', err);
+                                    console.error('Error details:', err.message, err.stack);
                                     return {
                                         id: eduId,
                                         name: `Ошибка загрузки ID ${eduId}`
@@ -71,10 +80,13 @@ const StudentResume = () => {
                                 }
                             })
                         );
+
+                        console.log('All education details fetched:', educationWithDetails);
                         setEducationDetails(educationWithDetails);
                     }
                 } catch (err) {
                     console.error('Failed to fetch education:', err);
+                    console.error('Error stack:', err.stack);
                     setEducationDetails([]);
                 }
 
@@ -117,8 +129,10 @@ const StudentResume = () => {
             } catch (err) {
                 setError(err.message);
                 console.error('Failed to fetch student:', err);
+                console.error('Error stack:', err.stack);
             } finally {
                 setLoading(false);
+                console.log('Finished loading student data');
             }
         };
 
