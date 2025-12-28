@@ -495,6 +495,68 @@
     text-decoration: underline;
 }
 
+.StudentResume__experienceList {
+    margin-top: 20px;
+}
+
+.StudentResume__experienceItem {
+    display: flex;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.StudentResume__experienceTimeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 30px;
+    min-width: 120px;
+}
+
+.StudentResume__experienceYears {
+    background-color: #f5f5f5;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.StudentResume__experienceVerticalLine {
+    width: 2px;
+    background-color: #e0e0e0;
+    flex-grow: 1;
+    min-height: 40px;
+}
+
+.StudentResume__experienceInfo {
+    flex: 1;
+    padding-bottom: 20px;
+}
+
+.StudentResume__experiencePosition {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+.StudentResume__experienceCompany {
+    font-size: 1rem;
+    color: #bdf7ff;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.StudentResume__experienceDescription {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -742,6 +804,25 @@
     }
 
     .StudentResume__educationVerticalLine {
+        width: 40px;
+        height: 2px;
+        margin: 0 15px;
+        min-height: 0;
+    }
+
+    .StudentResume__experienceItem {
+        flex-direction: column;
+    }
+
+    .StudentResume__experienceTimeline {
+        flex-direction: row;
+        margin-right: 0;
+        margin-bottom: 15px;
+        align-items: center;
+        min-width: auto;
+    }
+
+    .StudentResume__experienceVerticalLine {
         width: 40px;
         height: 2px;
         margin: 0 15px;

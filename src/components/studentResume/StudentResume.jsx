@@ -6,7 +6,7 @@ import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
-import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getAllExperience, getAllStudents, getExperienceById } from "../../services/studentApi.js";
+import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getExperienceByStudentId, getAllStudents } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
@@ -80,24 +80,25 @@ const StudentResume = () => {
                 }
 
                 try {
-                    if (data.experience && Array.isArray(data.experience) && data.experience.length > 0) {
-                        const experienceWithDetails = await Promise.all(
-                            data.experience.map(async (exp) => {
-                                try {
-                                    const experienceId = exp?.id || exp?.experienceId || exp;
-                                    if (experienceId) {
-                                        const details = await getExperienceById(experienceId);
-                                        return details || exp;
-                                    }
-                                    return exp;
-                                } catch (err) {
-                                    console.error('Failed to fetch experience details:', err);
-                                    return exp;
-                                }
-                            })
-                        );
-                        setExperienceDetails(experienceWithDetails || []);
+                    console.log('Fetching experience for student ID:', id);
+                    const experienceData = await getExperienceByStudentId(id);
+                    console.log('Experience response:', experienceData);
+
+                    if (Array.isArray(experienceData)) {
+                        const formattedExperience = experienceData.map((exp, index) => ({
+                            id: exp.id || index,
+                            position: exp.position || exp.jobTitle || '',
+                            company: exp.company || exp.organization || '',
+                            description: exp.description || exp.responsibilities || exp.additionalInfo || '',
+                            startDate: exp.startDate || exp.startYear || exp.startMonthYear || '',
+                            endDate: exp.endDate || exp.endYear || exp.endMonthYear || exp.current ? 'по настоящее время' : '',
+                            current: exp.current || false
+                        }));
+
+                        console.log('Formatted experience details:', formattedExperience);
+                        setExperienceDetails(formattedExperience);
                     } else {
+                        console.log('No experience data found or invalid format');
                         setExperienceDetails([]);
                     }
                 } catch (err) {
@@ -292,22 +293,33 @@ const StudentResume = () => {
                         {expandedExperience && (
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--bordered">
                                 {experienceDetails.length > 0 ? (
-                                    experienceDetails.map((exp, index) => (
-                                        <div key={exp.id || index} style={{ marginBottom: '30px' }}>
-                                            {exp.position && <h3>{exp.position}</h3>}
-                                            {exp.company && <h2>{exp.company}</h2>}
-                                            {exp.description && <p>{exp.description}</p>}
-                                            {exp.startDate && exp.endDate && (
-                                                <p>{exp.startDate} - {exp.endDate}</p>
-                                            )}
-                                            {!exp.startDate && exp.endDate && (
-                                                <p>До {exp.endDate}</p>
-                                            )}
-                                            {exp.startDate && !exp.endDate && (
-                                                <p>С {exp.startDate}</p>
-                                            )}
-                                        </div>
-                                    ))
+                                    <div className="StudentResume__experienceList">
+                                        {experienceDetails.map((exp, index) => (
+                                            <div key={exp.id || index} className="StudentResume__experienceItem">
+                                                <div className="StudentResume__experienceTimeline">
+                                                    <div className="StudentResume__experienceYears">
+                                                        {exp.startDate && exp.endDate ? (
+                                                            <span>{exp.startDate} - {exp.endDate}</span>
+                                                        ) : exp.startDate ? (
+                                                            <span>С {exp.startDate}</span>
+                                                        ) : exp.endDate ? (
+                                                            <span>До {exp.endDate}</span>
+                                                        ) : null}
+                                                    </div>
+                                                    <div className="StudentResume__experienceVerticalLine"></div>
+                                                </div>
+                                                <div className="StudentResume__experienceInfo">
+                                                    <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
+                                                    {exp.company && (
+                                                        <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
+                                                    )}
+                                                    {exp.description && (
+                                                        <p className="StudentResume__experienceDescription">{exp.description}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     <p>пока пусто :D</p>
                                 )}
