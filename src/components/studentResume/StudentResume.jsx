@@ -36,7 +36,6 @@ const StudentResume = () => {
 
             try {
                 setLoading(true);
-                console.log('Fetching student with ID:', id);
                 const data = await getStudentById(id);
                 setStudent(data);
 
@@ -49,28 +48,46 @@ const StudentResume = () => {
                 }
 
                 try {
-                    const educationIds = data.education || [];
-                    console.log('Education IDs for student', id, ':', educationIds);
+                    const educationData = await getAllEducation();
+                    const studentEducation = educationData.filter(edu => edu.studentId === parseInt(id) || edu.studentId === id);
+                    console.log('Education for student ID', id, ':', studentEducation);
 
-                    if (!Array.isArray(educationIds) || educationIds.length === 0) {
+                    if (!Array.isArray(studentEducation) || studentEducation.length === 0) {
                         setEducationDetails([]);
                     } else {
                         const educationWithDetails = await Promise.all(
-                            educationIds.map(async (eduId) => {
+                            studentEducation.map(async (edu) => {
                                 try {
-                                    console.log('Requesting institution with ID:', eduId);
-                                    const details = await getInstitutionById(eduId);
-                                    console.log('Institution response for ID', eduId, ':', details);
+                                    if (edu.institutionId) {
+                                        const details = await getInstitutionById(edu.institutionId);
+                                        console.log('Institution details for ID', edu.institutionId, ':', details);
+                                        return {
+                                            id: edu.id,
+                                            institutionId: edu.institutionId,
+                                            ...details,
+                                            ...edu,
+                                            name: details?.name || details?.institution || `Учреждение ${edu.institutionId}`,
+                                            speciality: edu.speciality || details?.speciality,
+                                            startDate: edu.startDate || details?.startDate,
+                                            endDate: edu.endDate || details?.endDate
+                                        };
+                                    }
                                     return {
-                                        id: eduId,
-                                        ...details,
-                                        name: details?.name || details?.institution || `Учреждение ${eduId}`
+                                        id: edu.id,
+                                        ...edu,
+                                        name: edu.institution || `Образование ${edu.id}`,
+                                        speciality: edu.speciality,
+                                        startDate: edu.startDate,
+                                        endDate: edu.endDate
                                     };
                                 } catch (err) {
                                     console.error('Failed to fetch institution:', err);
                                     return {
-                                        id: eduId,
-                                        name: `Ошибка загрузки ID ${eduId}`
+                                        id: edu.id,
+                                        name: edu.institution || `Образовательное учреждение`,
+                                        speciality: edu.speciality,
+                                        startDate: edu.startDate,
+                                        endDate: edu.endDate
                                     };
                                 }
                             })
