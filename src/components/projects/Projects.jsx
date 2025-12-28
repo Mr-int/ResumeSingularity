@@ -5,10 +5,9 @@ import GameChebImg from "../../assets/other/GameCheb.png";
 const Projects = () => {
     const [activeCard, setActiveCard] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [expandedCards, setExpandedCards] = useState([1]); // По умолчанию первый карточка развернута
+    const [expandedCards, setExpandedCards] = useState([1]);
     const [isMobile, setIsMobile] = useState(false);
 
-    // Определяем мобильное устройство
     useEffect(() => {
         const checkMobile = () => {
             setIsMobile(window.innerWidth <= 768);
@@ -21,17 +20,13 @@ const Projects = () => {
     }, []);
 
     const handleCardClick = useCallback((cardNumber) => {
-        // Если это мобильная версия
         if (isMobile) {
             if (expandedCards.includes(cardNumber)) {
-                // Проверяем, что не пытаемся свернуть последнюю развернутую карточку
                 if (expandedCards.length > 1) {
                     setExpandedCards(prev => prev.filter(id => id !== cardNumber));
                 }
             } else {
-                // Разворачиваем карточку
                 setExpandedCards(prev => [...prev, cardNumber]);
-                // Прокручиваем к карточке
                 setTimeout(() => {
                     const element = document.querySelector(`.card:nth-child(${cardNumber})`);
                     if (element) {
@@ -42,7 +37,6 @@ const Projects = () => {
             return;
         }
 
-        // Оригинальная логика для десктопа
         if (cardNumber === activeCard || isAnimating) return;
 
         setIsAnimating(true);
@@ -54,7 +48,6 @@ const Projects = () => {
     }, [activeCard, isAnimating, isMobile, expandedCards]);
 
     const getCardPosition = useCallback((cardNumber) => {
-        // Для мобильных позиционирование не нужно
         if (isMobile) return {};
 
         const positions = {
@@ -73,12 +66,10 @@ const Projects = () => {
         return cardIndex === 1 ? positions.second : positions.third;
     }, [activeCard, isMobile]);
 
-    // Проверяем, развернута ли карточка (для мобильных)
     const isCardExpanded = useCallback((cardNumber) => {
         return expandedCards.includes(cardNumber);
     }, [expandedCards]);
 
-    // Получаем название проекта для использования в десктопной версии
     const getProjectTitle = useCallback((cardNumber) => {
         const titles = {
             1: "GameCheb",
@@ -109,7 +100,6 @@ const Projects = () => {
                         <div className={`card__overlay ${activeCard === 1 ? 'card__overlay--active' : ''}`}></div>
                         <div className="card__content">
                             <div className="card__header">
-                                {/* Точки для мобильной версии (свернутое состояние) */}
                                 {isMobile && !isCardExpanded(1) && (
                                     <div className="card__dots">
                                         <span className="card__dot"></span>
@@ -118,7 +108,6 @@ const Projects = () => {
                                     </div>
                                 )}
 
-                                {/* Заголовок показываем только для десктопа и в развернутом состоянии на мобильных */}
                                 {(!isMobile || isCardExpanded(1)) && (
                                     <h3 className="card__title">{getProjectTitle(1)}</h3>
                                 )}
@@ -166,7 +155,6 @@ const Projects = () => {
                         <div className={`card__overlay ${activeCard === 2 ? 'card__overlay--active' : ''}`}></div>
                         <div className="card__content">
                             <div className="card__header">
-                                {/* Точки для мобильной версии (свернутое состояние) */}
                                 {isMobile && !isCardExpanded(2) && (
                                     <div className="card__dots">
                                         <span className="card__dot"></span>
@@ -175,7 +163,6 @@ const Projects = () => {
                                     </div>
                                 )}
 
-                                {/* Заголовок показываем только для десктопа и в развернутом состоянии на мобильных */}
                                 {(!isMobile || isCardExpanded(2)) && (
                                     <h3 className="card__title">{getProjectTitle(2)}</h3>
                                 )}
@@ -225,7 +212,6 @@ const Projects = () => {
                         <div className={`card__overlay ${activeCard === 3 ? 'card__overlay--active' : ''}`}></div>
                         <div className="card__content">
                             <div className="card__header">
-                                {/* Точки для мобильной версии (свернутое состояние) */}
                                 {isMobile && !isCardExpanded(3) && (
                                     <div className="card__dots">
                                         <span className="card__dot"></span>
@@ -234,7 +220,6 @@ const Projects = () => {
                                     </div>
                                 )}
 
-                                {/* Заголовок показываем только для десктопа и в развернутом состоянии на мобильных */}
                                 {(!isMobile || isCardExpanded(3)) && (
                                     <h3 className="card__title">{getProjectTitle(3)}</h3>
                                 )}

@@ -26,14 +26,15 @@
 .projects__cardsWrapper {
     position: relative;
     width: 100%;
-    min-height: 1220px;
     height: auto;
 }
 
 .card {
     position: absolute !important;
     width: 65%;
-    height: 620px;
+    height: auto;
+    min-height: 620px;
+    max-height: 800px;
     border-radius: 15px;
     overflow: hidden;
     transition: all 0.3s ease-in-out;
@@ -110,7 +111,6 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow: hidden;
 }
 
 .card__header {
@@ -180,7 +180,7 @@
     display: flex;
     gap: 70px;
     flex: 1;
-    min-height: 0;
+    align-items: stretch;
 }
 
 .card__text {
@@ -188,8 +188,6 @@
     font-family: 'StratosSkyeng';
     font-size: 18px;
     line-height: 1.5;
-    overflow-y: auto;
-    padding-right: 10px;
 }
 
 .card__image {
@@ -209,7 +207,6 @@
     border-radius: 10px;
 }
 
-/* Адаптив для планшетов */
 @media (max-width: 1024px) {
     .projects__wrapper {
         width: 95%;
@@ -217,7 +214,8 @@
 
     .card {
         width: 70%;
-        height: 700px;
+        height: auto;
+        min-height: 600px;
     }
 
     .card__content {
@@ -229,16 +227,11 @@
         gap: 30px;
     }
 
-    .card__text {
-        max-height: 200px;
-    }
-
     .card__image {
         min-height: 250px;
     }
 }
 
-/* Адаптив для мобильных устройств */
 @media (max-width: 768px) {
     .projects {
         padding: 30px 0;
@@ -261,7 +254,6 @@
         width: 100%;
         height: 90px;
         min-height: 90px;
-        max-height: 700px;
         opacity: 1 !important;
         transform: none !important;
         transition: all 0.3s ease-in-out;
@@ -271,7 +263,7 @@
 
     .card__expanded {
         height: auto !important;
-        min-height: 700px !important;
+        min-height: auto !important;
     }
 
     .card__content {
@@ -370,7 +362,6 @@
     }
 }
 
-/* Адаптив для маленьких телефонов */
 @media (max-width: 480px) {
     .projects__wrapper {
         width: 92%;
@@ -411,7 +402,6 @@
     }
 }
 
-/* Адаптив для очень маленьких телефонов */
 @media (max-width: 360px) {
     .card {
         height: 80px;

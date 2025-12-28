@@ -25,6 +25,11 @@ const StudentsListCard = ({ student }) => {
 
     const toggleBio = () => setShowFullBio(!showFullBio);
 
+    const skills = student.skills && student.skills.length > 0
+        ? student.skills.slice(0, 4)
+        : [{ id: 1, name: 'Навыки не указаны' }];
+    const hasMoreSkills = student.skills && student.skills.length > 4;
+
     return (
         <div className="studentsCard">
             <img className="studentsCard__image" src={imageSrc} alt={`Фото ${fullName}`} />
@@ -38,12 +43,11 @@ const StudentsListCard = ({ student }) => {
                 </div>
 
                 <div className="studentsCard__skills">
-                    {student.skills && student.skills.length > 0 ? (
-                        student.skills.map((skill) => (
-                            <span key={skill.id} className="skill-tag">{skill.name}</span>
-                        ))
-                    ) : (
-                        <span className="skill-tag">Навыки не указаны</span>
+                    {skills.map((skill) => (
+                        <span key={skill.id} className="skill-tag">{skill.name}</span>
+                    ))}
+                    {hasMoreSkills && (
+                        <span className="skill-tag skill-more">+{student.skills.length - 4}</span>
                     )}
                 </div>
 
