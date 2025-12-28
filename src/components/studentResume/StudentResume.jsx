@@ -6,7 +6,7 @@ import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
-import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience, getAllStudents, getPortfolioById, getExperienceById } from "../../services/studentApi.js";
+import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getAllExperience, getAllStudents, getExperienceById } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
@@ -36,14 +36,11 @@ const StudentResume = () => {
 
             try {
                 setLoading(true);
-                console.log('Fetching student with ID:', id);
                 const data = await getStudentById(id);
                 setStudent(data);
-                console.log('Student data:', data);
 
                 try {
                     const portfolioData = await getPortfolioByStudentId(id);
-                    console.log('Portfolio data:', portfolioData);
                     setPortfolio(portfolioData || []);
                 } catch (err) {
                     console.error('Failed to fetch portfolio:', err);
@@ -51,36 +48,28 @@ const StudentResume = () => {
                 }
 
                 try {
-                    const allEducation = await getAllEducation();
-                    console.log('All education records:', allEducation);
+                    console.log('Fetching institutions for student ID:', id);
+                    const institutions = await getInstitutionsByStudentId(id);
+                    console.log('Institutions response:', institutions);
 
-                    const studentEducation = allEducation.filter(edu =>
-                        edu.studentId === parseInt(id) ||
-                        edu.studentId === id ||
-                        (typeof edu.studentId === 'string' && edu.studentId === id.toString())
-                    );
-
-                    console.log('Education for student ID', id, ':', studentEducation);
-
-                    if (!Array.isArray(studentEducation) || studentEducation.length === 0) {
-                        console.log('No education found for student');
+                    if (!Array.isArray(institutions) || institutions.length === 0) {
+                        console.log('No institutions found for student');
                         setEducationDetails([]);
                     } else {
-                        const educationWithDetails = studentEducation.map(edu => ({
-                            id: edu.id,
-                            ...edu,
-                            name: edu.name || edu.institution || edu.institutionName || `Образовательное учреждение`,
-                            speciality: edu.speciality || edu.specialization,
-                            startDate: edu.startDate || edu.startYear,
-                            endDate: edu.endDate || edu.endYear || edu.graduationYear
+                        const formattedEducation = institutions.map(inst => ({
+                            id: inst.id,
+                            ...inst,
+                            name: inst.name || inst.institution || `Образовательное учреждение ${inst.id}`,
+                            speciality: inst.speciality || inst.specialization,
+                            startDate: inst.startDate || inst.startYear,
+                            endDate: inst.endDate || inst.endYear || inst.graduationYear
                         }));
 
-                        console.log('Education details:', educationWithDetails);
-                        setEducationDetails(educationWithDetails);
+                        console.log('Formatted education details:', formattedEducation);
+                        setEducationDetails(formattedEducation);
                     }
                 } catch (err) {
-                    console.error('Failed to fetch education:', err);
-                    console.error('Error details:', err);
+                    console.error('Failed to fetch institutions:', err);
                     setEducationDetails([]);
                 }
 

@@ -9,11 +9,11 @@ export const getAllStudents = async () => {
     try {
         const url = `student/getAll`;
         console.log('[API] Fetching students from:', url);
-        
+
         const data = await apiClientJson(url, {
             method: 'GET',
         });
-        
+
         console.log('[API] Students fetched successfully, count:', data?.length || 0);
         return data;
     } catch (error) {
@@ -87,6 +87,26 @@ export const getInstitutionById = async (id) => {
 };
 
 /**
+ * Получить все образовательные учреждения студента по его ID
+ * @param {string} studentId - ID студента
+ * @returns {Promise<Array>} Массив образовательных учреждений студента
+ */
+export const getInstitutionsByStudentId = async (studentId) => {
+    try {
+        const data = await apiClientJson(`institution/getByStudentId/${studentId}`, {
+            method: 'GET',
+        });
+        return data;
+    } catch (error) {
+        console.error('Error fetching institutions by student id:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};
+
+/**
  * Получить информацию об опыте работы по ID
  * @param {string} id - ID опыта работы
  * @returns {Promise<Object>} Данные опыта работы
@@ -143,4 +163,3 @@ export const getAllExperience = async () => {
         throw error;
     }
 };
-
