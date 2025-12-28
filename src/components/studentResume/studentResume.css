@@ -59,7 +59,6 @@
 
 .StudentResume__personFace {
     width: 340px;
-    height: 340px;
     position: relative;
     flex-shrink: 0;
 }
@@ -156,13 +155,13 @@
 .StudentResume__skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 18px;
+    gap: 10px;
 }
 
 .StudentResume__skillCapsule {
     background: #fff;
     color: #000;
-    padding: 12px 28px;
+    padding: 12px 26px;
     border-radius: 100px;
     font-size: 20px;
     font-weight: 500;
@@ -394,7 +393,6 @@
 
 .StudentResume__similarSection {
     width: 100%;
-    margin-top: 60px;
     margin-bottom: 80px;
 }
 
@@ -604,7 +602,7 @@
 
     .StudentResume__skills {
         justify-content: center;
-        gap: 12px;
+        gap: 8px;
     }
 
     .StudentResume__skillCapsule {
