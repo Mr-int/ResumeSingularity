@@ -86,6 +86,8 @@
 
 .skill-more {
     color: gray;
+    padding: 4px;
+    font-size: 14px;
 }
 
 .studentsCard__description {
