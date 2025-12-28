@@ -126,10 +126,8 @@
     transform: scale(1.05);
 }
 
-/* УБРАНО расстояние между header и about */
 .StudentResume__about {
     width: 90%;
-    /* margin-top: 50px; - УБРАНО */
     display: flex;
     flex-direction: column;
     gap: 50px;
@@ -171,7 +169,6 @@
     font-weight: 500;
 }
 
-/* НОВЫЙ СТИЛЬ ПОРТФОЛИО */
 .StudentResume__portfolio {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -188,7 +185,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -209,7 +205,7 @@
 }
 
 .StudentResume__portfolioTitle {
-    color: #fff;
+    color: #000;
     font-size: 20px;
     font-weight: 600;
     margin: 0;
@@ -233,11 +229,6 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-.StudentResume__portfolioLink:hover {
-    color: #fff;
-}
-
-/* Остальные стили без изменений */
 .StudentResume__additionalSections {
     width: 100%;
     display: flex;
