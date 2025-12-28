@@ -5,7 +5,6 @@ import javaIcon from "../../../assets/other/java.png";
 import course4 from "../../../assets/other/course4.png";
 import course3 from "../../../assets/other/thirdCourse.png";
 import course2 from "../../../assets/other/secondCourse.png";
-import course1 from "../../../assets/other/firstCourse.png";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -38,7 +37,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         switch (course) {
             case 'FIRST':
             case '1':
-                return course1;
+                return course2;
             case 'SECOND':
             case '2':
                 return course2;
