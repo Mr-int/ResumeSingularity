@@ -8,27 +8,32 @@ import './floatingButton.css';
 const FloatingButton = () => {
     const [showForm, setShowForm] = useState(false);
     const [studentName, setStudentName] = useState(null);
+    const [studentId, setStudentId] = useState(null);
     const location = useLocation();
-    
+
     const isStudentPage = location.pathname.includes('/studentsResume/');
-    const studentId = isStudentPage ? location.pathname.split('/studentsResume/')[1]?.split('/')[0] : null;
+    const currentStudentId = isStudentPage ? location.pathname.split('/studentsResume/')[1]?.split('/')[0] : null;
 
     useEffect(() => {
-        if (isStudentPage && studentId) {
+        if (isStudentPage && currentStudentId) {
             const fetchStudentName = async () => {
                 try {
-                    const student = await getStudentById(studentId);
+                    const student = await getStudentById(currentStudentId);
                     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim();
                     setStudentName(fullName || null);
+                    setStudentId(currentStudentId);
                 } catch (err) {
                     console.error('Failed to fetch student name:', err);
+                    setStudentName(null);
+                    setStudentId(null);
                 }
             };
             fetchStudentName();
         } else {
             setStudentName(null);
+            setStudentId(null);
         }
-    }, [isStudentPage, studentId]);
+    }, [isStudentPage, currentStudentId]);
 
     const handleButtonClick = () => {
         setShowForm(true);
@@ -39,13 +44,14 @@ const FloatingButton = () => {
     };
 
     const handleSubmit = async (formData) => {
-        console.log('Submitting application:', formData, studentName ? { studentName } : {});
+        console.log('Application submitted:', formData);
+        // Логика после успешной отправки, если нужна
         return Promise.resolve();
     };
 
     return (
         <>
-            <button 
+            <button
                 className="floatingButton"
                 onClick={handleButtonClick}
                 aria-label="Оставить заявку"
@@ -55,6 +61,7 @@ const FloatingButton = () => {
             {showForm && (
                 <ApplicationForm
                     studentName={studentName}
+                    studentId={studentId}
                     onClose={handleCloseForm}
                     onSubmit={handleSubmit}
                 />
@@ -64,4 +71,3 @@ const FloatingButton = () => {
 };
 
 export default FloatingButton;
-

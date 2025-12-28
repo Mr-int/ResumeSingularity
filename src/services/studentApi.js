@@ -136,3 +136,40 @@ export const getAllExperience = async () => {
         throw error;
     }
 };
+
+export const sendStudentRequest = async (requestData) => {
+    try {
+        const data = await apiClientJson('request/create', {
+            method: 'POST',
+            body: JSON.stringify(requestData)
+        });
+        return data;
+    } catch (error) {
+        console.error('Error sending student request:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};
+
+/**
+ * Создать общую заявку (для рекрутера)
+ * @param {Object} recruiterData - Данные рекрутера
+ * @returns {Promise<Object>} Ответ сервера
+ */
+export const createRecruiterRequest = async (recruiterData) => {
+    try {
+        const data = await apiClientJson('recruiter/create', {
+            method: 'POST',
+            body: JSON.stringify(recruiterData)
+        });
+        return data;
+    } catch (error) {
+        console.error('Error creating recruiter request:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};

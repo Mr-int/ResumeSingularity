@@ -445,6 +445,7 @@ const StudentResume = () => {
             {showApplicationForm && (
                 <ApplicationForm
                     studentName={fullName}
+                    studentId={id} // Передаем ID студента
                     onClose={() => setShowApplicationForm(false)}
                     onSubmit={async (formData) => {
                         console.log('Application for student:', fullName, formData);

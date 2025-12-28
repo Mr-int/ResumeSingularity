@@ -4,15 +4,15 @@ import exclamationIcon from "../../assets/icons/exclamationIcon.svg";
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
+import { apiClientJson } from '../../utils/apiClient.js';
 
 const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        companyName: '',
+        name: '',
+        company: '',
         email: '',
-        phoneNumber: '',
-        telegramUsername: ''
+        telegram: '',
+        phone: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -51,72 +51,69 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         setError('');
         setSuccess(false);
 
-        if (!formData.firstName.trim()) {
-            setError('Пожалуйста, укажите ваше имя и фамилию');
+        // Валидация
+        if (!formData.name.trim()) {
+            setError('Пожалуйста, укажите ваше имя');
             return;
         }
-        if (!formData.companyName.trim()) {
+        if (!formData.company.trim()) {
             setError('Пожалуйста, укажите компанию или проект');
             return;
         }
-        if (!formData.telegramUsername.trim() && !formData.email.trim() && !formData.phoneNumber.trim()) {
-            setError('Пожалуйста, укажите хотя бы один способ связи: телеграм, почту или телефон');
+        if (!formData.telegram.trim() && !formData.email.trim() && !formData.phone.trim()) {
+            setError('Пожалуйста, укажите телеграмм, почту или телефон для связи');
             return;
         }
 
         setLoading(true);
         try {
-            const { firstName, lastName } = splitFullName(formData.firstName);
+            // Подготовка данных для API
+            const { firstName, lastName } = splitFullName(formData.name);
             const username = generateUsername();
 
             const requestData = {
-                companyName: formData.companyName,
+                companyName: formData.company,
                 firstName,
                 lastName: lastName || firstName,
                 username,
                 email: formData.email || null,
-                phoneNumber: formData.phoneNumber || null,
-                telegramUsername: formData.telegramUsername || null,
+                phoneNumber: formData.phone || null,
+                telegramUsername: formData.telegram || null,
                 ...(studentId && { studentId })
             };
 
-            console.log('Sending request data:', requestData);
+            console.log('Sending application data:', requestData);
 
-            const endpoint = studentId ? '/request' : '/recruiter/create';
+            // Определяем endpoint в зависимости от типа заявки
+            const endpoint = studentId ? 'request/create' : 'recruiter/create';
 
-            // Если у вас есть переменная окружения с URL API
-            const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
-            const url = `${API_BASE_URL}${endpoint}`;
-
-            const response = await fetch(url, {
+            // Отправка через apiClientJson
+            const response = await apiClientJson(endpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify(requestData)
             });
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-            }
-
-            const responseData = await response.json();
-            console.log('Response:', responseData);
+            console.log('Application submitted successfully:', response);
 
             setSuccess(true);
 
+            // Если передан обработчик onSubmit, вызываем его
             if (onSubmit) {
-                await onSubmit(responseData);
+                await onSubmit(requestData);
             }
 
+            // Закрываем форму через 2 секунды после успешной отправки
             setTimeout(() => {
                 onClose();
             }, 2000);
 
         } catch (err) {
             console.error('Application form error:', err);
-            setError(err.message || 'Ошибка при отправке заявки. Попробуйте еще раз.');
+            if (err.message && err.message.includes('HTTP error! status: 401')) {
+                setError('Ошибка авторизации. Пожалуйста, войдите в систему.');
+            } else {
+                setError(err.message || 'Ошибка при отправке заявки. Попробуйте еще раз.');
+            }
         } finally {
             setLoading(false);
         }
@@ -163,12 +160,12 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 ) : (
                     <form onSubmit={handleSubmit} className="applicationForm__form">
                         <div className="applicationForm__field">
-                            <label htmlFor="firstName">Имя Фамилия *</label>
+                            <label htmlFor="name">Имя Фамилия</label>
                             <input
-                                id="firstName"
-                                name="firstName"
+                                id="name"
+                                name="name"
                                 type="text"
-                                value={formData.firstName}
+                                value={formData.name}
                                 onChange={handleChange}
                                 required
                                 disabled={loading}
@@ -177,12 +174,12 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                         </div>
 
                         <div className="applicationForm__field">
-                            <label htmlFor="companyName">Компания или проект *</label>
+                            <label htmlFor="company">Компания или проект</label>
                             <input
-                                id="companyName"
-                                name="companyName"
+                                id="company"
+                                name="company"
                                 type="text"
-                                value={formData.companyName}
+                                value={formData.company}
                                 onChange={handleChange}
                                 required
                                 disabled={loading}
@@ -191,12 +188,12 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                         </div>
 
                         <div className="applicationForm__field">
-                            <label htmlFor="telegramUsername">Телеграм для связи</label>
+                            <label htmlFor="telegram">Телеграмм для связи</label>
                             <input
-                                id="telegramUsername"
-                                name="telegramUsername"
+                                id="telegram"
+                                name="telegram"
                                 type="text"
-                                value={formData.telegramUsername}
+                                value={formData.telegram}
                                 onChange={handleChange}
                                 disabled={loading}
                                 placeholder="@Username"
@@ -217,20 +214,16 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                         </div>
 
                         <div className="applicationForm__field">
-                            <label htmlFor="phoneNumber">Номер телефона</label>
+                            <label htmlFor="phone">Номер телефона</label>
                             <input
-                                id="phoneNumber"
-                                name="phoneNumber"
+                                id="phone"
+                                name="phone"
                                 type="tel"
-                                value={formData.phoneNumber}
+                                value={formData.phone}
                                 onChange={handleChange}
                                 disabled={loading}
                                 placeholder="+7 123 456-78-90"
                             />
-                        </div>
-
-                        <div className="applicationForm__note">
-                            * Обязательные поля
                         </div>
 
                         {error && <div className="applicationForm__error">{error}</div>}
@@ -238,7 +231,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                         <div className="applicationForm__button-container">
                             <button
                                 type="submit"
-                                className={`applicationForm__submit ${success ? 'applicationForm__submit--success' : ''}`}
+                                className="applicationForm__submit"
                                 disabled={loading || success}
                             >
                                 {getButtonText()}
