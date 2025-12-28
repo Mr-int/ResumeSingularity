@@ -6,7 +6,7 @@ import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
-import { getStudentById, getPortfolioByStudentId, getAllInstitutions, getAllExperience, getAllStudents, getPortfolioById } from "../../services/studentApi.js";
+import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience, getAllStudents, getPortfolioById, getExperienceById } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
@@ -51,33 +51,28 @@ const StudentResume = () => {
                 }
 
                 try {
-                    const allInstitutions = await getAllInstitutions();
-                    console.log('All institutions:', allInstitutions);
+                    const allEducation = await getAllEducation();
+                    console.log('All education records:', allEducation);
 
-                    const educationIds = data.education || [];
-                    console.log('Education IDs from student:', educationIds);
+                    const studentEducation = allEducation.filter(edu =>
+                        edu.studentId === parseInt(id) ||
+                        edu.studentId === id ||
+                        (typeof edu.studentId === 'string' && edu.studentId === id.toString())
+                    );
 
-                    if (!Array.isArray(educationIds) || educationIds.length === 0) {
-                        console.log('No education IDs found for student');
+                    console.log('Education for student ID', id, ':', studentEducation);
+
+                    if (!Array.isArray(studentEducation) || studentEducation.length === 0) {
+                        console.log('No education found for student');
                         setEducationDetails([]);
                     } else {
-                        const studentInstitutions = allInstitutions.filter(inst =>
-                            educationIds.some(eduId =>
-                                eduId === inst.id ||
-                                eduId === inst.institutionId ||
-                                (typeof eduId === 'object' && eduId.id === inst.id)
-                            )
-                        );
-
-                        console.log('Filtered institutions for student:', studentInstitutions);
-
-                        const educationWithDetails = studentInstitutions.map(inst => ({
-                            id: inst.id,
-                            ...inst,
-                            name: inst.name || inst.institution || `Учреждение ${inst.id}`,
-                            speciality: inst.speciality,
-                            startDate: inst.startDate,
-                            endDate: inst.endDate
+                        const educationWithDetails = studentEducation.map(edu => ({
+                            id: edu.id,
+                            ...edu,
+                            name: edu.name || edu.institution || edu.institutionName || `Образовательное учреждение`,
+                            speciality: edu.speciality || edu.specialization,
+                            startDate: edu.startDate || edu.startYear,
+                            endDate: edu.endDate || edu.endYear || edu.graduationYear
                         }));
 
                         console.log('Education details:', educationWithDetails);
