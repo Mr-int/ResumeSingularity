@@ -25,7 +25,7 @@ const StudentSlider = () => {
                 const data = await getAllStudents();
                 setStudents(data);
                 if (data.length > 0) {
-                    setActiveCardIndex(0);
+                    setActiveCardIndex(Math.min(2, Math.floor(data.slice(0, 5).length / 2)));
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -41,10 +41,14 @@ const StudentSlider = () => {
         if (listWrapperRef.current && window.innerWidth <= 768) {
             const activeCard = listWrapperRef.current.children[activeCardIndex];
             if (activeCard) {
-                activeCard.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'nearest',
-                    inline: 'center'
+                const containerWidth = listWrapperRef.current.offsetWidth;
+                const cardWidth = activeCard.offsetWidth;
+                const gap = 10;
+                const scrollPosition = activeCardIndex * (cardWidth + gap) - containerWidth / 2 + cardWidth / 2;
+
+                listWrapperRef.current.scrollTo({
+                    left: scrollPosition,
+                    behavior: 'smooth'
                 });
             }
         }
@@ -122,7 +126,7 @@ const StudentSlider = () => {
                 ) : students.length > 0 ? (
                     <>
                         <div className="studentSlider__list">
-                            <button className="studentSlider__listButton" onClick={handlePrevClick}>
+                            <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick}>
                                 <img src={sliderArrowIcon} alt="Предыдущий"/>
                             </button>
 
@@ -137,7 +141,18 @@ const StudentSlider = () => {
                                 ))}
                             </div>
 
-                            <button className="studentSlider__listButton" onClick={handleNextClick}>
+                            <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
+                                <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
+                            </button>
+                        </div>
+
+                        <div className="studentSlider__mobileControls">
+                            <button className="studentSlider__mobileButton" onClick={handlePrevClick}>
+                                <img src={sliderArrowIcon} alt="Предыдущий"/>
+                                <span>Назад</span>
+                            </button>
+                            <button className="studentSlider__mobileButton" onClick={handleNextClick}>
+                                <span>Вперед</span>
                                 <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
                             </button>
                         </div>

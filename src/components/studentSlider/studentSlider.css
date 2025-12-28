@@ -181,6 +181,39 @@
     transform: scaleX(-1);
 }
 
+.studentSlider__mobileControls {
+    display: none;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-top: 10px;
+}
+
+.studentSlider__mobileButton {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: 2px solid #fff;
+    border-radius: 100px;
+    color: #fff;
+    padding: 8px 20px;
+    font-family: 'StratosSkyeng';
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.studentSlider__mobileButton:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.studentSlider__mobileButton img {
+    width: 20px;
+    height: 20px;
+}
+
 .studentSlider__listInfo {
     width: 100%;
     max-width: 1200px;
@@ -487,12 +520,16 @@
         gap: 10px;
         width: max-content;
         justify-content: flex-start;
-        padding: 10px;
+        padding: 10px 50px;
         flex-shrink: 0;
     }
 
-    .studentSlider__listButton {
+    .studentSlider__listButton.desktop-only {
         display: none;
+    }
+
+    .studentSlider__mobileControls {
+        display: flex;
     }
 
     .studentSlider__button {
@@ -569,6 +606,21 @@
 
     .studentSlider__listWrapper {
         gap: 8px;
+        padding: 10px 40px;
+    }
+
+    .studentSlider__mobileControls {
+        gap: 20px;
+    }
+
+    .studentSlider__mobileButton {
+        padding: 6px 16px;
+        font-size: 14px;
+    }
+
+    .studentSlider__mobileButton img {
+        width: 18px;
+        height: 18px;
     }
 
     .studentSlider__listInfo {
@@ -603,6 +655,22 @@
 
     .studentSlider__listWrapper {
         gap: 6px;
+        padding: 10px 30px;
+    }
+
+    .studentSlider__mobileControls {
+        gap: 15px;
+    }
+
+    .studentSlider__mobileButton {
+        padding: 5px 14px;
+        font-size: 13px;
+        gap: 8px;
+    }
+
+    .studentSlider__mobileButton img {
+        width: 16px;
+        height: 16px;
     }
 
     .studentSlider__button {
@@ -662,6 +730,22 @@
 
     .studentSlider__listWrapper {
         gap: 5px;
+        padding: 10px 25px;
+    }
+
+    .studentSlider__mobileControls {
+        gap: 10px;
+    }
+
+    .studentSlider__mobileButton {
+        padding: 4px 12px;
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .studentSlider__mobileButton img {
+        width: 14px;
+        height: 14px;
     }
 
     .studentSlider__listInfo {
@@ -685,9 +769,28 @@
         font-size: 15px;
     }
 
+    .studentSlider__listWrapper {
+        padding: 10px 20px;
+    }
+
+    .studentSlider__mobileButton {
+        padding: 3px 10px;
+        font-size: 11px;
+    }
+
     .studentSlider__button {
         width: 180px;
         height: 32px;
         font-size: 13px;
+    }
+}
+
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
     }
 }
