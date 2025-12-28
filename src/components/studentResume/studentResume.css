@@ -232,8 +232,7 @@
 
 .StudentResume__expandableHeader {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     cursor: pointer;
     padding: 20px 0;
     transition: opacity 0.3s;
@@ -253,10 +252,10 @@
 
 .StudentResume__expandableArrow {
     display: inline-block;
-    width: 28px;
-    height: 28px;
-    border-right: 4px solid #fff;
-    border-bottom: 4px solid #fff;
+    width: 22px;
+    height: 22px;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
     transform: rotate(45deg);
     transition: transform 0.3s;
     margin-left: 15px;
@@ -296,7 +295,7 @@
 }
 
 .StudentResume__expandableContent p {
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1.7;
     margin: 0;
     color: #ccc;
@@ -521,7 +520,9 @@
 }
 
 .StudentResume__experienceInfo {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .StudentResume__experiencePosition {
