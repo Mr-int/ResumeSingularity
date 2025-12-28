@@ -1,8 +1,11 @@
 import React from "react";
 import './studentSliderCard.css';
-import test from "../../../assets/other/test.png"
-import javaIcon from "../../../assets/other/java.png"
+import test from "../../../assets/other/test.png";
+import javaIcon from "../../../assets/other/java.png";
 import course4 from "../../../assets/other/course4.png";
+import course3 from "../../../assets/other/thirdCourse.png";
+import course2 from "../../../assets/other/secondCourse.png";
+import course1 from "../../../assets/other/firstCourse.png";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -31,7 +34,24 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         return `${baseUrl}/${studentId}.jpg`;
     };
 
-    const imageSrc = getStudentImageUrl(student);
+    const getCourseImage = (course) => {
+        switch (course) {
+            case 'FIRST':
+            case '1':
+                return course1;
+            case 'SECOND':
+            case '2':
+                return course2;
+            case 'THIRD':
+            case '3':
+                return course3;
+            case 'FOURTH':
+            case '4':
+                return course4;
+            default:
+                return course4;
+        }
+    };
 
     const getCourseText = (course) => {
         const courseMap = {
@@ -39,9 +59,16 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
             'SECOND': '2 курс',
             'THIRD': '3 курс',
             'FOURTH': '4 курс',
+            '1': '1 курс',
+            '2': '2 курс',
+            '3': '3 курс',
+            '4': '4 курс',
         };
         return courseMap[course] || 'курс';
     };
+
+    const imageSrc = getStudentImageUrl(student);
+    const courseImage = getCourseImage(student.course);
 
     const handleClick = (e) => {
         if (onClick) {
@@ -60,7 +87,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
 
                 {isActive && (
                     <div className="student-slider-card__course">
-                        <img src={course4} className="student-slider-card__courseIco" alt=""/>
+                        <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
                         <span>{getCourseText(student.course)}</span>
                     </div>
                 )}

@@ -3,6 +3,9 @@ import test from "../../../assets/other/test.png";
 import { Link } from "react-router-dom";
 import './studentsListCard.css';
 import course4 from "../../../assets/other/course4.png";
+import course3 from "../../../assets/other/thirdCourse.png";
+import course2 from "../../../assets/other/secondCourse.png";
+import course1 from "../../../assets/other/firstCourse.png";
 
 const StudentsListCard = ({ student }) => {
     const [showFullBio, setShowFullBio] = useState(false);
@@ -30,8 +33,28 @@ const StudentsListCard = ({ student }) => {
         return `${baseUrl}/${studentId}.jpg`;
     };
 
+    const getCourseImage = (course) => {
+        switch (course) {
+            case 'FIRST':
+            case '1':
+                return course1;
+            case 'SECOND':
+            case '2':
+                return course2;
+            case 'THIRD':
+            case '3':
+                return course3;
+            case 'FOURTH':
+            case '4':
+                return course4;
+            default:
+                return course4;
+        }
+    };
+
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
     const imageSrc = getStudentImageUrl(student);
+    const courseImage = getCourseImage(student.course);
 
     const isBioTruncated = student.bio && student.bio.length > 150;
     const bioPreview = student.bio
@@ -52,7 +75,7 @@ const StudentsListCard = ({ student }) => {
                 <div className="studentsCard__header">
                     <h2 className="studentsCard__title">
                         {fullName}
-                        <img className="course4" src={course4} alt=""/>
+                        <img className="course4" src={courseImage} alt=""/>
                     </h2>
                     <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
                 </div>
