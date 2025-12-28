@@ -11,12 +11,13 @@ import { Link } from "react-router-dom";
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
-    const [activeCardIndex, setActiveCardIndex] = useState(0);
+    const [activeCardIndex, setActiveCardIndex] = useState(2);
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
+    const containerRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -25,7 +26,8 @@ const StudentSlider = () => {
                 const data = await getAllStudents();
                 setStudents(data);
                 if (data.length > 0) {
-                    setActiveCardIndex(Math.min(2, Math.floor(data.slice(0, 5).length / 2)));
+                    const middleIndex = Math.min(2, Math.floor(data.slice(0, 5).length / 2));
+                    setActiveCardIndex(middleIndex);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -38,20 +40,33 @@ const StudentSlider = () => {
     }, []);
 
     useEffect(() => {
-        if (listWrapperRef.current && window.innerWidth <= 768) {
-            const activeCard = listWrapperRef.current.children[activeCardIndex];
-            if (activeCard) {
-                const containerWidth = listWrapperRef.current.offsetWidth;
-                const cardWidth = activeCard.offsetWidth;
-                const gap = 10;
-                const scrollPosition = activeCardIndex * (cardWidth + gap) - containerWidth / 2 + cardWidth / 2;
+        const updateActiveCardPosition = () => {
+            if (window.innerWidth <= 768 && listWrapperRef.current && containerRef.current) {
+                const containerWidth = containerRef.current.offsetWidth;
+                const cards = listWrapperRef.current.children;
 
-                listWrapperRef.current.scrollTo({
-                    left: scrollPosition,
-                    behavior: 'smooth'
-                });
+                if (cards.length > 0 && activeCardIndex < cards.length) {
+                    const activeCard = cards[activeCardIndex];
+                    const cardWidth = activeCard.offsetWidth;
+                    const gap = 10;
+                    const scrollPosition = activeCardIndex * (cardWidth + gap) - containerWidth / 2 + cardWidth / 2;
+
+                    listWrapperRef.current.scrollTo({
+                        left: scrollPosition,
+                        behavior: 'smooth'
+                    });
+                }
             }
-        }
+        };
+
+        updateActiveCardPosition();
+
+        const handleResize = () => {
+            updateActiveCardPosition();
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, [activeCardIndex]);
 
     const handleSearchChange = (e) => {
@@ -125,7 +140,7 @@ const StudentSlider = () => {
                     <p style={{color: '#fff'}}>Загрузка студентов...</p>
                 ) : students.length > 0 ? (
                     <>
-                        <div className="studentSlider__list">
+                        <div className="studentSlider__list" ref={containerRef}>
                             <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick}>
                                 <img src={sliderArrowIcon} alt="Предыдущий"/>
                             </button>
@@ -147,12 +162,10 @@ const StudentSlider = () => {
                         </div>
 
                         <div className="studentSlider__mobileControls">
-                            <button className="studentSlider__mobileButton" onClick={handlePrevClick}>
+                            <button className="studentSlider__mobileButton prev" onClick={handlePrevClick}>
                                 <img src={sliderArrowIcon} alt="Предыдущий"/>
-                                <span>Назад</span>
                             </button>
-                            <button className="studentSlider__mobileButton" onClick={handleNextClick}>
-                                <span>Вперед</span>
+                            <button className="studentSlider__mobileButton next" onClick={handleNextClick}>
                                 <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
                             </button>
                         </div>

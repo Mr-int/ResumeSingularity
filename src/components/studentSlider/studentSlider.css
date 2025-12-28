@@ -186,21 +186,19 @@
     width: 100%;
     justify-content: center;
     align-items: center;
-    gap: 30px;
+    gap: 50px;
     margin-top: 10px;
 }
 
 .studentSlider__mobileButton {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    width: 45px;
+    height: 45px;
     background: none;
     border: 2px solid #fff;
-    border-radius: 100px;
-    color: #fff;
-    padding: 8px 20px;
-    font-family: 'StratosSkyeng';
-    font-size: 16px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
     transition: all 0.3s ease;
 }
@@ -510,6 +508,7 @@
         -ms-overflow-style: none;
         padding-bottom: 10px;
         justify-content: flex-start;
+        position: relative;
     }
 
     .studentSlider__list::-webkit-scrollbar {
@@ -520,8 +519,9 @@
         gap: 10px;
         width: max-content;
         justify-content: flex-start;
-        padding: 10px 50px;
+        padding: 10px calc(50% - 80px);
         flex-shrink: 0;
+        margin: 0 auto;
     }
 
     .studentSlider__listButton.desktop-only {
@@ -606,16 +606,17 @@
 
     .studentSlider__listWrapper {
         gap: 8px;
-        padding: 10px 40px;
+        padding: 10px calc(50% - 70px);
     }
 
     .studentSlider__mobileControls {
-        gap: 20px;
+        gap: 40px;
+        margin-top: 15px;
     }
 
     .studentSlider__mobileButton {
-        padding: 6px 16px;
-        font-size: 14px;
+        width: 40px;
+        height: 40px;
     }
 
     .studentSlider__mobileButton img {
@@ -655,17 +656,16 @@
 
     .studentSlider__listWrapper {
         gap: 6px;
-        padding: 10px 30px;
+        padding: 10px calc(50% - 65px);
     }
 
     .studentSlider__mobileControls {
-        gap: 15px;
+        gap: 30px;
     }
 
     .studentSlider__mobileButton {
-        padding: 5px 14px;
-        font-size: 13px;
-        gap: 8px;
+        width: 38px;
+        height: 38px;
     }
 
     .studentSlider__mobileButton img {
@@ -730,17 +730,16 @@
 
     .studentSlider__listWrapper {
         gap: 5px;
-        padding: 10px 25px;
+        padding: 10px calc(50% - 60px);
     }
 
     .studentSlider__mobileControls {
-        gap: 10px;
+        gap: 25px;
     }
 
     .studentSlider__mobileButton {
-        padding: 4px 12px;
-        font-size: 12px;
-        gap: 6px;
+        width: 35px;
+        height: 35px;
     }
 
     .studentSlider__mobileButton img {
@@ -770,12 +769,21 @@
     }
 
     .studentSlider__listWrapper {
-        padding: 10px 20px;
+        padding: 10px calc(50% - 60px);
+    }
+
+    .studentSlider__mobileControls {
+        gap: 20px;
     }
 
     .studentSlider__mobileButton {
-        padding: 3px 10px;
-        font-size: 11px;
+        width: 32px;
+        height: 32px;
+    }
+
+    .studentSlider__mobileButton img {
+        width: 12px;
+        height: 12px;
     }
 
     .studentSlider__button {
