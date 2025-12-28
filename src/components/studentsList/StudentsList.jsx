@@ -9,6 +9,9 @@ const StudentsList = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchExpanded, setSearchExpanded] = useState(false);
+    const [filterExpanded, setFilterExpanded] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -25,13 +28,48 @@ const StudentsList = () => {
         };
 
         fetchStudents();
+
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 600);
+            if (window.innerWidth > 600) {
+                setSearchExpanded(false);
+                setFilterExpanded(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    const handleSearchClick = () => {
+        if (isMobile) {
+            setSearchExpanded(!searchExpanded);
+            if (!searchExpanded) {
+                setFilterExpanded(false);
+            }
+        }
+    };
+
+    const handleFilterClick = () => {
+        if (isMobile) {
+            setFilterExpanded(!filterExpanded);
+            if (!filterExpanded) {
+                setSearchExpanded(false);
+            }
+        }
+    };
+
+    const handleSearchBlur = () => {
+        if (isMobile && searchExpanded) {
+            setSearchExpanded(false);
+        }
+    };
 
     if (loading) {
         return (
             <section className="studentsList-section">
                 <div className="studentsList">
-                    <p>Загрузка студентов...</p>
+                    <p style={{color: '#fff', textAlign: 'center'}}>Загрузка студентов...</p>
                 </div>
             </section>
         );
@@ -41,7 +79,7 @@ const StudentsList = () => {
         return (
             <section className="studentsList-section">
                 <div className="studentsList">
-                    <p>Ошибка загрузки: {error}</p>
+                    <p style={{color: '#fff', textAlign: 'center'}}>Ошибка загрузки: {error}</p>
                 </div>
             </section>
         );
@@ -51,24 +89,34 @@ const StudentsList = () => {
         <section className="studentsList-section">
             <div className="studentsList">
                 <header className="studentsList__header">
-                    <h2 className="studentsList__title">Студенты</h2>
+                    <div className="studentsList__top-row">
+                        <h2 className="studentsList__title">Студенты</h2>
 
-                    <div className="studentsList__search-wrapper">
-                        <div className="studentsList__search-icon">
-                            <img src={searchIcon} alt="search"/>
+                        <div
+                            className={`studentsList__search-wrapper ${searchExpanded ? 'expanded' : ''}`}
+                            onClick={handleSearchClick}
+                        >
+                            <div className="studentsList__search-icon">
+                                <img src={searchIcon} alt="search"/>
+                            </div>
+
+                            <input
+                                type="text"
+                                className="studentsList__search"
+                                placeholder="Профессия / Стэк ..."
+                                onBlur={handleSearchBlur}
+                                autoFocus={searchExpanded}
+                            />
                         </div>
 
-                        <input
-                            type="text"
-                            className="studentsList__search"
-                            placeholder="Профессия / Стэк ..."
-                        />
+                        <button
+                            className={`studentsList__filter ${filterExpanded ? 'expanded' : ''}`}
+                            onClick={handleFilterClick}
+                        >
+                            <img src={filterIcon} alt="filter"/>
+                            <span>Фильтр</span>
+                        </button>
                     </div>
-
-                    <button className="studentsList__filter">
-                        Фильтр
-                        <img src={filterIcon} alt=" "/>
-                    </button>
                 </header>
 
                 <div className="studentsList__cardsWrapper">
@@ -77,7 +125,7 @@ const StudentsList = () => {
                             <StudentsListCard key={student.id} student={student} />
                         ))
                     ) : (
-                        <p>Студенты не найдены</p>
+                        <p style={{color: '#fff'}}>Студенты не найдены</p>
                     )}
                 </div>
             </div>
