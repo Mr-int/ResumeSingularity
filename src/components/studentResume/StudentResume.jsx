@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
-import face from "../../assets/other/test.png";
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
