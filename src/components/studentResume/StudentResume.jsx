@@ -24,7 +24,6 @@ const StudentResume = () => {
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
 
-    // Массив фоновых изображений для портфолио
     const portfolioBackgrounds = [BehindOrange, BehindPink, BehindBlue];
 
     useEffect(() => {
@@ -40,7 +39,6 @@ const StudentResume = () => {
                 const data = await getStudentById(id);
                 setStudent(data);
 
-                // Fetch portfolio projects
                 try {
                     const portfolioData = await getPortfolioByStudentId(id);
                     setPortfolio(portfolioData || []);
@@ -49,7 +47,6 @@ const StudentResume = () => {
                     setPortfolio([]);
                 }
 
-                // Fetch education details using IDs from student data
                 try {
                     if (data.education && Array.isArray(data.education) && data.education.length > 0) {
                         console.log('[StudentResume] Student education IDs:', data.education);
@@ -82,7 +79,6 @@ const StudentResume = () => {
                     setEducationDetails([]);
                 }
 
-                // Fetch experience details using IDs from student data
                 try {
                     if (data.experience && Array.isArray(data.experience) && data.experience.length > 0) {
                         console.log('[StudentResume] Student experience IDs:', data.experience);
@@ -115,7 +111,6 @@ const StudentResume = () => {
                     setExperienceDetails([]);
                 }
 
-                // Fetch similar students (exclude current student)
                 try {
                     const allStudents = await getAllStudents();
                     const similar = allStudents
@@ -157,7 +152,6 @@ const StudentResume = () => {
         return age;
     };
 
-    // Функция для получения случайного фона портфолио
     const getRandomPortfolioBackground = (index) => {
         return portfolioBackgrounds[index % portfolioBackgrounds.length];
     };
@@ -255,34 +249,25 @@ const StudentResume = () => {
                                 <div className="StudentResume__portfolio">
                                     {portfolio && portfolio.length > 0 ? (
                                         portfolio.map((project, index) => (
-                                            <div
+                                            <a
                                                 key={project.id || index}
+                                                href={project.link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
                                                 className="StudentResume__portfolioItem"
                                                 style={{
                                                     backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
-                                                    backgroundSize: 'cover',
-                                                    backgroundPosition: 'center'
                                                 }}
                                             >
-                                                {project.name && (
-                                                    <div className="StudentResume__portfolioContent">
+                                                <div className="StudentResume__portfolioContent">
+                                                    {project.name && (
                                                         <p className="StudentResume__portfolioTitle">{project.name}</p>
-                                                        {project.description && (
-                                                            <p className="StudentResume__portfolioDescription">{project.description}</p>
-                                                        )}
-                                                        {project.link && (
-                                                            <a
-                                                                href={project.link}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="StudentResume__portfolioLink"
-                                                            >
-                                                                Ссылка на проект →
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
+                                                    )}
+                                                    {project.description && (
+                                                        <p className="StudentResume__portfolioDescription">{project.description}</p>
+                                                    )}
+                                                </div>
+                                            </a>
                                         ))
                                     ) : (
                                         <div className="StudentResume__portfolioItem" style={{ backgroundImage: `url(${getRandomPortfolioBackground(0)})` }}>
@@ -305,7 +290,6 @@ const StudentResume = () => {
                     </div>
                 </div>
 
-                {/* Остальной код без изменений */}
                 <div className="StudentResume__additionalSections">
                     <div className="StudentResume__expandableSection">
                         <div className="StudentResume__expandableHeader" onClick={toggleExperience}>

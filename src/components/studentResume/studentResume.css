@@ -185,14 +185,19 @@
     justify-content: center;
     transition: all 0.3s ease;
     cursor: pointer;
+    text-decoration: none;
+    background-size: cover;
+    background-position: center center;
+}
+
+.StudentResume__portfolioItem:hover {
+    transform: scale(1.02);
 }
 
 .StudentResume__portfolioContent {
     position: relative;
     z-index: 2;
-    padding: 25px;
     border-radius: 10px;
-    text-align: center;
     width: 90%;
     height: 90%;
     display: flex;
@@ -214,18 +219,6 @@
     font-size: 14px;
     margin: 0;
     line-height: 1.4;
-}
-
-.StudentResume__portfolioLink {
-    color: #bdf7ff;
-    font-size: 14px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s;
-}
-
-.StudentResume__portfolioLink:hover {
-    color: #fff;
 }
 
 .StudentResume__additionalSections {
@@ -349,10 +342,9 @@
 
 .StudentResume__contactInfo {
     flex: 1;
-    background: rgba(255, 255, 255, 0.1);
+    background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat;
     border-radius: 15px;
     padding: 30px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -440,7 +432,6 @@
     }
 }
 
-/* АДАПТИВ */
 @media (max-width: 1200px) {
     .StudentResume__mainContent {
         width: 95%;
