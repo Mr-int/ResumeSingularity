@@ -1,3 +1,4 @@
+// StudentResume.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
@@ -75,9 +76,7 @@ const StudentResume = () => {
                 }
 
                 try {
-                    console.log('Запрос опыта работы по ID студента:', id);
                     const response = await getExperienceByStudentId(id);
-                    console.log('Ответ от /experience/aboutGetByStudentId/{id}:', response);
 
                     if (response && response.companyExperiences && Array.isArray(response.companyExperiences)) {
                         const formattedExperience = response.companyExperiences.map((item, index) => {
@@ -95,14 +94,11 @@ const StudentResume = () => {
                             };
                         });
 
-                        console.log('Форматированные данные опыта работы:', formattedExperience);
                         setExperienceDetails(formattedExperience);
                     } else {
-                        console.log('Нет данных опыта работы или неверный формат');
                         setExperienceDetails([]);
                     }
                 } catch (err) {
-                    console.error('Ошибка при получении опыта работы:', err);
                     setExperienceDetails([]);
                 }
 
@@ -196,7 +192,7 @@ const StudentResume = () => {
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
     const imageSrc = getStudentImageUrl(student);
     const age = calculateAge(student.birthDate);
-    const ageText = age ? `${age}лет` : '';
+    const ageText = age ? `${age} лет` : '';
 
     return (
         <section className="StudentResume">
@@ -225,7 +221,7 @@ const StudentResume = () => {
 
                             <div className="StudentResume__flexInfo">
                                 {ageText && <span>{ageText}</span>}
-                                {student.city && <span>г.{student.city}</span>}
+                                {student.city && <span>г. {student.city}</span>}
                                 {student.hhLink && (
                                     <span>
                                         <a href={student.hhLink} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -407,7 +403,7 @@ const StudentResume = () => {
                     <h2 className="StudentResume__contactTitle">Свяжитесь со студентом</h2>
                     <div className="StudentResume__contactContent">
                         <div className="StudentResume__contactSlider">
-                            {student && <StudentSliderCard student={student} />}
+                            {student && <StudentSliderCard student={student} isActive={true} />}
                         </div>
                         <div className="StudentResume__contactInfo">
                             <div className="StudentResume__sunIcon"><img src={sunIcon} alt=""/></div>
@@ -431,7 +427,7 @@ const StudentResume = () => {
                                     className="StudentResume__similarLink"
                                     style={{ textDecoration: 'none', color: 'inherit' }}
                                 >
-                                    <StudentSliderCard student={similarStudent} />
+                                    <StudentSliderCard student={similarStudent} isActive={false} />
                                 </Link>
                             ))}
                         </div>

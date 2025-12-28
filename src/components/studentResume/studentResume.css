@@ -77,7 +77,6 @@
 
 .StudentResume__personName {
     color: #fff;
-    margin-top: 20px;
     flex: 1;
 }
 
@@ -170,15 +169,34 @@
 }
 
 .StudentResume__portfolio {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    display: flex;
     gap: 25px;
     min-height: 200px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #4655FF #000;
+}
+
+.StudentResume__portfolio::-webkit-scrollbar {
+    height: 8px;
+}
+
+.StudentResume__portfolio::-webkit-scrollbar-track {
+    background: #000;
+    border-radius: 4px;
+}
+
+.StudentResume__portfolio::-webkit-scrollbar-thumb {
+    background: #4655FF;
+    border-radius: 4px;
 }
 
 .StudentResume__portfolioItem {
     position: relative;
     height: 200px;
+    width: 300px;
+    min-width: 300px;
     border-radius: 15px;
     overflow: hidden;
     display: flex;
@@ -188,6 +206,7 @@
     cursor: pointer;
     text-decoration: none;
     background-size: cover;
+    flex-shrink: 0;
 }
 
 .StudentResume__portfolioItem:hover {
@@ -405,7 +424,7 @@
 .StudentResume__sunIcon img {
     position: absolute;
     left: -8%;
-    top: -8%;
+    top: -12%;
 }
 
 .StudentResume__contactDetails {
@@ -447,10 +466,27 @@
 }
 
 .StudentResume__similarList {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    display: flex;
     gap: 30px;
     width: 100%;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #4655FF #000;
+}
+
+.StudentResume__similarList::-webkit-scrollbar {
+    height: 8px;
+}
+
+.StudentResume__similarList::-webkit-scrollbar-track {
+    background: #000;
+    border-radius: 4px;
+}
+
+.StudentResume__similarList::-webkit-scrollbar-thumb {
+    background: #4655FF;
+    border-radius: 4px;
 }
 
 .StudentResume__similarLink {
@@ -459,6 +495,8 @@
     transition: transform 0.3s;
     display: block;
     cursor: pointer;
+    flex-shrink: 0;
+    min-width: 200px;
 }
 
 .StudentResume__similarLink:hover {
@@ -626,11 +664,6 @@
     .StudentResume__mainContent {
         width: 95%;
     }
-
-    .StudentResume__portfolio {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 20px;
-    }
 }
 
 @media (max-width: 1024px) {
@@ -695,15 +728,6 @@
         font-size: 28px;
     }
 
-    .StudentResume__portfolio {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .StudentResume__portfolioItem {
-        height: 180px;
-    }
-
     .StudentResume__contactContent {
         flex-direction: column;
         gap: 40px;
@@ -720,9 +744,8 @@
         font-size: 36px;
     }
 
-    .StudentResume__similarList {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 20px;
+    .StudentResume__similarLink {
+        min-width: 180px;
     }
 }
 
@@ -793,13 +816,9 @@
         font-size: 26px;
     }
 
-    .StudentResume__portfolio {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
     .StudentResume__portfolioItem {
         height: 160px;
+        min-width: 280px;
     }
 
     .StudentResume__portfolioContent {
@@ -836,9 +855,8 @@
         min-height: 200px;
     }
 
-    .StudentResume__similarList {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 15px;
+    .StudentResume__similarLink {
+        min-width: 150px;
     }
 
     .StudentResume__educationItem {
@@ -891,6 +909,7 @@
 
     .StudentResume__portfolioItem {
         height: 140px;
+        min-width: 240px;
     }
 
     .StudentResume__portfolioContent {
