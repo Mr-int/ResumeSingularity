@@ -256,18 +256,23 @@
 
 @media (max-width: 768px) {
     .studentsCard {
-        height: 300px;
-        padding: 10px;
-        gap: 12px;
+        flex-direction: column;
+        height: auto;
+        min-height: 500px;
+        padding: 20px;
+        gap: 15px;
     }
 
     .studentsCard__image {
-        width: 180px;
-        border-radius: 12px;
+        width: 100%;
+        height: 250px;
+        border-radius: 15px;
     }
 
     .studentsCard__content {
-        padding: 8px 12px 12px 0;
+        padding: 0;
+        flex: 0 0 auto;
+        height: auto;
     }
 
     .studentsCard__header {
@@ -275,8 +280,78 @@
     }
 
     .studentsCard__title {
+        font-size: 24px;
+        gap: 10px;
+        flex-wrap: wrap;
+        white-space: normal;
+    }
+
+    .studentsCard__subtitle {
+        font-size: 16px;
+        white-space: normal;
+    }
+
+    .studentsCard__skills {
+        margin-bottom: 15px;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .skill-tag {
+        font-size: 14px;
+        padding: 4px 8px;
+        height: 22px;
+    }
+
+    .studentsCard__description {
+        margin-bottom: 20px;
+    }
+
+    .studentsCard__description p {
+        font-size: 16px;
+        -webkit-line-clamp: 4;
+        max-height: none;
+        white-space: normal;
+    }
+
+    .studentsCard__button {
+        width: 100%;
+        max-width: 300px;
+        height: 45px;
+        font-size: 18px;
+        margin-top: auto;
+        align-self: center;
+    }
+
+    .course4 {
+        height: 28px;
+    }
+}
+
+@media (max-width: 576px) {
+    .studentsCard {
+        min-height: 450px;
+        padding: 15px;
+        gap: 12px;
+        border-radius: 15px;
+    }
+
+    .studentsCard__image {
+        height: 200px;
+        border-radius: 10px;
+    }
+
+    .studentsCard__content {
+        padding: 0;
+    }
+
+    .studentsCard__header {
+        margin-bottom: 12px;
+    }
+
+    .studentsCard__title {
         font-size: 20px;
-        gap: 6px;
+        gap: 8px;
     }
 
     .studentsCard__subtitle {
@@ -285,7 +360,7 @@
 
     .studentsCard__skills {
         gap: 6px;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
     }
 
     .skill-tag {
@@ -297,14 +372,15 @@
 
     .studentsCard__description p {
         font-size: 15px;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 4;
+        line-height: 1.4;
     }
 
     .studentsCard__button {
-        width: 200px;
-        height: 38px;
-        font-size: 18px;
-        letter-spacing: 0.5px;
+        max-width: 250px;
+        height: 42px;
+        font-size: 16px;
+        border-width: 1.5px;
     }
 
     .course4 {
@@ -312,30 +388,20 @@
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
     .studentsCard {
-        height: 280px;
-        border-radius: 15px;
-        padding: 8px;
+        min-height: 400px;
+        padding: 12px;
         gap: 10px;
     }
 
     .studentsCard__image {
-        width: 140px;
-        border-radius: 10px;
-    }
-
-    .studentsCard__content {
-        padding: 5px 10px 10px 0;
-    }
-
-    .studentsCard__header {
-        margin-bottom: 12px;
+        height: 180px;
     }
 
     .studentsCard__title {
         font-size: 18px;
-        gap: 5px;
+        gap: 6px;
     }
 
     .studentsCard__subtitle {
@@ -351,19 +417,18 @@
         font-size: 12px;
         padding: 2px 5px;
         height: 18px;
-        border-radius: 10px;
     }
 
     .studentsCard__description p {
         font-size: 14px;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 4;
     }
 
     .studentsCard__button {
-        width: 180px;
-        height: 36px;
-        font-size: 16px;
-        border-width: 1.5px;
+        max-width: 220px;
+        height: 40px;
+        font-size: 15px;
+        letter-spacing: 0.5px;
     }
 
     .course4 {
@@ -371,25 +436,21 @@
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 400px) {
     .studentsCard {
-        height: 250px;
-        padding: 6px;
+        min-height: 380px;
+        padding: 10px;
         gap: 8px;
     }
 
     .studentsCard__image {
-        width: 120px;
+        height: 160px;
         border-radius: 8px;
     }
 
-    .studentsCard__content {
-        padding: 4px 8px 8px 0;
-    }
-
     .studentsCard__title {
-        font-size: 16px;
-        gap: 4px;
+        font-size: 17px;
+        gap: 5px;
     }
 
     .studentsCard__subtitle {
@@ -399,7 +460,6 @@
     .studentsCard__skills {
         gap: 4px;
         margin-bottom: 8px;
-        max-height: 50px;
     }
 
     .skill-tag {
@@ -410,14 +470,13 @@
 
     .studentsCard__description p {
         font-size: 13px;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 4;
     }
 
     .studentsCard__button {
-        width: 160px;
-        height: 34px;
+        max-width: 200px;
+        height: 38px;
         font-size: 14px;
-        letter-spacing: 0;
     }
 
     .course4 {
@@ -425,78 +484,26 @@
     }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 360px) {
     .studentsCard {
-        height: 230px;
-        padding: 5px;
-        gap: 6px;
+        min-height: 350px;
     }
 
     .studentsCard__image {
-        width: 100px;
-        border-radius: 6px;
-    }
-
-    .studentsCard__content {
-        padding: 3px 6px 6px 0;
+        height: 140px;
     }
 
     .studentsCard__title {
-        font-size: 15px;
-        gap: 3px;
-    }
-
-    .studentsCard__subtitle {
-        font-size: 11px;
-    }
-
-    .studentsCard__skills {
-        gap: 3px;
-        margin-bottom: 6px;
-    }
-
-    .skill-tag {
-        font-size: 10px;
-        padding: 1px 3px;
-        height: 15px;
-    }
-
-    .studentsCard__description p {
-        font-size: 12px;
-        -webkit-line-clamp: 3;
+        font-size: 16px;
     }
 
     .studentsCard__button {
-        width: 140px;
-        height: 32px;
+        max-width: 180px;
+        height: 36px;
         font-size: 13px;
     }
 
     .course4 {
         height: 18px;
-    }
-}
-
-@media (max-width: 360px) {
-    .studentsCard {
-        height: 210px;
-    }
-
-    .studentsCard__image {
-        width: 90px;
-    }
-
-    .studentsCard__title {
-        font-size: 14px;
-    }
-
-    .studentsCard__button {
-        width: 130px;
-        height: 30px;
-        font-size: 12px;
-    }
-
-    .course4 {
-        height: 16px;
     }
 }

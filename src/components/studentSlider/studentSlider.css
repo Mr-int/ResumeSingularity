@@ -146,16 +146,26 @@
     align-items: center;
     gap: 35px;
     width: 100%;
-    overflow: hidden;
+    position: relative;
 }
 
 .studentSlider__listWrapper {
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 25px;
     transition: all 0.3s ease;
+    padding: 10px 0;
+    width: 100%;
+    overflow: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.studentSlider__listWrapper::-webkit-scrollbar {
+    display: none;
 }
 
 .studentSlider__listButton {
@@ -171,6 +181,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     z-index: 4;
+    position: relative;
 }
 
 .studentSlider__listButton:hover {
@@ -187,6 +198,7 @@
     border: 1px solid #fff;
     border-radius: 22px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 .studentSlider__button {
@@ -410,6 +422,15 @@
 
     .studentSlider__listWrapper {
         gap: 15px;
+        overflow-x: auto;
+        justify-content: flex-start;
+        scroll-snap-type: x mandatory;
+        padding: 10px calc(50% - 135px);
+    }
+
+    .studentSlider__listWrapper > * {
+        scroll-snap-align: center;
+        flex-shrink: 0;
     }
 
     .studentSlider__listButton {
@@ -479,13 +500,8 @@
         width: 100%;
         overflow-x: auto;
         justify-content: flex-start;
-        padding: 10px;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .studentSlider__listWrapper::-webkit-scrollbar {
-        display: none;
+        padding: 10px calc(50% - 90px);
+        scroll-snap-type: x mandatory;
     }
 
     .studentSlider__listButton {
@@ -565,6 +581,7 @@
 
     .studentSlider__listWrapper {
         gap: 8px;
+        padding: 10px calc(50% - 75px);
     }
 
     .studentSlider__listInfo {
@@ -599,6 +616,7 @@
 
     .studentSlider__listWrapper {
         gap: 6px;
+        padding: 10px calc(50% - 70px);
     }
 
     .studentSlider__button {
@@ -658,6 +676,7 @@
 
     .studentSlider__listWrapper {
         gap: 5px;
+        padding: 10px calc(50% - 65px);
     }
 
     .studentSlider__listInfo {
@@ -679,6 +698,10 @@
 
     .studentSlider__title {
         font-size: 15px;
+    }
+
+    .studentSlider__listWrapper {
+        padding: 10px calc(50% - 60px);
     }
 
     .studentSlider__button {
