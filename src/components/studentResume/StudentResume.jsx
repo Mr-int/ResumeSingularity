@@ -377,9 +377,6 @@ const StudentResume = () => {
                                                     {edu.speciality && (
                                                         <p className="StudentResume__educationSpeciality">{edu.speciality}</p>
                                                     )}
-                                                    {edu.additionalInfo && (
-                                                        <p className="StudentResume__educationAdditional">{edu.additionalInfo}</p>
-                                                    )}
                                                     {edu.webUrl && (
                                                         <a
                                                             href={edu.webUrl}
