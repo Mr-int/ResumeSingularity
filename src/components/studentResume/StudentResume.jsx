@@ -335,7 +335,7 @@ const StudentResume = () => {
                                                         <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
                                                     )}
                                                     {exp.description && (
-                                                        <p className="StudentResume__experienceDescription" style={{whiteSpace: 'pre-line'}}>{exp.description}</p>
+                                                        <p className="StudentResume__experienceDescription">{exp.description}</p>
                                                     )}
                                                 </div>
                                             </div>

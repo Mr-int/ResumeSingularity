@@ -522,7 +522,6 @@
 
 .StudentResume__experienceInfo {
     flex: 1;
-    padding-bottom: 20px;
 }
 
 .StudentResume__experiencePosition {
@@ -535,7 +534,6 @@
 
 .StudentResume__experienceCompany {
     font-size: 32px;
-    color: #bdf7ff;
     margin-bottom: 10px;
     font-weight: 500;
 }
@@ -545,7 +543,6 @@
     color: #ccc;
     margin-bottom: 10px;
     line-height: 1.4;
-    white-space: pre-line;
 }
 
 @keyframes fadeIn {
