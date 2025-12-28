@@ -8,7 +8,8 @@
     gap: 20px;
     color: white;
     font-family: "Sansation", sans-serif;
-
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .studentsCard__image {
@@ -24,45 +25,70 @@
     display: flex;
     flex-direction: column;
     padding: 15px 20px 20px 0;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .studentsCard__header {
     margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .studentsCard__title {
-    /*изменить потом*/
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
     gap: 12px;
-    /*изменить потом*/
     font-family: 'StratosSkyeng';
     font-size: 28px;
     font-weight: 400;
     margin: 0 0 8px 0;
     color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .studentsCard__subtitle {
     font-size: 18px;
     margin: 0;
     color: #ccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .studentsCard__skills {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    flex-shrink: 0;
+    max-height: 60px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.studentsCard__skills::-webkit-scrollbar {
+    height: 4px;
+    width: 4px;
+}
+
+.studentsCard__skills::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.studentsCard__skills::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
 }
 
 .skill-tag {
     background: white;
     color: black;
-    width: fit-content;
-    padding: 8px;
+    padding: 6px 12px;
     height: 26px;
     border-radius: 15px;
     font-size: 18px;
@@ -70,11 +96,15 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .studentsCard__description {
     flex: 1;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .studentsCard__description p {
@@ -83,11 +113,18 @@
     margin: 0;
     color: white;
     font-family: 'StratosSkyeng';
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 90px;
 }
 
 .read-more {
     color: #888;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .studentsCard__button {
@@ -106,8 +143,360 @@
     align-items: center;
     font-family: 'StratosSkyeng';
     font-weight: 300;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.studentsCard__button:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .course4 {
     height: 32px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+    .studentsCard {
+        height: 380px;
+        padding: 12px;
+        gap: 15px;
+    }
+
+    .studentsCard__image {
+        width: 250px;
+    }
+
+    .studentsCard__content {
+        padding: 10px 15px 15px 0;
+    }
+
+    .studentsCard__title {
+        font-size: 24px;
+        gap: 10px;
+    }
+
+    .studentsCard__subtitle {
+        font-size: 16px;
+    }
+
+    .studentsCard__skills {
+        margin-bottom: 12px;
+    }
+
+    .skill-tag {
+        font-size: 16px;
+        padding: 5px 10px;
+        height: 24px;
+    }
+
+    .studentsCard__description p {
+        font-size: 18px;
+        -webkit-line-clamp: 3;
+    }
+
+    .studentsCard__button {
+        width: 250px;
+        height: 42px;
+        font-size: 22px;
+    }
+
+    .course4 {
+        height: 28px;
+    }
+}
+
+@media (max-width: 992px) {
+    .studentsCard {
+        height: 350px;
+        border-radius: 20px;
+    }
+
+    .studentsCard__image {
+        width: 200px;
+        border-radius: 15px;
+    }
+
+    .studentsCard__title {
+        font-size: 22px;
+        gap: 8px;
+    }
+
+    .studentsCard__subtitle {
+        font-size: 15px;
+    }
+
+    .studentsCard__skills {
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .skill-tag {
+        font-size: 14px;
+        padding: 4px 8px;
+        height: 22px;
+    }
+
+    .studentsCard__description p {
+        font-size: 16px;
+        line-height: 1.4;
+        -webkit-line-clamp: 3;
+    }
+
+    .studentsCard__button {
+        width: 220px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .course4 {
+        height: 26px;
+    }
+}
+
+@media (max-width: 768px) {
+    .studentsCard {
+        height: 300px;
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .studentsCard__image {
+        width: 180px;
+        border-radius: 12px;
+    }
+
+    .studentsCard__content {
+        padding: 8px 12px 12px 0;
+    }
+
+    .studentsCard__header {
+        margin-bottom: 15px;
+    }
+
+    .studentsCard__title {
+        font-size: 20px;
+        gap: 6px;
+    }
+
+    .studentsCard__subtitle {
+        font-size: 14px;
+    }
+
+    .studentsCard__skills {
+        gap: 6px;
+        margin-bottom: 8px;
+    }
+
+    .skill-tag {
+        font-size: 13px;
+        padding: 3px 6px;
+        height: 20px;
+        border-radius: 12px;
+    }
+
+    .studentsCard__description p {
+        font-size: 15px;
+        -webkit-line-clamp: 3;
+    }
+
+    .studentsCard__button {
+        width: 200px;
+        height: 38px;
+        font-size: 18px;
+        letter-spacing: 0.5px;
+    }
+
+    .course4 {
+        height: 24px;
+    }
+}
+
+@media (max-width: 576px) {
+    .studentsCard {
+        height: 280px;
+        border-radius: 15px;
+        padding: 8px;
+        gap: 10px;
+    }
+
+    .studentsCard__image {
+        width: 140px;
+        border-radius: 10px;
+    }
+
+    .studentsCard__content {
+        padding: 5px 10px 10px 0;
+    }
+
+    .studentsCard__header {
+        margin-bottom: 12px;
+    }
+
+    .studentsCard__title {
+        font-size: 18px;
+        gap: 5px;
+    }
+
+    .studentsCard__subtitle {
+        font-size: 13px;
+    }
+
+    .studentsCard__skills {
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    .skill-tag {
+        font-size: 12px;
+        padding: 2px 5px;
+        height: 18px;
+        border-radius: 10px;
+    }
+
+    .studentsCard__description p {
+        font-size: 14px;
+        -webkit-line-clamp: 3;
+    }
+
+    .studentsCard__button {
+        width: 180px;
+        height: 36px;
+        font-size: 16px;
+        border-width: 1.5px;
+    }
+
+    .course4 {
+        height: 22px;
+    }
+}
+
+@media (max-width: 480px) {
+    .studentsCard {
+        height: 250px;
+        padding: 6px;
+        gap: 8px;
+    }
+
+    .studentsCard__image {
+        width: 120px;
+        border-radius: 8px;
+    }
+
+    .studentsCard__content {
+        padding: 4px 8px 8px 0;
+    }
+
+    .studentsCard__title {
+        font-size: 16px;
+        gap: 4px;
+    }
+
+    .studentsCard__subtitle {
+        font-size: 12px;
+    }
+
+    .studentsCard__skills {
+        gap: 4px;
+        margin-bottom: 8px;
+        max-height: 50px;
+    }
+
+    .skill-tag {
+        font-size: 11px;
+        padding: 2px 4px;
+        height: 16px;
+    }
+
+    .studentsCard__description p {
+        font-size: 13px;
+        -webkit-line-clamp: 3;
+    }
+
+    .studentsCard__button {
+        width: 160px;
+        height: 34px;
+        font-size: 14px;
+        letter-spacing: 0;
+    }
+
+    .course4 {
+        height: 20px;
+    }
+}
+
+@media (max-width: 400px) {
+    .studentsCard {
+        height: 230px;
+        padding: 5px;
+        gap: 6px;
+    }
+
+    .studentsCard__image {
+        width: 100px;
+        border-radius: 6px;
+    }
+
+    .studentsCard__content {
+        padding: 3px 6px 6px 0;
+    }
+
+    .studentsCard__title {
+        font-size: 15px;
+        gap: 3px;
+    }
+
+    .studentsCard__subtitle {
+        font-size: 11px;
+    }
+
+    .studentsCard__skills {
+        gap: 3px;
+        margin-bottom: 6px;
+    }
+
+    .skill-tag {
+        font-size: 10px;
+        padding: 1px 3px;
+        height: 15px;
+    }
+
+    .studentsCard__description p {
+        font-size: 12px;
+        -webkit-line-clamp: 3;
+    }
+
+    .studentsCard__button {
+        width: 140px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .course4 {
+        height: 18px;
+    }
+}
+
+@media (max-width: 360px) {
+    .studentsCard {
+        height: 210px;
+    }
+
+    .studentsCard__image {
+        width: 90px;
+    }
+
+    .studentsCard__title {
+        font-size: 14px;
+    }
+
+    .studentsCard__button {
+        width: 130px;
+        height: 30px;
+        font-size: 12px;
+    }
+
+    .course4 {
+        height: 16px;
+    }
 }

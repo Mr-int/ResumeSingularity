@@ -8,8 +8,7 @@
 }
 
 .studentSlider__content {
-    width: 100%;
-    max-width: 1440px;
+    width: 90%;
     height: 100%;
     position: relative;
     border-radius: 32px;
@@ -147,6 +146,7 @@
     align-items: center;
     gap: 35px;
     width: 100%;
+    overflow: hidden;
 }
 
 .studentSlider__listWrapper {
@@ -155,7 +155,7 @@
     justify-content: center;
     align-items: center;
     gap: 25px;
-    flex-wrap: wrap;
+    transition: all 0.3s ease;
 }
 
 .studentSlider__listButton {
@@ -170,6 +170,7 @@
     flex-shrink: 0;
     cursor: pointer;
     transition: all 0.3s ease;
+    z-index: 4;
 }
 
 .studentSlider__listButton:hover {
@@ -190,6 +191,7 @@
 
 .studentSlider__button {
     width: 430px;
+    max-width: 90%;
     height: 46px;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border: none;
@@ -207,6 +209,7 @@
     text-decoration: none;
     box-sizing: border-box;
     transition: all 0.3s ease;
+    text-align: center;
 }
 
 .studentSlider__button:hover {
@@ -260,7 +263,7 @@
     }
 
     .studentSlider__list {
-        gap: 25px;
+        gap: 20px;
     }
 
     .studentSlider__listWrapper {
@@ -402,7 +405,7 @@
     }
 
     .studentSlider__list {
-        gap: 20px;
+        gap: 15px;
     }
 
     .studentSlider__listWrapper {
@@ -418,6 +421,7 @@
         width: 320px;
         height: 42px;
         font-size: 20px;
+        letter-spacing: 1.5px;
     }
 }
 
@@ -466,10 +470,22 @@
         height: 22px;
     }
 
+    .studentSlider__list {
+        gap: 10px;
+    }
+
     .studentSlider__listWrapper {
-        justify-content: center;
-        flex-wrap: wrap;
-        max-width: 100%;
+        gap: 10px;
+        width: 100%;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding: 10px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .studentSlider__listWrapper::-webkit-scrollbar {
+        display: none;
     }
 
     .studentSlider__listButton {
@@ -480,16 +496,16 @@
         width: 280px;
         height: 40px;
         font-size: 18px;
+        letter-spacing: 1px;
     }
 }
 
 @media (max-width: 576px) {
     .studentSlider__content {
-        max-width: 480px;
+        max-width: 100%;
         padding: 20px;
         gap: 20px;
         border-radius: 24px;
-        width: 95%;
     }
 
     .studentSlider__content::before,
@@ -502,7 +518,7 @@
     }
 
     .studentSlider__header {
-        gap: 12px;
+        gap: 10px;
     }
 
     .studentSlider__title {
@@ -544,18 +560,11 @@
     }
 
     .studentSlider__list {
-        gap: 15px;
+        gap: 5px;
     }
 
     .studentSlider__listWrapper {
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .studentSlider__listButton {
-        width: 38px;
-        height: 38px;
+        gap: 8px;
     }
 
     .studentSlider__listInfo {
@@ -564,15 +573,15 @@
 
     .studentSlider__button {
         width: 250px;
-        height: 40px;
+        height: 38px;
         font-size: 16px;
         gap: 8px;
+        letter-spacing: 0.5px;
     }
 }
 
 @media (max-width: 480px) {
     .studentSlider__content {
-        max-width: 400px;
         padding: 18px 15px;
         gap: 18px;
     }
@@ -589,24 +598,19 @@
     }
 
     .studentSlider__listWrapper {
-        gap: 10px;
-    }
-
-    .studentSlider__listButton {
-        width: 36px;
-        height: 36px;
+        gap: 6px;
     }
 
     .studentSlider__button {
         width: 220px;
-        height: 38px;
+        height: 36px;
         font-size: 15px;
+        padding: 0 15px;
     }
 }
 
 @media (max-width: 400px) {
     .studentSlider__content {
-        max-width: 360px;
         padding: 15px 12px;
         gap: 16px;
     }
@@ -653,7 +657,7 @@
     }
 
     .studentSlider__listWrapper {
-        gap: 8px;
+        gap: 5px;
     }
 
     .studentSlider__listInfo {
@@ -662,14 +666,24 @@
 
     .studentSlider__button {
         width: 200px;
-        height: 36px;
+        height: 34px;
         font-size: 14px;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     }
 }
 
 @media (max-width: 360px) {
     .studentSlider__content {
-        max-width: 320px;
+        max-width: 340px;
+    }
+
+    .studentSlider__title {
+        font-size: 15px;
+    }
+
+    .studentSlider__button {
+        width: 180px;
+        height: 32px;
+        font-size: 13px;
     }
 }
