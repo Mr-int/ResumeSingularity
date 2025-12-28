@@ -71,21 +71,23 @@ const StudentsListCard = ({ student }) => {
         <div className="studentsCard">
             <img className="studentsCard__image" src={imageSrc} alt={`Фото ${fullName}`} />
             <div className="studentsCard__content">
-                <div className="studentsCard__header">
-                    <h2 className="studentsCard__title">
-                        {fullName}
-                        <img className="course4" src={courseImage} alt=""/>
-                    </h2>
-                    <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
-                </div>
+                <div className="studentsCard__top-section">
+                    <div className="studentsCard__header">
+                        <h2 className="studentsCard__title">
+                            {fullName}
+                            <img className="course4" src={courseImage} alt=""/>
+                        </h2>
+                        <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
+                    </div>
 
-                <div className="studentsCard__skills">
-                    {skills.map((skill) => (
-                        <span key={skill.id} className="skill-tag">{skill.name}</span>
-                    ))}
-                    {hasMoreSkills && (
-                        <span className="skill-more">... и еще ({student.skills.length - 4})</span>
-                    )}
+                    <div className="studentsCard__skills">
+                        {skills.map((skill) => (
+                            <span key={skill.id} className="skill-tag">{skill.name}</span>
+                        ))}
+                        {hasMoreSkills && (
+                            <span className="skill-more">... и еще ({student.skills.length - 4})</span>
+                        )}
+                    </div>
                 </div>
 
                 <div className="studentsCard__description">
