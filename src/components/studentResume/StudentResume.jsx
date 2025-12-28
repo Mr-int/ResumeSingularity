@@ -3,6 +3,9 @@ import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
 import face from "../../assets/other/test.png";
 import mailIcon from "../../assets/icons/mailIcon.svg";
+import BehindOrange from "../../assets/other/BehindOrange.png";
+import BehindPink from "../../assets/other/BehindPink.png";
+import BehindBlue from "../../assets/other/BehindBlue.png";
 import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience, getAllStudents, getInstitutionById, getExperienceById } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
@@ -20,6 +23,9 @@ const StudentResume = () => {
     const [experienceDetails, setExperienceDetails] = useState([]);
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
+
+    // Массив фоновых изображений для портфолио
+    const portfolioBackgrounds = [BehindOrange, BehindPink, BehindBlue];
 
     useEffect(() => {
         const fetchStudent = async () => {
@@ -47,12 +53,10 @@ const StudentResume = () => {
                 try {
                     if (data.education && Array.isArray(data.education) && data.education.length > 0) {
                         console.log('[StudentResume] Student education IDs:', data.education);
-                        
-                        // Получаем детали для каждого образования через /institution/getById/{id}
+
                         const educationWithDetails = await Promise.all(
                             data.education.map(async (edu) => {
                                 try {
-                                    // edu может быть объектом с id или просто id
                                     const institutionId = edu?.id || edu?.institutionId || edu;
                                     if (institutionId) {
                                         console.log('[StudentResume] Fetching institution details for ID:', institutionId);
@@ -67,7 +71,7 @@ const StudentResume = () => {
                                 }
                             })
                         );
-                        
+
                         setEducationDetails(educationWithDetails || []);
                     } else {
                         console.log('[StudentResume] No education data in student object');
@@ -82,12 +86,10 @@ const StudentResume = () => {
                 try {
                     if (data.experience && Array.isArray(data.experience) && data.experience.length > 0) {
                         console.log('[StudentResume] Student experience IDs:', data.experience);
-                        
-                        // Получаем детали для каждого опыта через /experience/getById/{id}
+
                         const experienceWithDetails = await Promise.all(
                             data.experience.map(async (exp) => {
                                 try {
-                                    // exp может быть объектом с id или просто id
                                     const experienceId = exp?.id || exp?.experienceId || exp;
                                     if (experienceId) {
                                         console.log('[StudentResume] Fetching experience details for ID:', experienceId);
@@ -102,7 +104,7 @@ const StudentResume = () => {
                                 }
                             })
                         );
-                        
+
                         setExperienceDetails(experienceWithDetails || []);
                     } else {
                         console.log('[StudentResume] No experience data in student object');
@@ -118,7 +120,7 @@ const StudentResume = () => {
                     const allStudents = await getAllStudents();
                     const similar = allStudents
                         .filter(s => s.id !== parseInt(id) && s.id !== id)
-                        .slice(0, 6); // Берем до 6 похожих студентов
+                        .slice(0, 6);
                     setSimilarStudents(similar || []);
                 } catch (err) {
                     console.error('Failed to fetch similar students:', err);
@@ -155,6 +157,11 @@ const StudentResume = () => {
         return age;
     };
 
+    // Функция для получения случайного фона портфолио
+    const getRandomPortfolioBackground = (index) => {
+        return portfolioBackgrounds[index % portfolioBackgrounds.length];
+    };
+
     if (loading) {
         return (
             <section className="StudentResume">
@@ -176,7 +183,6 @@ const StudentResume = () => {
     }
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
-    // Используем imagePath (приоритет) или image (fallback)
     const imagePath = student.imagePath || student.image;
     console.log('[StudentResume] Student imagePath:', imagePath, 'student object:', student);
     const imageSrc = imagePath ? getImageUrl(imagePath) : face;
@@ -198,7 +204,7 @@ const StudentResume = () => {
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
                                     <p>{student.speciality || 'Специальность не указана'}</p>
-                                    <button 
+                                    <button
                                         className="StudentResume__sendBid"
                                         onClick={() => setShowApplicationForm(true)}
                                     >
@@ -249,25 +255,46 @@ const StudentResume = () => {
                                 <div className="StudentResume__portfolio">
                                     {portfolio && portfolio.length > 0 ? (
                                         portfolio.map((project, index) => (
-                                            <div key={project.id || index} className="StudentResume__portfolioItem">
-                                                {project.name && <p className="StudentResume__portfolioTitle">{project.name}</p>}
-                                                {project.description && <p className="StudentResume__portfolioDescription">{project.description}</p>}
-                                                {project.link && (
-                                                    <a href={project.link} target="_blank" rel="noopener noreferrer" style={{ color: '#bdf7ff' }}>
-                                                        Ссылка на проект
-                                                    </a>
+                                            <div
+                                                key={project.id || index}
+                                                className="StudentResume__portfolioItem"
+                                                style={{
+                                                    backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
+                                                    backgroundSize: 'cover',
+                                                    backgroundPosition: 'center'
+                                                }}
+                                            >
+                                                {project.name && (
+                                                    <div className="StudentResume__portfolioContent">
+                                                        <p className="StudentResume__portfolioTitle">{project.name}</p>
+                                                        {project.description && (
+                                                            <p className="StudentResume__portfolioDescription">{project.description}</p>
+                                                        )}
+                                                        {project.link && (
+                                                            <a
+                                                                href={project.link}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="StudentResume__portfolioLink"
+                                                            >
+                                                                Ссылка на проект →
+                                                            </a>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="StudentResume__portfolioItem">
-                                            <p className="StudentResume__portfolioTitle">Проекты будут добавлены позже</p>
+                                        <div className="StudentResume__portfolioItem" style={{ backgroundImage: `url(${getRandomPortfolioBackground(0)})` }}>
+                                            <div className="StudentResume__portfolioContent">
+                                                <p className="StudentResume__portfolioTitle">Проекты будут добавлены позже</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            <button 
+                            <button
                                 className="StudentResume__sendBid"
                                 onClick={() => setShowApplicationForm(true)}
                             >
@@ -278,6 +305,7 @@ const StudentResume = () => {
                     </div>
                 </div>
 
+                {/* Остальной код без изменений */}
                 <div className="StudentResume__additionalSections">
                     <div className="StudentResume__expandableSection">
                         <div className="StudentResume__expandableHeader" onClick={toggleExperience}>
@@ -390,13 +418,13 @@ const StudentResume = () => {
                         <h2 className="StudentResume__similarTitle">Похожие студенты</h2>
                         <div className="StudentResume__similarList">
                             {similarStudents.map((similarStudent) => (
-                                <Link 
-                                    key={similarStudent.id} 
+                                <Link
+                                    key={similarStudent.id}
                                     to={`/studentsResume/${similarStudent.id}`}
                                     className="StudentResume__similarLink"
                                     style={{ textDecoration: 'none', color: 'inherit' }}
                                 >
-                                    <StudentSliderCard 
+                                    <StudentSliderCard
                                         student={similarStudent}
                                     />
                                 </Link>
@@ -411,7 +439,6 @@ const StudentResume = () => {
                     onClose={() => setShowApplicationForm(false)}
                     onSubmit={async (formData) => {
                         console.log('Application for student:', fullName, formData);
-                        // Здесь можно добавить отправку на сервер
                     }}
                 />
             )}
