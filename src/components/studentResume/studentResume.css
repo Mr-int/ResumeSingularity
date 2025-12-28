@@ -431,28 +431,26 @@
 
 .StudentResume__educationTimeline {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     margin-right: 30px;
     min-width: 120px;
+    gap: 120px;
 }
 
 .StudentResume__educationYears {
-    background-color: #f5f5f5;
-    padding: 8px 15px;
-    border-radius: 20px;
     font-weight: 500;
+    font-size: 24px;
     color: #333;
-    margin-bottom: 15px;
     text-align: center;
     white-space: nowrap;
 }
 
 .StudentResume__educationVerticalLine {
     width: 2px;
-    background-color: #e0e0e0;
+    background-color: #fff;
     flex-grow: 1;
-    min-height: 40px;
+    height: 100%;
 }
 
 .StudentResume__educationInfo {
