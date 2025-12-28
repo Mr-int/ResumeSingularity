@@ -5,15 +5,18 @@ import mailIcon from "../../assets/icons/mailIcon.svg";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 
-const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
+const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({
-        name: '',
-        telegram: '',
+        firstName: '',
+        lastName: '',
+        companyName: '',
         email: '',
-        project: ''
+        phoneNumber: '',
+        telegramUsername: ''
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,29 +27,96 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
         setError('');
     };
 
+    const splitFullName = (fullName) => {
+        const names = fullName.trim().split(' ');
+        if (names.length === 1) {
+            return { firstName: names[0], lastName: '' };
+        } else if (names.length >= 2) {
+            return { firstName: names[0], lastName: names.slice(1).join(' ') };
+        }
+        return { firstName: '', lastName: '' };
+    };
+
+    const generateUsername = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 20; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccess(false);
 
-        if (!formData.name.trim()) {
-            setError('Пожалуйста, укажите ваше имя');
+        if (!formData.firstName.trim()) {
+            setError('Пожалуйста, укажите ваше имя и фамилию');
             return;
         }
-        if (!formData.telegram.trim() && !formData.email.trim()) {
-            setError('Пожалуйста, укажите телеграмм или почту для связи');
+        if (!formData.companyName.trim()) {
+            setError('Пожалуйста, укажите компанию или проект');
+            return;
+        }
+        if (!formData.telegramUsername.trim() && !formData.email.trim() && !formData.phoneNumber.trim()) {
+            setError('Пожалуйста, укажите хотя бы один способ связи: телеграм, почту или телефон');
             return;
         }
 
         setLoading(true);
         try {
-            console.log('Application form data:', { ...formData, studentName });
-            if (onSubmit) {
-                await onSubmit(formData);
+            const { firstName, lastName } = splitFullName(formData.firstName);
+            const username = generateUsername();
+
+            const requestData = {
+                companyName: formData.companyName,
+                firstName,
+                lastName: lastName || firstName,
+                username,
+                email: formData.email || null,
+                phoneNumber: formData.phoneNumber || null,
+                telegramUsername: formData.telegramUsername || null,
+                ...(studentId && { studentId })
+            };
+
+            console.log('Sending request data:', requestData);
+
+            const endpoint = studentId ? '/request' : '/recruiter/create';
+
+            // Если у вас есть переменная окружения с URL API
+            const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+            const url = `${API_BASE_URL}${endpoint}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
             }
-            onClose();
+
+            const responseData = await response.json();
+            console.log('Response:', responseData);
+
+            setSuccess(true);
+
+            if (onSubmit) {
+                await onSubmit(responseData);
+            }
+
+            setTimeout(() => {
+                onClose();
+            }, 2000);
+
         } catch (err) {
-            setError('Ошибка при отправке заявки. Попробуйте еще раз.');
             console.error('Application form error:', err);
+            setError(err.message || 'Ошибка при отправке заявки. Попробуйте еще раз.');
         } finally {
             setLoading(false);
         }
@@ -54,12 +124,13 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
 
     const getButtonText = () => {
         if (loading) return 'Отправка...';
+        if (success) return 'Заявка отправлена!';
         if (studentName) return 'Оставить заявку';
         return 'Связаться';
     };
 
     const showMailIcon = () => {
-        return !loading && !studentName;
+        return !loading && !studentName && !success;
     };
 
     return (
@@ -83,76 +154,105 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
                     </p>
                 )}
 
-                <form onSubmit={handleSubmit} className="applicationForm__form">
-                    <div className="applicationForm__field">
-                        <label htmlFor="name">Имя Фамилия</label>
-                        <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            disabled={loading}
-                            placeholder="Иван Иванов"
-                        />
+                {success ? (
+                    <div className="applicationForm__success">
+                        <h3>✅ Заявка успешно отправлена!</h3>
+                        <p>Мы свяжемся с вами в течение 24 часов.</p>
+                        <p>Форма закроется автоматически...</p>
                     </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="applicationForm__form">
+                        <div className="applicationForm__field">
+                            <label htmlFor="firstName">Имя Фамилия *</label>
+                            <input
+                                id="firstName"
+                                name="firstName"
+                                type="text"
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                required
+                                disabled={loading}
+                                placeholder="Иван Иванов"
+                            />
+                        </div>
 
-                    <div className="applicationForm__field">
-                        <label htmlFor="project">Компания или проект</label>
-                        <input
-                            id="project"
-                            name="project"
-                            type="text"
-                            value={formData.project}
-                            onChange={handleChange}
-                            required
-                            disabled={loading}
-                            placeholder='ООО "Компания"'
-                        />
-                    </div>
+                        <div className="applicationForm__field">
+                            <label htmlFor="companyName">Компания или проект *</label>
+                            <input
+                                id="companyName"
+                                name="companyName"
+                                type="text"
+                                value={formData.companyName}
+                                onChange={handleChange}
+                                required
+                                disabled={loading}
+                                placeholder='ООО "Компания"'
+                            />
+                        </div>
 
-                    <div className="applicationForm__field">
-                        <label htmlFor="telegram">Телеграмм для связи</label>
-                        <input
-                            id="telegram"
-                            name="telegram"
-                            type="text"
-                            value={formData.telegram}
-                            onChange={handleChange}
-                            disabled={loading}
-                            placeholder="@Username"
-                        />
-                    </div>
+                        <div className="applicationForm__field">
+                            <label htmlFor="telegramUsername">Телеграм для связи</label>
+                            <input
+                                id="telegramUsername"
+                                name="telegramUsername"
+                                type="text"
+                                value={formData.telegramUsername}
+                                onChange={handleChange}
+                                disabled={loading}
+                                placeholder="@Username"
+                            />
+                        </div>
 
-                    <div className="applicationForm__field">
-                        <label htmlFor="email">Ваша почта</label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            disabled={loading}
-                            placeholder="example@mail.com"
-                        />
-                    </div>
+                        <div className="applicationForm__field">
+                            <label htmlFor="email">Ваша почта</label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                disabled={loading}
+                                placeholder="example@mail.com"
+                            />
+                        </div>
 
-                    {error && <div className="applicationForm__error">{error}</div>}
+                        <div className="applicationForm__field">
+                            <label htmlFor="phoneNumber">Номер телефона</label>
+                            <input
+                                id="phoneNumber"
+                                name="phoneNumber"
+                                type="tel"
+                                value={formData.phoneNumber}
+                                onChange={handleChange}
+                                disabled={loading}
+                                placeholder="+7 123 456-78-90"
+                            />
+                        </div>
 
-                    <div className="applicationForm__button-container">
-                        <button type="submit" className="applicationForm__submit" disabled={loading}>
-                            {getButtonText()}
-                            {showMailIcon() && (
-                                <img
-                                    src={mailIcon}
-                                    alt="mail"
-                                    className="applicationForm__submit-icon"
-                                />
-                            )}
-                        </button>
-                    </div>
-                </form>
+                        <div className="applicationForm__note">
+                            * Обязательные поля
+                        </div>
+
+                        {error && <div className="applicationForm__error">{error}</div>}
+
+                        <div className="applicationForm__button-container">
+                            <button
+                                type="submit"
+                                className={`applicationForm__submit ${success ? 'applicationForm__submit--success' : ''}`}
+                                disabled={loading || success}
+                            >
+                                {getButtonText()}
+                                {showMailIcon() && (
+                                    <img
+                                        src={mailIcon}
+                                        alt="mail"
+                                        className="applicationForm__submit-icon"
+                                    />
+                                )}
+                            </button>
+                        </div>
+                    </form>
+                )}
                 <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
             </div>
         </div>
