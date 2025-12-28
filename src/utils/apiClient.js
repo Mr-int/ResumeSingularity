@@ -1,92 +1,66 @@
+// utils/apiClient.js
 import { API_BASE_URL } from '../config/api.js';
-import { logout } from '../services/authApi.js';
 
-/**
- * Централизованный fetch клиент с обработкой ошибок авторизации
- * @param {string} url - URL для запроса (относительный путь)
- * @param {RequestInit} options - Опции для fetch
- * @returns {Promise<Response>} Ответ сервера
- */
-export const apiClient = async (url, options = {}) => {
-    const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url.replace(/^\//, '')}`;
-    
-    const defaultOptions = {
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
+export const apiClientJson = async (endpoint, options = {}) => {
+    const defaultHeaders = {
+        'Content-Type': 'application/json',
     };
 
-    const mergedOptions = {
-        ...defaultOptions,
-        ...options,
-        headers: {
-            ...defaultOptions.headers,
-            ...options.headers,
-        },
-    };
+    // Для отладки
+    console.log('[API Client] Base URL:', API_BASE_URL);
+    console.log('[API Client] Endpoint:', endpoint);
+
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('[API Client] Full URL:', url);
 
     try {
-        const response = await fetch(fullUrl, mergedOptions);
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                ...defaultHeaders,
+                ...options.headers,
+            },
+            credentials: 'include',
+        });
 
-        // Если получили 403, значит авторизация недействительна
-        if (response.status === 403) {
-            console.warn('[API] 403 Forbidden - clearing auth and showing login');
-            
-            // Очищаем авторизацию
-            logout();
-            
-            // Сохраняем информацию о том, что нужно показать форму входа
-            sessionStorage.setItem('showLoginAfter403', 'true');
-            
-            // Выбрасываем специальную ошибку
-            const error = new Error('Unauthorized - please login again');
-            error.status = 403;
-            error.requiresAuth = true;
-            throw error;
+        // Проверка на 401 (Unauthorized)
+        if (response.status === 401) {
+            console.log('[API] 401 Unauthorized - redirecting to login');
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('isAuthenticated_time');
+            window.location.href = '/login';
+            throw new Error('HTTP error! status: 401 - Unauthorized');
         }
 
-        return response;
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`[API] HTTP error! status: ${response.status}, endpoint: ${endpoint}`);
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        // Проверяем, есть ли тело ответа
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+        } else {
+            const text = await response.text();
+            if (text) {
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    return { message: text };
+                }
+            }
+            return {};
+        }
     } catch (error) {
-        // Если это наша ошибка 403, пробрасываем дальше
-        if (error.requiresAuth) {
-            throw error;
+        console.error(`[API] Error for endpoint ${endpoint}:`, error);
+        console.error('[API] Full URL was:', url);
+
+        // Проверяем, это ошибка сети или другая ошибка
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+            throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${window.location.origin}/api/`);
         }
-        
-        // Для других ошибок просто пробрасываем
         throw error;
     }
 };
-
-/**
- * Обертка для JSON запросов
- */
-export const apiClientJson = async (url, options = {}) => {
-    const response = await apiClient(url, options);
-    
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-    }
-
-    const contentType = response.headers.get('content-type');
-    const contentLength = response.headers.get('content-length');
-    
-    // Если тело пустое, возвращаем null
-    if (contentLength && parseInt(contentLength) === 0) {
-        return null;
-    }
-
-    if (contentType && contentType.includes('application/json')) {
-        try {
-            return await response.json();
-        } catch (e) {
-            console.warn('[API] Failed to parse JSON:', e);
-            return null;
-        }
-    }
-
-    return await response.text();
-};
-
