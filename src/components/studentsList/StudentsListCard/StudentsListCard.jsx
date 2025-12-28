@@ -57,7 +57,7 @@ const StudentsListCard = ({ student }) => {
                                 to={`/studentsResume/${student.id}`}
                                 className="read-more-link"
                             >
-                                Смотреть резюме
+                                Читать дальше
                             </Link>
                         )}
                     </p>
