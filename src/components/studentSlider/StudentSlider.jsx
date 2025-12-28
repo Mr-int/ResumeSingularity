@@ -17,7 +17,17 @@ const StudentSlider = () => {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
-    const containerRef = useRef(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -38,36 +48,6 @@ const StudentSlider = () => {
 
         fetchStudents();
     }, []);
-
-    useEffect(() => {
-        const updateActiveCardPosition = () => {
-            if (window.innerWidth <= 768 && listWrapperRef.current && containerRef.current) {
-                const containerWidth = containerRef.current.offsetWidth;
-                const cards = listWrapperRef.current.children;
-
-                if (cards.length > 0 && activeCardIndex < cards.length) {
-                    const activeCard = cards[activeCardIndex];
-                    const cardWidth = activeCard.offsetWidth;
-                    const gap = 10;
-                    const scrollPosition = activeCardIndex * (cardWidth + gap) - containerWidth / 2 + cardWidth / 2;
-
-                    listWrapperRef.current.scrollTo({
-                        left: scrollPosition,
-                        behavior: 'smooth'
-                    });
-                }
-            }
-        };
-
-        updateActiveCardPosition();
-
-        const handleResize = () => {
-            updateActiveCardPosition();
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [activeCardIndex]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -90,15 +70,29 @@ const StudentSlider = () => {
 
     const handlePrevClick = () => {
         if (students.length > 0) {
-            setActiveCardIndex((prev) => (prev === 0 ? Math.min(students.length - 1, 4) : prev - 1));
+            setActiveCardIndex((prev) => {
+                if (prev === 0) {
+                    return Math.min(students.length - 1, 4);
+                }
+                return prev - 1;
+            });
         }
     };
 
     const handleNextClick = () => {
         if (students.length > 0) {
             const maxIndex = Math.min(students.length - 1, 4);
-            setActiveCardIndex((prev) => (prev === maxIndex ? 0 : prev + 1));
+            setActiveCardIndex((prev) => {
+                if (prev === maxIndex) {
+                    return 0;
+                }
+                return prev + 1;
+            });
         }
+    };
+
+    const handleCardClick = (index) => {
+        setActiveCardIndex(index);
     };
 
     const displayedStudents = students.slice(0, 5);
@@ -140,34 +134,40 @@ const StudentSlider = () => {
                     <p style={{color: '#fff'}}>Загрузка студентов...</p>
                 ) : students.length > 0 ? (
                     <>
-                        <div className="studentSlider__list" ref={containerRef}>
-                            <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick}>
-                                <img src={sliderArrowIcon} alt="Предыдущий"/>
-                            </button>
+                        <div className="studentSlider__container">
+                            <div className="studentSlider__list">
+                                <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick}>
+                                    <img src={sliderArrowIcon} alt="Предыдущий"/>
+                                </button>
 
-                            <div className="studentSlider__listWrapper" ref={listWrapperRef}>
-                                {displayedStudents.map((student, index) => (
-                                    <StudentSliderCard
-                                        key={student.id}
-                                        student={student}
-                                        isActive={index === activeCardIndex}
-                                        onClick={() => setActiveCardIndex(index)}
-                                    />
-                                ))}
+                                <div className="studentSlider__listWrapper" ref={listWrapperRef}>
+                                    {displayedStudents.map((student, index) => (
+                                        <div
+                                            key={student.id}
+                                            className={`studentSlider__cardContainer ${index === activeCardIndex ? 'active' : ''}`}
+                                        >
+                                            <StudentSliderCard
+                                                student={student}
+                                                isActive={index === activeCardIndex}
+                                                onClick={() => handleCardClick(index)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
+                                    <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
+                                </button>
                             </div>
 
-                            <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
-                                <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
-                            </button>
-                        </div>
-
-                        <div className="studentSlider__mobileControls">
-                            <button className="studentSlider__mobileButton prev" onClick={handlePrevClick}>
-                                <img src={sliderArrowIcon} alt="Предыдущий"/>
-                            </button>
-                            <button className="studentSlider__mobileButton next" onClick={handleNextClick}>
-                                <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
-                            </button>
+                            <div className="studentSlider__mobileControls">
+                                <button className="studentSlider__mobileButton" onClick={handlePrevClick}>
+                                    <img src={sliderArrowIcon} alt="Предыдущий"/>
+                                </button>
+                                <button className="studentSlider__mobileButton" onClick={handleNextClick}>
+                                    <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
+                                </button>
+                            </div>
                         </div>
 
                         <div className="studentSlider__listInfo">
