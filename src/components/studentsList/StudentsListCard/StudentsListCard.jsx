@@ -62,7 +62,7 @@ const StudentsListCard = ({ student }) => {
                         <span key={skill.id} className="skill-tag">{skill.name}</span>
                     ))}
                     {hasMoreSkills && (
-                        <span className="skill-tag skill-more">+{student.skills.length - 4}</span>
+                        <span className="skill-tag skill-more">.. и еще {student.skills.length - 4}</span>
                     )}
                 </div>
 
