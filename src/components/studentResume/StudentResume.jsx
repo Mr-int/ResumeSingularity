@@ -363,7 +363,7 @@ const StudentResume = () => {
                                                 <div className="StudentResume__educationTimeline">
                                                     <div className="StudentResume__educationYears">
                                                         {edu.startDate && edu.endDate ? (
-                                                            <span>{edu.startDate} - {edu.endDate}</span>
+                                                            <span>{edu.startDate} - {edu.endDate}<br/></span>
                                                         ) : edu.startDate ? (
                                                             <span>С {edu.startDate}</span>
                                                         ) : edu.endDate ? (
