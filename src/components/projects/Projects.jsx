@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import "./projects.css";
 import GameChebImg from "../../assets/other/GameCheb.png";
 
@@ -7,6 +7,8 @@ const Projects = () => {
     const [isAnimating, setIsAnimating] = useState(false);
     const [expandedCards, setExpandedCards] = useState([1]);
     const [isMobile, setIsMobile] = useState(false);
+    const [containerHeight, setContainerHeight] = useState("155vh");
+    const cardsWrapperRef = useRef(null);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -18,6 +20,38 @@ const Projects = () => {
 
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    useEffect(() => {
+        if (!isMobile && cardsWrapperRef.current) {
+            const updateHeight = () => {
+                const cards = cardsWrapperRef.current.querySelectorAll('.card');
+                let maxBottom = 0;
+
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const relativeBottom = rect.top - cardsWrapperRef.current.getBoundingClientRect().top + rect.height;
+                    maxBottom = Math.max(maxBottom, relativeBottom);
+                });
+
+                const newHeight = maxBottom + 100;
+                setContainerHeight(`${newHeight}px`);
+            };
+
+            const observer = new MutationObserver(updateHeight);
+            observer.observe(cardsWrapperRef.current, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['style']
+            });
+
+            setTimeout(updateHeight, 100);
+
+            return () => observer.disconnect();
+        } else {
+            setContainerHeight("auto");
+        }
+    }, [activeCard, isMobile]);
 
     const handleCardClick = useCallback((cardNumber) => {
         if (isMobile) {
@@ -80,11 +114,11 @@ const Projects = () => {
     }, []);
 
     return (
-        <section className="projects">
+        <section className="projects" style={{ minHeight: containerHeight }}>
             <div className="projects__wrapper">
                 <h2 className="projects__title">Лучшие проекты наших студентов</h2>
 
-                <div className="projects__cardsWrapper">
+                <div className="projects__cardsWrapper" ref={cardsWrapperRef}>
                     <div
                         className={`card card--gamecheb ${activeCard === 1 ? 'card__active' : ''} ${isMobile && isCardExpanded(1) ? 'card__expanded' : ''}`}
                         onClick={() => handleCardClick(1)}
