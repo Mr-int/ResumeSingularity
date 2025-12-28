@@ -328,7 +328,6 @@ const StudentResume = () => {
                                                             <span>До {exp.endDate}</span>
                                                         ) : null}
                                                     </div>
-                                                    <div className="StudentResume__experienceVerticalLine"></div>
                                                 </div>
                                                 <div className="StudentResume__experienceInfo">
                                                     <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
