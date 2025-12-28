@@ -10,6 +10,8 @@ import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, ge
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 import numbersImg from "../../assets/other/numbers.png";
+import sunIcon from "../../assets/other/sun.png";
+import cloudMailIcon from "../../assets/other/cloudMail.png";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -408,10 +410,12 @@ const StudentResume = () => {
                             {student && <StudentSliderCard student={student} />}
                         </div>
                         <div className="StudentResume__contactInfo">
+                            <img src={sunIcon} alt="" className="StudentResume__sunIcon"/>
                             <div className="StudentResume__contactWrapper">
                                 <p>Готов проходить стажировку в вашей компании!</p>
                                 <button>Связаться <img src={mailIcon} alt=""/></button>
                             </div>
+                            <img src={cloudMailIcon} alt="" className="StudentResume__cloudMailIcon"/>
                         </div>
                     </div>
                 </div>

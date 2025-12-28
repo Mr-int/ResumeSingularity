@@ -350,6 +350,7 @@
     min-height: 400px;
     background-position: center center;
     background-size: 100% 100%;
+    position: relative;
 }
 
 .StudentResume__contactWrapper {
@@ -357,6 +358,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
+    gap: 32px;
 }
 
 .StudentResume__contactWrapper button {
@@ -385,7 +387,17 @@
     font-family: 'StratosSkyeng', sans-serif;
 }
 
+.StudentResume__cloudMailIcon {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
 
+.StudentResume__sunIcon {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 
 .StudentResume__contactDetails {
     margin-top: 20px;
