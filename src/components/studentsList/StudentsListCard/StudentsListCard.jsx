@@ -69,9 +69,9 @@ const StudentsListCard = ({ student }) => {
 
     return (
         <div className="studentsCard">
-            <img className="studentsCard__image" src={imageSrc} alt={`Фото ${fullName}`} />
-            <div className="studentsCard__content">
-                <div className="studentsCard__top-section">
+            <div className="studentsCard__top-section">
+                <img className="studentsCard__image" src={imageSrc} alt={`Фото ${fullName}`} />
+                <div className="studentsCard__info">
                     <div className="studentsCard__header">
                         <h2 className="studentsCard__title">
                             {fullName}
@@ -89,25 +89,25 @@ const StudentsListCard = ({ student }) => {
                         )}
                     </div>
                 </div>
-
-                <div className="studentsCard__description">
-                    <p>
-                        {bioPreview}
-                        {isBioTruncated && !showFullBio && (
-                            <Link
-                                to={`/studentsResume/${student.id}`}
-                                className="read-more-link"
-                            >
-                                Читать дальше
-                            </Link>
-                        )}
-                    </p>
-                </div>
-
-                <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
-                    Смотреть резюме
-                </Link>
             </div>
+
+            <div className="studentsCard__description">
+                <p>
+                    {bioPreview}
+                    {isBioTruncated && !showFullBio && (
+                        <Link
+                            to={`/studentsResume/${student.id}`}
+                            className="read-more-link"
+                        >
+                            Читать дальше
+                        </Link>
+                    )}
+                </p>
+            </div>
+
+            <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
+                Смотреть резюме
+            </Link>
         </div>
     )
 }
