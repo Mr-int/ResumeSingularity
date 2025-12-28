@@ -461,7 +461,11 @@
 
 .StudentResume__educationInfo {
     flex: 1;
-    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 5px;
 }
 
 .StudentResume__educationName {
