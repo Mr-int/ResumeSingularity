@@ -69,45 +69,43 @@ const StudentsListCard = ({ student }) => {
 
     return (
         <div className="studentsCard">
-            <div className="studentsCard__top-section">
-                <img className="studentsCard__image" src={imageSrc} alt={`Фото ${fullName}`} />
-                <div className="studentsCard__info">
-                    <div className="studentsCard__header">
-                        <h2 className="studentsCard__title">
-                            {fullName}
-                            <img className="course4" src={courseImage} alt=""/>
-                        </h2>
-                        <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
-                    </div>
-
-                    <div className="studentsCard__skills">
-                        {skills.map((skill) => (
-                            <span key={skill.id} className="skill-tag">{skill.name}</span>
-                        ))}
-                        {hasMoreSkills && (
-                            <span className="skill-more">... и еще ({student.skills.length - 4})</span>
-                        )}
-                    </div>
+            <img className="studentsCard__image" src={imageSrc} alt={`Фото ${fullName}`} />
+            <div className="studentsCard__content">
+                <div className="studentsCard__header">
+                    <h2 className="studentsCard__title">
+                        {fullName}
+                        <img className="course4" src={courseImage} alt=""/>
+                    </h2>
+                    <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
                 </div>
-            </div>
 
-            <div className="studentsCard__description">
-                <p>
-                    {bioPreview}
-                    {isBioTruncated && !showFullBio && (
-                        <Link
-                            to={`/studentsResume/${student.id}`}
-                            className="read-more-link"
-                        >
-                            Читать дальше
-                        </Link>
+                <div className="studentsCard__skills">
+                    {skills.map((skill) => (
+                        <span key={skill.id} className="skill-tag">{skill.name}</span>
+                    ))}
+                    {hasMoreSkills && (
+                        <span className="skill-more">... и еще ({student.skills.length - 4})</span>
                     )}
-                </p>
-            </div>
+                </div>
 
-            <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
-                Смотреть резюме
-            </Link>
+                <div className="studentsCard__description">
+                    <p>
+                        {bioPreview}
+                        {isBioTruncated && !showFullBio && (
+                            <Link
+                                to={`/studentsResume/${student.id}`}
+                                className="read-more-link"
+                            >
+                                Читать дальше
+                            </Link>
+                        )}
+                    </p>
+                </div>
+
+                <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
+                    Смотреть резюме
+                </Link>
+            </div>
         </div>
     )
 }
