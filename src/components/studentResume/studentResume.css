@@ -263,6 +263,7 @@
 
 .StudentResume__expandableArrow.expanded {
     transform: rotate(-135deg);
+    margin-top: 12px;
 }
 
 .StudentResume__expandableContent {
