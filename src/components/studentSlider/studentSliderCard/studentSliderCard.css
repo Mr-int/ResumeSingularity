@@ -196,12 +196,14 @@
         height: 260px;
         padding: 5px;
         gap: 8px;
+        flex-shrink: 0;
     }
 
     .student-slider-card--active {
         width: 180px;
         height: 290px;
         padding: 6px;
+        flex-shrink: 0;
     }
 
     .student-slider-card__name {

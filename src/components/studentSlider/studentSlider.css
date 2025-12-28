@@ -472,20 +472,23 @@
 
     .studentSlider__list {
         gap: 10px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding-bottom: 10px;
+        justify-content: flex-start;
+    }
+
+    .studentSlider__list::-webkit-scrollbar {
+        display: none;
     }
 
     .studentSlider__listWrapper {
         gap: 10px;
-        width: 100%;
-        overflow-x: auto;
+        width: max-content;
         justify-content: flex-start;
         padding: 10px;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .studentSlider__listWrapper::-webkit-scrollbar {
-        display: none;
+        flex-shrink: 0;
     }
 
     .studentSlider__listButton {
@@ -561,6 +564,7 @@
 
     .studentSlider__list {
         gap: 5px;
+        padding-bottom: 8px;
     }
 
     .studentSlider__listWrapper {

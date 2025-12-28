@@ -13,8 +13,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
     const imagePath = student.imagePath || student.image;
     const imageSrc = imagePath ? getImageUrl(imagePath) : test;
-    
-    // Определяем курс из поля course (FIRST, SECOND, THIRD, FOURTH и т.д.)
+
     const getCourseText = (course) => {
         const courseMap = {
             'FIRST': '1 курс',

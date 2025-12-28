@@ -16,6 +16,7 @@ const StudentSlider = () => {
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const searchInputRef = useRef(null);
+    const listWrapperRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -35,6 +36,19 @@ const StudentSlider = () => {
 
         fetchStudents();
     }, []);
+
+    useEffect(() => {
+        if (listWrapperRef.current && window.innerWidth <= 768) {
+            const activeCard = listWrapperRef.current.children[activeCardIndex];
+            if (activeCard) {
+                activeCard.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest',
+                    inline: 'center'
+                });
+            }
+        }
+    }, [activeCardIndex]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -68,7 +82,6 @@ const StudentSlider = () => {
         }
     };
 
-    // Ограничиваем количество отображаемых студентов до 5
     const displayedStudents = students.slice(0, 5);
     const activeStudent = displayedStudents.length > 0 ? displayedStudents[activeCardIndex] : null;
 
@@ -113,7 +126,7 @@ const StudentSlider = () => {
                                 <img src={sliderArrowIcon} alt="Предыдущий"/>
                             </button>
 
-                            <div className="studentSlider__listWrapper">
+                            <div className="studentSlider__listWrapper" ref={listWrapperRef}>
                                 {displayedStudents.map((student, index) => (
                                     <StudentSliderCard
                                         key={student.id}
