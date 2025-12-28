@@ -6,7 +6,7 @@ import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
-import { getStudentById, getPortfolioByStudentId, getAllEducation, getAllExperience, getAllStudents, getInstitutionById, getExperienceById } from "../../services/studentApi.js";
+import { getStudentById, getPortfolioByStudentId, getAllInstitutions, getAllExperience, getAllStudents, getPortfolioById } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
@@ -36,11 +36,14 @@ const StudentResume = () => {
 
             try {
                 setLoading(true);
+                console.log('Fetching student with ID:', id);
                 const data = await getStudentById(id);
                 setStudent(data);
+                console.log('Student data:', data);
 
                 try {
                     const portfolioData = await getPortfolioByStudentId(id);
+                    console.log('Portfolio data:', portfolioData);
                     setPortfolio(portfolioData || []);
                 } catch (err) {
                     console.error('Failed to fetch portfolio:', err);
@@ -48,54 +51,41 @@ const StudentResume = () => {
                 }
 
                 try {
-                    const educationData = await getAllEducation();
-                    const studentEducation = educationData.filter(edu => edu.studentId === parseInt(id) || edu.studentId === id);
-                    console.log('Education for student ID', id, ':', studentEducation);
+                    const allInstitutions = await getAllInstitutions();
+                    console.log('All institutions:', allInstitutions);
 
-                    if (!Array.isArray(studentEducation) || studentEducation.length === 0) {
+                    const educationIds = data.education || [];
+                    console.log('Education IDs from student:', educationIds);
+
+                    if (!Array.isArray(educationIds) || educationIds.length === 0) {
+                        console.log('No education IDs found for student');
                         setEducationDetails([]);
                     } else {
-                        const educationWithDetails = await Promise.all(
-                            studentEducation.map(async (edu) => {
-                                try {
-                                    if (edu.institutionId) {
-                                        const details = await getInstitutionById(edu.institutionId);
-                                        console.log('Institution details for ID', edu.institutionId, ':', details);
-                                        return {
-                                            id: edu.id,
-                                            institutionId: edu.institutionId,
-                                            ...details,
-                                            ...edu,
-                                            name: details?.name || details?.institution || `Учреждение ${edu.institutionId}`,
-                                            speciality: edu.speciality || details?.speciality,
-                                            startDate: edu.startDate || details?.startDate,
-                                            endDate: edu.endDate || details?.endDate
-                                        };
-                                    }
-                                    return {
-                                        id: edu.id,
-                                        ...edu,
-                                        name: edu.institution || `Образование ${edu.id}`,
-                                        speciality: edu.speciality,
-                                        startDate: edu.startDate,
-                                        endDate: edu.endDate
-                                    };
-                                } catch (err) {
-                                    console.error('Failed to fetch institution:', err);
-                                    return {
-                                        id: edu.id,
-                                        name: edu.institution || `Образовательное учреждение`,
-                                        speciality: edu.speciality,
-                                        startDate: edu.startDate,
-                                        endDate: edu.endDate
-                                    };
-                                }
-                            })
+                        const studentInstitutions = allInstitutions.filter(inst =>
+                            educationIds.some(eduId =>
+                                eduId === inst.id ||
+                                eduId === inst.institutionId ||
+                                (typeof eduId === 'object' && eduId.id === inst.id)
+                            )
                         );
+
+                        console.log('Filtered institutions for student:', studentInstitutions);
+
+                        const educationWithDetails = studentInstitutions.map(inst => ({
+                            id: inst.id,
+                            ...inst,
+                            name: inst.name || inst.institution || `Учреждение ${inst.id}`,
+                            speciality: inst.speciality,
+                            startDate: inst.startDate,
+                            endDate: inst.endDate
+                        }));
+
+                        console.log('Education details:', educationWithDetails);
                         setEducationDetails(educationWithDetails);
                     }
                 } catch (err) {
                     console.error('Failed to fetch education:', err);
+                    console.error('Error details:', err);
                     setEducationDetails([]);
                 }
 
