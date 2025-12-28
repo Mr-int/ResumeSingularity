@@ -8,7 +8,7 @@ import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
 import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getExperienceByStudentId, getAllStudents } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
-import StudentSliderCard from "../studentSlider/studentSlidercard/StudentSliderCard.jsx";
+import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 
 const StudentResume = () => {
