@@ -3,7 +3,6 @@ import './studentSliderCard.css';
 import test from "../../../assets/other/test.png"
 import javaIcon from "../../../assets/other/java.png"
 import course4 from "../../../assets/other/course4.png";
-import { getImageUrl } from "../../../config/api.js";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -11,8 +10,28 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     }
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
-    const imagePath = student.imagePath || student.image;
-    const imageSrc = imagePath ? getImageUrl(imagePath) : test;
+
+    const getStudentImageUrl = (studentData) => {
+        if (!studentData) return test;
+
+        const imagePath = studentData.imagePath || studentData.image || studentData.photo;
+
+        if (!imagePath) return test;
+
+        if (imagePath.startsWith('http')) {
+            return imagePath;
+        }
+
+        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
+
+        const studentId = studentData.id;
+
+        if (!studentId) return test;
+
+        return `${baseUrl}/${studentId}.jpg`;
+    };
+
+    const imageSrc = getStudentImageUrl(student);
 
     const getCourseText = (course) => {
         const courseMap = {
