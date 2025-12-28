@@ -388,9 +388,13 @@
 }
 
 .StudentResume__cloudMailIcon {
-    position: absolute;
+    position: relative;
     bottom: 0;
     right: 0;
+}
+
+.StudentResume__cloudMailIcon {
+    position: absolute;
 }
 
 .StudentResume__sunIcon {
