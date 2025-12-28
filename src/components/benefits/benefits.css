@@ -217,6 +217,25 @@
         width: 210px;
         height: 210px;
     }
+
+    .benefits__card__purple img {
+        right: -10%;
+    }
+
+    .benefits__card__green img {
+        top: 5%;
+        right: -15%;
+        transform: rotate(0deg);
+    }
+
+    .benefits__card__blue img {
+        right: -12%;
+    }
+
+    .benefits__card__orange img {
+        right: -10%;
+        transform: rotate(34deg);
+    }
 }
 
 @media (max-width: 480px) {
@@ -241,20 +260,25 @@
     .benefits__card__purple img {
         width: 180px;
         height: 210px;
+        bottom: -5%;
+        right: -12%;
     }
 
     .benefits__card__green img {
-        width: 190px;
-        height: 190px;
+        width: 180px;
+        height: 180px;
+        right: -18%;
     }
 
     .benefits__card__blue img {
         width: 180px;
         height: 210px;
+        right: -15%;
     }
 
     .benefits__card__orange img {
         width: 190px;
         height: 190px;
+        right: -15%;
     }
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import ApplicationForm from '../applicationForm/ApplicationForm.jsx';
 import { getStudentById } from '../../services/studentApi.js';
+import mailIcon from "../../assets/icons/mailIcon.svg";
 import './floatingButton.css';
 
 const FloatingButton = () => {
@@ -38,9 +39,7 @@ const FloatingButton = () => {
     };
 
     const handleSubmit = async (formData) => {
-        // Здесь можно добавить отправку данных на сервер
         console.log('Submitting application:', formData, studentName ? { studentName } : {});
-        // Временная заглушка - можно добавить реальный API вызов
         return Promise.resolve();
     };
 
@@ -51,7 +50,7 @@ const FloatingButton = () => {
                 onClick={handleButtonClick}
                 aria-label="Оставить заявку"
             >
-                <span className="floatingButton__icon">✉</span>
+                <span className="floatingButton__icon"><img src={mailIcon} alt=""/></span>
             </button>
             {showForm && (
                 <ApplicationForm

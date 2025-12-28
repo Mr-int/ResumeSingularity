@@ -226,6 +226,18 @@
         width: 80%;
         padding: 50px 80px;
     }
+
+    .applicationForm__sunIcon {
+        position: absolute;
+        top: -95px;
+        left: -95px;
+    }
+
+    .applicationForm__cloudMailIcon {
+        position: absolute;
+        bottom: -30px;
+        right: -82px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -260,6 +272,18 @@
 
     .applicationForm__submit {
         padding: 8px 16px 8px 20px;
+    }
+
+    .applicationForm__sunIcon {
+        position: absolute;
+        top: -105px;
+        left: -115px;
+    }
+
+    .applicationForm__cloudMailIcon {
+        position: absolute;
+        bottom: -50px;
+        right: -82px;
     }
 }
 
@@ -316,6 +340,18 @@
     .applicationForm__submit {
         padding: 8px 14px 8px 16px;
         gap: 6px;
+    }
+
+    .applicationForm__sunIcon {
+        position: absolute;
+        top: -125px;
+        left: -115px;
+    }
+
+    .applicationForm__cloudMailIcon {
+        position: absolute;
+        bottom: -80px;
+        right: -82px;
     }
 }
 
