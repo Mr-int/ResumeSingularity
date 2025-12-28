@@ -39,7 +39,6 @@ const StudentResume = () => {
                 const data = await getStudentById(id);
                 setStudent(data);
 
-                // Portfolio
                 try {
                     const portfolioData = await getPortfolioByStudentId(id);
                     setPortfolio(portfolioData || []);
@@ -48,86 +47,44 @@ const StudentResume = () => {
                     setPortfolio([]);
                 }
 
-                // EDUCATION - ИСПРАВЛЕННЫЙ БЛОК
                 try {
-                    console.log('=== EDUCATION DEBUG ===');
-                    console.log('Raw student.education:', data.education);
-
-                    if (data.education && Array.isArray(data.education) && data.education.length > 0) {
+                    const educationIds = data.education || [];
+                    if (!Array.isArray(educationIds) || educationIds.length === 0) {
+                        setEducationDetails([]);
+                    } else {
                         const educationWithDetails = await Promise.all(
-                            data.education.map(async (edu, index) => {
+                            educationIds.map(async (eduId) => {
                                 try {
-                                    console.log(`[Education ${index}] Processing edu:`, edu);
-
-                                    // Если это уже полный объект с данными
-                                    if (typeof edu === 'object' && (edu.name || edu.institution || edu.speciality || edu.institutionId)) {
-                                        console.log(`[Education ${index}] Using existing object:`, edu);
-                                        return {
-                                            ...edu,
-                                            name: edu.name || edu.institution || `Образование ${index + 1}`
-                                        };
-                                    }
-
-                                    // Если это ID учреждения - загружаем детали
-                                    const institutionId = edu?.id || edu?.institutionId || edu;
-                                    if (institutionId && typeof institutionId === 'number') {
-                                        console.log(`[Education ${index}] Fetching institution details for ID:`, institutionId);
-                                        const details = await getInstitutionById(institutionId);
-                                        console.log(`[Education ${index}] Institution details:`, details);
-
-                                        if (details && (details.name || details.institution)) {
-                                            return {
-                                                ...details,
-                                                name: details.name || details.institution
-                                            };
-                                        }
-                                        return {
-                                            id: institutionId,
-                                            name: `Учреждение ID ${institutionId}`
-                                        };
-                                    }
-
-                                    // Fallback для любых других случаев
+                                    const details = await getInstitutionById(eduId);
                                     return {
-                                        id: edu || `edu_${index}`,
-                                        name: typeof edu === 'string' ? edu : `Образование ${index + 1}`
+                                        id: eduId,
+                                        ...details,
+                                        name: details?.name || details?.institution || `Учреждение ${eduId}`
                                     };
                                 } catch (err) {
-                                    console.error(`[Education ${index}] Error processing:`, err);
+                                    console.error('Failed to fetch institution:', err);
                                     return {
-                                        id: edu || `edu_${index}`,
-                                        name: typeof edu === 'string' ? edu : `Образование ${index + 1}`,
-                                        error: true
+                                        id: eduId,
+                                        name: `Ошибка загрузки ID ${eduId}`
                                     };
                                 }
                             })
                         );
-
-                        console.log('Processed educationDetails:', educationWithDetails);
                         setEducationDetails(educationWithDetails);
-                    } else {
-                        console.log('No education data found');
-                        setEducationDetails([]);
                     }
                 } catch (err) {
-                    console.error('Failed to process education:', err);
-                    setEducationDetails(data.education || []);
+                    console.error('Failed to fetch education:', err);
+                    setEducationDetails([]);
                 }
-                console.log('=== END EDUCATION DEBUG ===');
 
-                // EXPERIENCE
                 try {
                     if (data.experience && Array.isArray(data.experience) && data.experience.length > 0) {
-                        console.log('[StudentResume] Student experience IDs:', data.experience);
-
                         const experienceWithDetails = await Promise.all(
                             data.experience.map(async (exp) => {
                                 try {
                                     const experienceId = exp?.id || exp?.experienceId || exp;
                                     if (experienceId) {
-                                        console.log('[StudentResume] Fetching experience details for ID:', experienceId);
                                         const details = await getExperienceById(experienceId);
-                                        console.log('[StudentResume] Experience details:', details);
                                         return details || exp;
                                     }
                                     return exp;
@@ -137,7 +94,6 @@ const StudentResume = () => {
                                 }
                             })
                         );
-
                         setExperienceDetails(experienceWithDetails || []);
                     } else {
                         setExperienceDetails([]);
@@ -147,7 +103,6 @@ const StudentResume = () => {
                     setExperienceDetails([]);
                 }
 
-                // Similar students
                 try {
                     const allStudents = await getAllStudents();
                     const similar = allStudents
@@ -382,7 +337,6 @@ const StudentResume = () => {
                                             {edu.startDate && !edu.endDate && (
                                                 <p>С {edu.startDate}</p>
                                             )}
-                                            {edu.error && <p style={{ color: 'red' }}>Ошибка загрузки данных</p>}
                                         </div>
                                     ))
                                 ) : (
