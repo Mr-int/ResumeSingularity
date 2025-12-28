@@ -422,6 +422,79 @@
     pointer-events: auto;
 }
 
+.StudentResume__educationList {
+    margin-top: 20px;
+}
+
+.StudentResume__educationItem {
+    display: flex;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.StudentResume__educationTimeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 30px;
+    min-width: 120px;
+}
+
+.StudentResume__educationYears {
+    background-color: #f5f5f5;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 15px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.StudentResume__educationVerticalLine {
+    width: 2px;
+    background-color: #e0e0e0;
+    flex-grow: 1;
+    min-height: 40px;
+}
+
+.StudentResume__educationInfo {
+    flex: 1;
+    padding-bottom: 20px;
+}
+
+.StudentResume__educationName {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.StudentResume__educationSpeciality {
+    font-size: 1rem;
+    color: #bdf7ff;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.StudentResume__educationAdditional {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.StudentResume__educationLink {
+    font-size: 0.9rem;
+    color: #007bff;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.StudentResume__educationLink:hover {
+    text-decoration: underline;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -654,6 +727,25 @@
     .StudentResume__similarList {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 15px;
+    }
+
+    .StudentResume__educationItem {
+        flex-direction: column;
+    }
+
+    .StudentResume__educationTimeline {
+        flex-direction: row;
+        margin-right: 0;
+        margin-bottom: 15px;
+        align-items: center;
+        min-width: auto;
+    }
+
+    .StudentResume__educationVerticalLine {
+        width: 40px;
+        height: 2px;
+        margin: 0 15px;
+        min-height: 0;
     }
 }
 

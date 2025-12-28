@@ -49,24 +49,30 @@ const StudentResume = () => {
 
                 try {
                     console.log('Fetching institutions for student ID:', id);
-                    const institutions = await getInstitutionsByStudentId(id);
-                    console.log('Institutions response:', institutions);
+                    const response = await getInstitutionsByStudentId(id);
+                    console.log('Institutions response:', response);
 
-                    if (!Array.isArray(institutions) || institutions.length === 0) {
-                        console.log('No institutions found for student');
-                        setEducationDetails([]);
-                    } else {
-                        const formattedEducation = institutions.map(inst => ({
-                            id: inst.id,
-                            ...inst,
-                            name: inst.name || inst.institution || `Образовательное учреждение ${inst.id}`,
-                            speciality: inst.speciality || inst.specialization,
-                            startDate: inst.startDate || inst.startYear,
-                            endDate: inst.endDate || inst.endYear || inst.graduationYear
-                        }));
+                    if (response && response.educationsInstitution && Array.isArray(response.educationsInstitution)) {
+                        const formattedEducation = response.educationsInstitution.map((item, index) => {
+                            const educationInfo = item.education || {};
+                            const institutionInfo = item.educationInstitution || {};
+
+                            return {
+                                id: institutionInfo.id || educationInfo.id || index,
+                                name: educationInfo.institution || 'Образовательное учреждение',
+                                speciality: educationInfo.additionalInfo || educationInfo.speciality,
+                                startDate: institutionInfo.startYear ? institutionInfo.startYear.toString() : '',
+                                endDate: institutionInfo.endYear ? institutionInfo.endYear.toString() : '',
+                                webUrl: educationInfo.webUrl,
+                                additionalInfo: educationInfo.additionalInfo
+                            };
+                        });
 
                         console.log('Formatted education details:', formattedEducation);
                         setEducationDetails(formattedEducation);
+                    } else {
+                        console.log('No education data found');
+                        setEducationDetails([]);
                     }
                 } catch (err) {
                     console.error('Failed to fetch institutions:', err);
@@ -318,23 +324,43 @@ const StudentResume = () => {
                         {expandedEducation && (
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--no-border">
                                 {educationDetails.length > 0 ? (
-                                    educationDetails.map((edu, index) => (
-                                        <div key={edu.id || index} style={{ marginBottom: '30px' }}>
-                                            <h2>{edu.name || edu.institution || 'Образовательное учреждение'}</h2>
-                                            {edu.speciality && (
-                                                <p className="StudentResume__educationSubtitle">{edu.speciality}</p>
-                                            )}
-                                            {edu.startDate && edu.endDate && (
-                                                <p>{edu.startDate} - {edu.endDate}</p>
-                                            )}
-                                            {!edu.startDate && edu.endDate && (
-                                                <p>До {edu.endDate}</p>
-                                            )}
-                                            {edu.startDate && !edu.endDate && (
-                                                <p>С {edu.startDate}</p>
-                                            )}
-                                        </div>
-                                    ))
+                                    <div className="StudentResume__educationList">
+                                        {educationDetails.map((edu, index) => (
+                                            <div key={edu.id || index} className="StudentResume__educationItem">
+                                                <div className="StudentResume__educationTimeline">
+                                                    <div className="StudentResume__educationYears">
+                                                        {edu.startDate && edu.endDate ? (
+                                                            <span>{edu.startDate} - {edu.endDate}</span>
+                                                        ) : edu.startDate ? (
+                                                            <span>С {edu.startDate}</span>
+                                                        ) : edu.endDate ? (
+                                                            <span>До {edu.endDate}</span>
+                                                        ) : null}
+                                                    </div>
+                                                    <div className="StudentResume__educationVerticalLine"></div>
+                                                </div>
+                                                <div className="StudentResume__educationInfo">
+                                                    <h3 className="StudentResume__educationName">{edu.name}</h3>
+                                                    {edu.speciality && (
+                                                        <p className="StudentResume__educationSpeciality">{edu.speciality}</p>
+                                                    )}
+                                                    {edu.additionalInfo && (
+                                                        <p className="StudentResume__educationAdditional">{edu.additionalInfo}</p>
+                                                    )}
+                                                    {edu.webUrl && (
+                                                        <a
+                                                            href={edu.webUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="StudentResume__educationLink"
+                                                        >
+                                                            {edu.webUrl}
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ) : (
                                     <p>пока пусто :D</p>
                                 )}
@@ -358,7 +384,7 @@ const StudentResume = () => {
                                             <h4>Образование:</h4>
                                             {educationDetails.slice(0, 2).map((edu, index) => (
                                                 <p key={index}>
-                                                    {edu.name || edu.institution || 'Образовательное учреждение'}
+                                                    {edu.name}
                                                     {edu.speciality && ` - ${edu.speciality}`}
                                                 </p>
                                             ))}
