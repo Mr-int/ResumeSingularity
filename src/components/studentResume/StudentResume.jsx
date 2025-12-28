@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
+import face from "../../assets/other/test.png";
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
@@ -22,17 +23,9 @@ const StudentResume = () => {
     const [experienceDetails, setExperienceDetails] = useState([]);
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
-    const imgRef = useRef(null);
-    const [imageError, setImageError] = useState(false);
 
+    // Массив фоновых изображений для портфолио
     const portfolioBackgrounds = [BehindOrange, BehindPink, BehindBlue];
-
-    const handleImageError = useCallback(() => {
-        if (imgRef.current && !imageError) {
-            setImageError(true);
-            imgRef.current.src = face;
-        }
-    }, [imageError]);
 
     useEffect(() => {
         const fetchStudent = async () => {
@@ -47,6 +40,7 @@ const StudentResume = () => {
                 const data = await getStudentById(id);
                 setStudent(data);
 
+                // Fetch portfolio projects
                 try {
                     const portfolioData = await getPortfolioByStudentId(id);
                     setPortfolio(portfolioData || []);
@@ -55,14 +49,19 @@ const StudentResume = () => {
                     setPortfolio([]);
                 }
 
+                // Fetch education details using IDs from student data
                 try {
                     if (data.education && Array.isArray(data.education) && data.education.length > 0) {
+                        console.log('[StudentResume] Student education IDs:', data.education);
+
                         const educationWithDetails = await Promise.all(
                             data.education.map(async (edu) => {
                                 try {
                                     const institutionId = edu?.id || edu?.institutionId || edu;
                                     if (institutionId) {
+                                        console.log('[StudentResume] Fetching institution details for ID:', institutionId);
                                         const details = await getInstitutionById(institutionId);
+                                        console.log('[StudentResume] Institution details:', details);
                                         return details || edu;
                                     }
                                     return edu;
@@ -72,8 +71,10 @@ const StudentResume = () => {
                                 }
                             })
                         );
+
                         setEducationDetails(educationWithDetails || []);
                     } else {
+                        console.log('[StudentResume] No education data in student object');
                         setEducationDetails([]);
                     }
                 } catch (err) {
@@ -81,14 +82,19 @@ const StudentResume = () => {
                     setEducationDetails([]);
                 }
 
+                // Fetch experience details using IDs from student data
                 try {
                     if (data.experience && Array.isArray(data.experience) && data.experience.length > 0) {
+                        console.log('[StudentResume] Student experience IDs:', data.experience);
+
                         const experienceWithDetails = await Promise.all(
                             data.experience.map(async (exp) => {
                                 try {
                                     const experienceId = exp?.id || exp?.experienceId || exp;
                                     if (experienceId) {
+                                        console.log('[StudentResume] Fetching experience details for ID:', experienceId);
                                         const details = await getExperienceById(experienceId);
+                                        console.log('[StudentResume] Experience details:', details);
                                         return details || exp;
                                     }
                                     return exp;
@@ -98,8 +104,10 @@ const StudentResume = () => {
                                 }
                             })
                         );
+
                         setExperienceDetails(experienceWithDetails || []);
                     } else {
+                        console.log('[StudentResume] No experience data in student object');
                         setExperienceDetails([]);
                     }
                 } catch (err) {
@@ -107,6 +115,7 @@ const StudentResume = () => {
                     setExperienceDetails([]);
                 }
 
+                // Fetch similar students (exclude current student)
                 try {
                     const allStudents = await getAllStudents();
                     const similar = allStudents
@@ -148,6 +157,7 @@ const StudentResume = () => {
         return age;
     };
 
+    // Функция для получения случайного фона портфолио
     const getRandomPortfolioBackground = (index) => {
         return portfolioBackgrounds[index % portfolioBackgrounds.length];
     };
@@ -174,7 +184,9 @@ const StudentResume = () => {
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
     const imagePath = student.imagePath || student.image;
+    console.log('[StudentResume] Student imagePath:', imagePath, 'student object:', student);
     const imageSrc = imagePath ? getImageUrl(imagePath) : face;
+    console.log('[StudentResume] Final imageSrc:', imageSrc);
     const age = calculateAge(student.birthDate);
     const ageText = age ? `${age}лет` : '';
 
@@ -186,21 +198,7 @@ const StudentResume = () => {
                         <div className="StudentResume__header">
                             <div className="StudentResume__person">
                                 <div className="StudentResume__personFace">
-                                    <img
-                                        ref={imgRef}
-                                        src={imageSrc}
-                                        alt={`Фото ${fullName}`}
-                                        onError={handleImageError}
-                                        style={{
-                                            width: '340px',
-                                            height: '300px',
-                                            borderRadius: '22px',
-                                            border: '2px solid #fff',
-                                            position: 'absolute',
-                                            top: '-120px',
-                                            objectFit: 'cover'
-                                        }}
-                                    />
+                                    <img src={imageSrc} alt={`Фото ${fullName}`} width="300" height="300"/>
                                 </div>
 
                                 <div className="StudentResume__personName">
@@ -221,7 +219,7 @@ const StudentResume = () => {
                                 {student.city && <span>г.{student.city}</span>}
                                 {student.hhLink && (
                                     <span>
-                                        <a href={student.hhLink} target="_blank" rel="noopener noreferrer">
+                                        <a href={student.hhLink} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
                                             Анкета hh.ru
                                         </a>
                                     </span>
@@ -257,25 +255,34 @@ const StudentResume = () => {
                                 <div className="StudentResume__portfolio">
                                     {portfolio && portfolio.length > 0 ? (
                                         portfolio.map((project, index) => (
-                                            <a
+                                            <div
                                                 key={project.id || index}
-                                                href={project.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
                                                 className="StudentResume__portfolioItem"
                                                 style={{
                                                     backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
+                                                    backgroundSize: 'cover',
+                                                    backgroundPosition: 'center'
                                                 }}
                                             >
-                                                <div className="StudentResume__portfolioContent">
-                                                    {project.name && (
+                                                {project.name && (
+                                                    <div className="StudentResume__portfolioContent">
                                                         <p className="StudentResume__portfolioTitle">{project.name}</p>
-                                                    )}
-                                                    {project.description && (
-                                                        <p className="StudentResume__portfolioDescription">{project.description}</p>
-                                                    )}
-                                                </div>
-                                            </a>
+                                                        {project.description && (
+                                                            <p className="StudentResume__portfolioDescription">{project.description}</p>
+                                                        )}
+                                                        {project.link && (
+                                                            <a
+                                                                href={project.link}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="StudentResume__portfolioLink"
+                                                            >
+                                                                Ссылка на проект →
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         ))
                                     ) : (
                                         <div className="StudentResume__portfolioItem" style={{ backgroundImage: `url(${getRandomPortfolioBackground(0)})` }}>
@@ -298,6 +305,7 @@ const StudentResume = () => {
                     </div>
                 </div>
 
+                {/* Остальной код без изменений */}
                 <div className="StudentResume__additionalSections">
                     <div className="StudentResume__expandableSection">
                         <div className="StudentResume__expandableHeader" onClick={toggleExperience}>
@@ -414,8 +422,11 @@ const StudentResume = () => {
                                     key={similarStudent.id}
                                     to={`/studentsResume/${similarStudent.id}`}
                                     className="StudentResume__similarLink"
+                                    style={{ textDecoration: 'none', color: 'inherit' }}
                                 >
-                                    <StudentSliderCard student={similarStudent} />
+                                    <StudentSliderCard
+                                        student={similarStudent}
+                                    />
                                 </Link>
                             ))}
                         </div>
