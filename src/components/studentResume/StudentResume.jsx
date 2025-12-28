@@ -39,6 +39,7 @@ const StudentResume = () => {
                 const data = await getStudentById(id);
                 setStudent(data);
 
+                // Portfolio
                 try {
                     const portfolioData = await getPortfolioByStudentId(id);
                     setPortfolio(portfolioData || []);
@@ -47,38 +48,74 @@ const StudentResume = () => {
                     setPortfolio([]);
                 }
 
+                // EDUCATION - ИСПРАВЛЕННЫЙ БЛОК
                 try {
-                    if (data.education && Array.isArray(data.education) && data.education.length > 0) {
-                        console.log('[StudentResume] Student education IDs:', data.education);
+                    console.log('=== EDUCATION DEBUG ===');
+                    console.log('Raw student.education:', data.education);
 
+                    if (data.education && Array.isArray(data.education) && data.education.length > 0) {
                         const educationWithDetails = await Promise.all(
-                            data.education.map(async (edu) => {
+                            data.education.map(async (edu, index) => {
                                 try {
-                                    const institutionId = edu?.id || edu?.institutionId || edu;
-                                    if (institutionId) {
-                                        console.log('[StudentResume] Fetching institution details for ID:', institutionId);
-                                        const details = await getInstitutionById(institutionId);
-                                        console.log('[StudentResume] Institution details:', details);
-                                        return details || edu;
+                                    console.log(`[Education ${index}] Processing edu:`, edu);
+
+                                    // Если это уже полный объект с данными
+                                    if (typeof edu === 'object' && (edu.name || edu.institution || edu.speciality || edu.institutionId)) {
+                                        console.log(`[Education ${index}] Using existing object:`, edu);
+                                        return {
+                                            ...edu,
+                                            name: edu.name || edu.institution || `Образование ${index + 1}`
+                                        };
                                     }
-                                    return edu;
+
+                                    // Если это ID учреждения - загружаем детали
+                                    const institutionId = edu?.id || edu?.institutionId || edu;
+                                    if (institutionId && typeof institutionId === 'number') {
+                                        console.log(`[Education ${index}] Fetching institution details for ID:`, institutionId);
+                                        const details = await getInstitutionById(institutionId);
+                                        console.log(`[Education ${index}] Institution details:`, details);
+
+                                        if (details && (details.name || details.institution)) {
+                                            return {
+                                                ...details,
+                                                name: details.name || details.institution
+                                            };
+                                        }
+                                        return {
+                                            id: institutionId,
+                                            name: `Учреждение ID ${institutionId}`
+                                        };
+                                    }
+
+                                    // Fallback для любых других случаев
+                                    return {
+                                        id: edu || `edu_${index}`,
+                                        name: typeof edu === 'string' ? edu : `Образование ${index + 1}`
+                                    };
                                 } catch (err) {
-                                    console.error('Failed to fetch institution details:', err);
-                                    return edu;
+                                    console.error(`[Education ${index}] Error processing:`, err);
+                                    return {
+                                        id: edu || `edu_${index}`,
+                                        name: typeof edu === 'string' ? edu : `Образование ${index + 1}`,
+                                        error: true
+                                    };
                                 }
                             })
                         );
 
-                        setEducationDetails(educationWithDetails || []);
+                        console.log('Processed educationDetails:', educationWithDetails);
+                        setEducationDetails(educationWithDetails);
                     } else {
-                        console.log('[StudentResume] No education data in student object');
+                        console.log('No education data found');
                         setEducationDetails([]);
                     }
                 } catch (err) {
-                    console.error('Failed to fetch education:', err);
-                    setEducationDetails([]);
+                    console.error('Failed to process education:', err);
+                    setEducationDetails(data.education || []);
                 }
+                console.log('=== END EDUCATION DEBUG ===');
 
+                // EXPERIENCE
                 try {
                     if (data.experience && Array.isArray(data.experience) && data.experience.length > 0) {
                         console.log('[StudentResume] Student experience IDs:', data.experience);
@@ -103,7 +140,6 @@ const StudentResume = () => {
 
                         setExperienceDetails(experienceWithDetails || []);
                     } else {
-                        console.log('[StudentResume] No experience data in student object');
                         setExperienceDetails([]);
                     }
                 } catch (err) {
@@ -111,6 +147,7 @@ const StudentResume = () => {
                     setExperienceDetails([]);
                 }
 
+                // Similar students
                 try {
                     const allStudents = await getAllStudents();
                     const similar = allStudents
@@ -178,9 +215,7 @@ const StudentResume = () => {
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
     const imagePath = student.imagePath || student.image;
-    console.log('[StudentResume] Student imagePath:', imagePath, 'student object:', student);
     const imageSrc = imagePath ? getImageUrl(imagePath) : face;
-    console.log('[StudentResume] Final imageSrc:', imageSrc);
     const age = calculateAge(student.birthDate);
     const ageText = age ? `${age}лет` : '';
 
@@ -213,10 +248,10 @@ const StudentResume = () => {
                                 {student.city && <span>г.{student.city}</span>}
                                 {student.hhLink && (
                                     <span>
-<a href={student.hhLink} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-Анкета hh.ru
-</a>
-</span>
+                                        <a href={student.hhLink} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                                            Анкета hh.ru
+                                        </a>
+                                    </span>
                                 )}
                             </div>
                         </div>
@@ -235,8 +270,8 @@ const StudentResume = () => {
                                     {student.skills && student.skills.length > 0 ? (
                                         student.skills.map((skill) => (
                                             <span key={skill.id} className="StudentResume__skillCapsule">
-{skill.name}
-</span>
+                                                {skill.name}
+                                            </span>
                                         ))
                                     ) : (
                                         <span className="StudentResume__skillCapsule">Навыки не указаны</span>
@@ -334,9 +369,7 @@ const StudentResume = () => {
                                 {educationDetails.length > 0 ? (
                                     educationDetails.map((edu, index) => (
                                         <div key={edu.id || index} style={{ marginBottom: '30px' }}>
-                                            {edu.name || edu.institution ? (
-                                                <h2>{edu.name || edu.institution}</h2>
-                                            ) : null}
+                                            <h2>{edu.name || edu.institution || 'Образовательное учреждение'}</h2>
                                             {edu.speciality && (
                                                 <p className="StudentResume__educationSubtitle">{edu.speciality}</p>
                                             )}
@@ -349,6 +382,7 @@ const StudentResume = () => {
                                             {edu.startDate && !edu.endDate && (
                                                 <p>С {edu.startDate}</p>
                                             )}
+                                            {edu.error && <p style={{ color: 'red' }}>Ошибка загрузки данных</p>}
                                         </div>
                                     ))
                                 ) : (
@@ -408,9 +442,7 @@ const StudentResume = () => {
                                     className="StudentResume__similarLink"
                                     style={{ textDecoration: 'none', color: 'inherit' }}
                                 >
-                                    <StudentSliderCard
-                                        student={similarStudent}
-                                    />
+                                    <StudentSliderCard student={similarStudent} />
                                 </Link>
                             ))}
                         </div>
