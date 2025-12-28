@@ -110,12 +110,17 @@
     max-height: 90px;
 }
 
-.read-more {
-    display: inline-block;
+.read-more-link {
+    display: inline-block !important;
     color: #4a90e2;
     font-weight: 500;
     margin-top: 8px;
-    cursor: pointer;
+    text-decoration: none;
+    font-size: 18px;
+    font-family: 'StratosSkyeng';
+}
+
+.read-more-link:hover {
     text-decoration: underline;
 }
 
@@ -127,7 +132,6 @@
     height: 45px;
     font-size: 24px;
     color: #fff;
-    justify-self: flex-end;
     letter-spacing: 1px;
     text-decoration: none;
     display: flex;
@@ -137,6 +141,7 @@
     font-weight: 300;
     flex-shrink: 0;
     transition: all 0.3s ease;
+    align-self: flex-end;
 }
 
 .studentsCard__button:hover {
@@ -193,6 +198,10 @@
         font-size: 22px;
     }
 
+    .read-more-link {
+        font-size: 17px;
+    }
+
     .course4 {
         height: 28px;
     }
@@ -241,6 +250,10 @@
         font-size: 20px;
     }
 
+    .read-more-link {
+        font-size: 16px;
+    }
+
     .course4 {
         height: 26px;
     }
@@ -274,6 +287,7 @@
     .studentsCard__button {
         width: 100%;
         max-width: 280px;
+        height: 45px;
         align-self: center;
         order: 3;
         margin-top: auto;
@@ -317,6 +331,11 @@
         -webkit-line-clamp: 4;
         max-height: none;
         white-space: normal;
+    }
+
+    .read-more-link {
+        font-size: 16px;
+        margin-top: 12px;
     }
 
     .course4 {
@@ -389,6 +408,11 @@
         order: 3;
         margin-top: auto;
     }
+
+    .read-more-link {
+        font-size: 14px;
+        margin-top: 6px;
+    }
 }
 
 @media (max-width: 400px) {
@@ -425,6 +449,15 @@
         font-size: 13px;
         -webkit-line-clamp: 2 !important;
     }
+
+    .studentsCard__button {
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .read-more-link {
+        font-size: 13px;
+    }
 }
 
 @media (max-width: 360px) {
@@ -444,5 +477,14 @@
         font-size: 10px;
         padding: 2px 4px;
         height: 16px;
+    }
+
+    .studentsCard__button {
+        height: 34px;
+        font-size: 13px;
+    }
+
+    .read-more-link {
+        font-size: 12px;
     }
 }

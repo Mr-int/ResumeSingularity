@@ -23,8 +23,6 @@ const StudentsListCard = ({ student }) => {
             : student.bio)
         : 'Описание отсутствует';
 
-    const toggleBio = () => setShowFullBio(!showFullBio);
-
     const skills = student.skills && student.skills.length > 0
         ? student.skills.slice(0, 4)
         : [{ id: 1, name: 'Навыки не указаны' }];
@@ -55,12 +53,12 @@ const StudentsListCard = ({ student }) => {
                     <p>
                         {bioPreview}
                         {isBioTruncated && !showFullBio && (
-                            <span
-                                className="read-more"
-                                onClick={toggleBio}
+                            <Link
+                                to={`/studentsResume/${student.id}`}
+                                className="read-more-link"
                             >
-                                Читать дальше
-                            </span>
+                                Смотреть резюме
+                            </Link>
                         )}
                     </p>
                 </div>
