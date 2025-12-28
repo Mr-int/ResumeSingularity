@@ -15,9 +15,10 @@ const StudentSlider = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [listWrapperStyle, setListWrapperStyle] = useState({});
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
-    const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -48,6 +49,30 @@ const StudentSlider = () => {
 
         fetchStudents();
     }, []);
+
+    useEffect(() => {
+        const updatePosition = () => {
+            if (!listWrapperRef.current || students.slice(0, 5).length === 0) return;
+
+            const wrapper = listWrapperRef.current;
+            const activeIndex = Math.min(activeCardIndex, students.slice(0, 5).length - 1);
+            const activeContainer = wrapper.children[activeIndex];
+
+            if (activeContainer) {
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const activeRect = activeContainer.getBoundingClientRect();
+                const offset = (wrapperRect.width / 2) - (activeRect.width / 2) - activeRect.left + wrapperRect.left;
+
+                setListWrapperStyle({
+                    transform: `translateX(${offset}px)`
+                });
+            }
+        };
+
+        requestAnimationFrame(updatePosition);
+        window.addEventListener('resize', updatePosition);
+        return () => window.removeEventListener('resize', updatePosition);
+    }, [activeCardIndex, students]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -140,7 +165,7 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div className="studentSlider__listWrapper" ref={listWrapperRef}>
+                                <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
                                     {displayedStudents.map((student, index) => (
                                         <div
                                             key={student.id}

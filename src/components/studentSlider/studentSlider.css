@@ -160,24 +160,24 @@
     flex-direction: row;
     align-items: center;
     gap: 25px;
-    transition: transform 0.5s ease;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     width: max-content;
     margin: 0 auto;
+    will-change: transform;
 }
 
 .studentSlider__cardContainer {
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
 
 .studentSlider__cardContainer.active {
-    order: 0;
     z-index: 3;
 }
 
 .studentSlider__cardContainer:not(.active) {
-    opacity: 0.7;
-    transform: scale(0.9);
+    opacity: 0.6;
+    transform: scale(0.85);
 }
 
 .studentSlider__listButton {
@@ -208,7 +208,7 @@
     width: 100%;
     justify-content: center;
     align-items: center;
-    gap: 50px;
+    gap: 20px;
     margin-top: 20px;
 }
 
@@ -538,6 +538,8 @@
         -ms-overflow-style: none;
         padding-bottom: 10px;
         justify-content: flex-start;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
     }
 
     .studentSlider__list::-webkit-scrollbar {
@@ -550,6 +552,10 @@
         justify-content: flex-start;
         padding: 10px;
         flex-shrink: 0;
+    }
+
+    .studentSlider__cardContainer.active {
+        scroll-snap-align: center;
     }
 
     .studentSlider__button {
@@ -630,7 +636,6 @@
     }
 
     .studentSlider__mobileControls {
-        gap: 40px;
         margin-top: 15px;
     }
 
@@ -677,10 +682,6 @@
     .studentSlider__listWrapper {
         gap: 6px;
         padding: 10px;
-    }
-
-    .studentSlider__mobileControls {
-        gap: 30px;
     }
 
     .studentSlider__mobileButton {
@@ -754,7 +755,7 @@
     }
 
     .studentSlider__mobileControls {
-        gap: 25px;
+        gap: 20px;
     }
 
     .studentSlider__mobileButton {
@@ -792,10 +793,6 @@
         padding: 10px;
     }
 
-    .studentSlider__mobileControls {
-        gap: 20px;
-    }
-
     .studentSlider__mobileButton {
         width: 32px;
         height: 32px;
@@ -810,15 +807,5 @@
         width: 180px;
         height: 32px;
         font-size: 13px;
-    }
-}
-
-@media (max-width: 768px) {
-    .studentSlider__listButton.desktop-only {
-        display: none;
-    }
-
-    .studentSlider__mobileControls {
-        display: flex;
     }
 }
