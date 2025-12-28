@@ -56,6 +56,7 @@ const StudentResume = () => {
                             educationIds.map(async (eduId) => {
                                 try {
                                     const details = await getInstitutionById(eduId);
+                                    console.log('Response from /institution/getById/', eduId, ':', details);
                                     return {
                                         id: eduId,
                                         ...details,
