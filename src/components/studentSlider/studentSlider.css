@@ -87,7 +87,6 @@
     transition: all 0.3s ease;
 }
 
-/* Убираем placeholder полностью на всех устройствах в адаптиве */
 .studentSlider__search::placeholder {
     color: rgba(255, 255, 255, 0.8);
     font-size: 20px;
@@ -204,7 +203,6 @@
     box-shadow: 0 5px 15px rgba(233, 90, 87, 0.3);
 }
 
-/* Адаптив для планшетов (1024px и меньше) */
 @media (max-width: 1024px) {
     .studentSlider__content {
         padding: 30px 35px;

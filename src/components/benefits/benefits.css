@@ -1,16 +1,15 @@
 .benefits {
     width: 100%;
-    height: fit-content;
     background: #000;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding-top: 80px;
+    padding: 80px 0;
 }
 
 .benefits__wrapper {
     width: 90%;
-    height: 100%;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -23,10 +22,11 @@
     font-family: 'StratosSkyeng';
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 10px;
     font-weight: 300;
+    margin-bottom: 40px;
 }
 
 .gradient-text {
@@ -68,9 +68,9 @@
     display: flex;
     flex-direction: row;
     gap: 20px;
+    width: 100%;
     overflow-x: auto;
     padding: 20px 0;
-    width: 100%;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -90,9 +90,7 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-end;
-    font-size: 24px;
     color: #333;
-    gap: 10px;
     padding: 18px;
     position: relative;
     overflow: hidden;
@@ -123,6 +121,7 @@
     font-size: 26px;
     text-align: left;
     font-weight: 400;
+    margin-bottom: 10px;
 }
 
 .benefits__card span {
@@ -163,4 +162,99 @@
     height: 240px;
     right: -5%;
     transform: rotate(34deg);
+}
+
+@media (max-width: 768px) {
+    .benefits {
+        padding: 60px 0;
+    }
+
+    .benefits__wrapper {
+        width: 92%;
+    }
+
+    .benefits__title {
+        font-size: 24px;
+        margin-bottom: 30px;
+    }
+
+    .benefits__cards {
+        flex-direction: column;
+        gap: 16px;
+        overflow-x: visible;
+    }
+
+    .benefits__card {
+        width: 100%;
+        height: 280px;
+        padding: 20px;
+    }
+
+    .benefits__card-title {
+        font-size: 22px;
+    }
+
+    .benefits__card span {
+        font-size: 16px;
+    }
+
+    .benefits__card__purple img {
+        width: 200px;
+        height: 230px;
+    }
+
+    .benefits__card__green img {
+        width: 210px;
+        height: 210px;
+    }
+
+    .benefits__card__blue img {
+        width: 200px;
+        height: 230px;
+    }
+
+    .benefits__card__orange img {
+        width: 210px;
+        height: 210px;
+    }
+}
+
+@media (max-width: 480px) {
+    .benefits__title {
+        font-size: 20px;
+    }
+
+    .benefits__card {
+        height: 260px;
+        padding: 18px;
+    }
+
+    .benefits__card-title {
+        font-size: 20px;
+    }
+
+    .benefits__card span {
+        font-size: 15px;
+        width: 75%;
+    }
+
+    .benefits__card__purple img {
+        width: 180px;
+        height: 210px;
+    }
+
+    .benefits__card__green img {
+        width: 190px;
+        height: 190px;
+    }
+
+    .benefits__card__blue img {
+        width: 180px;
+        height: 210px;
+    }
+
+    .benefits__card__orange img {
+        width: 190px;
+        height: 190px;
+    }
 }

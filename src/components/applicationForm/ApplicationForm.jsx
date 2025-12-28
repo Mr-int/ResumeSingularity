@@ -24,7 +24,6 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
         e.preventDefault();
         setError('');
 
-        // Валидация
         if (!formData.name.trim()) {
             setError('Пожалуйста, укажите ваше имя');
             return;
@@ -36,12 +35,10 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
 
         setLoading(true);
         try {
-            // Здесь можно добавить отправку данных на сервер
             console.log('Application form data:', { ...formData, studentName });
             if (onSubmit) {
                 await onSubmit(formData);
             }
-            // Закрываем форму после успешной отправки
             onClose();
         } catch (err) {
             setError('Ошибка при отправке заявки. Попробуйте еще раз.');
@@ -55,17 +52,20 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
         <div className="applicationForm__overlay" onClick={onClose}>
             <div className="applicationForm__content" onClick={(e) => e.stopPropagation()}>
                 <button className="applicationForm__close" onClick={onClose}>×</button>
-                <h2 className="applicationForm__title">
-                    {studentName ? 'Оставить заявку' : 'Связаться с нами'}
-                </h2>
+
+                <div className="applicationForm__info">
+                    Отправьте заявку — мы свяжемся с вами в течение 24 часов, уточним задачу и подберём студентов, которые лучше всего подойдут.
+                </div>
+
                 {studentName && (
                     <p className="applicationForm__subtitle">
                         Вы подаете заявку на студента: <strong>{studentName}</strong>
                     </p>
                 )}
+
                 <form onSubmit={handleSubmit} className="applicationForm__form">
                     <div className="applicationForm__field">
-                        <label htmlFor="name">Ваше имя *</label>
+                        <label htmlFor="name">Имя Фамилия</label>
                         <input
                             id="name"
                             name="name"
@@ -77,8 +77,23 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
                             placeholder="Введите ваше имя"
                         />
                     </div>
+
                     <div className="applicationForm__field">
-                        <label htmlFor="telegram">Телеграмм</label>
+                        <label htmlFor="project">Компания или проект</label>
+                        <input
+                            id="project"
+                            name="project"
+                            type="text"
+                            value={formData.project}
+                            onChange={handleChange}
+                            required
+                            disabled={loading}
+                            placeholder='ООО "Компания"'
+                        />
+                    </div>
+
+                    <div className="applicationForm__field">
+                        <label htmlFor="telegram">Телеграмм для связи</label>
                         <input
                             id="telegram"
                             name="telegram"
@@ -89,8 +104,9 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
                             placeholder="@username"
                         />
                     </div>
+
                     <div className="applicationForm__field">
-                        <label htmlFor="email">Почта</label>
+                        <label htmlFor="email">Ваша почта</label>
                         <input
                             id="email"
                             name="email"
@@ -101,22 +117,14 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
                             placeholder="example@mail.com"
                         />
                     </div>
-                    <div className="applicationForm__field">
-                        <label htmlFor="project">Проект</label>
-                        <textarea
-                            id="project"
-                            name="project"
-                            value={formData.project}
-                            onChange={handleChange}
-                            disabled={loading}
-                            placeholder="Опишите ваш проект или вопрос"
-                            rows="4"
-                        />
-                    </div>
+
                     {error && <div className="applicationForm__error">{error}</div>}
-                    <button type="submit" className="applicationForm__submit" disabled={loading}>
-                        {loading ? 'Отправка...' : studentName ? 'Оставить заявку' : 'Связаться'}
-                    </button>
+
+                    <div className="applicationForm__button-container">
+                        <button type="submit" className="applicationForm__submit" disabled={loading}>
+                            {loading ? 'Отправка...' : studentName ? 'Оставить заявку' : 'Связаться'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -124,4 +132,3 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
 };
 
 export default ApplicationForm;
-

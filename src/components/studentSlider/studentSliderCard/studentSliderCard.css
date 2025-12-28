@@ -103,3 +103,269 @@
 .student-slider-card--active .student-slider-card__job {
     font-size: 16px;
 }
+
+@media (max-width: 1200px) {
+    .student-slider-card {
+        width: 200px;
+        height: 320px;
+    }
+
+    .student-slider-card--active {
+        width: 240px;
+        height: 350px;
+    }
+
+    .student-slider-card__name {
+        font-size: 22px;
+    }
+
+    .student-slider-card--active .student-slider-card__name {
+        font-size: 24px;
+    }
+
+    .student-slider-card__course, .student-slider-card__extraIco {
+        width: 36px;
+        height: 36px;
+        left: 8px;
+    }
+
+    .student-slider-card--active .student-slider-card__course {
+        width: 85px;
+    }
+
+    .student-slider-card__courseIco {
+        width: 36px;
+    }
+}
+
+@media (max-width: 992px) {
+    .student-slider-card {
+        width: 180px;
+        height: 290px;
+        gap: 10px;
+    }
+
+    .student-slider-card--active {
+        width: 210px;
+        height: 320px;
+    }
+
+    .student-slider-card__name {
+        font-size: 20px;
+    }
+
+    .student-slider-card--active .student-slider-card__name {
+        font-size: 22px;
+    }
+
+    .student-slider-card__job {
+        font-size: 13px;
+    }
+
+    .student-slider-card--active .student-slider-card__job {
+        font-size: 15px;
+    }
+
+    .student-slider-card__course, .student-slider-card__extraIco {
+        width: 32px;
+        height: 32px;
+        left: 6px;
+    }
+
+    .student-slider-card__extraIco {
+        bottom: 50px;
+    }
+
+    .student-slider-card--active .student-slider-card__course {
+        width: 80px;
+    }
+
+    .student-slider-card__courseIco {
+        width: 32px;
+    }
+
+    .student-slider-card__extraIco img {
+        width: 18px;
+        height: 26px;
+    }
+}
+
+@media (max-width: 768px) {
+    .student-slider-card {
+        width: 160px;
+        height: 260px;
+        padding: 5px;
+        gap: 8px;
+    }
+
+    .student-slider-card--active {
+        width: 180px;
+        height: 290px;
+        padding: 6px;
+    }
+
+    .student-slider-card__name {
+        font-size: 18px;
+        width: 100%;
+    }
+
+    .student-slider-card--active .student-slider-card__name {
+        font-size: 20px;
+    }
+
+    .student-slider-card__job {
+        font-size: 12px;
+    }
+
+    .student-slider-card--active .student-slider-card__job {
+        font-size: 14px;
+    }
+
+    .student-slider-card__course, .student-slider-card__extraIco {
+        width: 28px;
+        height: 28px;
+        left: 5px;
+    }
+
+    .student-slider-card__extraIco {
+        bottom: 45px;
+    }
+
+    .student-slider-card--active .student-slider-card__course {
+        width: 75px;
+        padding-right: 4px;
+    }
+
+    .student-slider-card__courseIco {
+        width: 28px;
+    }
+
+    .student-slider-card__extraIco img {
+        width: 16px;
+        height: 24px;
+    }
+}
+
+@media (max-width: 576px) {
+    .student-slider-card {
+        width: 140px;
+        height: 230px;
+        border-radius: 10px;
+        padding: 4px;
+        gap: 6px;
+    }
+
+    .student-slider-card--active {
+        width: 150px;
+        height: 250px;
+        border-radius: 10px;
+        padding: 5px;
+    }
+
+    .student-slider-card__photo {
+        border-radius: 6px;
+    }
+
+    .student-slider-card__name {
+        font-size: 16px;
+    }
+
+    .student-slider-card--active .student-slider-card__name {
+        font-size: 18px;
+    }
+
+    .student-slider-card__job {
+        font-size: 11px;
+    }
+
+    .student-slider-card--active .student-slider-card__job {
+        font-size: 13px;
+    }
+
+    .student-slider-card__course, .student-slider-card__extraIco {
+        width: 24px;
+        height: 24px;
+        left: 4px;
+        border-radius: 5px;
+    }
+
+    .student-slider-card__extraIco {
+        bottom: 40px;
+    }
+
+    .student-slider-card--active .student-slider-card__course {
+        width: 70px;
+        padding-right: 3px;
+        font-size: 14px;
+    }
+
+    .student-slider-card__courseIco {
+        width: 24px;
+    }
+
+    .student-slider-card__extraIco img {
+        width: 14px;
+        height: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-slider-card {
+        width: 130px;
+        height: 210px;
+        border-width: 1px;
+    }
+
+    .student-slider-card--active {
+        width: 140px;
+        height: 230px;
+        border-width: 1px;
+    }
+
+    .student-slider-card__name {
+        font-size: 15px;
+    }
+
+    .student-slider-card--active .student-slider-card__name {
+        font-size: 16px;
+    }
+
+    .student-slider-card__course, .student-slider-card__extraIco {
+        width: 22px;
+        height: 22px;
+    }
+
+    .student-slider-card--active .student-slider-card__course {
+        width: 65px;
+        font-size: 13px;
+    }
+
+    .student-slider-card__courseIco {
+        width: 22px;
+    }
+}
+
+@media (max-width: 360px) {
+    .student-slider-card {
+        width: 120px;
+        height: 190px;
+    }
+
+    .student-slider-card--active {
+        width: 130px;
+        height: 210px;
+    }
+
+    .student-slider-card__name {
+        font-size: 14px;
+    }
+
+    .student-slider-card--active .student-slider-card__name {
+        font-size: 15px;
+    }
+
+    .student-slider-card--active .student-slider-card__course {
+        width: 60px;
+        font-size: 12px;
+    }
+}

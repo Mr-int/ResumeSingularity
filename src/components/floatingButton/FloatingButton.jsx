@@ -9,12 +9,10 @@ const FloatingButton = () => {
     const [studentName, setStudentName] = useState(null);
     const location = useLocation();
     
-    // Проверяем, находимся ли мы на странице резюме студента
     const isStudentPage = location.pathname.includes('/studentsResume/');
     const studentId = isStudentPage ? location.pathname.split('/studentsResume/')[1]?.split('/')[0] : null;
 
     useEffect(() => {
-        // Если мы на странице студента, получаем его имя
         if (isStudentPage && studentId) {
             const fetchStudentName = async () => {
                 try {
