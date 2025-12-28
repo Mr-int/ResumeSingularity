@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
 import face from "../../assets/other/test.png";
@@ -23,8 +23,17 @@ const StudentResume = () => {
     const [experienceDetails, setExperienceDetails] = useState([]);
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
+    const imgRef = useRef(null);
+    const [imageError, setImageError] = useState(false);
 
     const portfolioBackgrounds = [BehindOrange, BehindPink, BehindBlue];
+
+    const handleImageError = useCallback(() => {
+        if (imgRef.current && !imageError) {
+            setImageError(true);
+            imgRef.current.src = face;
+        }
+    }, [imageError]);
 
     useEffect(() => {
         const fetchStudent = async () => {
@@ -179,8 +188,10 @@ const StudentResume = () => {
                             <div className="StudentResume__person">
                                 <div className="StudentResume__personFace">
                                     <img
+                                        ref={imgRef}
                                         src={imageSrc}
                                         alt={`Фото ${fullName}`}
+                                        onError={handleImageError}
                                         style={{
                                             width: '340px',
                                             height: '300px',

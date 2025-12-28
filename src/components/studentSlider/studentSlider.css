@@ -159,7 +159,6 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 25px;
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     width: max-content;
     margin: 0 auto;
@@ -327,10 +326,6 @@
         gap: 20px;
     }
 
-    .studentSlider__listWrapper {
-        gap: 20px;
-    }
-
     .studentSlider__listButton {
         width: 42px;
         height: 42px;
@@ -469,10 +464,6 @@
         gap: 15px;
     }
 
-    .studentSlider__listWrapper {
-        gap: 15px;
-    }
-
     .studentSlider__listButton {
         width: 40px;
         height: 40px;
@@ -547,7 +538,6 @@
     }
 
     .studentSlider__listWrapper {
-        gap: 10px;
         width: max-content;
         justify-content: flex-start;
         padding: 10px;
@@ -631,7 +621,6 @@
     }
 
     .studentSlider__listWrapper {
-        gap: 8px;
         padding: 10px;
     }
 
@@ -680,7 +669,6 @@
     }
 
     .studentSlider__listWrapper {
-        gap: 6px;
         padding: 10px;
     }
 
@@ -750,7 +738,6 @@
     }
 
     .studentSlider__listWrapper {
-        gap: 5px;
         padding: 10px;
     }
 
