@@ -554,6 +554,11 @@
     line-height: 1.4;
 }
 
+.StudentResume__numbersImg {
+    position: absolute;
+    right: 0;
+}
+
 @keyframes fadeIn {
     from {
         opacity: 0;

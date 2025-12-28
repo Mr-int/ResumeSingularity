@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./studentsList.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
@@ -11,7 +11,9 @@ const StudentsList = () => {
     const [error, setError] = useState(null);
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [filterExpanded, setFilterExpanded] = useState(false);
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const searchRef = useRef(null);
+    const filterRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -30,16 +32,33 @@ const StudentsList = () => {
         fetchStudents();
 
         const handleResize = () => {
-            setIsMobile(window.innerWidth <= 600);
-            if (window.innerWidth > 600) {
+            const mobile = window.innerWidth <= 768;
+            setIsMobile(mobile);
+            if (!mobile) {
                 setSearchExpanded(false);
                 setFilterExpanded(false);
             }
         };
 
+        const handleClickOutside = (event) => {
+            if (isMobile) {
+                if (searchExpanded && searchRef.current && !searchRef.current.contains(event.target)) {
+                    setSearchExpanded(false);
+                }
+                if (filterExpanded && filterRef.current && !filterRef.current.contains(event.target)) {
+                    setFilterExpanded(false);
+                }
+            }
+        };
+
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMobile, searchExpanded, filterExpanded]);
 
     const handleSearchClick = () => {
         if (isMobile) {
@@ -56,12 +75,6 @@ const StudentsList = () => {
             if (!filterExpanded) {
                 setSearchExpanded(false);
             }
-        }
-    };
-
-    const handleSearchBlur = () => {
-        if (isMobile && searchExpanded) {
-            setSearchExpanded(false);
         }
     };
 
@@ -93,6 +106,7 @@ const StudentsList = () => {
                         <h2 className="studentsList__title">Студенты</h2>
 
                         <div
+                            ref={searchRef}
                             className={`studentsList__search-wrapper ${searchExpanded ? 'expanded' : ''}`}
                             onClick={handleSearchClick}
                         >
@@ -104,12 +118,12 @@ const StudentsList = () => {
                                 type="text"
                                 className="studentsList__search"
                                 placeholder="Профессия / Стэк ..."
-                                onBlur={handleSearchBlur}
                                 autoFocus={searchExpanded}
                             />
                         </div>
 
                         <button
+                            ref={filterRef}
                             className={`studentsList__filter ${filterExpanded ? 'expanded' : ''}`}
                             onClick={handleFilterClick}
                         >

@@ -9,6 +9,7 @@ import BehindBlue from "../../assets/other/BehindBlue.png";
 import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getExperienceByStudentId, getAllStudents } from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
+import numbersImg from "../../assets/other/numbers.png";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -199,6 +200,7 @@ const StudentResume = () => {
         <section className="StudentResume">
             <div className="StudentResume__mainContent">
                 <div className="StudentResume__wrapper">
+                    <img src={numbersImg} alt="" className="StudentResume__numbersImg"/>
                     <div className="StudentResume__profile">
                         <div className="StudentResume__header">
                             <div className="StudentResume__person">
