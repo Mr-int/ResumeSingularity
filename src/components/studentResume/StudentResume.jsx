@@ -384,7 +384,7 @@ const StudentResume = () => {
                                                             rel="noopener noreferrer"
                                                             className="StudentResume__educationLink"
                                                         >
-                                                            {edu.webUrl}
+                                                            Узнать больше
                                                         </a>
                                                     )}
                                                 </div>

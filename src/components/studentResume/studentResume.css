@@ -487,13 +487,12 @@
 
 .StudentResume__educationLink {
     font-size: 0.9rem;
-    color: #007bff;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     text-decoration: none;
     word-break: break-all;
-}
-
-.StudentResume__educationLink:hover {
-    text-decoration: underline;
 }
 
 .StudentResume__experienceList {
