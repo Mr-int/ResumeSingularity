@@ -74,19 +74,25 @@ const StudentResume = () => {
 
                 try {
                     console.log('Запрос опыта работы по ID студента:', id);
-                    const experienceData = await getExperienceByStudentId(id);
-                    console.log('Ответ от /experience/aboutGetByStudentId/{id}:', experienceData);
+                    const response = await getExperienceByStudentId(id);
+                    console.log('Ответ от /experience/aboutGetByStudentId/{id}:', response);
 
-                    if (Array.isArray(experienceData)) {
-                        const formattedExperience = experienceData.map((exp, index) => ({
-                            id: exp.id || index,
-                            position: exp.position || exp.jobTitle || '',
-                            company: exp.company || exp.organization || '',
-                            description: exp.description || exp.responsibilities || exp.additionalInfo || '',
-                            startDate: exp.startDate || exp.startYear || exp.startMonthYear || '',
-                            endDate: exp.endDate || exp.endYear || exp.endMonthYear || exp.current ? 'по настоящее время' : '',
-                            current: exp.current || false
-                        }));
+                    if (response && response.companyExperiences && Array.isArray(response.companyExperiences)) {
+                        const formattedExperience = response.companyExperiences.map((item, index) => {
+                            const companyInfo = item.company || {};
+                            const experienceInfo = item.experience || {};
+
+                            return {
+                                id: experienceInfo.id || companyInfo.id || index,
+                                position: experienceInfo.position || experienceInfo.jobTitle || '',
+                                company: companyInfo.name || companyInfo.company || '',
+                                description: experienceInfo.additionalInfo || experienceInfo.description || experienceInfo.responsibilities || '',
+                                startDate: experienceInfo.startDate || experienceInfo.startYear || experienceInfo.startMonthYear || '',
+                                endDate: experienceInfo.endDate || experienceInfo.endYear || experienceInfo.endMonthYear || (experienceInfo.endDate === null ? 'по настоящее время' : ''),
+                                current: experienceInfo.endDate === null || experienceInfo.current || false
+                            };
+                        });
+
                         console.log('Форматированные данные опыта работы:', formattedExperience);
                         setExperienceDetails(formattedExperience);
                     } else {
@@ -289,7 +295,11 @@ const StudentResume = () => {
                                                 <div className="StudentResume__experienceTimeline">
                                                     <div className="StudentResume__experienceYears">
                                                         {exp.startDate && exp.endDate ? (
-                                                            <span>{exp.startDate} - {exp.endDate}</span>
+                                                            exp.endDate === 'по настоящее время' ? (
+                                                                <span>{exp.startDate} - {exp.endDate}</span>
+                                                            ) : (
+                                                                <span>{exp.startDate} - {exp.endDate}</span>
+                                                            )
                                                         ) : exp.startDate ? (
                                                             <span>С {exp.startDate}</span>
                                                         ) : exp.endDate ? (
@@ -304,7 +314,7 @@ const StudentResume = () => {
                                                         <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
                                                     )}
                                                     {exp.description && (
-                                                        <p className="StudentResume__experienceDescription">{exp.description}</p>
+                                                        <p className="StudentResume__experienceDescription" style={{whiteSpace: 'pre-line'}}>{exp.description}</p>
                                                     )}
                                                 </div>
                                             </div>

@@ -4,13 +4,9 @@ import { apiClientJson } from '../utils/apiClient.js';
 export const getAllStudents = async () => {
     try {
         const url = `student/getAll`;
-        console.log('[API] Fetching students from:', url);
-
         const data = await apiClientJson(url, {
             method: 'GET',
         });
-
-        console.log('[API] Students fetched successfully, count:', data?.length || 0);
         return data;
     } catch (error) {
         console.error('[API] Error fetching students:', error);
