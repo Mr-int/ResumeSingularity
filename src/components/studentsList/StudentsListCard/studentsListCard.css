@@ -452,7 +452,7 @@
 
     .studentsCard__button {
         height: 36px;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     .read-more-link {
@@ -486,5 +486,11 @@
 
     .read-more-link {
         font-size: 12px;
+    }
+}
+
+@media (max-width: 320px) {
+    .studentsCard__button {
+        font-size: 8px;
     }
 }

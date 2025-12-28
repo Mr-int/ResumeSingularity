@@ -52,8 +52,8 @@ const Projects = () => {
 
         const positions = {
             first: { transform: 'translate(0, 0)', zIndex: 30 },
-            second: { transform: 'translate(35vw, 320px)', zIndex: 20 },
-            third: { transform: 'translate(17.5vw, 600px)', zIndex: 10 }
+            second: { transform: 'translate(35vw, 300px)', zIndex: 20 },
+            third: { transform: 'translate(17.5vw, 580px)', zIndex: 10 }
         };
 
         if (cardNumber === activeCard) return positions.first;
@@ -93,7 +93,7 @@ const Projects = () => {
                             ...getCardPosition(1),
                             ...(isMobile && {
                                 height: isCardExpanded(1) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(1) ? '700px' : '90px'
+                                minHeight: isCardExpanded(1) ? '750px' : '90px'
                             })
                         }}
                     >
@@ -148,7 +148,7 @@ const Projects = () => {
                             ...getCardPosition(2),
                             ...(isMobile && {
                                 height: isCardExpanded(2) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(2) ? '700px' : '90px'
+                                minHeight: isCardExpanded(2) ? '750px' : '90px'
                             })
                         }}
                     >
@@ -205,7 +205,7 @@ const Projects = () => {
                             ...getCardPosition(3),
                             ...(isMobile && {
                                 height: isCardExpanded(3) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(3) ? '700px' : '90px'
+                                minHeight: isCardExpanded(3) ? '750px' : '90px'
                             })
                         }}
                     >

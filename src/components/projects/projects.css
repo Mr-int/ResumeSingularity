@@ -32,9 +32,7 @@
 .card {
     position: absolute !important;
     width: 65%;
-    height: auto;
-    min-height: 620px;
-    max-height: 800px;
+    height: 700px;
     border-radius: 15px;
     overflow: hidden;
     transition: all 0.3s ease-in-out;
@@ -105,12 +103,12 @@
 .card__content {
     position: relative;
     z-index: 2;
-    padding: 64px;
+    padding: 70px;
     color: #fff;
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 25px;
 }
 
 .card__header {
@@ -142,7 +140,7 @@
 
 .card__title {
     font-family: 'StratosSkyeng', sans-serif;
-    font-size: 36px;
+    font-size: 40px;
     font-weight: 500;
     margin: 0;
     width: 100%;
@@ -151,25 +149,25 @@
 
 .card__description {
     font-family: "Sansation", sans-serif;
-    font-size: 18px;
+    font-size: 22px;
     line-height: 1.4;
     margin: 0;
-    max-width: 90%;
+    max-width: 100%;
 }
 
 .card__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 15px;
     margin: 10px 0;
 }
 
 .card__tag {
     background: #ffffff;
     color: #000000;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     font-family: 'StratosSkyeng', sans-serif;
     display: inline-block;
@@ -178,7 +176,7 @@
 
 .card__details {
     display: flex;
-    gap: 70px;
+    gap: 80px;
     flex: 1;
     align-items: stretch;
 }
@@ -186,13 +184,14 @@
 .card__text {
     flex: 1;
     font-family: 'StratosSkyeng';
-    font-size: 18px;
-    line-height: 1.5;
+    font-size: 20px;
+    line-height: 1.6;
+    overflow-y: hidden;
 }
 
 .card__image {
     flex: 1;
-    min-height: 200px;
+    min-height: 250px;
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -214,21 +213,33 @@
 
     .card {
         width: 70%;
-        height: auto;
-        min-height: 600px;
+        height: 750px;
     }
 
     .card__content {
-        padding: 40px;
+        padding: 50px;
+        gap: 20px;
+    }
+
+    .card__title {
+        font-size: 36px;
+    }
+
+    .card__description {
+        font-size: 20px;
     }
 
     .card__details {
         flex-direction: column;
-        gap: 30px;
+        gap: 35px;
+    }
+
+    .card__text {
+        font-size: 18px;
     }
 
     .card__image {
-        min-height: 250px;
+        min-height: 280px;
     }
 }
 
@@ -263,7 +274,7 @@
 
     .card__expanded {
         height: auto !important;
-        min-height: auto !important;
+        min-height: 750px !important;
     }
 
     .card__content {
