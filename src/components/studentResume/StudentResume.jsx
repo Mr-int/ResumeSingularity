@@ -8,7 +8,7 @@ import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
 import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getExperienceByStudentId, getAllStudents } from "../../services/studentApi.js";
 import { getImageUrl } from "../../config/api.js";
-import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
+import StudentSliderCard from "../studentSlider/studentSlidercard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 
 const StudentResume = () => {
@@ -43,14 +43,11 @@ const StudentResume = () => {
                     const portfolioData = await getPortfolioByStudentId(id);
                     setPortfolio(portfolioData || []);
                 } catch (err) {
-                    console.error('Failed to fetch portfolio:', err);
                     setPortfolio([]);
                 }
 
                 try {
-                    console.log('Fetching institutions for student ID:', id);
                     const response = await getInstitutionsByStudentId(id);
-                    console.log('Institutions response:', response);
 
                     if (response && response.educationsInstitution && Array.isArray(response.educationsInstitution)) {
                         const formattedEducation = response.educationsInstitution.map((item, index) => {
@@ -67,22 +64,18 @@ const StudentResume = () => {
                                 additionalInfo: educationInfo.additionalInfo
                             };
                         });
-
-                        console.log('Formatted education details:', formattedEducation);
                         setEducationDetails(formattedEducation);
                     } else {
-                        console.log('No education data found');
                         setEducationDetails([]);
                     }
                 } catch (err) {
-                    console.error('Failed to fetch institutions:', err);
                     setEducationDetails([]);
                 }
 
                 try {
-                    console.log('Fetching experience for student ID:', id);
+                    console.log('Запрос опыта работы по ID студента:', id);
                     const experienceData = await getExperienceByStudentId(id);
-                    console.log('Experience response:', experienceData);
+                    console.log('Ответ от /experience/aboutGetByStudentId/{id}:', experienceData);
 
                     if (Array.isArray(experienceData)) {
                         const formattedExperience = experienceData.map((exp, index) => ({
@@ -94,15 +87,14 @@ const StudentResume = () => {
                             endDate: exp.endDate || exp.endYear || exp.endMonthYear || exp.current ? 'по настоящее время' : '',
                             current: exp.current || false
                         }));
-
-                        console.log('Formatted experience details:', formattedExperience);
+                        console.log('Форматированные данные опыта работы:', formattedExperience);
                         setExperienceDetails(formattedExperience);
                     } else {
-                        console.log('No experience data found or invalid format');
+                        console.log('Нет данных опыта работы или неверный формат');
                         setExperienceDetails([]);
                     }
                 } catch (err) {
-                    console.error('Failed to fetch experience:', err);
+                    console.error('Ошибка при получении опыта работы:', err);
                     setExperienceDetails([]);
                 }
 
@@ -113,12 +105,10 @@ const StudentResume = () => {
                         .slice(0, 6);
                     setSimilarStudents(similar || []);
                 } catch (err) {
-                    console.error('Failed to fetch similar students:', err);
                     setSimilarStudents([]);
                 }
             } catch (err) {
                 setError(err.message);
-                console.error('Failed to fetch student:', err);
             } finally {
                 setLoading(false);
             }
