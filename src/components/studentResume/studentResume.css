@@ -1,6 +1,5 @@
 .StudentResume {
     width: 100%;
-    max-width: none;
     margin: 0 auto;
     background: #000;
     display: flex;
@@ -13,7 +12,6 @@
 
 .StudentResume__mainContent {
     width: 90%;
-    max-width: 1400px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -170,7 +168,6 @@
     font-weight: 500;
 }
 
-/* ПОРТФОЛИО С ФОНОМ */
 .StudentResume__portfolio {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -187,22 +184,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid rgba(255, 255, 255, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
-}
-
-.StudentResume__portfolioItem:hover {
-    transform: translateY(-10px);
-    border-color: #fff;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .StudentResume__portfolioContent {
     position: relative;
     z-index: 2;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
     padding: 25px;
     border-radius: 10px;
     text-align: center;
@@ -216,7 +204,7 @@
 }
 
 .StudentResume__portfolioTitle {
-    color: #fff !important;
+    color: #000;
     font-size: 20px;
     font-weight: 600;
     margin: 0;
@@ -244,13 +232,11 @@
     color: #fff;
 }
 
-/* ВЕРНУТЫ ВСЕ НИЖНИЕ БЛОКИ */
 .StudentResume__additionalSections {
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 35px;
-    margin-bottom: 60px;
 }
 
 .StudentResume__expandableSection {
@@ -339,7 +325,6 @@
 
 .StudentResume__contactSection {
     width: 100%;
-    margin-top: 60px;
     margin-bottom: 80px;
     min-height: 500px;
 }
