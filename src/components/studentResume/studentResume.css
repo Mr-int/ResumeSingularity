@@ -247,7 +247,6 @@
     cursor: pointer;
     padding: 20px 0;
     transition: opacity 0.3s;
-    margin-bottom: 20px;
 }
 
 .StudentResume__expandableHeader:hover {
@@ -325,6 +324,7 @@
     width: 100%;
     margin-bottom: 80px;
     min-height: 500px;
+    margin-top: 40px;
 }
 
 .StudentResume__contactTitle {
