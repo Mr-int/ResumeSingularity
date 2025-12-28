@@ -352,7 +352,14 @@
     background-size: 100% 100%;
 }
 
-.StudentResume__contactInfo button {
+.StudentResume__contactWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.StudentResume__contactWrapper button {
     background: transparent;
     border: 2px solid #fff;
     border-radius: 100px;
@@ -370,13 +377,15 @@
     align-self: flex-start;
 }
 
-.StudentResume__contactInfo p {
+.StudentResume__contactWrapper p {
     width: 400px;
     color: #fff;
     font-size: 40px;
     text-align: left;
     font-family: 'StratosSkyeng', sans-serif;
 }
+
+
 
 .StudentResume__contactDetails {
     margin-top: 20px;

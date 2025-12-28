@@ -408,8 +408,10 @@ const StudentResume = () => {
                             {student && <StudentSliderCard student={student} />}
                         </div>
                         <div className="StudentResume__contactInfo">
-                            <p>Готов проходить стажировку в вашей компании!</p>
-                            <button>Связаться <img src={mailIcon} alt=""/></button>
+                            <div className="StudentResume__contactWrapper">
+                                <p>Готов проходить стажировку в вашей компании!</p>
+                                <button>Связаться <img src={mailIcon} alt=""/></button>
+                            </div>
                         </div>
                     </div>
                 </div>
