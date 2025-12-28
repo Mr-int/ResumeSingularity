@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import './applicationForm.css';
+import exclamationIcon from "../../assets/icons/exclamationIcon.svg";
+import mailIcon from "../../assets/icons/mailIcon.svg";
+import sunIcon from "../../assets/other/sun.png";
+import cloudMailIcon from "../../assets/other/cloudMail.png";
 
 const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
     const [formData, setFormData] = useState({
@@ -48,12 +52,28 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
         }
     };
 
+    const getButtonText = () => {
+        if (loading) return 'Отправка...';
+        if (studentName) return 'Оставить заявку';
+        return 'Связаться';
+    };
+
+    const showMailIcon = () => {
+        return !loading && !studentName;
+    };
+
     return (
         <div className="applicationForm__overlay" onClick={onClose}>
             <div className="applicationForm__content" onClick={(e) => e.stopPropagation()}>
+                <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
                 <button className="applicationForm__close" onClick={onClose}>×</button>
 
                 <div className="applicationForm__info">
+                    <img
+                        src={exclamationIcon}
+                        alt="info"
+                        className="applicationForm__info-icon"
+                    />
                     Отправьте заявку — мы свяжемся с вами в течение 24 часов, уточним задачу и подберём студентов, которые лучше всего подойдут.
                 </div>
 
@@ -74,7 +94,7 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
                             onChange={handleChange}
                             required
                             disabled={loading}
-                            placeholder="Введите ваше имя"
+                            placeholder="Иван Иванов"
                         />
                     </div>
 
@@ -101,7 +121,7 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
                             value={formData.telegram}
                             onChange={handleChange}
                             disabled={loading}
-                            placeholder="@username"
+                            placeholder="@Username"
                         />
                     </div>
 
@@ -122,10 +142,18 @@ const ApplicationForm = ({ studentName, onClose, onSubmit }) => {
 
                     <div className="applicationForm__button-container">
                         <button type="submit" className="applicationForm__submit" disabled={loading}>
-                            {loading ? 'Отправка...' : studentName ? 'Оставить заявку' : 'Связаться'}
+                            {getButtonText()}
+                            {showMailIcon() && (
+                                <img
+                                    src={mailIcon}
+                                    alt="mail"
+                                    className="applicationForm__submit-icon"
+                                />
+                            )}
                         </button>
                     </div>
                 </form>
+                <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
             </div>
         </div>
     );
