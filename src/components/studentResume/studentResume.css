@@ -370,6 +370,7 @@
     background-position: center center;
     background-size: 100% 100%;
     position: relative;
+    overflow: hidden;
 }
 
 .StudentResume__contactWrapper {
@@ -378,6 +379,8 @@
     justify-content: center;
     align-items: flex-start;
     gap: 32px;
+    z-index: 2;
+    position: relative;
 }
 
 .StudentResume__contactWrapper button {
@@ -410,21 +413,19 @@
     position: absolute;
     bottom: 0;
     right: 0;
+    z-index: 1;
 }
 
 .StudentResume__sunIcon {
     position: absolute;
-    overflow: hidden;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+    left: -50px;
+    top: -50px;
+    z-index: 1;
 }
 
 .StudentResume__sunIcon img {
-    position: absolute;
-    left: -8%;
-    top: -12%;
+    width: 200px;
+    height: 200px;
 }
 
 .StudentResume__contactDetails {
@@ -664,6 +665,11 @@
     .StudentResume__mainContent {
         width: 95%;
     }
+
+    .StudentResume__contactWrapper p {
+        width: 350px;
+        font-size: 36px;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -850,9 +856,53 @@
         margin-bottom: 30px;
     }
 
+    .StudentResume__contactContent {
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .StudentResume__contactSlider {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
     .StudentResume__contactInfo {
         padding: 20px;
-        min-height: 200px;
+        min-height: 350px;
+    }
+
+    .StudentResume__contactWrapper {
+        align-items: center;
+        text-align: center;
+        gap: 25px;
+    }
+
+    .StudentResume__contactWrapper p {
+        width: 100%;
+        font-size: 28px;
+        text-align: center;
+    }
+
+    .StudentResume__contactWrapper button {
+        align-self: center;
+    }
+
+    .StudentResume__sunIcon {
+        left: -40px;
+        top: -40px;
+    }
+
+    .StudentResume__sunIcon img {
+        width: 150px;
+        height: 150px;
+    }
+
+    .StudentResume__cloudMailIcon {
+        width: 120px;
+        height: auto;
     }
 
     .StudentResume__similarLink {
@@ -884,6 +934,74 @@
         margin-bottom: 15px;
         align-items: center;
         min-width: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .StudentResume__contactContent {
+        flex-direction: column;
+    }
+
+    .StudentResume__contactSlider {
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .StudentResume__contactInfo {
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+        min-height: auto;
+        padding: 20px;
+    }
+
+    .StudentResume__contactInfo .student-slider-card {
+        width: 120px;
+        height: 120px;
+        flex-shrink: 0;
+    }
+
+    .StudentResume__contactInfo .student-slider-card__photoWrapper {
+        width: 100%;
+        height: 100%;
+    }
+
+    .StudentResume__contactInfo .student-slider-card__photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .StudentResume__contactInfo .student-slider-card__text {
+        display: none;
+    }
+
+    .StudentResume__contactWrapper {
+        flex: 1;
+        gap: 15px;
+    }
+
+    .StudentResume__contactWrapper p {
+        font-size: 18px;
+        width: 100%;
+    }
+
+    .StudentResume__contactWrapper button {
+        min-width: 150px;
+        font-size: 18px;
+        padding: 5px 15px;
+    }
+
+    .StudentResume__sunIcon {
+        left: -25px;
+        top: -25px;
+    }
+
+    .StudentResume__sunIcon img {
+        width: 100px;
+        height: 100px;
     }
 }
 
@@ -924,5 +1042,74 @@
     .StudentResume__contactTitle,
     .StudentResume__similarTitle {
         font-size: 24px;
+    }
+
+    .StudentResume__contactInfo {
+        min-height: 300px;
+        padding: 15px;
+    }
+
+    .StudentResume__contactWrapper p {
+        font-size: 22px;
+    }
+
+    .StudentResume__contactWrapper button {
+        font-size: 20px;
+        padding: 6px 16px 6px 20px;
+        min-width: 180px;
+    }
+
+    .StudentResume__sunIcon {
+        left: -30px;
+        top: -30px;
+    }
+
+    .StudentResume__sunIcon img {
+        width: 120px;
+        height: 120px;
+    }
+
+    .StudentResume__cloudMailIcon {
+        width: 100px;
+    }
+}
+
+@media (max-width: 400px) {
+    .StudentResume__contactInfo {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .StudentResume__contactInfo .student-slider-card {
+        width: 150px;
+        height: 150px;
+    }
+
+    .StudentResume__contactWrapper {
+        align-items: center;
+        text-align: center;
+    }
+
+    .StudentResume__contactWrapper p {
+        font-size: 16px;
+    }
+
+    .StudentResume__contactWrapper button {
+        align-self: center;
+    }
+
+    .StudentResume__sunIcon {
+        left: -20px;
+        top: -20px;
+    }
+
+    .StudentResume__sunIcon img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .StudentResume__cloudMailIcon {
+        width: 70px;
     }
 }

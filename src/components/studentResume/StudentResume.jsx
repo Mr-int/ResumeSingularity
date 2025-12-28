@@ -1,4 +1,3 @@
-// StudentResume.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
@@ -406,12 +405,21 @@ const StudentResume = () => {
                             {student && <StudentSliderCard student={student} isActive={true} />}
                         </div>
                         <div className="StudentResume__contactInfo">
-                            <div className="StudentResume__sunIcon"><img src={sunIcon} alt=""/></div>
+                            <div className="StudentResume__sunIcon">
+                                <img src={sunIcon} alt="Sun icon"/>
+                            </div>
                             <div className="StudentResume__contactWrapper">
                                 <p>Готов проходить стажировку в вашей компании!</p>
-                                <button>Связаться <img src={mailIcon} alt=""/></button>
+                                <button>
+                                    Связаться
+                                    <img src={mailIcon} alt="Mail icon"/>
+                                </button>
                             </div>
-                            <img src={cloudMailIcon} alt="" className="StudentResume__cloudMailIcon"/>
+                            <img
+                                src={cloudMailIcon}
+                                alt="Cloud mail icon"
+                                className="StudentResume__cloudMailIcon"
+                            />
                         </div>
                     </div>
                 </div>
