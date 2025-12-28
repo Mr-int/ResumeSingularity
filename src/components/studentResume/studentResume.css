@@ -26,6 +26,7 @@
     justify-content: flex-end;
     padding-top: 200px;
     margin-bottom: 30px;
+    overflow: hidden;
     position: relative;
 }
 
@@ -558,8 +559,8 @@
 
 .StudentResume__numbersImg {
     position: absolute;
-    right: -20%;
-    top: 0;
+    right: -5%;
+    top: -5%;
 }
 
 @keyframes fadeIn {
