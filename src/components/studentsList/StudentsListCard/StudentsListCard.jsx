@@ -1,26 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
 import test from "../../../assets/other/test.png";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import './studentsListCard.css';
-import course4 from "../../../assets/other/course4.png"
+import course4 from "../../../assets/other/course4.png";
 import { getImageUrl } from "../../../config/api.js";
 
 const StudentsListCard = ({ student }) => {
+    const [showFullBio, setShowFullBio] = useState(false);
+
     if (!student) {
         return null;
     }
 
-    // Формируем полное имя
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
-    
-    // Получаем изображение студента через API эндпоинт или используем дефолтное
     const imagePath = student.imagePath || student.image;
     const imageSrc = imagePath ? getImageUrl(imagePath) : test;
-    
-    // Обрезаем биографию для предпросмотра
-    const bioPreview = student.bio 
-        ? (student.bio.length > 150 ? student.bio.substring(0, 150) + '...' : student.bio)
+
+    const isBioTruncated = student.bio && student.bio.length > 150;
+    const bioPreview = student.bio
+        ? (isBioTruncated && !showFullBio
+            ? student.bio.substring(0, 150) + '...'
+            : student.bio)
         : 'Описание отсутствует';
+
+    const toggleBio = () => setShowFullBio(!showFullBio);
 
     return (
         <div className="studentsCard">
@@ -47,8 +50,13 @@ const StudentsListCard = ({ student }) => {
                 <div className="studentsCard__description">
                     <p>
                         {bioPreview}
-                        {student.bio && student.bio.length > 150 && (
-                            <span className="read-more">Читать дальше</span>
+                        {isBioTruncated && !showFullBio && (
+                            <span
+                                className="read-more"
+                                onClick={toggleBio}
+                            >
+                                Читать дальше
+                            </span>
                         )}
                     </p>
                 </div>
