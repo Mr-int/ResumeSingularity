@@ -1,5 +1,4 @@
 .StudentResume {
-    width: 100%;
     margin: 0 auto;
     background: #000;
     display: flex;
@@ -345,6 +344,7 @@
     border-radius: 15px;
     padding: 30px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     min-height: 400px;
@@ -367,9 +367,11 @@
     align-items: center;
     gap: 8px;
     min-width: 200px;
+    align-self: flex-start;
 }
 
 .StudentResume__contactInfo p {
+    width: 400px;
     color: #fff;
     font-size: 40px;
     text-align: left;
@@ -603,7 +605,6 @@
 
 @media (max-width: 1024px) {
     .StudentResume {
-        width: 95%;
         padding-top: 30px;
     }
 
@@ -697,7 +698,6 @@
 
 @media (max-width: 768px) {
     .StudentResume {
-        width: 100%;
         padding: 30px 15px 0;
     }
 
