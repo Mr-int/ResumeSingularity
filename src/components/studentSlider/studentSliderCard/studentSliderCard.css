@@ -44,16 +44,15 @@
 .student-slider-card__course {
     bottom: 10px;
     background: none;
-    color: transparent;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .student-slider-card--active .student-slider-card__course {
     background: #fff;
     width: 110px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
     padding-right: 5px;
     text-transform: uppercase;
     font-style: italic;

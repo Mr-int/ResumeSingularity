@@ -25,7 +25,6 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         }
 
         const baseUrl = 'https://api.singularity-resume.ru/main/photo';
-
         const studentId = studentData.id;
 
         if (!studentId) return test;
@@ -84,12 +83,10 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
             <div className="student-slider-card__photoWrapper">
                 <img src={imageSrc} alt={`Фото ${fullName}`} className="student-slider-card__photo"/>
 
-                {isActive && (
-                    <div className="student-slider-card__course">
-                        <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
-                        <span>{getCourseText(student.course)}</span>
-                    </div>
-                )}
+                <div className="student-slider-card__course">
+                    <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
+                    {isActive && <span>{getCourseText(student.course)}</span>}
+                </div>
 
                 {student.skills && student.skills.length > 0 && (
                     <div className="student-slider-card__extraIco">
