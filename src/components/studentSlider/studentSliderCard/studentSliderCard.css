@@ -85,6 +85,7 @@
 
 .student-slider-card__name {
     font-family: 'StratosMedium';
+    letter-spacing: 1px;
     font-size: 24px;
     width: 50%;
 }
