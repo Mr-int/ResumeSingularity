@@ -411,7 +411,7 @@
 .StudentResume__cloudMailIcon {
     position: absolute;
     width: 140px;
-    width: 140px;
+    right: 0;
     bottom: -12%;
     z-index: 1;
 }
