@@ -6,16 +6,19 @@
     justify-content: center;
     align-items: center;
     z-index: 1;
+    padding: 0 40px;
+    box-sizing: border-box;
 }
 
 .header__inner {
-    width: 90%;
+    width: 100%;
+    max-width: 1200px;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
 }
 
-.header__searchBtn, .header__homeBtn, .header__aboutBtn {
+.header__searchBtn, .header__homeBtn {
     background: none;
     border: none;
     color: #fff;
@@ -27,7 +30,7 @@
     text-decoration: none;
 }
 
-.header__searchBtn:hover, .header__homeBtn:hover, .header__aboutBtn:hover {
+.header__searchBtn:hover, .header__homeBtn:hover {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     -webkit-background-clip: text;
     background-clip: text;
@@ -142,6 +145,7 @@
     z-index: 1000;
     border-bottom-left-radius: 30px;
     border-bottom-right-radius: 30px;
+    box-sizing: border-box;
 }
 
 .header__mobileMenu.active {
@@ -173,6 +177,11 @@
 @media (max-width: 1320px) {
     .header {
         height: 110px;
+        padding: 0 40px;
+    }
+
+    .header__inner {
+        max-width: 1200px;
     }
 
     .header__logo {
@@ -180,7 +189,7 @@
         width: 160px;
     }
 
-    .header__searchBtn, .header__homeBtn, .header__aboutBtn {
+    .header__searchBtn, .header__homeBtn {
         font-size: 16px;
     }
 
@@ -205,7 +214,11 @@
 }
 
 @media (max-width: 1100px) {
-    .header__searchBtn, .header__homeBtn, .header__aboutBtn {
+    .header {
+        padding: 0 40px;
+    }
+
+    .header__searchBtn, .header__homeBtn {
         font-size: 16px;
     }
 
@@ -222,11 +235,13 @@
     .header {
         height: 80px;
         position: relative;
+        padding: 0 40px;
     }
 
     .header__inner {
         grid-template-columns: auto 1fr auto;
         justify-content: space-between;
+        max-width: 1200px;
     }
 
     .header__nav {
@@ -250,9 +265,20 @@
 
     .header__mobileMenu {
         display: none;
+        padding: 20px 40px;
     }
 
     .header__mobileMenu.active {
         display: flex;
+    }
+}
+
+@media (max-width: 600px) {
+    .header {
+        padding: 0 20px;
+    }
+
+    .header__mobileMenu {
+        padding: 20px 20px;
     }
 }
