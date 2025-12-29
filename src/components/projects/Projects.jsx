@@ -85,9 +85,9 @@ const Projects = () => {
         if (isMobile) return {};
 
         const positions = {
-            first: { transform: 'translate(0, 0)', zIndex: 30 },
-            second: { transform: 'translate(calc(-877px + 100vw), 150px)', zIndex: 20 },
-            third: { transform: 'translate(calc((100vw - 877px) / 2), 300px)', zIndex: 10 }
+            first: { left: '0', top: '0', zIndex: 30 },
+            second: { left: 'calc(100% - 877px)', top: '150px', zIndex: 20 },
+            third: { left: 'calc(50% - 438.5px)', top: '300px', zIndex: 10 }
         };
 
         if (cardNumber === activeCard) return positions.first;
@@ -122,14 +122,6 @@ const Projects = () => {
                     <div
                         className={`card card--gamecheb ${activeCard === 1 ? 'card__active' : ''} ${isMobile && isCardExpanded(1) ? 'card__expanded' : ''}`}
                         onClick={() => handleCardClick(1)}
-                        style={{
-                            cursor: isAnimating ? 'default' : 'pointer',
-                            ...getCardPosition(1),
-                            ...(isMobile && {
-                                height: isCardExpanded(1) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(1) ? '700px' : '90px'
-                            })
-                        }}
                     >
                         <div className={`card__overlay ${activeCard === 1 ? 'card__overlay--active' : ''}`}></div>
                         <div className="card__content">
@@ -177,14 +169,6 @@ const Projects = () => {
                     <div
                         className={`card card--resume ${activeCard === 2 ? 'card__active' : ''} ${isMobile && isCardExpanded(2) ? 'card__expanded' : ''}`}
                         onClick={() => handleCardClick(2)}
-                        style={{
-                            cursor: isAnimating ? 'default' : 'pointer',
-                            ...getCardPosition(2),
-                            ...(isMobile && {
-                                height: isCardExpanded(2) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(2) ? '700px' : '90px'
-                            })
-                        }}
                     >
                         <div className={`card__overlay ${activeCard === 2 ? 'card__overlay--active' : ''}`}></div>
                         <div className="card__content">
@@ -234,14 +218,6 @@ const Projects = () => {
                     <div
                         className={`card card--vr ${activeCard === 3 ? 'card__active' : ''} ${isMobile && isCardExpanded(3) ? 'card__expanded' : ''}`}
                         onClick={() => handleCardClick(3)}
-                        style={{
-                            cursor: isAnimating ? 'default' : 'pointer',
-                            ...getCardPosition(3),
-                            ...(isMobile && {
-                                height: isCardExpanded(3) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(3) ? '700px' : '90px'
-                            })
-                        }}
                     >
                         <div className={`card__overlay ${activeCard === 3 ? 'card__overlay--active' : ''}`}></div>
                         <div className="card__content">
