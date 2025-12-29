@@ -103,7 +103,7 @@
 .card__content {
     position: relative;
     z-index: 2;
-    padding: 64px;
+    padding: 50px;
     color: #fff;
     height: 100%;
     display: flex;
@@ -212,10 +212,6 @@
     .card {
         width: 750px;
         height: 500px;
-    }
-
-    .card__content {
-        padding: 50px;
     }
 }
 
