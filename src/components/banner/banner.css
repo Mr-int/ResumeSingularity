@@ -29,6 +29,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    height: 100%;
     background-image: url("../../assets/other/bannerDiamondGradient.png");
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -39,7 +40,7 @@
     display: flex;
     flex-direction: column;
     gap: 32px;
-    padding: 50px 72px;
+    padding: 30px 72px;
 }
 
 .banner__title {
