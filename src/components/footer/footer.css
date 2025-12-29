@@ -68,16 +68,28 @@
     border: none;
     font-size: 20px;
     cursor: pointer;
+    font-family: "StratosSemiLight";
 }
 
 .footer__mail h2, .footer__number h2, .footer__siteMap h2, .footer__credit p {
     color: #666363;
     font-size: 20px;
+    font-family: "Sansation";
 }
 
 .footer__mail p, .footer__number p {
     color: #fff;
     font-size: 20px;
+}
+
+.footer__number, .footer__mail {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+.footer__number p, .footer__mail p {
+    font-family: "StratosLight";
 }
 
 .footer__contacts {
