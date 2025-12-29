@@ -1,8 +1,5 @@
 import './hero.css';
 import studentsHero from "../../assets/other/Students.png";
-// import animBlock1 from "../../assets/other/animBlock.png";
-// import animBlock2 from "../../assets/other/animBlock2.png";
-// import roll2 from "../../assets/other/roll2.png";
 import MobileStudentsHero from "../../assets/other/mobileStudents.png";
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import arrowIcon from "../../assets/icons/arrow.svg";
