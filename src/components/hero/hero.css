@@ -26,14 +26,15 @@
 
 .hero__right-content {
     position: absolute;
-    width: 580px;
-    height: 500px;
+    width: 780px;
+    height: 600px;
     right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 100px;
+    -webkit-user-select: none;
     user-select: none;
-    object-fit: contain;
+    object-fit: cover;
     z-index: 1;
+    overflow: visible;
 }
 
 .hero__image-container {
