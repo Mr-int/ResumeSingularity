@@ -8,7 +8,9 @@
 }
 
 .banner__wrapper {
-    width: 90%;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 40px;
     border: double 3px transparent;
     border-radius: 32px;
     background-image:
@@ -19,6 +21,7 @@
     position: relative;
     z-index: 2;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 .banner__content {
@@ -89,6 +92,12 @@
     display: block;
 }
 
+@media (max-width: 1280px) {
+    .banner__wrapper {
+        margin: 0 40px;
+    }
+}
+
 @media (max-width: 1200px) {
     .banner__left {
         padding: 40px 50px;
@@ -105,7 +114,7 @@
     }
 
     .banner__wrapper {
-        width: 95%;
+        margin: 0 40px;
     }
 
     .banner__title {
@@ -168,7 +177,7 @@
     }
 
     .banner__wrapper {
-        width: 92%;
+        margin: 0 20px;
         border-radius: 24px;
     }
 
@@ -200,6 +209,10 @@
 }
 
 @media (max-width: 400px) {
+    .banner__wrapper {
+        margin: 0 15px;
+    }
+
     .banner__title {
         font-size: 24px;
     }
