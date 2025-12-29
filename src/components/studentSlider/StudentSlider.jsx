@@ -3,6 +3,8 @@ import './studentSlider.css';
 import searchIconDark from "../../assets/icons/searchIconDark.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
+import closeIcon from "../../assets/icons/closeIcon.svg";
+import arrowDownIcon from "../../assets/icons/arrowDown.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
 import searchIcon from "../../assets/icons/searchIcon.svg";
@@ -17,8 +19,20 @@ const StudentSlider = () => {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [filters, setFilters] = useState({
+        course: '',
+        ageOver18: false,
+        specialty: '',
+        stack: []
+    });
+
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
+    const filterRef = useRef(null);
+
+    const specialties = ['Frontend', 'Backend', 'Менеджер', 'Дизайнер', 'Аналитик'];
+    const stackOptions = ['Js', 'Python', 'Java'];
 
     useEffect(() => {
         const checkMobile = () => {
@@ -29,6 +43,22 @@ const StudentSlider = () => {
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterRef.current && !filterRef.current.contains(event.target)) {
+                setIsFilterOpen(false);
+            }
+        };
+
+        if (isFilterOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isFilterOpen]);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -120,6 +150,54 @@ const StudentSlider = () => {
         setActiveCardIndex(index);
     };
 
+    const handleFilterToggle = () => {
+        setIsFilterOpen(!isFilterOpen);
+    };
+
+    const handleCourseChange = (e) => {
+        setFilters({
+            ...filters,
+            course: e.target.value
+        });
+    };
+
+    const handleAgeChange = (e) => {
+        setFilters({
+            ...filters,
+            ageOver18: e.target.checked
+        });
+    };
+
+    const handleSpecialtyChange = (specialty) => {
+        setFilters({
+            ...filters,
+            specialty: filters.specialty === specialty ? '' : specialty
+        });
+    };
+
+    const handleStackChange = (stack) => {
+        setFilters({
+            ...filters,
+            stack: filters.stack.includes(stack)
+                ? filters.stack.filter(s => s !== stack)
+                : [...filters.stack, stack]
+        });
+    };
+
+    const handleApplyFilters = () => {
+        console.log('Применены фильтры:', filters);
+        setIsFilterOpen(false);
+    };
+
+    const handleResetFilters = () => {
+        setFilters({
+            course: '',
+            ageOver18: false,
+            specialty: '',
+            stack: []
+        });
+    };
+
     const displayedStudents = students.slice(0, 5);
     const activeStudent = displayedStudents.length > 0 ? displayedStudents[activeCardIndex] : null;
 
@@ -149,7 +227,10 @@ const StudentSlider = () => {
 
                     <h2 className="studentSlider__title">Студенты</h2>
 
-                    <button className="studentSlider__filter">
+                    <button
+                        className={`studentSlider__filter ${isFilterOpen ? 'active' : ''}`}
+                        onClick={handleFilterToggle}
+                    >
                         <span>Фильтр</span>
                         <img src={filterIcon} alt="Фильтр"/>
                     </button>
@@ -214,6 +295,103 @@ const StudentSlider = () => {
                     <p style={{color: '#fff'}}>Студенты не найдены</p>
                 )}
             </div>
+
+            {isFilterOpen && (
+                <div className="filter-modal-overlay">
+                    <div className="filter-modal" ref={filterRef}>
+                        <div className="filter-modal__header">
+                            <div className="filter-modal__header-left">
+                                <img src={filterIcon} alt="Фильтр" className="filter-modal__header-icon" />
+                                <h3 className="filter-modal__title">Фильтры</h3>
+                            </div>
+                            <button
+                                className="filter-modal__close"
+                                onClick={() => setIsFilterOpen(false)}
+                            >
+                                <img src={closeIcon} alt="Закрыть" />
+                            </button>
+                        </div>
+
+                        <div className="filter-modal__content">
+                            <div className="filter-section">
+                                <label className="filter-section__label">Курс</label>
+                                <input
+                                    type="text"
+                                    className="filter-section__input"
+                                    placeholder="Введите курс"
+                                    value={filters.course}
+                                    onChange={handleCourseChange}
+                                />
+                            </div>
+
+                            <div className="filter-section">
+                                <div className="filter-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        id="ageOver18"
+                                        checked={filters.ageOver18}
+                                        onChange={handleAgeChange}
+                                        className="filter-checkbox__input"
+                                    />
+                                    <label htmlFor="ageOver18" className="filter-checkbox__label">
+                                        Старше 18 лет
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="filter-section">
+                                <label className="filter-section__label">Специальность</label>
+                                <div className="filter-options">
+                                    {specialties.map((specialty) => (
+                                        <button
+                                            key={specialty}
+                                            className={`filter-option ${filters.specialty === specialty ? 'active' : ''}`}
+                                            onClick={() => handleSpecialtyChange(specialty)}
+                                        >
+                                            {specialty}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="filter-section">
+                                <label className="filter-section__label">Стек</label>
+                                <div className="filter-options">
+                                    {stackOptions.map((stack) => (
+                                        <div key={stack} className="filter-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                id={`stack-${stack}`}
+                                                checked={filters.stack.includes(stack)}
+                                                onChange={() => handleStackChange(stack)}
+                                                className="filter-checkbox__input"
+                                            />
+                                            <label htmlFor={`stack-${stack}`} className="filter-checkbox__label">
+                                                {stack}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="filter-modal__buttons">
+                                <button
+                                    className="filter-button filter-button--reset"
+                                    onClick={handleResetFilters}
+                                >
+                                    Сбросить
+                                </button>
+                                <button
+                                    className="filter-button filter-button--apply"
+                                    onClick={handleApplyFilters}
+                                >
+                                    Применить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     );
 };
