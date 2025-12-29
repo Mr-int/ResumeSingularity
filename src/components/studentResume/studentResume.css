@@ -5,12 +5,14 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding-top: 45px;
+    padding: 45px 40px 0;
     font-family: Sansation, sans-serif;
+    box-sizing: border-box;
 }
 
 .StudentResume__mainContent {
-    width: 90%;
+    width: 100%;
+    max-width: 1200px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -663,8 +665,12 @@
 }
 
 @media (max-width: 1200px) {
+    .StudentResume {
+        padding: 45px 40px 0;
+    }
+
     .StudentResume__mainContent {
-        width: 95%;
+        max-width: 1200px;
     }
 
     .StudentResume__contactWrapper p {
@@ -675,7 +681,11 @@
 
 @media (max-width: 1024px) {
     .StudentResume {
-        padding-top: 30px;
+        padding: 30px 40px 0;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
     }
 
     .StudentResume__header {
@@ -758,11 +768,11 @@
 
 @media (max-width: 768px) {
     .StudentResume {
-        padding: 30px 15px 0;
+        padding: 30px 40px 0;
     }
 
     .StudentResume__mainContent {
-        width: 100%;
+        max-width: 1200px;
     }
 
     .StudentResume__wrapper {
@@ -939,6 +949,14 @@
 }
 
 @media (max-width: 600px) {
+    .StudentResume {
+        padding: 30px 20px 0;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
     .StudentResume__contactContent {
         flex-direction: column;
     }
@@ -1007,6 +1025,14 @@
 }
 
 @media (max-width: 480px) {
+    .StudentResume {
+        padding: 30px 20px 0;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
     .StudentResume__personFace {
         width: 220px;
         height: 220px;
@@ -1076,6 +1102,14 @@
 }
 
 @media (max-width: 400px) {
+    .StudentResume {
+        padding: 30px 20px 0;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
     .StudentResume__contactInfo {
         flex-direction: column;
         text-align: center;
