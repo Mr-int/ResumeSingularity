@@ -50,6 +50,47 @@
     align-items: center;
     justify-self: end;
     gap: 10px;
+    position: relative;
+}
+
+.header__searchIconContainer {
+    position: relative;
+    width: 20px;
+    height: 20px;
+}
+
+.header__searchIcon,
+.header__searchIconGradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    transition: opacity 0.3s ease;
+}
+
+.header__searchIcon {
+    opacity: 1;
+}
+
+.header__searchIconGradient {
+    opacity: 0;
+}
+
+.header__searchIcon.fade-out {
+    opacity: 0;
+}
+
+.header__searchIcon.fade-in {
+    opacity: 1;
+}
+
+.header__searchIconGradient.fade-out {
+    opacity: 0;
+}
+
+.header__searchIconGradient.fade-in {
+    opacity: 1;
 }
 
 .header__burger {
@@ -147,7 +188,13 @@
         gap: 8px;
     }
 
-    .header__searchIcon {
+    .header__searchIconContainer {
+        width: 16px;
+        height: 16px;
+    }
+
+    .header__searchIcon,
+    .header__searchIconGradient {
         width: 16px;
         height: 16px;
     }

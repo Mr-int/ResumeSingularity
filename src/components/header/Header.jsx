@@ -23,9 +23,9 @@ const Header = () => {
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
                     <button className="header__aboutBtn">о студентах</button>
-                    <img src={logo} alt="Singularity_resume" className="header__logo" width="175" height="75" />
                 </div>
 
+                <img src={logo} alt="Singularity_resume" className="header__logo" width="175" height="75" />
 
                 <div
                     className="header__search"
@@ -33,13 +33,22 @@ const Header = () => {
                     onMouseLeave={() => setIsSearchHovered(false)}
                 >
                     <Link to="/students" className="header__searchBtn">найти стажера</Link>
-                    <img
-                        src={isSearchHovered ? gradientSearchIcon : searchIcon}
-                        alt="search"
-                        className="header__searchIcon"
-                        width="20"
-                        height="20"
-                    />
+                    <div className="header__searchIconContainer">
+                        <img
+                            src={searchIcon}
+                            alt="search"
+                            className={`header__searchIcon ${isSearchHovered ? 'fade-out' : 'fade-in'}`}
+                            width="20"
+                            height="20"
+                        />
+                        <img
+                            src={gradientSearchIcon}
+                            alt="search"
+                            className={`header__searchIconGradient ${isSearchHovered ? 'fade-in' : 'fade-out'}`}
+                            width="20"
+                            height="20"
+                        />
+                    </div>
                 </div>
 
                 <button
