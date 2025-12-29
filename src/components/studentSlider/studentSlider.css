@@ -88,10 +88,10 @@
     color: #fff;
     padding-left: 14px;
     padding-right: 45px;
-    font-family: 'StratosSkyeng';
     font-size: 20px;
     width: 100%;
     transition: all 0.3s ease;
+
 }
 
 .studentSlider__search::placeholder {
@@ -111,7 +111,7 @@
 
 .studentSlider__searchIcon {
     position: absolute;
-    right: 15px;
+    right: 24%;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
@@ -309,7 +309,7 @@
     .studentSlider__search, .studentSlider__filter {
         width: 180px;
         height: 42px;
-        font-size: 22px;
+        font-size: 24px;
     }
 
     .studentSlider__search {

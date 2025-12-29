@@ -15,9 +15,7 @@ const StudentSlider = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filters, setFilters] = useState({
         course: '',
         ageOver18: false,
@@ -31,32 +29,6 @@ const StudentSlider = () => {
 
     const specialties = ['Frontend', 'Backend', 'Менеджер', 'Дизайнер', 'Аналитик'];
     const stackOptions = ['Js', 'Python', 'Java'];
-
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterRef.current && !filterRef.current.contains(event.target)) {
-                setIsFilterOpen(false);
-            }
-        };
-
-        if (isFilterOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isFilterOpen]);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -148,10 +120,6 @@ const StudentSlider = () => {
         setActiveCardIndex(index);
     };
 
-    const handleFilterToggle = () => {
-        setIsFilterOpen(!isFilterOpen);
-    };
-
     const handleCourseChange = (e) => {
         setFilters({
             ...filters,
@@ -182,11 +150,6 @@ const StudentSlider = () => {
         });
     };
 
-    const handleApplyFilters = () => {
-        console.log('Применены фильтры:', filters);
-        setIsFilterOpen(false);
-    };
-
     const handleResetFilters = () => {
         setFilters({
             course: '',
@@ -213,6 +176,7 @@ const StudentSlider = () => {
                             onChange={handleSearchChange}
                             onClick={handleSearchClick}
                             onBlur={handleSearchBlur}
+                            disabled
                         />
                         <img
                             src={searchIconDark}
@@ -226,8 +190,7 @@ const StudentSlider = () => {
                     <h2 className="studentSlider__title">Студенты</h2>
 
                     <button
-                        className={`studentSlider__filter ${isFilterOpen ? 'active' : ''}`}
-                        onClick={handleFilterToggle}
+                        className={`studentSlider__filter`}
                     >
                         <span>Фильтр</span>
                         <img src={filterIcon} alt="Фильтр"/>
@@ -294,7 +257,7 @@ const StudentSlider = () => {
                 )}
             </div>
 
-            {isFilterOpen && (
+
                 <div className="filter-modal-overlay">
                     <div className="filter-modal" ref={filterRef}>
                         <div className="filter-modal__header">
@@ -302,12 +265,6 @@ const StudentSlider = () => {
                                 <img src={filterIcon} alt="Фильтр" className="filter-modal__header-icon" />
                                 <h3 className="filter-modal__title">Фильтры</h3>
                             </div>
-                            <button
-                                className="filter-modal__close"
-                                onClick={() => setIsFilterOpen(false)}
-                            >
-                                ✕
-                            </button>
                         </div>
 
                         <div className="filter-modal__content">
@@ -381,7 +338,6 @@ const StudentSlider = () => {
                                 </button>
                                 <button
                                     className="filter-button filter-button--apply"
-                                    onClick={handleApplyFilters}
                                 >
                                     Применить
                                 </button>
@@ -389,7 +345,6 @@ const StudentSlider = () => {
                         </div>
                     </div>
                 </div>
-            )}
         </section>
     );
 };
