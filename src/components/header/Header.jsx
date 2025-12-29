@@ -23,9 +23,9 @@ const Header = () => {
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
                     <button className="header__aboutBtn">о студентах</button>
+                    <img src={logo} alt="Singularity_resume" className="header__logo" width="175" height="75" />
                 </div>
 
-                <img src={logo} alt="Singularity_resume" className="header__logo" width="175" height="75" />
 
                 <div
                     className="header__search"
