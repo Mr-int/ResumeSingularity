@@ -19,6 +19,7 @@
     align-items: center;
     gap: 32px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 .studentSlider__content::before {
@@ -151,7 +152,7 @@
     align-items: center;
     gap: 35px;
     width: 100%;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
 }
 
@@ -272,7 +273,6 @@
 @media (max-width: 1440px) {
     .studentSlider__content {
         padding: 35px 40px;
-        max-width: 1200px;
     }
 
     .studentSlider__listButton.desktop-only {
@@ -286,7 +286,6 @@
 
 @media (max-width: 1200px) {
     .studentSlider__content {
-        max-width: 992px;
         padding: 30px 35px;
         gap: 28px;
     }
@@ -340,7 +339,6 @@
 
 @media (max-width: 992px) {
     .studentSlider__content {
-        max-width: 768px;
         padding: 25px 30px;
         gap: 24px;
         border-radius: 28px;
