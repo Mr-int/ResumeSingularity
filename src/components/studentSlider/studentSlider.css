@@ -5,10 +5,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 0 40px;
+    box-sizing: border-box;
 }
 
 .studentSlider__content {
-    width: 90%;
+    width: 100%;
+    max-width: 1200px;
     height: 100%;
     position: relative;
     border-radius: 32px;
@@ -271,7 +274,12 @@
 }
 
 @media (max-width: 1440px) {
+    .studentSlider {
+        padding: 0 40px;
+    }
+
     .studentSlider__content {
+        max-width: 1200px;
         padding: 35px 40px;
     }
 
@@ -285,7 +293,12 @@
 }
 
 @media (max-width: 1200px) {
+    .studentSlider {
+        padding: 0 40px;
+    }
+
     .studentSlider__content {
+        max-width: 1200px;
         padding: 30px 35px;
         gap: 28px;
     }
@@ -338,7 +351,12 @@
 }
 
 @media (max-width: 992px) {
+    .studentSlider {
+        padding: 0 40px;
+    }
+
     .studentSlider__content {
+        max-width: 1200px;
         padding: 25px 30px;
         gap: 24px;
         border-radius: 28px;
@@ -476,8 +494,12 @@
 }
 
 @media (max-width: 768px) {
+    .studentSlider {
+        padding: 0 40px;
+    }
+
     .studentSlider__content {
-        max-width: 576px;
+        max-width: 1200px;
         padding: 22px 25px;
         gap: 22px;
     }
@@ -554,9 +576,35 @@
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 600px) {
+    .studentSlider {
+        padding: 0 20px;
+    }
+
     .studentSlider__content {
-        max-width: 100%;
+        max-width: 1200px;
+        padding: 20px;
+        gap: 20px;
+        border-radius: 24px;
+    }
+
+    .studentSlider__content::before,
+    .studentSlider__content::after {
+        border-radius: 24px;
+    }
+
+    .studentSlider__content::after {
+        border-radius: 22px;
+    }
+}
+
+@media (max-width: 576px) {
+    .studentSlider {
+        padding: 0 20px;
+    }
+
+    .studentSlider__content {
+        max-width: 1200px;
         padding: 20px;
         gap: 20px;
         border-radius: 24px;
@@ -650,7 +698,12 @@
 }
 
 @media (max-width: 480px) {
+    .studentSlider {
+        padding: 0 20px;
+    }
+
     .studentSlider__content {
+        max-width: 1200px;
         padding: 18px 15px;
         gap: 18px;
     }
@@ -689,7 +742,12 @@
 }
 
 @media (max-width: 400px) {
+    .studentSlider {
+        padding: 0 20px;
+    }
+
     .studentSlider__content {
+        max-width: 1200px;
         padding: 15px 12px;
         gap: 16px;
     }
@@ -766,8 +824,12 @@
 }
 
 @media (max-width: 360px) {
+    .studentSlider {
+        padding: 0 20px;
+    }
+
     .studentSlider__content {
-        max-width: 340px;
+        max-width: 1200px;
     }
 
     .studentSlider__title {
