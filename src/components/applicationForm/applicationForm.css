@@ -220,6 +220,24 @@
     }
 }
 
+@media (max-height: 888px) {
+    .applicationForm__content {
+        max-height: 100vh;
+    }
+
+    .applicationForm__form {
+        gap: 5px;
+    }
+
+    .applicationForm__info {
+        margin-bottom: 10px;
+    }
+
+    .applicationForm__field {
+        font-size: 22px;
+        padding-top: 8px 30px;
+    }
+}
 
 @media (max-width: 992px) {
     .applicationForm__content {

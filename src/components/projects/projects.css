@@ -20,8 +20,8 @@
 }
 
 .projects__title {
-    font-family: 'StratosSkyeng';
-    font-size: 30px;
+    font-family: 'StratosSemiLight';
+    font-size: 28px;
     font-weight: 300;
     text-align: left;
 }
@@ -139,8 +139,8 @@
 }
 
 .card__title {
-    font-family: 'StratosSkyeng', sans-serif;
-    font-size: 36px;
+    font-family: 'StratosSemiLight';
+    font-size: 28px;
     font-weight: 500;
     margin: 0;
     width: 100%;
@@ -159,7 +159,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin: 10px 0;
 }
 
 .card__tag {
@@ -183,7 +182,7 @@
 
 .card__text {
     flex: 1;
-    font-family: 'StratosSkyeng';
+    font-family: 'StratosSemiLight';
     font-size: 18px;
     line-height: 1.5;
 }
