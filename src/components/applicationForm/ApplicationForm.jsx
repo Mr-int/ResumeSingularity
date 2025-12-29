@@ -145,12 +145,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                     Отправьте заявку — мы свяжемся с вами в течение 24 часов, уточним задачу и подберём студентов, которые лучше всего подойдут.
                 </div>
 
-                {studentName && (
-                    <p className="applicationForm__subtitle">
-                        Вы подаете заявку на студента: <strong>{studentName}</strong>
-                    </p>
-                )}
-
                 {success ? (
                     <div className="applicationForm__success">
                         <h3>✅ Заявка успешно отправлена!</h3>

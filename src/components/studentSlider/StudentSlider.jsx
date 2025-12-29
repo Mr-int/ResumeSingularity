@@ -3,8 +3,6 @@ import './studentSlider.css';
 import searchIconDark from "../../assets/icons/searchIconDark.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
-import closeIcon from "../../assets/icons/closeIcon.svg";
-import arrowDownIcon from "../../assets/icons/arrowDown.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
 import searchIcon from "../../assets/icons/searchIcon.svg";
@@ -308,7 +306,7 @@ const StudentSlider = () => {
                                 className="filter-modal__close"
                                 onClick={() => setIsFilterOpen(false)}
                             >
-                                <img src={closeIcon} alt="Закрыть" />
+                                ✕
                             </button>
                         </div>
 

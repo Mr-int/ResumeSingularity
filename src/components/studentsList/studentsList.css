@@ -76,16 +76,17 @@
     padding: 8px;
     border-radius: 6px;
     transition: background-color 0.2s;
+    color: #fff;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .filter-modal__close:hover {
     background-color: rgba(255, 255, 255, 0.1);
-}
-
-.filter-modal__close img {
-    width: 20px;
-    height: 20px;
-    filter: brightness(0) invert(1);
 }
 
 .filter-modal__content {
