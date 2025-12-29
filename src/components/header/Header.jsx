@@ -3,9 +3,11 @@ import { useState } from 'react';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import { Link } from "react-router-dom";
+import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isSearchHovered, setIsSearchHovered] = useState(false);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -25,9 +27,19 @@ const Header = () => {
 
                 <img src={logo} alt="Singularity_resume" className="header__logo" width="175" height="75" />
 
-                <div className="header__search">
+                <div
+                    className="header__search"
+                    onMouseEnter={() => setIsSearchHovered(true)}
+                    onMouseLeave={() => setIsSearchHovered(false)}
+                >
                     <Link to="/students" className="header__searchBtn">найти стажера</Link>
-                    <img src={searchIcon} alt="search" className="header__searchIcon" width="20" height="20" />
+                    <img
+                        src={isSearchHovered ? gradientSearchIcon : searchIcon}
+                        alt="search"
+                        className="header__searchIcon"
+                        width="20"
+                        height="20"
+                    />
                 </div>
 
                 <button
