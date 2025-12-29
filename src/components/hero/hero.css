@@ -29,7 +29,7 @@
     width: 780px;
     height: 600px;
     right: 0;
-    top: 100px;
+    top: 70px;
     -webkit-user-select: none;
     user-select: none;
     object-fit: cover;
@@ -101,11 +101,7 @@
     align-items: center;
     gap: 10px;
     transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.hero__button:hover {
-    transform: scale(1.05);
-    opacity: 0.9;
+    font-weight: 300;
 }
 
 .button__icon {
