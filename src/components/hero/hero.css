@@ -73,6 +73,7 @@
     -webkit-text-fill-color: transparent;
     color: transparent;
     font-style: italic;
+    letter-spacing: 14px;
 }
 
 .left-content__description {
@@ -82,6 +83,7 @@
     font-family: "Sansation", sans-serif;
     color: #fff;
     line-height: 1.4;
+    letter-spacing: 1px;
 }
 
 .hero__button {
@@ -101,7 +103,7 @@
     align-items: center;
     gap: 10px;
     transition: transform 0.3s ease, opacity 0.3s ease;
-    font-weight: 300;
+    text-decoration: none;
 }
 
 .button__icon {

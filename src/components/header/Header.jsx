@@ -24,7 +24,15 @@ const Header = () => {
                     <Link to="/" className="header__homeBtn">главная</Link>
                 </div>
 
-                <img src={logo} alt="Singularity_resume" className="header__logo" width="175" height="75" />
+                <Link to="/" className="header__logoLink">
+                    <img
+                        src={logo}
+                        alt="Singularity_resume"
+                        className="header__logo"
+                        width="175"
+                        height="75"
+                    />
+                </Link>
 
                 <div
                     className="header__search"

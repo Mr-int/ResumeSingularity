@@ -4,6 +4,7 @@ import MobileStudentsHero from "../../assets/other/mobileStudents.png";
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import arrowIcon from "../../assets/icons/arrow.svg";
 import { useEffect, useState } from 'react';
+import { Link } from "react-router-dom"; // Импортируем Link
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
@@ -34,10 +35,10 @@ const Hero = () => {
                         <span>под задачи вашей компании</span>
                     </div>
 
-                    <button className="hero__button">
+                    <Link to="/students" className="hero__button">
                         Найти стажёра
                         <img src={searchIcon} alt="search" className="button__icon" />
-                    </button>
+                    </Link>
                 </div>
 
                 {isMobile ? (

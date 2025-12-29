@@ -78,6 +78,7 @@
     border-radius: 100px;
     font-family: Sansation, sans-serif;
     font-size: 24px;
+    opacity: 30%;
     box-sizing: border-box;
 }
 
@@ -131,8 +132,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: all 0.3s ease;
-    cursor: pointer;
 }
 
 .studentSlider__filter span {
