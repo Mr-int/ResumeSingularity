@@ -5,11 +5,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 50px 0;
+    padding: 50px 40px;
+    box-sizing: border-box;
 }
 
 .studentsList {
-    width: 90%;
+    width: 100%;
+    max-width: 1200px;
     background:
             linear-gradient(
                     to top right,
@@ -19,7 +21,7 @@
             ),
             rgba(0, 0, 0, 0.8);
     border-radius: 35px;
-    padding: 25px 3%;
+    padding: 25px 40px;
 }
 
 .studentsList__header {
@@ -107,14 +109,27 @@
 }
 
 @media (max-width: 1200px) {
+    .studentsList-section {
+        padding: 50px 40px;
+    }
+
     .studentsList {
-        width: 100%;
+        max-width: 1200px;
         border-radius: 25px;
-        padding: 25px 20px;
+        padding: 25px 40px;
     }
 }
 
 @media (max-width: 1024px) {
+    .studentsList-section {
+        padding: 50px 40px;
+    }
+
+    .studentsList {
+        max-width: 1200px;
+        padding: 25px 40px;
+    }
+
     .studentsList__top-row {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -147,11 +162,12 @@
 
 @media (max-width: 768px) {
     .studentsList-section {
-        padding: 30px 0;
+        padding: 30px 40px;
     }
 
     .studentsList {
-        padding: 20px 15px;
+        max-width: 1200px;
+        padding: 20px 30px;
         border-radius: 20px;
     }
 
@@ -188,8 +204,8 @@
 
     .studentsList__search-wrapper.expanded {
         position: absolute;
-        left: 15px;
-        right: 15px;
+        left: 30px;
+        right: 30px;
         top: 20px;
         z-index: 10;
         flex: 1;
@@ -244,7 +260,7 @@
 
     .studentsList__filter.expanded {
         position: absolute;
-        right: 15px;
+        right: 30px;
         top: 20px;
         z-index: 10;
         width: auto;
@@ -265,7 +281,35 @@
     }
 }
 
+@media (max-width: 600px) {
+    .studentsList-section {
+        padding: 30px 20px;
+    }
+
+    .studentsList {
+        padding: 20px 25px;
+    }
+
+    .studentsList__search-wrapper.expanded {
+        left: 25px;
+        right: 25px;
+    }
+
+    .studentsList__filter.expanded {
+        right: 25px;
+    }
+}
+
 @media (max-width: 480px) {
+    .studentsList-section {
+        padding: 30px 20px;
+    }
+
+    .studentsList {
+        max-width: 1200px;
+        padding: 20px;
+    }
+
     .studentsList__title {
         font-size: 18px;
     }
@@ -274,8 +318,17 @@
         min-height: 400px;
     }
 
+    .studentsList__search-wrapper.expanded {
+        left: 20px;
+        right: 20px;
+    }
+
     .studentsList__search-wrapper.expanded .studentsList__search {
         font-size: 14px;
+    }
+
+    .studentsList__filter.expanded {
+        right: 20px;
     }
 
     .studentsList__filter.expanded span {
