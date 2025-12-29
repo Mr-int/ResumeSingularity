@@ -103,8 +103,6 @@ const StudentsList = () => {
             <div className="studentsList">
                 <header className="studentsList__header">
                     <div className="studentsList__top-row">
-                        <h2 className="studentsList__title">Студенты</h2>
-
                         <div
                             ref={searchRef}
                             className={`studentsList__search-wrapper ${searchExpanded ? 'expanded' : ''}`}
@@ -121,6 +119,8 @@ const StudentsList = () => {
                                 autoFocus={searchExpanded}
                             />
                         </div>
+
+                        <h2 className="studentsList__title">Студенты</h2>
 
                         <button
                             ref={filterRef}
