@@ -261,7 +261,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 950px) {
     .projects {
         padding: 30px 40px;
         min-height: auto;
