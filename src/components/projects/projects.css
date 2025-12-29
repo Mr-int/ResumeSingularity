@@ -65,24 +65,16 @@
 .card--gamecheb {
     background: linear-gradient(64deg, #71E2A0, #E3FFA2);
     border-color: rgba(227, 255, 162, 0.3);
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: 10000;
 }
 
 .card--resume {
     background: linear-gradient(64deg, #E271D6, #80ACFF);
     border-color: rgba(128, 172, 255, 0.3);
-    right: 0;
-    top: 20%;
 }
 
 .card--vr {
     background: linear-gradient(64deg, #71D3E2, #9DBBFF);
     border-color: rgba(157, 187, 255, 0.3);
-    left: 14%;
-    bottom: 0;
 }
 
 .card__overlay {
