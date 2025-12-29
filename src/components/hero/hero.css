@@ -1,7 +1,7 @@
 .hero {
     height: 100vh;
     min-height: 600px;
-    max-height: 1200px;
+    max-height: 900px;
     width: 100%;
     background: #000;
     display: flex;
@@ -24,7 +24,6 @@
     position: relative;
 }
 
-/* Десктопная версия картинки */
 .hero__right-content {
     position: absolute;
     width: 580px;
@@ -37,7 +36,6 @@
     z-index: 1;
 }
 
-/* Мобильная версия картинки */
 .hero__image-container {
     display: none;
 }
@@ -46,7 +44,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    width: 50%;
+    width: 60%;
     height: 100%;
     padding-top: 8%;
     padding-bottom: 8%;
@@ -114,7 +112,6 @@
     height: 20px;
 }
 
-/* Анимированная стрелка */
 .hero__arrow {
     position: absolute;
     bottom: 60px;
@@ -135,7 +132,6 @@
     }
 }
 
-/* Адаптив для планшетов */
 @media (max-width: 1024px) {
     .hero__right-content {
         width: 500px;
@@ -159,7 +155,6 @@
     }
 }
 
-/* Адаптив для мобильных устройств */
 @media (max-width: 768px) {
     .hero {
         padding: 0 20px;
