@@ -21,7 +21,7 @@
 .benefits__title {
     color: #fff;
     font-size: 30px;
-    font-family: 'StratosSkyeng';
+    font-family: 'StratosSemiLight';
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
@@ -119,7 +119,7 @@
 }
 
 .benefits__card-title {
-    font-family: 'StratosSkyeng';
+    font-family: "Sansation";
     font-size: 26px;
     text-align: left;
     font-weight: 400;
@@ -127,7 +127,7 @@
 }
 
 .benefits__card span {
-    font-family: "Sansation", sans-serif;
+    font-family: "StratosSemiLight";
     font-size: 18px;
     width: 70%;
 }
@@ -138,14 +138,14 @@
 }
 
 .benefits__card__purple img {
-    width: 230px;
+    width: 200px;
     height: 270px;
     bottom: 0;
 }
 
 .benefits__card__green img {
     width: 250px;
-    height: 250px;
+    height: 220px;
     top: 8%;
     right: -10%;
     transform: rotate(45deg);

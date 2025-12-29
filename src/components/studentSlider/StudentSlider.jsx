@@ -129,13 +129,13 @@ const StudentSlider = () => {
                             onBlur={handleSearchBlur}
                             disabled
                         />
-                        <img
-                            src={searchIconDark}
-                            alt="Поиск"
-                            className="studentSlider__searchIcon"
-                            width="20px"
-                            height="20px"
-                        />
+                        {/*<img*/}
+                        {/*    src={searchIconDark}*/}
+                        {/*    alt="Поиск"*/}
+                        {/*    className="studentSlider__searchIcon"*/}
+                        {/*    width="20px"*/}
+                        {/*    height="20px"*/}
+                        {/*/>*/}
                     </div>
 
                     <h2 className="studentSlider__title">Студенты</h2>
@@ -204,7 +204,7 @@ const StudentSlider = () => {
                         </Link>
                     </>
                 ) : (
-                    <p style={{color: '#fff'}}>Студенты не найдены</p>
+                    <p style={{color: '#fff'}}>Для показа студентов ты должен быть авторизован :(</p>
                 )}
             </div>
         </section>

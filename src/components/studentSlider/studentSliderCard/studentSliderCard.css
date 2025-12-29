@@ -84,13 +84,13 @@
 }
 
 .student-slider-card__name {
-    font-family: 'StratosSkyeng';
+    font-family: 'StratosMedium';
     font-size: 24px;
     width: 50%;
 }
 
 .student-slider-card__job {
-    font-family: 'StratosSkyeng';
+    font-family: 'StratosRegular';
     font-size: 14px;
     font-weight: 400;
 }

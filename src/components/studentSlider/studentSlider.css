@@ -91,6 +91,7 @@
     font-size: 20px;
     width: 100%;
     transition: all 0.3s ease;
+    font-family: 'StratosSemiLight';
 
 }
 
@@ -111,7 +112,7 @@
 
 .studentSlider__searchIcon {
     position: absolute;
-    right: 24%;
+    right: 22%;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;

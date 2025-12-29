@@ -7,7 +7,7 @@ const Projects = () => {
     const [isAnimating, setIsAnimating] = useState(false);
     const [expandedCards, setExpandedCards] = useState([1]);
     const [isMobile, setIsMobile] = useState(false);
-    const [containerHeight, setContainerHeight] = useState("155vh");
+    const [containerHeight, setContainerHeight] = useState("800px");
     const cardsWrapperRef = useRef(null);
 
     useEffect(() => {
@@ -86,8 +86,8 @@ const Projects = () => {
 
         const positions = {
             first: { transform: 'translate(0, 0)', zIndex: 30 },
-            second: { transform: 'translate(35vw, 320px)', zIndex: 20 },
-            third: { transform: 'translate(17.5vw, 600px)', zIndex: 10 }
+            second: { transform: 'translate(calc(100vw - 877px - 40px), 150px)', zIndex: 20 },
+            third: { transform: 'translate(calc((100vw - 877px) / 2), 300px)', zIndex: 10 }
         };
 
         if (cardNumber === activeCard) return positions.first;

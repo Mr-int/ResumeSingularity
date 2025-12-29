@@ -16,6 +16,7 @@
     display: flex;
     flex-direction: column;
     gap: 40px;
+    position: relative;
 }
 
 .projects__title {
@@ -34,17 +35,12 @@
 
 .card {
     position: absolute;
-    width: 65%;
-    height: auto;
-    min-height: 620px;
-    max-height: 800px;
+    width: 877px;
+    height: 535px;
     border-radius: 15px;
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    top: 0;
-    left: 0;
-    transform: translate(0, 0);
     will-change: transform;
     border: 2px solid transparent;
     cursor: pointer;
@@ -209,6 +205,17 @@
     border-radius: 10px;
 }
 
+@media (max-width: 1200px) {
+    .card {
+        width: 750px;
+        height: 500px;
+    }
+
+    .card__content {
+        padding: 50px;
+    }
+}
+
 @media (max-width: 1024px) {
     .projects {
         padding: 48px 40px;
@@ -219,9 +226,8 @@
     }
 
     .card {
-        width: 70%;
-        height: auto;
-        min-height: 600px;
+        width: 700px;
+        height: 480px;
     }
 
     .card__content {
@@ -235,6 +241,24 @@
 
     .card__image {
         min-height: 250px;
+    }
+}
+
+@media (max-width: 950px) {
+    .card {
+        width: 650px;
+        height: 450px;
+    }
+}
+
+@media (max-width: 850px) {
+    .card {
+        width: 600px;
+        height: 420px;
+    }
+
+    .card__content {
+        padding: 35px;
     }
 }
 
