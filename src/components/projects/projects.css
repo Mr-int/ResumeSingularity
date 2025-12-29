@@ -44,6 +44,8 @@
     will-change: transform;
     border: 2px solid transparent;
     cursor: pointer;
+    left: 0;
+    top: 0;
 }
 
 .card:hover:not(.card__active) {
@@ -206,6 +208,10 @@
 }
 
 @media (max-width: 1200px) {
+    .projects__wrapper {
+        max-width: 100%;
+    }
+
     .card {
         width: 750px;
         height: 500px;
@@ -222,7 +228,7 @@
     }
 
     .projects__wrapper {
-        max-width: 1200px;
+        max-width: 100%;
     }
 
     .card {
@@ -269,7 +275,7 @@
     }
 
     .projects__wrapper {
-        max-width: 1200px;
+        max-width: 100%;
     }
 
     .projects__title {
@@ -403,7 +409,7 @@
     }
 
     .projects__wrapper {
-        max-width: 1200px;
+        max-width: 100%;
     }
 }
 
@@ -414,7 +420,7 @@
 
     .projects__wrapper {
         width: 100%;
-        max-width: 1200px;
+        max-width: 100%;
         gap: 30px;
     }
 
@@ -458,7 +464,7 @@
     }
 
     .projects__wrapper {
-        max-width: 1200px;
+        max-width: 100%;
     }
 
     .card {

@@ -40,7 +40,7 @@
     justify-content: flex-start;
     align-items: center;
     gap: 12px;
-    font-family: 'StratosSkyeng';
+    font-family: 'StratosSemiLight';
     font-size: 28px;
     font-weight: 400;
     margin: 0 0 8px 0;
@@ -51,6 +51,7 @@
 }
 
 .studentsCard__subtitle {
+    font-family: "Sansation";
     font-size: 18px;
     margin: 0;
     color: #ccc;
@@ -102,7 +103,7 @@
     line-height: 1.5;
     margin: 0;
     color: white;
-    font-family: 'StratosSkyeng';
+    font-family: 'StratosSemiLight';
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -138,7 +139,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: 'StratosSkyeng';
+    font-family: 'Sansation';
     font-weight: 300;
     flex-shrink: 0;
     transition: all 0.3s ease;

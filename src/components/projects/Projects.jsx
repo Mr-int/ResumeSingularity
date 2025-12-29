@@ -86,7 +86,7 @@ const Projects = () => {
 
         const positions = {
             first: { transform: 'translate(0, 0)', zIndex: 30 },
-            second: { transform: 'translate(calc(100vw - 877px - 40px), 150px)', zIndex: 20 },
+            second: { transform: 'translate(calc(-877px + 100vw), 150px)', zIndex: 20 },
             third: { transform: 'translate(calc((100vw - 877px) / 2), 300px)', zIndex: 10 }
         };
 
