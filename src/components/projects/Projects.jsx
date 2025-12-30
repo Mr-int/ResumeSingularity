@@ -8,6 +8,7 @@ const Projects = () => {
     const [expandedCards, setExpandedCards] = useState([1]);
     const [isMobile, setIsMobile] = useState(false);
     const [containerHeight, setContainerHeight] = useState("800px");
+    const [expandedTexts, setExpandedTexts] = useState({});
     const cardsWrapperRef = useRef(null);
 
     useEffect(() => {
@@ -85,6 +86,11 @@ const Projects = () => {
         e.stopPropagation();
         if (isMobile) {
             handleCardClick(cardNumber, e);
+        } else {
+            setExpandedTexts(prev => ({
+                ...prev,
+                [cardNumber]: !prev[cardNumber]
+            }));
         }
     }, [isMobile, handleCardClick]);
 
@@ -111,6 +117,10 @@ const Projects = () => {
         return expandedCards.includes(cardNumber);
     }, [expandedCards]);
 
+    const isTextExpanded = useCallback((cardNumber) => {
+        return expandedTexts[cardNumber] || false;
+    }, [expandedTexts]);
+
     const getProjectTitle = useCallback((cardNumber) => {
         const titles = {
             1: "GameCheb",
@@ -124,8 +134,12 @@ const Projects = () => {
         if (isMobile) {
             return !isCardExpanded(cardNumber);
         }
-        return cardNumber !== activeCard;
-    }, [isMobile, isCardExpanded, activeCard]);
+        return !isTextExpanded(cardNumber);
+    }, [isMobile, isCardExpanded, isTextExpanded]);
+
+    const getTextClass = useCallback((cardNumber) => {
+        return shouldShowReadMore(cardNumber) ? 'card__text--truncated' : 'card__text--full';
+    }, [shouldShowReadMore]);
 
     return (
         <section className="projects" style={{ minHeight: containerHeight }}>
@@ -174,7 +188,7 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${shouldShowReadMore(1) ? 'card__text--truncated' : ''}`}>
+                                        <div className={`card__text ${getTextClass(1)}`}>
                                             <div className="card__text-content">
                                                 Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.
                                                 <br /><br />
@@ -238,7 +252,7 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${shouldShowReadMore(2) ? 'card__text--truncated' : ''}`}>
+                                        <div className={`card__text ${getTextClass(2)}`}>
                                             <div className="card__text-content">
                                                 Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.
                                                 <br/><br/>
@@ -300,7 +314,7 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${shouldShowReadMore(3) ? 'card__text--truncated' : ''}`}>
+                                        <div className={`card__text ${getTextClass(3)}`}>
                                             <div className="card__text-content">
                                                 VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.
                                                 <br/><br/>

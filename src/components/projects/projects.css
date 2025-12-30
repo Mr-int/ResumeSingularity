@@ -109,6 +109,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+    overflow: hidden;
 }
 
 .card__header {
@@ -178,6 +179,7 @@
     gap: 70px;
     flex: 1;
     align-items: stretch;
+    min-height: 0;
 }
 
 .card__text {
@@ -187,10 +189,22 @@
     line-height: 1.5;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .card__text-content {
     overflow: hidden;
+    flex: 1;
+    min-height: 0;
+}
+
+.card__text--truncated {
+    flex: 0 0 auto;
+    max-height: 180px;
+    overflow: hidden;
+    position: relative;
 }
 
 .card__text--truncated .card__text-content {
@@ -198,6 +212,18 @@
     overflow: hidden;
     mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+.card__text--full {
+    flex: 1;
+    max-height: none;
+    overflow: visible;
+}
+
+.card__text--full .card__text-content {
+    max-height: none;
+    mask-image: none;
+    -webkit-mask-image: none;
 }
 
 .card__text-more {
@@ -208,6 +234,7 @@
     margin-top: 10px;
     cursor: pointer;
     transition: color 0.2s ease;
+    align-self: flex-start;
 }
 
 .card__text-more:hover {
@@ -320,6 +347,11 @@
         height: 100%;
     }
 
+    .card__expanded .card__content {
+        gap: 20px;
+        overflow: visible;
+    }
+
     .card__header {
         display: flex;
         align-items: center;
@@ -368,10 +400,6 @@
         padding: 0;
     }
 
-    .card__expanded .card__content {
-        gap: 20px;
-    }
-
     .card__description {
         font-size: 14px;
         max-width: 100%;
@@ -408,8 +436,12 @@
         line-height: 1.4;
     }
 
+    .card__text--truncated {
+        max-height: 120px;
+    }
+
     .card__text--truncated .card__text-content {
-        max-height: 140px;
+        max-height: 100px;
         mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
         -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
     }
