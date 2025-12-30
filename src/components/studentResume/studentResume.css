@@ -83,7 +83,8 @@
 }
 
 .StudentResume__personName h2 {
-    font-size: 42px;
+    font-size: 40px;
+    font-family: "StratosSemiLight";
     margin-bottom: 10px;
 }
 
@@ -100,7 +101,7 @@
     font-size: 24px;
     gap: 22px;
     margin-top: 20px;
-    font-family: 'StratosSkyeng';
+    font-family: 'StratosSemiLight';
     flex-shrink: 0;
 }
 
@@ -133,6 +134,7 @@
     flex-direction: column;
     gap: 50px;
     padding-bottom: 60px;
+    font-family: "StratosSemiLight";
 }
 
 .StudentResume__section {
@@ -149,7 +151,7 @@
 
 .StudentResume__sectionText {
     color: #fff;
-    font-size: 20px;
+    font-size: 24px;
     line-height: 1.7;
     margin: 0;
     white-space: pre-line;
