@@ -21,7 +21,9 @@ const Banner = () => {
                         </button>
                     </div>
 
-                    <img src={bannerImg} alt="Иллюстрация" className="banner__img" />
+                    <div className="banner__imageWrapper">
+                        <img src={bannerImg} alt="Иллюстрация" className="banner__img" />
+                    </div>
                 </div>
             </div>
         </article>

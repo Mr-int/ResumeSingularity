@@ -113,6 +113,13 @@ const Projects = () => {
         return titles[cardNumber];
     }, []);
 
+    const shouldTruncateText = useCallback((cardNumber) => {
+        if (isMobile) {
+            return !isCardExpanded(cardNumber);
+        }
+        return cardNumber !== activeCard; // На десктопе обрезаем на неактивных карточках
+    }, [isMobile, isCardExpanded, activeCard]);
+
     return (
         <section className="projects" style={{ minHeight: containerHeight }}>
             <div className="projects__wrapper">
@@ -160,10 +167,13 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className="card__text">
-                                            Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.
-                                            <br /><br />
-                                            Наша миссия — сохранить чувашскую культуру в настоящем через современный бизнес и туризм.
+                                        <div className={`card__text ${shouldTruncateText(1) ? 'card__text--truncated' : ''}`}>
+                                            <div className="card__text-content">
+                                                Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.
+                                                <br /><br />
+                                                Наша миссия — сохранить чувашскую культуру в настоящем через современный бизнес и туризм.
+                                            </div>
+                                            {shouldTruncateText(1) && <span className="card__text-more">Подробнее</span>}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="GameCheb проект" />
@@ -217,10 +227,13 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className="card__text">
-                                            Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.
-                                            <br/><br/>
-                                            Задача проекта — минимизировать время поиска кандидата и упростить коммуникацию между работодателем, куратором и студентом.
+                                        <div className={`card__text ${shouldTruncateText(2) ? 'card__text--truncated' : ''}`}>
+                                            <div className="card__text-content">
+                                                Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.
+                                                <br/><br/>
+                                                Задача проекта — минимизировать время поиска кандидата и упростить коммуникацию между работодателем, куратором и студентом.
+                                            </div>
+                                            {shouldTruncateText(2) && <span className="card__text-more">Подробнее</span>}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="Singularity Resume проект" />
@@ -272,10 +285,13 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className="card__text">
-                                            VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.
-                                            <br/><br/>
-                                            Виртуальная реальность позволяет рассматривать эпохи и культуру, а также проживать события внутри картин. Такой формат сочетает обучение, интерактив и практику, усиливает интерес и понимание материала.
+                                        <div className={`card__text ${shouldTruncateText(3) ? 'card__text--truncated' : ''}`}>
+                                            <div className="card__text-content">
+                                                VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.
+                                                <br/><br/>
+                                                Виртуальная реальность позволяет рассматривать эпохи и культуру, а также проживать события внутри картин. Такой формат сочетает обучение, интерактив и практику, усиливает интерес и понимание материала.
+                                            </div>
+                                            {shouldTruncateText(3) && <span className="card__text-more">Подробнее</span>}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="VR-музей проект" />
