@@ -410,7 +410,7 @@ const StudentResume = () => {
 
                         <div className="StudentResume__contactInfo">
 
-                            <img src={sunIcon} alt="Sun icon"/>
+                            <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
 
                             <div className="StudentResume__contactWrapper">
                                 <p>Готов проходить стажировку в вашей компании!</p>
