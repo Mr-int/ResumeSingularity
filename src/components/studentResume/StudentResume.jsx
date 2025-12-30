@@ -255,7 +255,7 @@ const StudentResume = () => {
                             </div>
 
                             <div className="StudentResume__section">
-                                <h3 className="StudentResume__sectionTitle">Портфолио</h3>
+                                <h3 className="StudentResume__sectionTitle">Портфолио и ссылки</h3>
                                 <div className="StudentResume__portfolio">
                                     {portfolio && portfolio.length > 0 ? (
                                         portfolio.map((project, index) => (
@@ -274,52 +274,22 @@ const StudentResume = () => {
                                                         <p className="StudentResume__portfolioTitle">{project.name}</p>
                                                     )}
 
-                                                    {project.description && (
+                                                    {project.additionalInfo && (
                                                         <p className="StudentResume__portfolioDescription">
-                                                            {project.description}
+                                                            {project.additionalInfo}
                                                         </p>
                                                     )}
 
-                                                    {/* Дополнительные поля */}
-                                                    {project.technologies && (
-                                                        <div className="StudentResume__portfolioTech">
-                                                            <span>Технологии: </span>
-                                                            {Array.isArray(project.technologies)
-                                                                ? project.technologies.join(', ')
-                                                                : project.technologies}
-                                                        </div>
-                                                    )}
-
-                                                    {project.role && (
-                                                        <p className="StudentResume__portfolioRole">
-                                                            <span>Роль: </span>{project.role}
-                                                        </p>
-                                                    )}
-
-                                                    {project.year && (
-                                                        <p className="StudentResume__portfolioYear">
-                                                            <span>Год: </span>{project.year}
-                                                        </p>
-                                                    )}
-
-                                                    {project.status && (
-                                                        <p className="StudentResume__portfolioStatus">
-                                                            <span>Статус: </span>{project.status}
-                                                        </p>
-                                                    )}
-
-                                                    {project.type && (
-                                                        <p className="StudentResume__portfolioType">
-                                                            <span>Тип: </span>{project.type}
-                                                        </p>
-                                                    )}
+                                                    <div className="StudentResume__portfolioLink">
+                                                        <span>Перейти →</span>
+                                                    </div>
                                                 </div>
                                             </a>
                                         ))
                                     ) : (
                                         <div className="StudentResume__portfolioItem" style={{ backgroundImage: `url(${getRandomPortfolioBackground(0)})` }}>
                                             <div className="StudentResume__portfolioContent">
-                                                <p className="StudentResume__portfolioTitle">Проекты будут добавлены позже</p>
+                                                <p className="StudentResume__portfolioTitle">Ссылки будут добавлены позже</p>
                                             </div>
                                         </div>
                                     )}
@@ -482,7 +452,7 @@ const StudentResume = () => {
             {showApplicationForm && (
                 <ApplicationForm
                     studentName={fullName}
-                    studentId={id} // Передаем ID студента
+                    studentId={id}
                     onClose={() => setShowApplicationForm(false)}
                     onSubmit={async (formData) => {
                         console.log('Application for student:', fullName, formData);
