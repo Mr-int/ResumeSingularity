@@ -8,7 +8,6 @@ const Projects = () => {
     const [expandedCards, setExpandedCards] = useState([1]);
     const [isMobile, setIsMobile] = useState(false);
     const [containerHeight, setContainerHeight] = useState("800px");
-    const [expandedTexts, setExpandedTexts] = useState({});
     const cardsWrapperRef = useRef(null);
 
     useEffect(() => {
@@ -54,7 +53,7 @@ const Projects = () => {
         }
     }, [activeCard, isMobile]);
 
-    const handleCardClick = useCallback((cardNumber, e) => {
+    const handleCardClick = useCallback((cardNumber) => {
         if (isMobile) {
             if (expandedCards.includes(cardNumber)) {
                 if (expandedCards.length > 1) {
@@ -82,18 +81,6 @@ const Projects = () => {
         }, 500);
     }, [activeCard, isAnimating, isMobile, expandedCards]);
 
-    const handleTextClick = useCallback((e, cardNumber) => {
-        e.stopPropagation();
-        if (isMobile) {
-            handleCardClick(cardNumber, e);
-        } else {
-            setExpandedTexts(prev => ({
-                ...prev,
-                [cardNumber]: !prev[cardNumber]
-            }));
-        }
-    }, [isMobile, handleCardClick]);
-
     const getCardPosition = useCallback((cardNumber) => {
         if (isMobile) return {};
 
@@ -117,10 +104,6 @@ const Projects = () => {
         return expandedCards.includes(cardNumber);
     }, [expandedCards]);
 
-    const isTextExpanded = useCallback((cardNumber) => {
-        return expandedTexts[cardNumber] || false;
-    }, [expandedTexts]);
-
     const getProjectTitle = useCallback((cardNumber) => {
         const titles = {
             1: "GameCheb",
@@ -130,16 +113,12 @@ const Projects = () => {
         return titles[cardNumber];
     }, []);
 
-    const shouldShowReadMore = useCallback((cardNumber) => {
+    const shouldTruncateText = useCallback((cardNumber) => {
         if (isMobile) {
             return !isCardExpanded(cardNumber);
         }
-        return !isTextExpanded(cardNumber);
-    }, [isMobile, isCardExpanded, isTextExpanded]);
-
-    const getTextClass = useCallback((cardNumber) => {
-        return shouldShowReadMore(cardNumber) ? 'card__text--truncated' : 'card__text--full';
-    }, [shouldShowReadMore]);
+        return cardNumber !== activeCard;
+    }, [isMobile, isCardExpanded, activeCard]);
 
     return (
         <section className="projects" style={{ minHeight: containerHeight }}>
@@ -149,7 +128,7 @@ const Projects = () => {
                 <div className="projects__cardsWrapper" ref={cardsWrapperRef}>
                     <div
                         className={`card card--gamecheb ${activeCard === 1 ? 'card__active' : ''} ${isMobile && isCardExpanded(1) ? 'card__expanded' : ''}`}
-                        onClick={(e) => handleCardClick(1, e)}
+                        onClick={() => handleCardClick(1)}
                         style={{
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(1),
@@ -188,17 +167,13 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${getTextClass(1)}`}>
+                                        <div className={`card__text ${shouldTruncateText(1) ? 'card__text--truncated' : ''}`}>
                                             <div className="card__text-content">
                                                 Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.
                                                 <br /><br />
                                                 Наша миссия — сохранить чувашскую культуру в настоящем через современный бизнес и туризм.
                                             </div>
-                                            {shouldShowReadMore(1) && (
-                                                <span className="card__text-more" onClick={(e) => handleTextClick(e, 1)}>
-                                                    Подробнее
-                                                </span>
-                                            )}
+                                            {shouldTruncateText(1) && <span className="card__text-more">Подробнее</span>}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="GameCheb проект" />
@@ -211,7 +186,7 @@ const Projects = () => {
 
                     <div
                         className={`card card--resume ${activeCard === 2 ? 'card__active' : ''} ${isMobile && isCardExpanded(2) ? 'card__expanded' : ''}`}
-                        onClick={(e) => handleCardClick(2, e)}
+                        onClick={() => handleCardClick(2)}
                         style={{
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(2),
@@ -252,17 +227,13 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${getTextClass(2)}`}>
+                                        <div className={`card__text ${shouldTruncateText(2) ? 'card__text--truncated' : ''}`}>
                                             <div className="card__text-content">
                                                 Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.
                                                 <br/><br/>
                                                 Задача проекта — минимизировать время поиска кандидата и упростить коммуникацию между работодателем, куратором и студентом.
                                             </div>
-                                            {shouldShowReadMore(2) && (
-                                                <span className="card__text-more" onClick={(e) => handleTextClick(e, 2)}>
-                                                    Подробнее
-                                                </span>
-                                            )}
+                                            {shouldTruncateText(2) && <span className="card__text-more">Подробнее</span>}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="Singularity Resume проект" />
@@ -275,7 +246,7 @@ const Projects = () => {
 
                     <div
                         className={`card card--vr ${activeCard === 3 ? 'card__active' : ''} ${isMobile && isCardExpanded(3) ? 'card__expanded' : ''}`}
-                        onClick={(e) => handleCardClick(3, e)}
+                        onClick={() => handleCardClick(3)}
                         style={{
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(3),
@@ -314,17 +285,13 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${getTextClass(3)}`}>
+                                        <div className={`card__text ${shouldTruncateText(3) ? 'card__text--truncated' : ''}`}>
                                             <div className="card__text-content">
                                                 VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.
                                                 <br/><br/>
                                                 Виртуальная реальность позволяет рассматривать эпохи и культуру, а также проживать события внутри картин. Такой формат сочетает обучение, интерактив и практику, усиливает интерес и понимание материала.
                                             </div>
-                                            {shouldShowReadMore(3) && (
-                                                <span className="card__text-more" onClick={(e) => handleTextClick(e, 3)}>
-                                                    Подробнее
-                                                </span>
-                                            )}
+                                            {shouldTruncateText(3) && <span className="card__text-more">Подробнее</span>}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="VR-музей проект" />
