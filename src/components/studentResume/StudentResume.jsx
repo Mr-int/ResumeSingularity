@@ -279,10 +279,6 @@ const StudentResume = () => {
                                                             {project.additionalInfo}
                                                         </p>
                                                     )}
-
-                                                    <div className="StudentResume__portfolioLink">
-                                                        <span>Перейти →</span>
-                                                    </div>
                                                 </div>
                                             </a>
                                         ))

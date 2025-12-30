@@ -221,28 +221,27 @@
     height: 90%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-end;
+    align-items: flex-start;
     gap: 15px;
-    padding: 20px;
     box-sizing: border-box;
     text-align: center;
+    padding: 18px;
 }
 
 .StudentResume__portfolioTitle {
-    color: #fff;
-    font-size: 24px;
-    font-weight: 600;
+    color: #000;
+    font-size: 31px;
     margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-family: 'StratosSemiLight';
 }
 
 .StudentResume__portfolioDescription {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 16px;
+    color: #000;
+    font-size: 24px;
     margin: 0;
     line-height: 1.4;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    font-family: 'StratosSemiLight';
     max-height: 80px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -251,23 +250,7 @@
     -webkit-box-orient: vertical;
 }
 
-.StudentResume__portfolioLink {
-    margin-top: 10px;
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(5px);
-    transition: all 0.3s ease;
-}
-
-.StudentResume__portfolioLink span {
-    color: #fff;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.StudentResume__portfolioItem:hover .StudentResume__portfolioLink {
+.StudentResume__portfolioItem:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
 }
