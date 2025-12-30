@@ -240,7 +240,6 @@
     color: #000;
     font-size: 24px;
     margin: 0;
-    line-height: 1.4;
     font-family: 'StratosSemiLight';
     max-height: 80px;
     overflow: hidden;
@@ -248,11 +247,7 @@
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
-}
-
-.StudentResume__portfolioItem:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
+    text-align: left;
 }
 
 .StudentResume__additionalSections {
@@ -728,7 +723,6 @@
 
     .StudentResume__personName {
         margin-top: 0;
-        text-align: center;
     }
 
     .StudentResume__personName h2 {
