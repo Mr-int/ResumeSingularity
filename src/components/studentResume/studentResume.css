@@ -380,6 +380,7 @@
     background-position: center center;
     background-size: 100% 100%;
     position: relative;
+    overflow: hidden;
 }
 
 .StudentResume__contactWrapper {
@@ -426,16 +427,13 @@
     z-index: 1;
 }
 
-.StudentResume__sunIcon {
+.StudentResume__sunIcon img {
+    width: 200px;
+    height: 200px;
     position: absolute;
     left: -50px;
     top: -50px;
     z-index: 1;
-}
-
-.StudentResume__sunIcon img {
-    width: 200px;
-    height: 200px;
 }
 
 .StudentResume__contactDetails {

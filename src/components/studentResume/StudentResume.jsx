@@ -407,10 +407,11 @@ const StudentResume = () => {
                         <div className="StudentResume__contactSlider">
                             {student && <StudentSliderCard student={student} isActive={true} />}
                         </div>
+
                         <div className="StudentResume__contactInfo">
-                            <div className="StudentResume__sunIcon">
-                                <img src={sunIcon} alt="Sun icon"/>
-                            </div>
+
+                            <img src={sunIcon} alt="Sun icon"/>
+
                             <div className="StudentResume__contactWrapper">
                                 <p>Готов проходить стажировку в вашей компании!</p>
                                 <button>
@@ -418,12 +419,13 @@ const StudentResume = () => {
                                     <img src={mailIcon} alt="Mail icon"/>
                                 </button>
                             </div>
-                            <img
-                                src={cloudMailIcon}
-                                alt="Cloud mail icon"
-                                className="StudentResume__cloudMailIcon"
-                            />
                         </div>
+
+                        <img
+                            src={cloudMailIcon}
+                            alt="Cloud mail icon"
+                            className="StudentResume__cloudMailIcon"
+                        />
                     </div>
                 </div>
 
