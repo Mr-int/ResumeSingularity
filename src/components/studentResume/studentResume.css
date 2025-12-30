@@ -423,8 +423,8 @@
 .StudentResume__cloudMailIcon {
     position: absolute;
     width: 140px;
-    right: 0;
-    bottom: -12%;
+    right: -40px;
+    bottom: -10px;
     z-index: 1;
 }
 
@@ -677,7 +677,8 @@
     }
 
     .StudentResume__contactInfo {
-        height: 300px;
+        height: 350px;
+        min-height: 350px;
     }
 
     .StudentResume__mainContent {
@@ -761,9 +762,7 @@
     }
 
     .StudentResume__contactSlider {
-        width: 100%;
-        display: flex;
-        justify-content: center;
+        display: none;
     }
 
     .StudentResume__contactTitle,
@@ -966,16 +965,6 @@
     .StudentResume__contactSlider {
         max-width: 100%;
         margin-bottom: 20px;
-    }
-
-    .StudentResume__contactInfo {
-        position: relative;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 20px;
-        min-height: auto;
-        padding: 20px;
     }
 
     .StudentResume__contactInfo .student-slider-card {
