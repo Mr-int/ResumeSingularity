@@ -1130,18 +1130,4 @@
     .StudentResume__contactWrapper button {
         align-self: center;
     }
-
-    .StudentResume__sunIcon {
-        left: -20px;
-        top: -20px;
-    }
-
-    .StudentResume__sunIcon img {
-        width: 80px;
-        height: 80px;
-    }
-
-    .StudentResume__cloudMailIcon {
-        width: 70px;
-    }
 }
