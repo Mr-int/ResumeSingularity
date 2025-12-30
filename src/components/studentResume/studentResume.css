@@ -211,10 +211,6 @@
     flex-shrink: 0;
 }
 
-.StudentResume__portfolioItem:hover {
-    transform: scale(1.02);
-}
-
 .StudentResume__portfolioContent {
     position: relative;
     z-index: 2;

@@ -37,10 +37,6 @@
     overflow: visible;
 }
 
-.hero__image-container {
-    display: none;
-}
-
 .hero__left-content {
     display: flex;
     flex-direction: column;
@@ -156,8 +152,9 @@
 
 @media (max-width: 768px) {
     .hero {
+        height: 60vh;
+        min-height: 400px;
         padding: 0 20px;
-        min-height: 500px;
     }
 
     .hero__wrapper {
@@ -169,31 +166,14 @@
 
     .hero__left-content {
         width: 100%;
-        padding-top: 5%;
-        padding-bottom: 0;
+        padding: 0;
         gap: 32px;
         align-items: center;
+        justify-content: center;
     }
 
     .hero__right-content {
         display: none;
-    }
-
-    .hero__image-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        margin-top: 40px;
-        position: relative;
-        z-index: 1;
-    }
-
-    .hero__mobile-image {
-        width: 100%;
-        max-width: 400px;
-        height: auto;
-        object-fit: contain;
     }
 
     .left-content__title {
@@ -233,8 +213,12 @@
     }
 }
 
-/* Для очень маленьких экранов */
 @media (max-width: 480px) {
+    .hero {
+        height: 70vh;
+        min-height: 350px;
+    }
+
     .left-content__title {
         font-size: 28px;
         line-height: 36px;
@@ -249,8 +233,20 @@
         height: 38px;
         font-size: 18px;
     }
+}
 
-    .hero__mobile-image {
-        max-width: 320px;
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        height: 80vh;
+        min-height: 300px;
+    }
+
+    .hero__left-content {
+        gap: 20px;
+    }
+
+    .left-content__title {
+        font-size: 24px;
+        line-height: 30px;
     }
 }

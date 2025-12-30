@@ -1,10 +1,9 @@
 import './hero.css';
 import studentsHero from "../../assets/other/Students.png";
-import MobileStudentsHero from "../../assets/other/mobileStudents.png";
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import arrowIcon from "../../assets/icons/arrow.svg";
 import { useEffect, useState } from 'react';
-import { Link } from "react-router-dom"; // Импортируем Link
+import { Link } from "react-router-dom";
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
@@ -41,21 +40,14 @@ const Hero = () => {
                     </Link>
                 </div>
 
-                {isMobile ? (
-                    <div className="hero__image-container">
-                        <img
-                            src={MobileStudentsHero}
-                            alt="student"
-                            className="hero__mobile-image"
-                        />
-                    </div>
-                ) : (
+                {!isMobile && (
                     <img
                         src={studentsHero}
                         alt="student"
                         className="hero__right-content"
                     />
                 )}
+
                 <img src={arrowIcon} alt="arrow" className="hero__arrow"/>
             </div>
         </section>
