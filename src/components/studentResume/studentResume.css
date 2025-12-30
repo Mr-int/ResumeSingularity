@@ -676,6 +676,10 @@
         padding: 45px 40px 0;
     }
 
+    .StudentResume__contactInfo {
+        height: 300px;
+    }
+
     .StudentResume__mainContent {
         max-width: 1200px;
     }
