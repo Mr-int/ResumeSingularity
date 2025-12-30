@@ -273,8 +273,45 @@ const StudentResume = () => {
                                                     {project.name && (
                                                         <p className="StudentResume__portfolioTitle">{project.name}</p>
                                                     )}
+
                                                     {project.description && (
-                                                        <p className="StudentResume__portfolioDescription">{project.description}</p>
+                                                        <p className="StudentResume__portfolioDescription">
+                                                            {project.description}
+                                                        </p>
+                                                    )}
+
+                                                    {/* Дополнительные поля */}
+                                                    {project.technologies && (
+                                                        <div className="StudentResume__portfolioTech">
+                                                            <span>Технологии: </span>
+                                                            {Array.isArray(project.technologies)
+                                                                ? project.technologies.join(', ')
+                                                                : project.technologies}
+                                                        </div>
+                                                    )}
+
+                                                    {project.role && (
+                                                        <p className="StudentResume__portfolioRole">
+                                                            <span>Роль: </span>{project.role}
+                                                        </p>
+                                                    )}
+
+                                                    {project.year && (
+                                                        <p className="StudentResume__portfolioYear">
+                                                            <span>Год: </span>{project.year}
+                                                        </p>
+                                                    )}
+
+                                                    {project.status && (
+                                                        <p className="StudentResume__portfolioStatus">
+                                                            <span>Статус: </span>{project.status}
+                                                        </p>
+                                                    )}
+
+                                                    {project.type && (
+                                                        <p className="StudentResume__portfolioType">
+                                                            <span>Тип: </span>{project.type}
+                                                        </p>
                                                     )}
                                                 </div>
                                             </a>
