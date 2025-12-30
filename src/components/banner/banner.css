@@ -69,6 +69,10 @@
     max-width: 430px;
 }
 
+.banner__link {
+    text-decoration: none;
+}
+
 .banner__button {
     width: 300px;
     height: 50px;
@@ -87,7 +91,6 @@
     gap: 10px;
     transition: transform 0.3s ease;
     margin-top: 10px;
-    text-decoration: none;
 }
 
 .banner__button:hover {

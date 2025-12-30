@@ -16,7 +16,7 @@ const Banner = () => {
                         <p className="banner__text">
                             Отберите кандидатов по стеку и проектному опыту — удобно и быстро за счёт поиска и фильтрации.
                         </p>
-                        <Link to="/students">
+                        <Link to="/students" className="banner__link">
                             <button className="banner__button">
                                 <span>Найти стажёра</span>
                                 <img src={searchIcon} alt="Поиск"/>
