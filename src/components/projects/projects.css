@@ -36,7 +36,7 @@
 .card {
     position: absolute;
     width: 877px;
-    height: 535px;
+    height: 635px;
     border-radius: 15px;
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -192,21 +192,6 @@
     overflow: hidden;
 }
 
-.card__text--truncated .card__text-content {
-    max-height: 225px;
-    overflow: hidden;
-    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-}
-
-.card__text-more {
-    color: #999;
-    font-family: 'StratosSemiLight';
-    font-size: 18px;
-    display: inline-block;
-    margin-top: 5px;
-}
-
 .card__image {
     flex: 1;
     min-height: 200px;
@@ -220,7 +205,7 @@
 .card__image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     border-radius: 10px;
 }
 
@@ -260,10 +245,6 @@
 
     .card__image {
         min-height: 250px;
-    }
-
-    .card__text--truncated .card__text-content {
-        max-height: 200px;
     }
 }
 
@@ -401,20 +382,9 @@
         line-height: 1.4;
     }
 
-    .card__text--truncated .card__text-content {
-        max-height: 140px;
-        mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-        -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
-    }
-
-    .card__text-more {
-        font-size: 14px;
-        margin-top: 3px;
-    }
-
-    .card__image {
-        min-height: 180px;
-        margin-top: 10px;
+    .card__image img {
+        height: 400px;
+        width: 400px;
     }
 }
 
@@ -472,14 +442,6 @@
         font-size: 13px;
     }
 
-    .card__text--truncated .card__text-content {
-        max-height: 117px;
-    }
-
-    .card__text-more {
-        font-size: 13px;
-    }
-
     .card__image {
         min-height: 150px;
     }
@@ -526,14 +488,6 @@
     }
 
     .card__text-content {
-        font-size: 12px;
-    }
-
-    .card__text--truncated .card__text-content {
-        max-height: 108px;
-    }
-
-    .card__text-more {
         font-size: 12px;
     }
 }
