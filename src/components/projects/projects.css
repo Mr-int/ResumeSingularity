@@ -186,6 +186,7 @@
     font-size: 18px;
     line-height: 1.5;
     position: relative;
+    overflow: hidden;
 }
 
 .card__text-content {
@@ -193,10 +194,10 @@
 }
 
 .card__text--truncated .card__text-content {
-    max-height: 225px;
+    max-height: 135px;
     overflow: hidden;
-    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
 }
 
 .card__text-more {
@@ -204,7 +205,13 @@
     font-family: 'StratosSemiLight';
     font-size: 18px;
     display: inline-block;
-    margin-top: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.card__text-more:hover {
+    color: #fff;
 }
 
 .card__image {

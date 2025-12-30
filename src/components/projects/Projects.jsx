@@ -12,7 +12,7 @@ const Projects = () => {
 
     useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
+            setIsMobile(window.innerWidth <= 950);
         };
 
         checkMobile();
@@ -53,7 +53,7 @@ const Projects = () => {
         }
     }, [activeCard, isMobile]);
 
-    const handleCardClick = useCallback((cardNumber) => {
+    const handleCardClick = useCallback((cardNumber, e) => {
         if (isMobile) {
             if (expandedCards.includes(cardNumber)) {
                 if (expandedCards.length > 1) {
@@ -80,6 +80,13 @@ const Projects = () => {
             setIsAnimating(false);
         }, 500);
     }, [activeCard, isAnimating, isMobile, expandedCards]);
+
+    const handleTextClick = useCallback((e, cardNumber) => {
+        e.stopPropagation();
+        if (isMobile) {
+            handleCardClick(cardNumber, e);
+        }
+    }, [isMobile, handleCardClick]);
 
     const getCardPosition = useCallback((cardNumber) => {
         if (isMobile) return {};
@@ -113,11 +120,11 @@ const Projects = () => {
         return titles[cardNumber];
     }, []);
 
-    const shouldTruncateText = useCallback((cardNumber) => {
+    const shouldShowReadMore = useCallback((cardNumber) => {
         if (isMobile) {
             return !isCardExpanded(cardNumber);
         }
-        return cardNumber !== activeCard; // На десктопе обрезаем на неактивных карточках
+        return cardNumber !== activeCard;
     }, [isMobile, isCardExpanded, activeCard]);
 
     return (
@@ -128,7 +135,7 @@ const Projects = () => {
                 <div className="projects__cardsWrapper" ref={cardsWrapperRef}>
                     <div
                         className={`card card--gamecheb ${activeCard === 1 ? 'card__active' : ''} ${isMobile && isCardExpanded(1) ? 'card__expanded' : ''}`}
-                        onClick={() => handleCardClick(1)}
+                        onClick={(e) => handleCardClick(1, e)}
                         style={{
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(1),
@@ -167,13 +174,17 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${shouldTruncateText(1) ? 'card__text--truncated' : ''}`}>
+                                        <div className={`card__text ${shouldShowReadMore(1) ? 'card__text--truncated' : ''}`}>
                                             <div className="card__text-content">
                                                 Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.
                                                 <br /><br />
                                                 Наша миссия — сохранить чувашскую культуру в настоящем через современный бизнес и туризм.
                                             </div>
-                                            {shouldTruncateText(1) && <span className="card__text-more">Подробнее</span>}
+                                            {shouldShowReadMore(1) && (
+                                                <span className="card__text-more" onClick={(e) => handleTextClick(e, 1)}>
+                                                    Подробнее
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="GameCheb проект" />
@@ -186,7 +197,7 @@ const Projects = () => {
 
                     <div
                         className={`card card--resume ${activeCard === 2 ? 'card__active' : ''} ${isMobile && isCardExpanded(2) ? 'card__expanded' : ''}`}
-                        onClick={() => handleCardClick(2)}
+                        onClick={(e) => handleCardClick(2, e)}
                         style={{
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(2),
@@ -227,13 +238,17 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${shouldTruncateText(2) ? 'card__text--truncated' : ''}`}>
+                                        <div className={`card__text ${shouldShowReadMore(2) ? 'card__text--truncated' : ''}`}>
                                             <div className="card__text-content">
                                                 Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.
                                                 <br/><br/>
                                                 Задача проекта — минимизировать время поиска кандидата и упростить коммуникацию между работодателем, куратором и студентом.
                                             </div>
-                                            {shouldTruncateText(2) && <span className="card__text-more">Подробнее</span>}
+                                            {shouldShowReadMore(2) && (
+                                                <span className="card__text-more" onClick={(e) => handleTextClick(e, 2)}>
+                                                    Подробнее
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="Singularity Resume проект" />
@@ -246,7 +261,7 @@ const Projects = () => {
 
                     <div
                         className={`card card--vr ${activeCard === 3 ? 'card__active' : ''} ${isMobile && isCardExpanded(3) ? 'card__expanded' : ''}`}
-                        onClick={() => handleCardClick(3)}
+                        onClick={(e) => handleCardClick(3, e)}
                         style={{
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(3),
@@ -285,13 +300,17 @@ const Projects = () => {
                                     </div>
 
                                     <div className="card__details">
-                                        <div className={`card__text ${shouldTruncateText(3) ? 'card__text--truncated' : ''}`}>
+                                        <div className={`card__text ${shouldShowReadMore(3) ? 'card__text--truncated' : ''}`}>
                                             <div className="card__text-content">
                                                 VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.
                                                 <br/><br/>
                                                 Виртуальная реальность позволяет рассматривать эпохи и культуру, а также проживать события внутри картин. Такой формат сочетает обучение, интерактив и практику, усиливает интерес и понимание материала.
                                             </div>
-                                            {shouldTruncateText(3) && <span className="card__text-more">Подробнее</span>}
+                                            {shouldShowReadMore(3) && (
+                                                <span className="card__text-more" onClick={(e) => handleTextClick(e, 3)}>
+                                                    Подробнее
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="card__image">
                                             <img src={GameChebImg} alt="VR-музей проект" />

@@ -2,6 +2,7 @@ import React from "react";
 import "./banner.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import bannerImg from "../../assets/other/bannerImg.png";
+import { Link } from "react-router-dom";
 
 const Banner = () => {
     return (
@@ -15,10 +16,12 @@ const Banner = () => {
                         <p className="banner__text">
                             Отберите кандидатов по стеку и проектному опыту — удобно и быстро за счёт поиска и фильтрации.
                         </p>
-                        <button className="banner__button">
-                            <span>Найти стажёра</span>
-                            <img src={searchIcon} alt="Поиск"/>
-                        </button>
+                        <Link to="/students">
+                            <button className="banner__button">
+                                <span>Найти стажёра</span>
+                                <img src={searchIcon} alt="Поиск"/>
+                            </button>
+                        </Link>
                     </div>
 
                     <div className="banner__imageWrapper">
