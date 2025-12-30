@@ -87,6 +87,7 @@
     gap: 10px;
     transition: transform 0.3s ease;
     margin-top: 10px;
+    text-decoration: none;
 }
 
 .banner__button:hover {
