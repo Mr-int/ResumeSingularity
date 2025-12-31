@@ -676,6 +676,10 @@
         padding: 45px 40px 0;
     }
 
+    .StudentResume__expandableContent h3 {
+        font-size: 32px;
+    }
+
     .StudentResume__contactInfo {
         height: 350px;
         min-height: 350px;
@@ -776,6 +780,14 @@
 }
 
 @media (max-width: 768px) {
+    .StudentResume__contactSlider {
+        display: none;
+    }
+
+    .StudentResume__experienceYears {
+        font-size: 22px;
+    }
+
     .StudentResume {
         padding: 30px 40px 0;
     }
@@ -950,6 +962,10 @@
 }
 
 @media (max-width: 600px) {
+    .StudentResume__experienceYears {
+        font-size: 18px;
+    }
+
     .StudentResume {
         padding: 30px 20px 0;
     }
@@ -1013,6 +1029,26 @@
 @media (max-width: 480px) {
     .StudentResume {
         padding: 30px 20px 0;
+    }
+
+    .StudentResume__experienceYears {
+        font-size: 16px;
+    }
+
+    .StudentResume__expandableContent h3 {
+        font-size: 30px;
+    }
+
+    .StudentResume__educationYears {
+        font-size: 20px;
+    }
+
+    .StudentResume__expandableContent p {
+        font-size: 18px;
+    }
+
+    .StudentResume__educationLink {
+        font-size: 20px;
     }
 
     .StudentResume__mainContent {
@@ -1101,6 +1137,14 @@
 @media (max-width: 400px) {
     .StudentResume {
         padding: 30px 20px 0;
+    }
+
+    .StudentResume__expandableContent h3 {
+        font-size: 26px;
+    }
+
+    .StudentResume__experienceYears {
+        font-size: 14px;
     }
 
     .StudentResume__mainContent {

@@ -5,9 +5,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1;
     padding: 0 40px;
     box-sizing: border-box;
+    z-index: 1000;
 }
 
 .header__inner {
