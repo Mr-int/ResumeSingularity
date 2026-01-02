@@ -231,14 +231,14 @@
 
 .StudentResume__portfolioTitle {
     color: #000;
-    font-size: 31px;
+    font-size: 30px;
     margin: 0;
     font-family: 'StratosSemiLight';
 }
 
 .StudentResume__portfolioDescription {
     color: #000;
-    font-size: 24px;
+    font-size: 22px;
     margin: 0;
     font-family: 'StratosSemiLight';
     max-height: 80px;
@@ -1073,7 +1073,7 @@
     }
 
     .StudentResume__portfolioDescription {
-        font-size: 13px;
+        font-size: 12px;
         max-height: 50px;
         -webkit-line-clamp: 2;
     }
