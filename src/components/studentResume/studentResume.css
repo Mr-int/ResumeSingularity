@@ -504,10 +504,6 @@
     min-width: 200px;
 }
 
-.StudentResume__similarLink:hover {
-    transform: scale(1.05);
-}
-
 .StudentResume__similarLink .student-slider-card {
     cursor: pointer;
     pointer-events: auto;
@@ -906,6 +902,10 @@
         width: 100%;
         font-size: 28px;
         text-align: center;
+    }
+
+    .StudentResume__similarList {
+        gap: 10px;
     }
 
     .StudentResume__contactWrapper button {

@@ -18,7 +18,7 @@ const StudentResume = () => {
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [expandedExperience, setExpandedExperience] = useState(false);
+    const [expandedExperience, setExpandedExperience] = useState(true);
     const [expandedEducation, setExpandedEducation] = useState(false);
     const [portfolio, setPortfolio] = useState([]);
     const [educationDetails, setEducationDetails] = useState([]);
@@ -240,7 +240,7 @@ const StudentResume = () => {
                             </div>
 
                             <div className="StudentResume__section">
-                                <h3 className="StudentResume__sectionTitle">Hard-скиллы (навыки)</h3>
+                                <h3 className="StudentResume__sectionTitle">Навыки</h3>
                                 <div className="StudentResume__skills">
                                     {student.skills && student.skills.length > 0 ? (
                                         student.skills.map((skill) => (
