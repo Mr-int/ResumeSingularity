@@ -19,7 +19,7 @@ const StudentResume = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [expandedExperience, setExpandedExperience] = useState(true);
-    const [expandedEducation, setExpandedEducation] = useState(false);
+    const [expandedEducation, setExpandedEducation] = useState(true);
     const [portfolio, setPortfolio] = useState([]);
     const [educationDetails, setEducationDetails] = useState([]);
     const [experienceDetails, setExperienceDetails] = useState([]);
@@ -413,7 +413,7 @@ const StudentResume = () => {
                             <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
 
                             <div className="StudentResume__contactWrapper">
-                                <p>Готов проходить стажировку в вашей компании!</p>
+                                <p>Студент готов проходить стажировку в вашей компании!</p>
                                 <button>
                                     Связаться
                                     <img src={mailIcon} alt="Mail icon"/>
