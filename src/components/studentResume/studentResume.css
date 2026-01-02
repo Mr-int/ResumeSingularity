@@ -363,11 +363,6 @@
     position: relative;
 }
 
-.StudentResume__contactSlider {
-    flex: 0 0 auto;
-    min-width: 300px;
-}
-
 .StudentResume__contactInfo {
     flex: 1;
     background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat;
@@ -424,7 +419,7 @@
     position: absolute;
     width: 140px;
     right: -40px;
-    bottom: -10px;
+    bottom: -25px;
     z-index: 1;
 }
 
@@ -707,6 +702,7 @@
         flex-direction: column;
         gap: 30px;
         padding: 25px 0;
+        align-items: center;
     }
 
     .StudentResume__person {
@@ -762,10 +758,6 @@
     .StudentResume__contactContent {
         flex-direction: column;
         gap: 40px;
-    }
-
-    .StudentResume__contactSlider {
-        display: none;
     }
 
     .StudentResume__contactTitle,
@@ -829,7 +821,12 @@
         width: 100%;
         max-width: 280px;
         height: 48px;
-        font-size: 22px;
+        font-size: 18px;
+    }
+
+    .StudentResume__sendBid img {
+        width: 24px;
+        height: 18px;
     }
 
     .StudentResume__about {
@@ -892,14 +889,6 @@
     .StudentResume__contactContent {
         flex-direction: column;
         gap: 40px;
-    }
-
-    .StudentResume__contactSlider {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        max-width: 300px;
-        margin: 0 auto;
     }
 
     .StudentResume__contactInfo {
@@ -977,10 +966,6 @@
         flex-direction: column;
     }
 
-    .StudentResume__contactSlider {
-        max-width: 100%;
-        margin-bottom: 20px;
-    }
 
     .StudentResume__contactInfo .student-slider-card {
         width: 120px;
@@ -1119,8 +1104,8 @@
     }
 
     .StudentResume__sunIcon {
-        left: -30px;
-        top: -30px;
+        left: -90px;
+        top: -100px;
     }
 
     .StudentResume__sunIcon img {
