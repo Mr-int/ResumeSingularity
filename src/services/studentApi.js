@@ -12,22 +12,13 @@ export const getAllStudents = async () => {
             })
         });
 
-        // Обрабатываем разные форматы ответа от сервера
-        // Если это пагинированный ответ Spring
         if (response && response.content) {
             return response.content;
-        }
-        // Если это простой массив
-        else if (Array.isArray(response)) {
+        } else if (Array.isArray(response)) {
             return response;
-        }
-        // Если это объект с данными в другом поле
-        else if (response && response.data) {
+        } else if (response && response.data) {
             return response.data;
-        }
-        // Если это объект с другими полями
-        else if (response && typeof response === 'object') {
-            // Ищем массив в объекте
+        } else if (response && typeof response === 'object') {
             for (const key in response) {
                 if (Array.isArray(response[key])) {
                     return response[key];
@@ -35,7 +26,6 @@ export const getAllStudents = async () => {
             }
         }
 
-        // Если ничего не нашли, возвращаем как есть
         return response || [];
     } catch (error) {
         console.error('[API] Error fetching students:', error);
@@ -48,7 +38,6 @@ export const getAllStudents = async () => {
 
 export const getStudentById = async (id) => {
     try {
-        // Новый упрощенный эндпоинт
         const data = await apiClientJson(`student/${id}`, {
             method: 'GET',
         });
@@ -64,7 +53,7 @@ export const getStudentById = async (id) => {
 
 export const getPortfolioByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`portfolio/getAllByStudentId/${studentId}`, {
+        const data = await apiClientJson(`portfolio/student/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -79,7 +68,7 @@ export const getPortfolioByStudentId = async (studentId) => {
 
 export const getInstitutionById = async (id) => {
     try {
-        const data = await apiClientJson(`institution/getById/${id}`, {
+        const data = await apiClientJson(`institution/${id}`, {
             method: 'GET',
         });
         return data;
@@ -94,7 +83,7 @@ export const getInstitutionById = async (id) => {
 
 export const getInstitutionsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`institution/getByStudentId/${studentId}`, {
+        const data = await apiClientJson(`institution/student/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -109,7 +98,7 @@ export const getInstitutionsByStudentId = async (studentId) => {
 
 export const getExperienceById = async (id) => {
     try {
-        const data = await apiClientJson(`experience/getById/${id}`, {
+        const data = await apiClientJson(`experience/${id}`, {
             method: 'GET',
         });
         return data;
@@ -124,7 +113,7 @@ export const getExperienceById = async (id) => {
 
 export const getExperienceByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`experience/aboutGetByStudentId/${studentId}`, {
+        const data = await apiClientJson(`experience/student/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -139,7 +128,7 @@ export const getExperienceByStudentId = async (studentId) => {
 
 export const getAllEducation = async () => {
     try {
-        const data = await apiClientJson(`education/getAll`, {
+        const data = await apiClientJson(`education/all`, {
             method: 'GET',
         });
         return data;
@@ -152,14 +141,59 @@ export const getAllEducation = async () => {
     }
 };
 
+export const getEducationByStudentId = async (studentId) => {
+    try {
+        const data = await apiClientJson(`education/student/${studentId}`, {
+            method: 'GET',
+        });
+        return data;
+    } catch (error) {
+        console.error('Error fetching education by student id:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};
+
 export const getAllExperience = async () => {
     try {
-        const data = await apiClientJson(`experience/getAll`, {
+        const data = await apiClientJson(`experience/all`, {
             method: 'GET',
         });
         return data;
     } catch (error) {
         console.error('Error fetching all experience:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};
+
+export const getSkillById = async (id) => {
+    try {
+        const data = await apiClientJson(`skill/${id}`, {
+            method: 'GET',
+        });
+        return data;
+    } catch (error) {
+        console.error('Error fetching skill:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};
+
+export const getSkillsByStudentId = async (studentId) => {
+    try {
+        const data = await apiClientJson(`skill/student/${studentId}`, {
+            method: 'GET',
+        });
+        return data;
+    } catch (error) {
+        console.error('Error fetching skills by student id:', error);
         if (error.requiresAuth) {
             throw error;
         }
@@ -183,11 +217,6 @@ export const sendStudentRequest = async (requestData) => {
     }
 };
 
-/**
- * Создать общую заявку (для рекрутера)
- * @param {Object} recruiterData - Данные рекрутера
- * @returns {Promise<Object>} Ответ сервера
- */
 export const createRecruiterRequest = async (recruiterData) => {
     try {
         const data = await apiClientJson('recruiter/create', {
@@ -204,14 +233,6 @@ export const createRecruiterRequest = async (recruiterData) => {
     }
 };
 
-/**
- * Фильтрация студентов с пагинацией и фильтрами
- * @param {Object} filterData - Данные фильтрации
- * @param {number} filterData.page - Номер страницы (по умолчанию 0)
- * @param {number} filterData.size - Размер страницы (по умолчанию 100)
- * @param {Object} filterData.filters - Дополнительные фильтры
- * @returns {Promise<Object>} Ответ с пагинацией
- */
 export const filterStudents = async (filterData = {}) => {
     try {
         const defaultFilter = {
@@ -234,18 +255,14 @@ export const filterStudents = async (filterData = {}) => {
     }
 };
 
-/**
- * Получить студента по ID (старый метод для обратной совместимости)
- * @deprecated Используйте getStudentById
- */
-export const getStudentByIdLegacy = async (id) => {
+export const getPortfolioById = async (id) => {
     try {
-        const data = await apiClientJson(`student/getById/${id}`, {
+        const data = await apiClientJson(`portfolio/${id}`, {
             method: 'GET',
         });
         return data;
     } catch (error) {
-        console.error('Error fetching student by id (legacy):', error);
+        console.error('Error fetching portfolio by id:', error);
         if (error.requiresAuth) {
             throw error;
         }

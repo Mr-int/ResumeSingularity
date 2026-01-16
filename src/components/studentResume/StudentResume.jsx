@@ -6,7 +6,14 @@ import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
-import { getStudentById, getPortfolioByStudentId, getInstitutionsByStudentId, getExperienceByStudentId, getAllStudents } from "../../services/studentApi.js";
+import {
+    getStudentById,
+    getPortfolioByStudentId,
+    getInstitutionsByStudentId,
+    getExperienceByStudentId,
+    getAllStudents,
+    getSkillsByStudentId
+} from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 import numbersImg from "../../assets/other/numbers.png";
@@ -23,6 +30,7 @@ const StudentResume = () => {
     const [portfolio, setPortfolio] = useState([]);
     const [educationDetails, setEducationDetails] = useState([]);
     const [experienceDetails, setExperienceDetails] = useState([]);
+    const [skills, setSkills] = useState([]);
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
 
@@ -39,32 +47,52 @@ const StudentResume = () => {
             try {
                 setLoading(true);
 
-                // Получаем основную информацию о студенте через новый эндпоинт
-                console.log(`[DEBUG] Fetching student with ID: ${id}`);
-                const data = await getStudentById(id);
-                console.log('[DEBUG] Student data received:', data);
-                setStudent(data);
+                const studentData = await getStudentById(id);
 
-                // Параллельно загружаем дополнительные данные
-                const [portfolioData, educationResponse, experienceResponse, allStudentsData] = await Promise.allSettled([
-                    getPortfolioByStudentId(id).catch(() => []),
-                    getInstitutionsByStudentId(id).catch(() => ({})),
-                    getExperienceByStudentId(id).catch(() => ({})),
-                    getAllStudents().catch(() => [])
+                if (!studentData || !studentData.id) {
+                    throw new Error('Студент не найден');
+                }
+
+                setStudent(studentData);
+
+                const [
+                    portfolioResult,
+                    educationResult,
+                    experienceResult,
+                    skillsResult,
+                    allStudentsResult
+                ] = await Promise.allSettled([
+                    getPortfolioByStudentId(id),
+                    getInstitutionsByStudentId(id),
+                    getExperienceByStudentId(id),
+                    getSkillsByStudentId(id),
+                    getAllStudents()
                 ]);
 
-                // Обработка портфолио
-                if (portfolioData.status === 'fulfilled' && portfolioData.value) {
-                    setPortfolio(portfolioData.value);
+                if (portfolioResult.status === 'fulfilled') {
+                    setPortfolio(Array.isArray(portfolioResult.value) ? portfolioResult.value : []);
                 } else {
                     setPortfolio([]);
                 }
 
-                // Обработка образования
-                if (educationResponse.status === 'fulfilled' && educationResponse.value) {
-                    const response = educationResponse.value;
-                    if (response && response.educationsInstitution && Array.isArray(response.educationsInstitution)) {
-                        const formattedEducation = response.educationsInstitution.map((item, index) => {
+                if (educationResult.status === 'fulfilled') {
+                    const educationData = educationResult.value;
+
+                    if (Array.isArray(educationData)) {
+                        const formattedEducation = educationData.map((edu, index) => {
+                            return {
+                                id: edu.id || index,
+                                name: edu.institution || edu.name || 'Образовательное учреждение',
+                                speciality: edu.speciality || edu.fieldOfStudy || edu.additionalInfo,
+                                startDate: edu.startYear ? edu.startYear.toString() : edu.startDate || '',
+                                endDate: edu.endYear ? edu.endYear.toString() : edu.endDate || '',
+                                webUrl: edu.webUrl || edu.website,
+                                additionalInfo: edu.additionalInfo || edu.description
+                            };
+                        });
+                        setEducationDetails(formattedEducation);
+                    } else if (educationData && educationData.educationsInstitution && Array.isArray(educationData.educationsInstitution)) {
+                        const formattedEducation = educationData.educationsInstitution.map((item, index) => {
                             const educationInfo = item.education || {};
                             const institutionInfo = item.educationInstitution || {};
 
@@ -86,11 +114,25 @@ const StudentResume = () => {
                     setEducationDetails([]);
                 }
 
-                // Обработка опыта работы
-                if (experienceResponse.status === 'fulfilled' && experienceResponse.value) {
-                    const response = experienceResponse.value;
-                    if (response && response.companyExperiences && Array.isArray(response.companyExperiences)) {
-                        const formattedExperience = response.companyExperiences.map((item, index) => {
+                if (experienceResult.status === 'fulfilled') {
+                    const experienceData = experienceResult.value;
+
+                    if (Array.isArray(experienceData)) {
+                        const formattedExperience = experienceData.map((exp, index) => {
+                            return {
+                                id: exp.id || index,
+                                position: exp.position || exp.jobTitle || '',
+                                company: exp.company || exp.companyName || '',
+                                description: exp.description || exp.additionalInfo || exp.responsibilities || '',
+                                startDate: exp.startDate || exp.startYear || exp.startMonthYear || '',
+                                endDate: exp.endDate || exp.endYear || exp.endMonthYear ||
+                                    (exp.current ? 'по настоящее время' : ''),
+                                current: exp.current || exp.endDate === null || false
+                            };
+                        });
+                        setExperienceDetails(formattedExperience);
+                    } else if (experienceData && experienceData.companyExperiences && Array.isArray(experienceData.companyExperiences)) {
+                        const formattedExperience = experienceData.companyExperiences.map((item, index) => {
                             const companyInfo = item.company || {};
                             const experienceInfo = item.experience || {};
 
@@ -100,11 +142,11 @@ const StudentResume = () => {
                                 company: companyInfo.name || companyInfo.company || '',
                                 description: experienceInfo.additionalInfo || experienceInfo.description || experienceInfo.responsibilities || '',
                                 startDate: experienceInfo.startDate || experienceInfo.startYear || experienceInfo.startMonthYear || '',
-                                endDate: experienceInfo.endDate || experienceInfo.endYear || experienceInfo.endMonthYear || (experienceInfo.endDate === null ? 'по настоящее время' : ''),
+                                endDate: experienceInfo.endDate || experienceInfo.endYear || experienceInfo.endMonthYear ||
+                                    (experienceInfo.endDate === null ? 'по настоящее время' : ''),
                                 current: experienceInfo.endDate === null || experienceInfo.current || false
                             };
                         });
-
                         setExperienceDetails(formattedExperience);
                     } else {
                         setExperienceDetails([]);
@@ -113,9 +155,30 @@ const StudentResume = () => {
                     setExperienceDetails([]);
                 }
 
-                // Обработка похожих студентов
-                if (allStudentsData.status === 'fulfilled' && allStudentsData.value) {
-                    const allStudents = allStudentsData.value;
+                if (skillsResult.status === 'fulfilled') {
+                    const skillsData = skillsResult.value;
+
+                    if (Array.isArray(skillsData)) {
+                        setSkills(skillsData);
+                    } else if (skillsData && Array.isArray(skillsData.skills)) {
+                        setSkills(skillsData.skills);
+                    } else {
+                        if (studentData.skills && Array.isArray(studentData.skills)) {
+                            setSkills(studentData.skills);
+                        } else {
+                            setSkills([]);
+                        }
+                    }
+                } else {
+                    if (studentData.skills && Array.isArray(studentData.skills)) {
+                        setSkills(studentData.skills);
+                    } else {
+                        setSkills([]);
+                    }
+                }
+
+                if (allStudentsResult.status === 'fulfilled') {
+                    const allStudents = allStudentsResult.value;
                     const similar = allStudents
                         .filter(s => {
                             const currentId = s.id ? s.id.toString() : s.id;
@@ -129,7 +192,6 @@ const StudentResume = () => {
                 }
 
             } catch (err) {
-                console.error('[DEBUG] Error in fetchStudent:', err);
                 setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
@@ -220,6 +282,8 @@ const StudentResume = () => {
     const age = calculateAge(student.birthDate);
     const ageText = age ? `${age} лет` : '';
 
+    const displaySkills = skills.length > 0 ? skills : (student.skills || []);
+
     return (
         <section className="StudentResume">
             <div className="StudentResume__mainContent">
@@ -269,17 +333,17 @@ const StudentResume = () => {
                             <div className="StudentResume__section">
                                 <h3 className="StudentResume__sectionTitle">Обо мне</h3>
                                 <p className="StudentResume__sectionText">
-                                    {student.bio || student.description || 'Информация о студенте отсутствует'}
+                                    {student.bio || student.description || student.about || 'Информация о студенте отсутствует'}
                                 </p>
                             </div>
 
                             <div className="StudentResume__section">
                                 <h3 className="StudentResume__sectionTitle">Навыки</h3>
                                 <div className="StudentResume__skills">
-                                    {student.skills && student.skills.length > 0 ? (
-                                        student.skills.map((skill) => (
-                                            <span key={skill.id || skill} className="StudentResume__skillCapsule">
-                                                {typeof skill === 'string' ? skill : skill.name || skill}
+                                    {displaySkills.length > 0 ? (
+                                        displaySkills.map((skill, index) => (
+                                            <span key={skill.id || index} className="StudentResume__skillCapsule">
+                                                {typeof skill === 'string' ? skill : skill.name || skill.title || 'Навык'}
                                             </span>
                                         ))
                                     ) : (
@@ -291,11 +355,11 @@ const StudentResume = () => {
                             <div className="StudentResume__section">
                                 <h3 className="StudentResume__sectionTitle">Портфолио и ссылки</h3>
                                 <div className="StudentResume__portfolio">
-                                    {portfolio && portfolio.length > 0 ? (
+                                    {portfolio.length > 0 ? (
                                         portfolio.map((project, index) => (
                                             <a
                                                 key={project.id || index}
-                                                href={project.link || project.url}
+                                                href={project.link || project.url || project.website}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="StudentResume__portfolioItem"
@@ -308,11 +372,11 @@ const StudentResume = () => {
                                                         <p className="StudentResume__portfolioTitle">{project.name}</p>
                                                     )}
 
-                                                    {project.additionalInfo && (
+                                                    {project.description || project.additionalInfo ? (
                                                         <p className="StudentResume__portfolioDescription">
-                                                            {project.additionalInfo}
+                                                            {project.description || project.additionalInfo}
                                                         </p>
-                                                    )}
+                                                    ) : null}
                                                 </div>
                                             </a>
                                         ))

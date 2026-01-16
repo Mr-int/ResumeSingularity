@@ -5,7 +5,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
         'Content-Type': 'application/json',
     };
 
-    // Для отладки
     console.log('[API Client] Base URL:', API_BASE_URL);
     console.log('[API Client] Endpoint:', endpoint);
 
@@ -23,7 +22,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
             credentials: 'include',
         });
 
-        // Проверка на 401 (Unauthorized)
         if (response.status === 401) {
             console.log('[API] 401 Unauthorized - redirecting to login');
             localStorage.removeItem('isAuthenticated');
@@ -32,7 +30,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
             throw new Error('HTTP error! status: 401 - Unauthorized');
         }
 
-        // Проверка на 403 (Forbidden)
         if (response.status === 403) {
             console.log('[API] 403 Forbidden - access denied');
             const error = new Error('HTTP error! status: 403 - Forbidden');
@@ -48,7 +45,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
             throw error;
         }
 
-        // Проверяем, есть ли тело ответа
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
             return await response.json();
@@ -71,7 +67,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
             throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${window.location.origin}/api/`);
         }
 
-        // Проверяем, требуется ли аутентификация
         if (error.message.includes('401') || error.message.includes('Unauthorized')) {
             error.requiresAuth = true;
         }
