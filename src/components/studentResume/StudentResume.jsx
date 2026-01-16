@@ -38,19 +38,31 @@ const StudentResume = () => {
 
             try {
                 setLoading(true);
+
+                // Получаем основную информацию о студенте через новый эндпоинт
+                console.log(`[DEBUG] Fetching student with ID: ${id}`);
                 const data = await getStudentById(id);
+                console.log('[DEBUG] Student data received:', data);
                 setStudent(data);
 
-                try {
-                    const portfolioData = await getPortfolioByStudentId(id);
-                    setPortfolio(portfolioData || []);
-                } catch (err) {
+                // Параллельно загружаем дополнительные данные
+                const [portfolioData, educationResponse, experienceResponse, allStudentsData] = await Promise.allSettled([
+                    getPortfolioByStudentId(id).catch(() => []),
+                    getInstitutionsByStudentId(id).catch(() => ({})),
+                    getExperienceByStudentId(id).catch(() => ({})),
+                    getAllStudents().catch(() => [])
+                ]);
+
+                // Обработка портфолио
+                if (portfolioData.status === 'fulfilled' && portfolioData.value) {
+                    setPortfolio(portfolioData.value);
+                } else {
                     setPortfolio([]);
                 }
 
-                try {
-                    const response = await getInstitutionsByStudentId(id);
-
+                // Обработка образования
+                if (educationResponse.status === 'fulfilled' && educationResponse.value) {
+                    const response = educationResponse.value;
                     if (response && response.educationsInstitution && Array.isArray(response.educationsInstitution)) {
                         const formattedEducation = response.educationsInstitution.map((item, index) => {
                             const educationInfo = item.education || {};
@@ -70,13 +82,13 @@ const StudentResume = () => {
                     } else {
                         setEducationDetails([]);
                     }
-                } catch (err) {
+                } else {
                     setEducationDetails([]);
                 }
 
-                try {
-                    const response = await getExperienceByStudentId(id);
-
+                // Обработка опыта работы
+                if (experienceResponse.status === 'fulfilled' && experienceResponse.value) {
+                    const response = experienceResponse.value;
                     if (response && response.companyExperiences && Array.isArray(response.companyExperiences)) {
                         const formattedExperience = response.companyExperiences.map((item, index) => {
                             const companyInfo = item.company || {};
@@ -97,21 +109,28 @@ const StudentResume = () => {
                     } else {
                         setExperienceDetails([]);
                     }
-                } catch (err) {
+                } else {
                     setExperienceDetails([]);
                 }
 
-                try {
-                    const allStudents = await getAllStudents();
+                // Обработка похожих студентов
+                if (allStudentsData.status === 'fulfilled' && allStudentsData.value) {
+                    const allStudents = allStudentsData.value;
                     const similar = allStudents
-                        .filter(s => s.id !== parseInt(id) && s.id !== id)
+                        .filter(s => {
+                            const currentId = s.id ? s.id.toString() : s.id;
+                            const targetId = id.toString();
+                            return currentId !== targetId;
+                        })
                         .slice(0, 6);
                     setSimilarStudents(similar || []);
-                } catch (err) {
+                } else {
                     setSimilarStudents([]);
                 }
+
             } catch (err) {
-                setError(err.message);
+                console.error('[DEBUG] Error in fetchStudent:', err);
+                setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
             }
@@ -147,7 +166,7 @@ const StudentResume = () => {
     const getStudentImageUrl = (studentData) => {
         if (!studentData) return face;
 
-        const imagePath = studentData.imagePath || studentData.image || studentData.photo;
+        const imagePath = studentData.imagePath || studentData.image || studentData.photo || studentData.avatar;
 
         if (!imagePath) return face;
 
@@ -172,7 +191,9 @@ const StudentResume = () => {
         return (
             <section className="StudentResume">
                 <div className="StudentResume__mainContent">
-                    <p>Загрузка данных студента...</p>
+                    <div className="StudentResume__loading">
+                        <p>Загрузка данных студента...</p>
+                    </div>
                 </div>
             </section>
         );
@@ -182,7 +203,13 @@ const StudentResume = () => {
         return (
             <section className="StudentResume">
                 <div className="StudentResume__mainContent">
-                    <p>Ошибка загрузки: {error || 'Студент не найден'}</p>
+                    <div className="StudentResume__error">
+                        <h2>Ошибка загрузки</h2>
+                        <p>{error || 'Студент не найден'}</p>
+                        <Link to="/students" className="StudentResume__backLink">
+                            Вернуться к списку студентов
+                        </Link>
+                    </div>
                 </div>
             </section>
         );
@@ -207,7 +234,7 @@ const StudentResume = () => {
 
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
-                                    <p>{student.speciality || 'Специальность не указана'}</p>
+                                    <p>{student.speciality || student.profession || 'Специальность не указана'}</p>
                                     <button
                                         className="StudentResume__sendBid"
                                         onClick={() => setShowApplicationForm(true)}
@@ -228,6 +255,13 @@ const StudentResume = () => {
                                         </a>
                                     </span>
                                 )}
+                                {student.email && (
+                                    <span>
+                                        <a href={`mailto:${student.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                            {student.email}
+                                        </a>
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -235,7 +269,7 @@ const StudentResume = () => {
                             <div className="StudentResume__section">
                                 <h3 className="StudentResume__sectionTitle">Обо мне</h3>
                                 <p className="StudentResume__sectionText">
-                                    {student.bio || 'Информация о студенте отсутствует'}
+                                    {student.bio || student.description || 'Информация о студенте отсутствует'}
                                 </p>
                             </div>
 
@@ -244,8 +278,8 @@ const StudentResume = () => {
                                 <div className="StudentResume__skills">
                                     {student.skills && student.skills.length > 0 ? (
                                         student.skills.map((skill) => (
-                                            <span key={skill.id} className="StudentResume__skillCapsule">
-                                                {skill.name}
+                                            <span key={skill.id || skill} className="StudentResume__skillCapsule">
+                                                {typeof skill === 'string' ? skill : skill.name || skill}
                                             </span>
                                         ))
                                     ) : (
@@ -261,7 +295,7 @@ const StudentResume = () => {
                                         portfolio.map((project, index) => (
                                             <a
                                                 key={project.id || index}
-                                                href={project.link}
+                                                href={project.link || project.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="StudentResume__portfolioItem"
@@ -409,12 +443,10 @@ const StudentResume = () => {
                         </div>
 
                         <div className="StudentResume__contactInfo">
-
                             <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
-
                             <div className="StudentResume__contactWrapper">
                                 <p>Студент готов проходить стажировку в вашей компании!</p>
-                                <button>
+                                <button onClick={() => setShowApplicationForm(true)}>
                                     Связаться
                                     <img src={mailIcon} alt="Mail icon"/>
                                 </button>

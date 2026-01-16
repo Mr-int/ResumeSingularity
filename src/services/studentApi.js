@@ -48,7 +48,8 @@ export const getAllStudents = async () => {
 
 export const getStudentById = async (id) => {
     try {
-        const data = await apiClientJson(`student/getById/${id}`, {
+        // Новый упрощенный эндпоинт
+        const data = await apiClientJson(`student/${id}`, {
             method: 'GET',
         });
         return data;
@@ -234,18 +235,17 @@ export const filterStudents = async (filterData = {}) => {
 };
 
 /**
- * Получить всех студентов (альтернативный метод для обратной совместимости)
- * @deprecated Используйте filterStudents или getAllStudents
+ * Получить студента по ID (старый метод для обратной совместимости)
+ * @deprecated Используйте getStudentById
  */
-export const getAllStudentsLegacy = async () => {
+export const getStudentByIdLegacy = async (id) => {
     try {
-        const url = `student/getAll`;
-        const data = await apiClientJson(url, {
+        const data = await apiClientJson(`student/getById/${id}`, {
             method: 'GET',
         });
         return data;
     } catch (error) {
-        console.error('[API] Error fetching students (legacy):', error);
+        console.error('Error fetching student by id (legacy):', error);
         if (error.requiresAuth) {
             throw error;
         }
