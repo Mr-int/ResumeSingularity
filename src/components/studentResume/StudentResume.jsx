@@ -12,7 +12,8 @@ import {
     getInstitutionsByStudentId,
     getExperienceByStudentId,
     getAllStudents,
-    getSkillsByStudentId
+    getSkillsByStudentId,
+    getEducationByStudentId
 } from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
@@ -63,7 +64,7 @@ const StudentResume = () => {
                     allStudentsResult
                 ] = await Promise.allSettled([
                     getPortfolioByStudentId(id),
-                    getInstitutionsByStudentId(id),
+                    getEducationByStudentId(id),
                     getExperienceByStudentId(id),
                     getSkillsByStudentId(id),
                     getAllStudents()

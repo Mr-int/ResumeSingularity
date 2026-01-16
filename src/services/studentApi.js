@@ -53,7 +53,7 @@ export const getStudentById = async (id) => {
 
 export const getPortfolioByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`portfolio/student/${studentId}`, {
+        const data = await apiClientJson(`portfolio/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -83,7 +83,7 @@ export const getInstitutionById = async (id) => {
 
 export const getInstitutionsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`institution/student/${studentId}`, {
+        const data = await apiClientJson(`institution/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -113,7 +113,7 @@ export const getExperienceById = async (id) => {
 
 export const getExperienceByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`experience/student/${studentId}`, {
+        const data = await apiClientJson(`experience/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -143,7 +143,7 @@ export const getAllEducation = async () => {
 
 export const getEducationByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`education/student/${studentId}`, {
+        const data = await apiClientJson(`education/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -188,7 +188,7 @@ export const getSkillById = async (id) => {
 
 export const getSkillsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`skill/student/${studentId}`, {
+        const data = await apiClientJson(`skill/${studentId}`, {
             method: 'GET',
         });
         return data;
