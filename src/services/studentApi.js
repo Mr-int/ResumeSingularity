@@ -3,11 +3,40 @@ import { apiClientJson } from '../utils/apiClient.js';
 
 export const getAllStudents = async () => {
     try {
-        const url = `student/getAll`;
-        const data = await apiClientJson(url, {
-            method: 'GET',
+        const url = `student/filter`;
+        const response = await apiClientJson(url, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 100
+            })
         });
-        return data;
+
+        // Обрабатываем разные форматы ответа от сервера
+        // Если это пагинированный ответ Spring
+        if (response && response.content) {
+            return response.content;
+        }
+        // Если это простой массив
+        else if (Array.isArray(response)) {
+            return response;
+        }
+        // Если это объект с данными в другом поле
+        else if (response && response.data) {
+            return response.data;
+        }
+        // Если это объект с другими полями
+        else if (response && typeof response === 'object') {
+            // Ищем массив в объекте
+            for (const key in response) {
+                if (Array.isArray(response[key])) {
+                    return response[key];
+                }
+            }
+        }
+
+        // Если ничего не нашли, возвращаем как есть
+        return response || [];
     } catch (error) {
         console.error('[API] Error fetching students:', error);
         if (error.requiresAuth) {
@@ -167,6 +196,56 @@ export const createRecruiterRequest = async (recruiterData) => {
         return data;
     } catch (error) {
         console.error('Error creating recruiter request:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};
+
+/**
+ * Фильтрация студентов с пагинацией и фильтрами
+ * @param {Object} filterData - Данные фильтрации
+ * @param {number} filterData.page - Номер страницы (по умолчанию 0)
+ * @param {number} filterData.size - Размер страницы (по умолчанию 100)
+ * @param {Object} filterData.filters - Дополнительные фильтры
+ * @returns {Promise<Object>} Ответ с пагинацией
+ */
+export const filterStudents = async (filterData = {}) => {
+    try {
+        const defaultFilter = {
+            page: 0,
+            size: 100,
+            ...filterData
+        };
+
+        const data = await apiClientJson('student/filter', {
+            method: 'POST',
+            body: JSON.stringify(defaultFilter)
+        });
+        return data;
+    } catch (error) {
+        console.error('[API] Error filtering students:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
+        throw error;
+    }
+};
+
+/**
+ * Получить всех студентов (альтернативный метод для обратной совместимости)
+ * @deprecated Используйте filterStudents или getAllStudents
+ */
+export const getAllStudentsLegacy = async () => {
+    try {
+        const url = `student/getAll`;
+        const data = await apiClientJson(url, {
+            method: 'GET',
+        });
+        return data;
+    } catch (error) {
+        console.error('[API] Error fetching students (legacy):', error);
         if (error.requiresAuth) {
             throw error;
         }
