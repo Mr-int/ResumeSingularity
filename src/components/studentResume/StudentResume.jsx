@@ -46,8 +46,10 @@ const StudentResume = () => {
 
             try {
                 setLoading(true);
+                console.log('[StudentResume] Fetching data for student ID:', id);
 
                 const studentData = await getStudentById(id);
+                console.log('[StudentResume] Student data:', studentData);
 
                 if (!studentData || !studentData.id) {
                     throw new Error('Студент не найден');
@@ -69,60 +71,59 @@ const StudentResume = () => {
                     getAllStudents()
                 ]);
 
+                console.log('[StudentResume] Portfolio result:', portfolioResult);
+                console.log('[StudentResume] Education result:', educationResult);
+                console.log('[StudentResume] Experience result:', experienceResult);
+                console.log('[StudentResume] Skills result:', skillsResult);
+                console.log('[StudentResume] All students result:', allStudentsResult);
+
                 if (portfolioResult.status === 'fulfilled') {
+                    console.log('[StudentResume] Portfolio data:', portfolioResult.value);
                     setPortfolio(Array.isArray(portfolioResult.value) ? portfolioResult.value : []);
                 } else {
+                    console.log('[StudentResume] Portfolio error:', portfolioResult.reason);
                     setPortfolio([]);
                 }
 
                 if (educationResult.status === 'fulfilled') {
                     const educationData = educationResult.value;
+                    console.log('[StudentResume] Raw education data:', educationData);
 
                     if (Array.isArray(educationData)) {
                         const formattedEducation = educationData.map((edu, index) => {
+                            console.log('[StudentResume] Education item:', edu);
                             return {
                                 id: edu.id || index,
-                                name: edu.institution || edu.name || 'Образовательное учреждение',
-                                speciality: edu.speciality || edu.fieldOfStudy || edu.additionalInfo,
+                                name: edu.institution || edu.name || edu.institutionName || 'Образовательное учреждение',
+                                speciality: edu.speciality || edu.fieldOfStudy || edu.additionalInfo || edu.degree,
                                 startDate: edu.startYear ? edu.startYear.toString() : edu.startDate || '',
                                 endDate: edu.endYear ? edu.endYear.toString() : edu.endDate || '',
                                 webUrl: edu.webUrl || edu.website,
                                 additionalInfo: edu.additionalInfo || edu.description
                             };
                         });
-                        setEducationDetails(formattedEducation);
-                    } else if (educationData && educationData.educationsInstitution && Array.isArray(educationData.educationsInstitution)) {
-                        const formattedEducation = educationData.educationsInstitution.map((item, index) => {
-                            const educationInfo = item.education || {};
-                            const institutionInfo = item.educationInstitution || {};
-
-                            return {
-                                id: institutionInfo.id || educationInfo.id || index,
-                                name: educationInfo.institution || 'Образовательное учреждение',
-                                speciality: educationInfo.additionalInfo || educationInfo.speciality,
-                                startDate: institutionInfo.startYear ? institutionInfo.startYear.toString() : '',
-                                endDate: institutionInfo.endYear ? institutionInfo.endYear.toString() : '',
-                                webUrl: educationInfo.webUrl,
-                                additionalInfo: educationInfo.additionalInfo
-                            };
-                        });
+                        console.log('[StudentResume] Formatted education:', formattedEducation);
                         setEducationDetails(formattedEducation);
                     } else {
+                        console.log('[StudentResume] Education data is not array:', educationData);
                         setEducationDetails([]);
                     }
                 } else {
+                    console.log('[StudentResume] Education error:', educationResult.reason);
                     setEducationDetails([]);
                 }
 
                 if (experienceResult.status === 'fulfilled') {
                     const experienceData = experienceResult.value;
+                    console.log('[StudentResume] Raw experience data:', experienceData);
 
                     if (Array.isArray(experienceData)) {
                         const formattedExperience = experienceData.map((exp, index) => {
+                            console.log('[StudentResume] Experience item:', exp);
                             return {
                                 id: exp.id || index,
                                 position: exp.position || exp.jobTitle || '',
-                                company: exp.company || exp.companyName || '',
+                                company: exp.company || exp.companyName || exp.employer || '',
                                 description: exp.description || exp.additionalInfo || exp.responsibilities || '',
                                 startDate: exp.startDate || exp.startYear || exp.startMonthYear || '',
                                 endDate: exp.endDate || exp.endYear || exp.endMonthYear ||
@@ -130,33 +131,20 @@ const StudentResume = () => {
                                 current: exp.current || exp.endDate === null || false
                             };
                         });
-                        setExperienceDetails(formattedExperience);
-                    } else if (experienceData && experienceData.companyExperiences && Array.isArray(experienceData.companyExperiences)) {
-                        const formattedExperience = experienceData.companyExperiences.map((item, index) => {
-                            const companyInfo = item.company || {};
-                            const experienceInfo = item.experience || {};
-
-                            return {
-                                id: experienceInfo.id || companyInfo.id || index,
-                                position: experienceInfo.position || experienceInfo.jobTitle || '',
-                                company: companyInfo.name || companyInfo.company || '',
-                                description: experienceInfo.additionalInfo || experienceInfo.description || experienceInfo.responsibilities || '',
-                                startDate: experienceInfo.startDate || experienceInfo.startYear || experienceInfo.startMonthYear || '',
-                                endDate: experienceInfo.endDate || experienceInfo.endYear || experienceInfo.endMonthYear ||
-                                    (experienceInfo.endDate === null ? 'по настоящее время' : ''),
-                                current: experienceInfo.endDate === null || experienceInfo.current || false
-                            };
-                        });
+                        console.log('[StudentResume] Formatted experience:', formattedExperience);
                         setExperienceDetails(formattedExperience);
                     } else {
+                        console.log('[StudentResume] Experience data is not array:', experienceData);
                         setExperienceDetails([]);
                     }
                 } else {
+                    console.log('[StudentResume] Experience error:', experienceResult.reason);
                     setExperienceDetails([]);
                 }
 
                 if (skillsResult.status === 'fulfilled') {
                     const skillsData = skillsResult.value;
+                    console.log('[StudentResume] Raw skills data:', skillsData);
 
                     if (Array.isArray(skillsData)) {
                         setSkills(skillsData);
@@ -170,6 +158,7 @@ const StudentResume = () => {
                         }
                     }
                 } else {
+                    console.log('[StudentResume] Skills error:', skillsResult.reason);
                     if (studentData.skills && Array.isArray(studentData.skills)) {
                         setSkills(studentData.skills);
                     } else {
@@ -179,6 +168,7 @@ const StudentResume = () => {
 
                 if (allStudentsResult.status === 'fulfilled') {
                     const allStudents = allStudentsResult.value;
+                    console.log('[StudentResume] All students:', allStudents);
                     const similar = allStudents
                         .filter(s => {
                             const currentId = s.id ? s.id.toString() : s.id;
@@ -188,13 +178,16 @@ const StudentResume = () => {
                         .slice(0, 6);
                     setSimilarStudents(similar || []);
                 } else {
+                    console.log('[StudentResume] All students error:', allStudentsResult.reason);
                     setSimilarStudents([]);
                 }
 
             } catch (err) {
+                console.error('[StudentResume] Fetch error:', err);
                 setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
+                console.log('[StudentResume] Loading finished');
             }
         };
 
@@ -283,6 +276,15 @@ const StudentResume = () => {
     const ageText = age ? `${age} лет` : '';
 
     const displaySkills = skills.length > 0 ? skills : (student.skills || []);
+
+    console.log('[StudentResume] Render data:', {
+        student,
+        portfolio,
+        educationDetails,
+        experienceDetails,
+        skills: displaySkills,
+        similarStudents
+    });
 
     return (
         <section className="StudentResume">
