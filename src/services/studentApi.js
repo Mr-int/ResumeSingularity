@@ -92,19 +92,20 @@ export const getInstitutionById = async (id) => {
 
 export const getInstitutionsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`education/filter`, {
-            method: 'POST',
-            body: JSON.stringify({
-                page: 0,
-                size: 100,
-                studentId: studentId
-            })
+        const data = await apiClientJson(`education/all`, {
+            method: 'GET',
         });
 
-        if (data && data.content) {
-            return data.content;
-        } else if (Array.isArray(data)) {
-            return data;
+        if (Array.isArray(data)) {
+            return data.filter(item => {
+                if (item.student && item.student.id === studentId) {
+                    return true;
+                }
+                if (item.studentId === studentId) {
+                    return true;
+                }
+                return false;
+            });
         }
         return [];
     } catch (error) {
@@ -174,19 +175,20 @@ export const getAllEducation = async () => {
 
 export const getEducationByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`education/filter`, {
-            method: 'POST',
-            body: JSON.stringify({
-                page: 0,
-                size: 100,
-                studentId: studentId
-            })
+        const data = await apiClientJson(`education/all`, {
+            method: 'GET',
         });
 
-        if (data && data.content) {
-            return data.content;
-        } else if (Array.isArray(data)) {
-            return data;
+        if (Array.isArray(data)) {
+            return data.filter(item => {
+                if (item.student && item.student.id === studentId) {
+                    return true;
+                }
+                if (item.studentId === studentId) {
+                    return true;
+                }
+                return false;
+            });
         }
         return [];
     } catch (error) {
