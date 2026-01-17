@@ -1,10 +1,8 @@
-import { API_BASE_URL } from '../config/api.js';
 import { apiClientJson } from '../utils/apiClient.js';
 
 export const getAllStudents = async () => {
     try {
-        const url = `student/filter`;
-        const response = await apiClientJson(url, {
+        const response = await apiClientJson('student/filter', {
             method: 'POST',
             body: JSON.stringify({
                 page: 0,
@@ -53,7 +51,7 @@ export const getStudentById = async (id) => {
 
 export const getPortfolioByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`student/${studentId}/portfolio`, {
+        const data = await apiClientJson(`portfolio/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -83,7 +81,7 @@ export const getInstitutionById = async (id) => {
 
 export const getInstitutionsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`student/${studentId}/institutions`, {
+        const data = await apiClientJson(`education/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -113,7 +111,7 @@ export const getExperienceById = async (id) => {
 
 export const getExperienceByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`student/${studentId}/experience`, {
+        const data = await apiClientJson(`experience/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -143,7 +141,7 @@ export const getAllEducation = async () => {
 
 export const getEducationByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`student/${studentId}/education`, {
+        const data = await apiClientJson(`education/${studentId}`, {
             method: 'GET',
         });
         return data;
@@ -188,7 +186,7 @@ export const getSkillById = async (id) => {
 
 export const getSkillsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`student/${studentId}/skills`, {
+        const data = await apiClientJson(`skill/${studentId}`, {
             method: 'GET',
         });
         return data;

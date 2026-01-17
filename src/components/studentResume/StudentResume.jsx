@@ -9,7 +9,6 @@ import BehindBlue from "../../assets/other/BehindBlue.png";
 import {
     getStudentById,
     getPortfolioByStudentId,
-    getInstitutionsByStudentId,
     getExperienceByStudentId,
     getAllStudents,
     getSkillsByStudentId,
