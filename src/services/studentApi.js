@@ -51,16 +51,27 @@ export const getStudentById = async (id) => {
 
 export const getPortfolioByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`portfolio/${studentId}`, {
-            method: 'GET',
+        const data = await apiClientJson(`portfolio/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 100,
+                studentId: studentId
+            })
         });
-        return data;
+
+        if (data && data.content) {
+            return data.content;
+        } else if (Array.isArray(data)) {
+            return data;
+        }
+        return [];
     } catch (error) {
         console.error('Error fetching portfolio:', error);
         if (error.requiresAuth) {
             throw error;
         }
-        throw error;
+        return [];
     }
 };
 
@@ -81,16 +92,27 @@ export const getInstitutionById = async (id) => {
 
 export const getInstitutionsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`education/${studentId}`, {
-            method: 'GET',
+        const data = await apiClientJson(`education/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 100,
+                studentId: studentId
+            })
         });
-        return data;
+
+        if (data && data.content) {
+            return data.content;
+        } else if (Array.isArray(data)) {
+            return data;
+        }
+        return [];
     } catch (error) {
         console.error('Error fetching institutions by student id:', error);
         if (error.requiresAuth) {
             throw error;
         }
-        throw error;
+        return [];
     }
 };
 
@@ -111,16 +133,27 @@ export const getExperienceById = async (id) => {
 
 export const getExperienceByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`experience/${studentId}`, {
-            method: 'GET',
+        const data = await apiClientJson(`experience/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 100,
+                studentId: studentId
+            })
         });
-        return data;
+
+        if (data && data.content) {
+            return data.content;
+        } else if (Array.isArray(data)) {
+            return data;
+        }
+        return [];
     } catch (error) {
         console.error('Error fetching experience by student id:', error);
         if (error.requiresAuth) {
             throw error;
         }
-        throw error;
+        return [];
     }
 };
 
@@ -141,16 +174,27 @@ export const getAllEducation = async () => {
 
 export const getEducationByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`education/${studentId}`, {
-            method: 'GET',
+        const data = await apiClientJson(`education/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 100,
+                studentId: studentId
+            })
         });
-        return data;
+
+        if (data && data.content) {
+            return data.content;
+        } else if (Array.isArray(data)) {
+            return data;
+        }
+        return [];
     } catch (error) {
         console.error('Error fetching education by student id:', error);
         if (error.requiresAuth) {
             throw error;
         }
-        throw error;
+        return [];
     }
 };
 
@@ -186,16 +230,27 @@ export const getSkillById = async (id) => {
 
 export const getSkillsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`skill/${studentId}`, {
-            method: 'GET',
+        const data = await apiClientJson(`skill/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 100,
+                studentId: studentId
+            })
         });
-        return data;
+
+        if (data && data.content) {
+            return data.content;
+        } else if (Array.isArray(data)) {
+            return data;
+        }
+        return [];
     } catch (error) {
         console.error('Error fetching skills by student id:', error);
         if (error.requiresAuth) {
             throw error;
         }
-        throw error;
+        return [];
     }
 };
 
