@@ -48,6 +48,7 @@ const StudentResume = () => {
                 setLoading(true);
 
                 const studentData = await getStudentById(id);
+                console.log('Student data:', studentData);
 
                 if (!studentData || !studentData.id) {
                     throw new Error('Студент не найден');
@@ -56,6 +57,7 @@ const StudentResume = () => {
                 setStudent(studentData);
 
                 if (studentData.skills && Array.isArray(studentData.skills)) {
+                    console.log('Skills from student data:', studentData.skills);
                     setSkills(studentData.skills);
                 }
 
@@ -71,12 +73,20 @@ const StudentResume = () => {
                     getAllStudents()
                 ]);
 
+                console.log('Portfolio result:', portfolioResult);
+                console.log('Education result:', educationResult);
+                console.log('Experience result:', experienceResult);
+                console.log('All students result:', allStudentsResult);
+
                 if (portfolioResult.status === 'fulfilled') {
-                    setPortfolio(Array.isArray(portfolioResult.value) ? portfolioResult.value : []);
+                    const portfolioData = portfolioResult.value;
+                    console.log('Portfolio data:', portfolioData);
+                    setPortfolio(Array.isArray(portfolioData) ? portfolioData : []);
                 }
 
                 if (educationResult.status === 'fulfilled') {
                     const educationData = educationResult.value;
+                    console.log('Education data:', educationData);
                     if (Array.isArray(educationData)) {
                         const formattedEducation = educationData.map((edu, index) => {
                             return {
@@ -95,6 +105,7 @@ const StudentResume = () => {
 
                 if (experienceResult.status === 'fulfilled') {
                     const experienceData = experienceResult.value;
+                    console.log('Experience data:', experienceData);
                     if (Array.isArray(experienceData)) {
                         const formattedExperience = experienceData.map((exp, index) => {
                             return {
@@ -125,10 +136,18 @@ const StudentResume = () => {
                 }
 
             } catch (err) {
-                console.error('[StudentResume] Fetch error:', err);
+                console.error('Fetch error:', err);
                 setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
+                console.log('Final state:', {
+                    student,
+                    skills,
+                    portfolio,
+                    educationDetails,
+                    experienceDetails,
+                    similarStudents
+                });
             }
         };
 
