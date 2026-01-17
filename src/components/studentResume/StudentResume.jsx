@@ -46,10 +46,8 @@ const StudentResume = () => {
 
             try {
                 setLoading(true);
-                console.log('[StudentResume] Fetching data for student ID:', id);
 
                 const studentData = await getStudentById(id);
-                console.log('[StudentResume] Student data:', studentData);
 
                 if (!studentData || !studentData.id) {
                     throw new Error('Студент не найден');
@@ -57,41 +55,30 @@ const StudentResume = () => {
 
                 setStudent(studentData);
 
+                if (studentData.skills && Array.isArray(studentData.skills)) {
+                    setSkills(studentData.skills);
+                }
+
                 const [
                     portfolioResult,
                     educationResult,
                     experienceResult,
-                    skillsResult,
                     allStudentsResult
                 ] = await Promise.allSettled([
                     getPortfolioByStudentId(id),
                     getEducationByStudentId(id),
                     getExperienceByStudentId(id),
-                    getSkillsByStudentId(id),
                     getAllStudents()
                 ]);
 
-                console.log('[StudentResume] Portfolio result:', portfolioResult);
-                console.log('[StudentResume] Education result:', educationResult);
-                console.log('[StudentResume] Experience result:', experienceResult);
-                console.log('[StudentResume] Skills result:', skillsResult);
-                console.log('[StudentResume] All students result:', allStudentsResult);
-
                 if (portfolioResult.status === 'fulfilled') {
-                    console.log('[StudentResume] Portfolio data:', portfolioResult.value);
                     setPortfolio(Array.isArray(portfolioResult.value) ? portfolioResult.value : []);
-                } else {
-                    console.log('[StudentResume] Portfolio error:', portfolioResult.reason);
-                    setPortfolio([]);
                 }
 
                 if (educationResult.status === 'fulfilled') {
                     const educationData = educationResult.value;
-                    console.log('[StudentResume] Raw education data:', educationData);
-
                     if (Array.isArray(educationData)) {
                         const formattedEducation = educationData.map((edu, index) => {
-                            console.log('[StudentResume] Education item:', edu);
                             return {
                                 id: edu.id || index,
                                 name: edu.institution || edu.name || edu.institutionName || 'Образовательное учреждение',
@@ -102,24 +89,14 @@ const StudentResume = () => {
                                 additionalInfo: edu.additionalInfo || edu.description
                             };
                         });
-                        console.log('[StudentResume] Formatted education:', formattedEducation);
                         setEducationDetails(formattedEducation);
-                    } else {
-                        console.log('[StudentResume] Education data is not array:', educationData);
-                        setEducationDetails([]);
                     }
-                } else {
-                    console.log('[StudentResume] Education error:', educationResult.reason);
-                    setEducationDetails([]);
                 }
 
                 if (experienceResult.status === 'fulfilled') {
                     const experienceData = experienceResult.value;
-                    console.log('[StudentResume] Raw experience data:', experienceData);
-
                     if (Array.isArray(experienceData)) {
                         const formattedExperience = experienceData.map((exp, index) => {
-                            console.log('[StudentResume] Experience item:', exp);
                             return {
                                 id: exp.id || index,
                                 position: exp.position || exp.jobTitle || '',
@@ -131,44 +108,12 @@ const StudentResume = () => {
                                 current: exp.current || exp.endDate === null || false
                             };
                         });
-                        console.log('[StudentResume] Formatted experience:', formattedExperience);
                         setExperienceDetails(formattedExperience);
-                    } else {
-                        console.log('[StudentResume] Experience data is not array:', experienceData);
-                        setExperienceDetails([]);
-                    }
-                } else {
-                    console.log('[StudentResume] Experience error:', experienceResult.reason);
-                    setExperienceDetails([]);
-                }
-
-                if (skillsResult.status === 'fulfilled') {
-                    const skillsData = skillsResult.value;
-                    console.log('[StudentResume] Raw skills data:', skillsData);
-
-                    if (Array.isArray(skillsData)) {
-                        setSkills(skillsData);
-                    } else if (skillsData && Array.isArray(skillsData.skills)) {
-                        setSkills(skillsData.skills);
-                    } else {
-                        if (studentData.skills && Array.isArray(studentData.skills)) {
-                            setSkills(studentData.skills);
-                        } else {
-                            setSkills([]);
-                        }
-                    }
-                } else {
-                    console.log('[StudentResume] Skills error:', skillsResult.reason);
-                    if (studentData.skills && Array.isArray(studentData.skills)) {
-                        setSkills(studentData.skills);
-                    } else {
-                        setSkills([]);
                     }
                 }
 
                 if (allStudentsResult.status === 'fulfilled') {
                     const allStudents = allStudentsResult.value;
-                    console.log('[StudentResume] All students:', allStudents);
                     const similar = allStudents
                         .filter(s => {
                             const currentId = s.id ? s.id.toString() : s.id;
@@ -177,9 +122,6 @@ const StudentResume = () => {
                         })
                         .slice(0, 6);
                     setSimilarStudents(similar || []);
-                } else {
-                    console.log('[StudentResume] All students error:', allStudentsResult.reason);
-                    setSimilarStudents([]);
                 }
 
             } catch (err) {
@@ -187,7 +129,6 @@ const StudentResume = () => {
                 setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
-                console.log('[StudentResume] Loading finished');
             }
         };
 
@@ -230,15 +171,7 @@ const StudentResume = () => {
         }
 
         const baseUrl = 'https://api.singularity-resume.ru/main/photo';
-
-        let studentId = id;
-        if (imagePath.includes('/')) {
-            const parts = imagePath.split('/');
-            studentId = parts[parts.length - 1].replace('.jpg', '').replace('.png', '').replace('.jpeg', '');
-        } else if (imagePath.includes('.')) {
-            studentId = imagePath.split('.')[0];
-        }
-
+        const studentId = id;
         return `${baseUrl}/${studentId}.jpg`;
     };
 
@@ -276,15 +209,6 @@ const StudentResume = () => {
     const ageText = age ? `${age} лет` : '';
 
     const displaySkills = skills.length > 0 ? skills : (student.skills || []);
-
-    console.log('[StudentResume] Render data:', {
-        student,
-        portfolio,
-        educationDetails,
-        experienceDetails,
-        skills: displaySkills,
-        similarStudents
-    });
 
     return (
         <section className="StudentResume">
@@ -334,7 +258,7 @@ const StudentResume = () => {
                         <div className="StudentResume__about">
                             <div className="StudentResume__section">
                                 <h3 className="StudentResume__sectionTitle">Обо мне</h3>
-                                <p className="StudentResume__sectionText">
+                                <p className="StudentResume__sectionText" style={{ whiteSpace: 'pre-line' }}>
                                     {student.bio || student.description || student.about || 'Информация о студенте отсутствует'}
                                 </p>
                             </div>
@@ -345,7 +269,7 @@ const StudentResume = () => {
                                     {displaySkills.length > 0 ? (
                                         displaySkills.map((skill, index) => (
                                             <span key={skill.id || index} className="StudentResume__skillCapsule">
-                                                {typeof skill === 'string' ? skill : skill.name || skill.title || 'Навык'}
+                                                {skill.name || skill.title || 'Навык'}
                                             </span>
                                         ))
                                     ) : (

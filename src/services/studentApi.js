@@ -68,9 +68,6 @@ export const getPortfolioByStudentId = async (studentId) => {
         return [];
     } catch (error) {
         console.error('Error fetching portfolio:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         return [];
     }
 };
@@ -83,9 +80,6 @@ export const getInstitutionById = async (id) => {
         return data;
     } catch (error) {
         console.error('Error fetching institution:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -98,21 +92,13 @@ export const getInstitutionsByStudentId = async (studentId) => {
 
         if (Array.isArray(data)) {
             return data.filter(item => {
-                if (item.student && item.student.id === studentId) {
-                    return true;
-                }
-                if (item.studentId === studentId) {
-                    return true;
-                }
-                return false;
+                return item.studentId === studentId ||
+                    (item.student && item.student.id === studentId);
             });
         }
         return [];
     } catch (error) {
         console.error('Error fetching institutions by student id:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         return [];
     }
 };
@@ -125,9 +111,6 @@ export const getExperienceById = async (id) => {
         return data;
     } catch (error) {
         console.error('Error fetching experience:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -151,9 +134,6 @@ export const getExperienceByStudentId = async (studentId) => {
         return [];
     } catch (error) {
         console.error('Error fetching experience by student id:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         return [];
     }
 };
@@ -166,9 +146,6 @@ export const getAllEducation = async () => {
         return data;
     } catch (error) {
         console.error('Error fetching all education:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -180,22 +157,16 @@ export const getEducationByStudentId = async (studentId) => {
         });
 
         if (Array.isArray(data)) {
-            return data.filter(item => {
-                if (item.student && item.student.id === studentId) {
-                    return true;
-                }
-                if (item.studentId === studentId) {
-                    return true;
-                }
-                return false;
+            const filtered = data.filter(item => {
+                return item.studentId === studentId ||
+                    (item.student && item.student.id === studentId);
             });
+            console.log('[getEducationByStudentId] Filtered data for', studentId, ':', filtered);
+            return filtered;
         }
         return [];
     } catch (error) {
         console.error('Error fetching education by student id:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         return [];
     }
 };
@@ -208,9 +179,6 @@ export const getAllExperience = async () => {
         return data;
     } catch (error) {
         console.error('Error fetching all experience:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -223,9 +191,6 @@ export const getSkillById = async (id) => {
         return data;
     } catch (error) {
         console.error('Error fetching skill:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -249,9 +214,6 @@ export const getSkillsByStudentId = async (studentId) => {
         return [];
     } catch (error) {
         console.error('Error fetching skills by student id:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         return [];
     }
 };
@@ -265,9 +227,6 @@ export const sendStudentRequest = async (requestData) => {
         return data;
     } catch (error) {
         console.error('Error sending student request:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -281,9 +240,6 @@ export const createRecruiterRequest = async (recruiterData) => {
         return data;
     } catch (error) {
         console.error('Error creating recruiter request:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -303,9 +259,6 @@ export const filterStudents = async (filterData = {}) => {
         return data;
     } catch (error) {
         console.error('[API] Error filtering students:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
@@ -318,9 +271,6 @@ export const getPortfolioById = async (id) => {
         return data;
     } catch (error) {
         console.error('Error fetching portfolio by id:', error);
-        if (error.requiresAuth) {
-            throw error;
-        }
         throw error;
     }
 };
