@@ -20,6 +20,25 @@ import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 
+// Простой временный компонент для отладки
+const DebugStudentSliderCard = ({ student, isActive }) => {
+    console.log('DebugStudentSliderCard student:', student);
+
+    if (!student || typeof student !== 'object') {
+        console.error('DebugStudentSliderCard: invalid student', student);
+        return <div>Нет данных</div>;
+    }
+
+    return (
+        <div style={{ border: '1px solid #ccc', padding: '10px', margin: '10px' }}>
+            <h4>Студент (отладка)</h4>
+            <p>ID: {student.id || 'нет'}</p>
+            <p>Имя: {student.firstName || student.name || 'нет'}</p>
+            <p>Фамилия: {student.lastName || 'нет'}</p>
+        </div>
+    );
+};
+
 const StudentResume = () => {
     const { id } = useParams();
     const [student, setStudent] = useState(null);
@@ -36,16 +55,6 @@ const StudentResume = () => {
 
     const portfolioBackgrounds = [BehindOrange, BehindPink, BehindBlue];
 
-    // Вспомогательная функция для безопасного получения массива
-    const safeGetArray = (data) => {
-        if (!data) return [];
-        if (Array.isArray(data)) return data;
-        if (data.data && Array.isArray(data.data)) return data.data;
-        if (data.content && Array.isArray(data.content)) return data.content;
-        console.warn('Expected array but got:', typeof data, data);
-        return [];
-    };
-
     useEffect(() => {
         const fetchStudent = async () => {
             if (!id) {
@@ -57,26 +66,39 @@ const StudentResume = () => {
             try {
                 setLoading(true);
 
+                console.log('Fetching student with ID:', id);
                 const studentData = await getStudentById(id);
-                console.log('Student data:', studentData);
+                console.log('Raw student data:', studentData);
 
-                if (!studentData || !studentData.id) {
-                    throw new Error('Студент не найден');
+                if (!studentData || typeof studentData !== 'object') {
+                    throw new Error('Студент не найден или данные некорректны');
+                }
+
+                if (!studentData.id) {
+                    console.warn('Student data missing id:', studentData);
                 }
 
                 setStudent(studentData);
 
-                // Обрабатываем навыки
+                // Проверяем и логируем навыки
+                console.log('Student skills raw:', studentData.skills);
                 if (studentData.skills) {
                     if (Array.isArray(studentData.skills)) {
+                        console.log('Skills is array, length:', studentData.skills.length);
                         setSkills(studentData.skills);
                     } else if (typeof studentData.skills === 'string') {
-                        // Если навыки в виде строки, разбиваем по запятым
-                        setSkills(studentData.skills.split(',').map(skill => ({
-                            id: Math.random(),
+                        const skillsArray = studentData.skills.split(',').map(skill => ({
+                            id: Math.random().toString(36).substr(2, 9),
                             name: skill.trim()
-                        })));
+                        }));
+                        console.log('Skills parsed from string:', skillsArray);
+                        setSkills(skillsArray);
+                    } else {
+                        console.warn('Skills is not array or string:', typeof studentData.skills, studentData.skills);
+                        setSkills([]);
                     }
+                } else {
+                    setSkills([]);
                 }
 
                 const [
@@ -91,74 +113,172 @@ const StudentResume = () => {
                     getAllStudents()
                 ]);
 
+                console.log('=== API RESULTS ===');
+                console.log('Portfolio result:', portfolioResult);
+                console.log('Education result:', educationResult);
+                console.log('Experience result:', experienceResult);
+                console.log('All students result:', allStudentsResult);
+
                 // Обработка портфолио
                 if (portfolioResult.status === 'fulfilled') {
-                    const portfolioData = safeGetArray(portfolioResult.value);
-                    console.log('Portfolio data:', portfolioData);
-                    setPortfolio(portfolioData);
+                    const portfolioData = portfolioResult.value;
+                    console.log('Portfolio raw data:', portfolioData);
+
+                    let portfolioArray = [];
+                    if (Array.isArray(portfolioData)) {
+                        portfolioArray = portfolioData;
+                    } else if (portfolioData && portfolioData.data && Array.isArray(portfolioData.data)) {
+                        portfolioArray = portfolioData.data;
+                    } else if (portfolioData && portfolioData.content && Array.isArray(portfolioData.content)) {
+                        portfolioArray = portfolioData.content;
+                    }
+
+                    console.log('Portfolio array:', portfolioArray);
+                    setPortfolio(portfolioArray);
                 }
 
-                // Обработка образования
+                // Обработка образования - ВНИМАНИЕ: здесь может быть проблема
                 if (educationResult.status === 'fulfilled') {
-                    const educationData = safeGetArray(educationResult.value);
-                    console.log('Education data:', educationData);
+                    const educationData = educationResult.value;
+                    console.log('Education raw data:', educationData);
+                    console.log('Type of educationData:', typeof educationData);
 
-                    const formattedEducation = educationData.map((edu, index) => {
-                        // Безопасный доступ к свойствам
-                        const safeEdu = edu || {};
+                    let educationArray = [];
+                    if (Array.isArray(educationData)) {
+                        educationArray = educationData;
+                    } else if (educationData && educationData.data && Array.isArray(educationData.data)) {
+                        educationArray = educationData.data;
+                    } else if (educationData && educationData.content && Array.isArray(educationData.content)) {
+                        educationArray = educationData.content;
+                    } else if (educationData && typeof educationData === 'object') {
+                        console.error('Education data is object but not array structure:', educationData);
+                        // Попробуем преобразовать объект в массив
+                        if (educationData.id) {
+                            educationArray = [educationData];
+                        }
+                    }
+
+                    console.log('Education array before formatting:', educationArray);
+
+                    const formattedEducation = educationArray.map((edu, index) => {
+                        console.log(`Processing edu ${index}:`, edu);
+
+                        if (!edu || typeof edu !== 'object') {
+                            console.warn(`Invalid edu at index ${index}:`, edu);
+                            return {
+                                id: `edu-invalid-${index}`,
+                                name: 'Некорректные данные',
+                                speciality: '',
+                                startDate: '',
+                                endDate: '',
+                                webUrl: '',
+                                additionalInfo: ''
+                            };
+                        }
+
+                        // Обратите внимание: startYear и endYear могут быть числами
+                        const startYear = edu.startYear;
+                        const endYear = edu.endYear;
+
                         return {
-                            id: safeEdu.id || `edu-${index}`,
-                            name: safeEdu.institution || safeEdu.name || safeEdu.institutionName ||
-                                safeEdu.educationalInstitution || 'Образовательное учреждение',
-                            speciality: safeEdu.speciality || safeEdu.fieldOfStudy ||
-                                safeEdu.additionalInfo || safeEdu.degree || safeEdu.specialty || '',
-                            startDate: safeEdu.startYear ? safeEdu.startYear.toString() :
-                                safeEdu.startDate || safeEdu.start || '',
-                            endDate: safeEdu.endYear ? safeEdu.endYear.toString() :
-                                safeEdu.endDate || safeEdu.end ||
-                                (safeEdu.current ? 'по настоящее время' : ''),
-                            webUrl: safeEdu.webUrl || safeEdu.website || safeEdu.url || '',
-                            additionalInfo: safeEdu.additionalInfo || safeEdu.description || ''
+                            id: edu.id || `edu-${index}`,
+                            name: edu.institution || edu.name || edu.institutionName ||
+                                edu.educationalInstitution || 'Образовательное учреждение',
+                            speciality: edu.speciality || edu.fieldOfStudy ||
+                                edu.additionalInfo || edu.degree || edu.specialty || '',
+                            startDate: startYear ? startYear.toString() :
+                                edu.startDate || edu.start || '',
+                            endDate: endYear ? endYear.toString() :
+                                edu.endDate || edu.end ||
+                                (edu.current ? 'по настоящее время' : ''),
+                            webUrl: edu.webUrl || edu.website || edu.url || '',
+                            additionalInfo: edu.additionalInfo || edu.description || '',
+                            // Сохраняем оригинальные данные для отладки
+                            _original: edu
                         };
                     });
+
+                    console.log('Formatted education:', formattedEducation);
                     setEducationDetails(formattedEducation);
                 }
 
                 // Обработка опыта работы
                 if (experienceResult.status === 'fulfilled') {
-                    const experienceData = safeGetArray(experienceResult.value);
-                    console.log('Experience data:', experienceData);
+                    const experienceData = experienceResult.value;
+                    console.log('Experience raw data:', experienceData);
 
-                    const formattedExperience = experienceData.map((exp, index) => {
-                        const safeExp = exp || {};
+                    let experienceArray = [];
+                    if (Array.isArray(experienceData)) {
+                        experienceArray = experienceData;
+                    } else if (experienceData && experienceData.data && Array.isArray(experienceData.data)) {
+                        experienceArray = experienceData.data;
+                    } else if (experienceData && experienceData.content && Array.isArray(experienceData.content)) {
+                        experienceArray = experienceData.content;
+                    }
+
+                    console.log('Experience array:', experienceArray);
+
+                    const formattedExperience = experienceArray.map((exp, index) => {
+                        if (!exp || typeof exp !== 'object') {
+                            console.warn(`Invalid exp at index ${index}:`, exp);
+                            return {
+                                id: `exp-invalid-${index}`,
+                                position: '',
+                                company: '',
+                                description: '',
+                                startDate: '',
+                                endDate: '',
+                                current: false
+                            };
+                        }
+
                         return {
-                            id: safeExp.id || `exp-${index}`,
-                            position: safeExp.position || safeExp.jobTitle || safeExp.post || '',
-                            company: safeExp.company || safeExp.companyName || safeExp.employer || safeExp.organization || '',
-                            description: safeExp.description || safeExp.additionalInfo ||
-                                safeExp.responsibilities || safeExp.duties || '',
-                            startDate: safeExp.startDate || safeExp.startYear ||
-                                safeExp.startMonthYear || safeExp.start || '',
-                            endDate: safeExp.endDate || safeExp.endYear ||
-                                safeExp.endMonthYear || safeExp.end ||
-                                (safeExp.current ? 'по настоящее время' : ''),
-                            current: safeExp.current || safeExp.endDate === null || false
+                            id: exp.id || `exp-${index}`,
+                            position: exp.position || exp.jobTitle || exp.post || '',
+                            company: exp.company || exp.companyName || exp.employer || exp.organization || '',
+                            description: exp.description || exp.additionalInfo ||
+                                exp.responsibilities || exp.duties || '',
+                            startDate: exp.startDate || exp.startYear ||
+                                exp.startMonthYear || exp.start || '',
+                            endDate: exp.endDate || exp.endYear ||
+                                exp.endMonthYear || exp.end ||
+                                (exp.current ? 'по настоящее время' : ''),
+                            current: exp.current || exp.endDate === null || false
                         };
                     });
+
                     setExperienceDetails(formattedExperience);
                 }
 
                 // Обработка похожих студентов
                 if (allStudentsResult.status === 'fulfilled') {
-                    const allStudents = safeGetArray(allStudentsResult.value);
-                    const similar = allStudents
+                    const allStudents = allStudentsResult.value;
+                    console.log('All students raw:', allStudents);
+
+                    let studentsArray = [];
+                    if (Array.isArray(allStudents)) {
+                        studentsArray = allStudents;
+                    } else if (allStudents && allStudents.data && Array.isArray(allStudents.data)) {
+                        studentsArray = allStudents.data;
+                    } else if (allStudents && allStudents.content && Array.isArray(allStudents.content)) {
+                        studentsArray = allStudents.content;
+                    }
+
+                    console.log('Students array:', studentsArray);
+
+                    const similar = studentsArray
                         .filter(s => {
-                            if (!s || !s.id) return false;
+                            if (!s || !s.id) {
+                                console.warn('Invalid student in allStudents:', s);
+                                return false;
+                            }
                             const currentId = s.id.toString();
                             const targetId = id.toString();
                             return currentId !== targetId;
                         })
                         .slice(0, 6);
+
+                    console.log('Similar students:', similar);
                     setSimilarStudents(similar);
                 }
 
@@ -167,6 +287,13 @@ const StudentResume = () => {
                 setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
+                console.log('=== FINAL STATE ===');
+                console.log('student:', student);
+                console.log('skills:', skills);
+                console.log('portfolio:', portfolio);
+                console.log('educationDetails:', educationDetails);
+                console.log('experienceDetails:', experienceDetails);
+                console.log('similarStudents:', similarStudents);
             }
         };
 
@@ -219,38 +346,6 @@ const StudentResume = () => {
         return `${baseUrl}/${studentId}.jpg`;
     };
 
-    // Безопасный рендеринг
-    const renderSimilarStudents = () => {
-        if (!similarStudents || !Array.isArray(similarStudents) || similarStudents.length === 0) {
-            return null;
-        }
-
-        return (
-            <div className="StudentResume__similarSection">
-                <h2 className="StudentResume__similarTitle">Студенты с похожими навыками</h2>
-                <div className="StudentResume__similarList">
-                    {similarStudents.map((similarStudent) => {
-                        if (!similarStudent || !similarStudent.id) return null;
-
-                        return (
-                            <Link
-                                key={similarStudent.id}
-                                to={`/studentsResume/${similarStudent.id}`}
-                                className="StudentResume__similarLink"
-                                style={{ textDecoration: 'none', color: 'inherit' }}
-                            >
-                                <StudentSliderCard
-                                    student={similarStudent}
-                                    isActive={false}
-                                />
-                            </Link>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    };
-
     if (loading) {
         return (
             <section className="StudentResume">
@@ -284,7 +379,6 @@ const StudentResume = () => {
     const age = calculateAge(student.birthDate);
     const ageText = age ? `${age} лет` : '';
 
-    // Безопасное получение навыков для отображения
     const displaySkills = Array.isArray(skills) && skills.length > 0 ?
         skills :
         (Array.isArray(student.skills) ? student.skills : []);
@@ -534,7 +628,8 @@ const StudentResume = () => {
                     <h2 className="StudentResume__contactTitle">Свяжитесь со студентом</h2>
                     <div className="StudentResume__contactContent">
                         <div className="StudentResume__contactSlider">
-                            {student && <StudentSliderCard student={student} isActive={true} />}
+                            {/* Временно используем Debug компонент */}
+                            <DebugStudentSliderCard student={student} isActive={true} />
                         </div>
 
                         <div className="StudentResume__contactInfo">
@@ -556,7 +651,22 @@ const StudentResume = () => {
                     </div>
                 </div>
 
-                {renderSimilarStudents()}
+                {similarStudents.length > 0 && (
+                    <div className="StudentResume__similarSection">
+                        <h2 className="StudentResume__similarTitle">Студенты с похожими навыками</h2>
+                        <div className="StudentResume__similarList">
+                            {similarStudents.map((similarStudent, index) => {
+                                if (!similarStudent) return null;
+
+                                return (
+                                    <div key={similarStudent.id || `similar-${index}`} style={{ margin: '10px' }}>
+                                        <DebugStudentSliderCard student={similarStudent} isActive={false} />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
             {showApplicationForm && (
                 <ApplicationForm
