@@ -160,6 +160,64 @@ export const getAllEducation = async () => {
     }
 };
 
+export const getEducationById = async (id) => {
+    try {
+        const data = await apiClientJson(`education/${id}`, {
+            method: 'GET',
+        });
+        return data;
+    } catch (error) {
+        console.error('Error fetching education by id:', error);
+        throw error;
+    }
+};
+
+export const getEducationDetailsByStudentId = async (studentId) => {
+    try {
+        const educationList = await apiClientJson(`institution/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                studentId: studentId,
+                page: 0,
+                size: 100
+            })
+        });
+
+        let educationArray = [];
+        if (educationList && educationList.data && Array.isArray(educationList.data)) {
+            educationArray = educationList.data;
+        } else if (Array.isArray(educationList)) {
+            educationArray = educationList;
+        }
+
+        const educationDetails = await Promise.all(
+            educationArray.map(async (edu) => {
+                try {
+                    if (edu.educationId) {
+                        const details = await getEducationById(edu.educationId);
+                        return {
+                            ...details,
+                            id: edu.educationId,
+                            institutionId: edu.institution?.id,
+                            startYear: edu.institution?.startYear,
+                            endYear: edu.institution?.endYear
+                        };
+                    }
+                    return null;
+                } catch (err) {
+                    console.error(`Error fetching education details for ID ${edu.educationId}:`, err);
+                    return null;
+                }
+            })
+        );
+
+        return educationDetails.filter(item => item !== null);
+    } catch (error) {
+        console.error('Error fetching education details by student id:', error);
+        return [];
+    }
+};
+
 export const getEducationByStudentId = async (studentId) => {
     try {
         const data = await apiClientJson(`institution/filter`, {

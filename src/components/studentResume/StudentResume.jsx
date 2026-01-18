@@ -12,7 +12,7 @@ import {
     getExperienceByStudentId,
     getAllStudents,
     getSkillsByStudentId,
-    getEducationByStudentId
+    getEducationDetailsByStudentId
 } from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
@@ -48,7 +48,6 @@ const StudentResume = () => {
                 setLoading(true);
 
                 const studentData = await getStudentById(id);
-                console.log('Student data:', studentData);
 
                 if (!studentData || !studentData.id) {
                     throw new Error('Студент не найден');
@@ -67,7 +66,7 @@ const StudentResume = () => {
                     allStudentsResult
                 ] = await Promise.allSettled([
                     getPortfolioByStudentId(id),
-                    getEducationByStudentId(id),
+                    getEducationDetailsByStudentId(id),
                     getExperienceByStudentId(id),
                     getAllStudents()
                 ]);
@@ -79,33 +78,21 @@ const StudentResume = () => {
 
                 if (educationResult.status === 'fulfilled') {
                     const educationData = educationResult.value;
-                    console.log('Education raw data:', educationData);
 
-                    let educationArray = [];
-                    if (Array.isArray(educationData)) {
-                        educationArray = educationData;
-                    }
-
-                    const formattedEducation = educationArray.map((edu, index) => {
+                    const formattedEducation = educationData.map((edu, index) => {
                         if (!edu || typeof edu !== 'object') {
                             return null;
                         }
 
-                        const institution = edu.institution || {};
-
                         return {
-                            id: institution.id || edu.educationId || `edu-${index}`,
-                            name: institution.name || institution.institutionName ||
-                                edu.institutionName || 'Образовательное учреждение',
-                            speciality: edu.speciality || institution.speciality ||
-                                edu.fieldOfStudy || edu.degree || '',
-                            startDate: institution.startYear ? institution.startYear.toString() :
-                                edu.startYear || edu.startDate || '',
-                            endDate: institution.endYear ? institution.endYear.toString() :
-                                edu.endYear || edu.endDate ||
+                            id: edu.id || `edu-${index}`,
+                            name: edu.institution || 'Образовательное учреждение',
+                            speciality: edu.additionalInfo || '',
+                            startDate: edu.startYear ? edu.startYear.toString() : '',
+                            endDate: edu.endYear ? edu.endYear.toString() :
                                 (edu.current ? 'по настоящее время' : ''),
-                            webUrl: institution.webUrl || edu.webUrl || '',
-                            additionalInfo: edu.additionalInfo || institution.description || ''
+                            webUrl: edu.webUrl || '',
+                            additionalInfo: edu.additionalInfo || ''
                         };
                     }).filter(item => item !== null);
 
