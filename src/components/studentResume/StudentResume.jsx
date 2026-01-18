@@ -20,25 +20,6 @@ import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 
-// Простой временный компонент для отладки
-const DebugStudentSliderCard = ({ student, isActive }) => {
-    console.log('DebugStudentSliderCard student:', student);
-
-    if (!student || typeof student !== 'object') {
-        console.error('DebugStudentSliderCard: invalid student', student);
-        return <div>Нет данных</div>;
-    }
-
-    return (
-        <div style={{ border: '1px solid #ccc', padding: '10px', margin: '10px' }}>
-            <h4>Студент (отладка)</h4>
-            <p>ID: {student.id || 'нет'}</p>
-            <p>Имя: {student.firstName || student.name || 'нет'}</p>
-            <p>Фамилия: {student.lastName || 'нет'}</p>
-        </div>
-    );
-};
-
 const StudentResume = () => {
     const { id } = useParams();
     const [student, setStudent] = useState(null);
@@ -66,39 +47,17 @@ const StudentResume = () => {
             try {
                 setLoading(true);
 
-                console.log('Fetching student with ID:', id);
                 const studentData = await getStudentById(id);
-                console.log('Raw student data:', studentData);
+                console.log('Student data:', studentData);
 
-                if (!studentData || typeof studentData !== 'object') {
-                    throw new Error('Студент не найден или данные некорректны');
-                }
-
-                if (!studentData.id) {
-                    console.warn('Student data missing id:', studentData);
+                if (!studentData || !studentData.id) {
+                    throw new Error('Студент не найден');
                 }
 
                 setStudent(studentData);
 
-                // Проверяем и логируем навыки
-                console.log('Student skills raw:', studentData.skills);
-                if (studentData.skills) {
-                    if (Array.isArray(studentData.skills)) {
-                        console.log('Skills is array, length:', studentData.skills.length);
-                        setSkills(studentData.skills);
-                    } else if (typeof studentData.skills === 'string') {
-                        const skillsArray = studentData.skills.split(',').map(skill => ({
-                            id: Math.random().toString(36).substr(2, 9),
-                            name: skill.trim()
-                        }));
-                        console.log('Skills parsed from string:', skillsArray);
-                        setSkills(skillsArray);
-                    } else {
-                        console.warn('Skills is not array or string:', typeof studentData.skills, studentData.skills);
-                        setSkills([]);
-                    }
-                } else {
-                    setSkills([]);
+                if (studentData.skills && Array.isArray(studentData.skills)) {
+                    setSkills(studentData.skills);
                 }
 
                 const [
@@ -113,173 +72,88 @@ const StudentResume = () => {
                     getAllStudents()
                 ]);
 
-                console.log('=== API RESULTS ===');
-                console.log('Portfolio result:', portfolioResult);
-                console.log('Education result:', educationResult);
-                console.log('Experience result:', experienceResult);
-                console.log('All students result:', allStudentsResult);
-
-                // Обработка портфолио
                 if (portfolioResult.status === 'fulfilled') {
                     const portfolioData = portfolioResult.value;
-                    console.log('Portfolio raw data:', portfolioData);
-
-                    let portfolioArray = [];
-                    if (Array.isArray(portfolioData)) {
-                        portfolioArray = portfolioData;
-                    } else if (portfolioData && portfolioData.data && Array.isArray(portfolioData.data)) {
-                        portfolioArray = portfolioData.data;
-                    } else if (portfolioData && portfolioData.content && Array.isArray(portfolioData.content)) {
-                        portfolioArray = portfolioData.content;
-                    }
-
-                    console.log('Portfolio array:', portfolioArray);
-                    setPortfolio(portfolioArray);
+                    setPortfolio(Array.isArray(portfolioData) ? portfolioData : []);
                 }
 
-                // Обработка образования - ВНИМАНИЕ: здесь может быть проблема
                 if (educationResult.status === 'fulfilled') {
                     const educationData = educationResult.value;
                     console.log('Education raw data:', educationData);
-                    console.log('Type of educationData:', typeof educationData);
 
                     let educationArray = [];
                     if (Array.isArray(educationData)) {
                         educationArray = educationData;
-                    } else if (educationData && educationData.data && Array.isArray(educationData.data)) {
-                        educationArray = educationData.data;
-                    } else if (educationData && educationData.content && Array.isArray(educationData.content)) {
-                        educationArray = educationData.content;
-                    } else if (educationData && typeof educationData === 'object') {
-                        console.error('Education data is object but not array structure:', educationData);
-                        // Попробуем преобразовать объект в массив
-                        if (educationData.id) {
-                            educationArray = [educationData];
-                        }
                     }
 
-                    console.log('Education array before formatting:', educationArray);
-
                     const formattedEducation = educationArray.map((edu, index) => {
-                        console.log(`Processing edu ${index}:`, edu);
-
                         if (!edu || typeof edu !== 'object') {
-                            console.warn(`Invalid edu at index ${index}:`, edu);
-                            return {
-                                id: `edu-invalid-${index}`,
-                                name: 'Некорректные данные',
-                                speciality: '',
-                                startDate: '',
-                                endDate: '',
-                                webUrl: '',
-                                additionalInfo: ''
-                            };
+                            return null;
                         }
 
-                        // Обратите внимание: startYear и endYear могут быть числами
-                        const startYear = edu.startYear;
-                        const endYear = edu.endYear;
+                        const institution = edu.institution || {};
 
                         return {
-                            id: edu.id || `edu-${index}`,
-                            name: edu.institution || edu.name || edu.institutionName ||
-                                edu.educationalInstitution || 'Образовательное учреждение',
-                            speciality: edu.speciality || edu.fieldOfStudy ||
-                                edu.additionalInfo || edu.degree || edu.specialty || '',
-                            startDate: startYear ? startYear.toString() :
-                                edu.startDate || edu.start || '',
-                            endDate: endYear ? endYear.toString() :
-                                edu.endDate || edu.end ||
+                            id: institution.id || edu.educationId || `edu-${index}`,
+                            name: institution.name || institution.institutionName ||
+                                edu.institutionName || 'Образовательное учреждение',
+                            speciality: edu.speciality || institution.speciality ||
+                                edu.fieldOfStudy || edu.degree || '',
+                            startDate: institution.startYear ? institution.startYear.toString() :
+                                edu.startYear || edu.startDate || '',
+                            endDate: institution.endYear ? institution.endYear.toString() :
+                                edu.endYear || edu.endDate ||
                                 (edu.current ? 'по настоящее время' : ''),
-                            webUrl: edu.webUrl || edu.website || edu.url || '',
-                            additionalInfo: edu.additionalInfo || edu.description || '',
-                            // Сохраняем оригинальные данные для отладки
-                            _original: edu
+                            webUrl: institution.webUrl || edu.webUrl || '',
+                            additionalInfo: edu.additionalInfo || institution.description || ''
                         };
-                    });
+                    }).filter(item => item !== null);
 
-                    console.log('Formatted education:', formattedEducation);
                     setEducationDetails(formattedEducation);
                 }
 
-                // Обработка опыта работы
                 if (experienceResult.status === 'fulfilled') {
                     const experienceData = experienceResult.value;
-                    console.log('Experience raw data:', experienceData);
 
                     let experienceArray = [];
                     if (Array.isArray(experienceData)) {
                         experienceArray = experienceData;
-                    } else if (experienceData && experienceData.data && Array.isArray(experienceData.data)) {
-                        experienceArray = experienceData.data;
-                    } else if (experienceData && experienceData.content && Array.isArray(experienceData.content)) {
-                        experienceArray = experienceData.content;
                     }
-
-                    console.log('Experience array:', experienceArray);
 
                     const formattedExperience = experienceArray.map((exp, index) => {
                         if (!exp || typeof exp !== 'object') {
-                            console.warn(`Invalid exp at index ${index}:`, exp);
-                            return {
-                                id: `exp-invalid-${index}`,
-                                position: '',
-                                company: '',
-                                description: '',
-                                startDate: '',
-                                endDate: '',
-                                current: false
-                            };
+                            return null;
                         }
 
+                        const experience = exp.experience || {};
+                        const company = exp.company || {};
+
                         return {
-                            id: exp.id || `exp-${index}`,
-                            position: exp.position || exp.jobTitle || exp.post || '',
-                            company: exp.company || exp.companyName || exp.employer || exp.organization || '',
-                            description: exp.description || exp.additionalInfo ||
-                                exp.responsibilities || exp.duties || '',
-                            startDate: exp.startDate || exp.startYear ||
-                                exp.startMonthYear || exp.start || '',
-                            endDate: exp.endDate || exp.endYear ||
-                                exp.endMonthYear || exp.end ||
-                                (exp.current ? 'по настоящее время' : ''),
-                            current: exp.current || exp.endDate === null || false
+                            id: experience.id || exp.experienceId || `exp-${index}`,
+                            position: experience.position || exp.position || exp.jobTitle || '',
+                            company: company.name || exp.companyName || exp.employer || '',
+                            description: experience.additionalInfo || exp.description ||
+                                experience.responsibilities || '',
+                            startDate: experience.startDate || exp.startDate || '',
+                            endDate: experience.endDate || exp.endDate ||
+                                (experience.current ? 'по настоящее время' : ''),
+                            current: experience.current || exp.current || false
                         };
-                    });
+                    }).filter(item => item !== null);
 
                     setExperienceDetails(formattedExperience);
                 }
 
-                // Обработка похожих студентов
                 if (allStudentsResult.status === 'fulfilled') {
                     const allStudents = allStudentsResult.value;
-                    console.log('All students raw:', allStudents);
-
-                    let studentsArray = [];
-                    if (Array.isArray(allStudents)) {
-                        studentsArray = allStudents;
-                    } else if (allStudents && allStudents.data && Array.isArray(allStudents.data)) {
-                        studentsArray = allStudents.data;
-                    } else if (allStudents && allStudents.content && Array.isArray(allStudents.content)) {
-                        studentsArray = allStudents.content;
-                    }
-
-                    console.log('Students array:', studentsArray);
-
-                    const similar = studentsArray
+                    const similar = allStudents
                         .filter(s => {
-                            if (!s || !s.id) {
-                                console.warn('Invalid student in allStudents:', s);
-                                return false;
-                            }
-                            const currentId = s.id.toString();
+                            const currentId = s.id ? s.id.toString() : s.id;
                             const targetId = id.toString();
                             return currentId !== targetId;
                         })
                         .slice(0, 6);
-
-                    console.log('Similar students:', similar);
-                    setSimilarStudents(similar);
+                    setSimilarStudents(similar || []);
                 }
 
             } catch (err) {
@@ -287,13 +161,6 @@ const StudentResume = () => {
                 setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
-                console.log('=== FINAL STATE ===');
-                console.log('student:', student);
-                console.log('skills:', skills);
-                console.log('portfolio:', portfolio);
-                console.log('educationDetails:', educationDetails);
-                console.log('experienceDetails:', experienceDetails);
-                console.log('similarStudents:', similarStudents);
             }
         };
 
@@ -310,19 +177,14 @@ const StudentResume = () => {
 
     const calculateAge = (birthDate) => {
         if (!birthDate) return null;
-        try {
-            const today = new Date();
-            const birth = new Date(birthDate);
-            let age = today.getFullYear() - birth.getFullYear();
-            const monthDiff = today.getMonth() - birth.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-                age--;
-            }
-            return age;
-        } catch (e) {
-            console.error('Error calculating age:', e);
-            return null;
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+            age--;
         }
+        return age;
     };
 
     const getRandomPortfolioBackground = (index) => {
@@ -332,8 +194,7 @@ const StudentResume = () => {
     const getStudentImageUrl = (studentData) => {
         if (!studentData) return face;
 
-        const imagePath = studentData.imagePath || studentData.image ||
-            studentData.photo || studentData.avatar || studentData.profileImage;
+        const imagePath = studentData.imagePath || studentData.image || studentData.photo || studentData.avatar;
 
         if (!imagePath) return face;
 
@@ -379,9 +240,7 @@ const StudentResume = () => {
     const age = calculateAge(student.birthDate);
     const ageText = age ? `${age} лет` : '';
 
-    const displaySkills = Array.isArray(skills) && skills.length > 0 ?
-        skills :
-        (Array.isArray(student.skills) ? student.skills : []);
+    const displaySkills = skills.length > 0 ? skills : (student.skills || []);
 
     return (
         <section className="StudentResume">
@@ -392,21 +251,12 @@ const StudentResume = () => {
                         <div className="StudentResume__header">
                             <div className="StudentResume__person">
                                 <div className="StudentResume__personFace">
-                                    <img
-                                        src={imageSrc}
-                                        alt={`Фото ${fullName}`}
-                                        width="300"
-                                        height="300"
-                                        onError={(e) => {
-                                            e.target.onerror = null;
-                                            e.target.src = face;
-                                        }}
-                                    />
+                                    <img src={imageSrc} alt={`Фото ${fullName}`} width="300" height="300"/>
                                 </div>
 
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
-                                    <p>{student.speciality || student.profession || student.specialty || 'Специальность не указана'}</p>
+                                    <p>{student.speciality || student.profession || 'Специальность не указана'}</p>
                                     <button
                                         className="StudentResume__sendBid"
                                         onClick={() => setShowApplicationForm(true)}
@@ -441,7 +291,7 @@ const StudentResume = () => {
                             <div className="StudentResume__section">
                                 <h3 className="StudentResume__sectionTitle">Обо мне</h3>
                                 <p className="StudentResume__sectionText" style={{ whiteSpace: 'pre-line' }}>
-                                    {student.bio || student.description || student.about || student.biography || 'Информация о студенте отсутствует'}
+                                    {student.bio || student.description || student.about || 'Информация о студенте отсутствует'}
                                 </p>
                             </div>
 
@@ -449,15 +299,11 @@ const StudentResume = () => {
                                 <h3 className="StudentResume__sectionTitle">Навыки</h3>
                                 <div className="StudentResume__skills">
                                     {displaySkills.length > 0 ? (
-                                        displaySkills.map((skill, index) => {
-                                            const skillName = skill.name || skill.title || skill.skillName || 'Навык';
-                                            const skillId = skill.id || `skill-${index}`;
-                                            return (
-                                                <span key={skillId} className="StudentResume__skillCapsule">
-                                                    {skillName}
-                                                </span>
-                                            );
-                                        })
+                                        displaySkills.map((skill, index) => (
+                                            <span key={skill.id || index} className="StudentResume__skillCapsule">
+                                                {skill.name || skill.title || 'Навык'}
+                                            </span>
+                                        ))
                                     ) : (
                                         <span className="StudentResume__skillCapsule">Навыки не указаны</span>
                                     )}
@@ -468,35 +314,30 @@ const StudentResume = () => {
                                 <h3 className="StudentResume__sectionTitle">Портфолио и ссылки</h3>
                                 <div className="StudentResume__portfolio">
                                     {portfolio.length > 0 ? (
-                                        portfolio.map((project, index) => {
-                                            if (!project) return null;
-                                            const projectId = project.id || `project-${index}`;
-                                            const projectName = project.name || project.title || 'Проект';
-                                            const projectLink = project.link || project.url || project.website || '#';
-                                            const projectDescription = project.description || project.additionalInfo || '';
+                                        portfolio.map((project, index) => (
+                                            <a
+                                                key={project.id || index}
+                                                href={project.link || project.url || project.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="StudentResume__portfolioItem"
+                                                style={{
+                                                    backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
+                                                }}
+                                            >
+                                                <div className="StudentResume__portfolioContent">
+                                                    {project.name && (
+                                                        <p className="StudentResume__portfolioTitle">{project.name}</p>
+                                                    )}
 
-                                            return (
-                                                <a
-                                                    key={projectId}
-                                                    href={projectLink}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="StudentResume__portfolioItem"
-                                                    style={{
-                                                        backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
-                                                    }}
-                                                >
-                                                    <div className="StudentResume__portfolioContent">
-                                                        <p className="StudentResume__portfolioTitle">{projectName}</p>
-                                                        {projectDescription && (
-                                                            <p className="StudentResume__portfolioDescription">
-                                                                {projectDescription}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </a>
-                                            );
-                                        })
+                                                    {project.description || project.additionalInfo ? (
+                                                        <p className="StudentResume__portfolioDescription">
+                                                            {project.description || project.additionalInfo}
+                                                        </p>
+                                                    ) : null}
+                                                </div>
+                                            </a>
+                                        ))
                                     ) : (
                                         <div className="StudentResume__portfolioItem" style={{ backgroundImage: `url(${getRandomPortfolioBackground(0)})` }}>
                                             <div className="StudentResume__portfolioContent">
@@ -529,38 +370,34 @@ const StudentResume = () => {
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--bordered">
                                 {experienceDetails.length > 0 ? (
                                     <div className="StudentResume__experienceList">
-                                        {experienceDetails.map((exp, index) => {
-                                            if (!exp) return null;
-                                            const expId = exp.id || `exp-${index}`;
-                                            return (
-                                                <div key={expId} className="StudentResume__experienceItem">
-                                                    <div className="StudentResume__experienceTimeline">
-                                                        <div className="StudentResume__experienceYears">
-                                                            {exp.startDate && exp.endDate ? (
-                                                                exp.endDate === 'по настоящее время' ? (
-                                                                    <span>{exp.startDate} - {exp.endDate}</span>
-                                                                ) : (
-                                                                    <span>{exp.startDate} - {exp.endDate}</span>
-                                                                )
-                                                            ) : exp.startDate ? (
-                                                                <span>С {exp.startDate}</span>
-                                                            ) : exp.endDate ? (
-                                                                <span>До {exp.endDate}</span>
-                                                            ) : null}
-                                                        </div>
-                                                    </div>
-                                                    <div className="StudentResume__experienceInfo">
-                                                        <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
-                                                        {exp.company && (
-                                                            <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
-                                                        )}
-                                                        {exp.description && (
-                                                            <p className="StudentResume__experienceDescription">{exp.description}</p>
-                                                        )}
+                                        {experienceDetails.map((exp, index) => (
+                                            <div key={exp.id || index} className="StudentResume__experienceItem">
+                                                <div className="StudentResume__experienceTimeline">
+                                                    <div className="StudentResume__experienceYears">
+                                                        {exp.startDate && exp.endDate ? (
+                                                            exp.endDate === 'по настоящее время' ? (
+                                                                <span>{exp.startDate} - {exp.endDate}</span>
+                                                            ) : (
+                                                                <span>{exp.startDate} - {exp.endDate}</span>
+                                                            )
+                                                        ) : exp.startDate ? (
+                                                            <span>С {exp.startDate}</span>
+                                                        ) : exp.endDate ? (
+                                                            <span>До {exp.endDate}</span>
+                                                        ) : null}
                                                     </div>
                                                 </div>
-                                            );
-                                        })}
+                                                <div className="StudentResume__experienceInfo">
+                                                    <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
+                                                    {exp.company && (
+                                                        <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
+                                                    )}
+                                                    {exp.description && (
+                                                        <p className="StudentResume__experienceDescription">{exp.description}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 ) : (
                                     <p>пока пусто :D</p>
@@ -579,42 +416,38 @@ const StudentResume = () => {
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--no-border">
                                 {educationDetails.length > 0 ? (
                                     <div className="StudentResume__educationList">
-                                        {educationDetails.map((edu, index) => {
-                                            if (!edu) return null;
-                                            const eduId = edu.id || `edu-${index}`;
-                                            return (
-                                                <div key={eduId} className="StudentResume__educationItem">
-                                                    <div className="StudentResume__educationTimeline">
-                                                        <div className="StudentResume__educationYears">
-                                                            {edu.startDate && edu.endDate ? (
-                                                                <span>{edu.startDate} - {edu.endDate}<br/></span>
-                                                            ) : edu.startDate ? (
-                                                                <span>С {edu.startDate}</span>
-                                                            ) : edu.endDate ? (
-                                                                <span>До {edu.endDate}</span>
-                                                            ) : null}
-                                                        </div>
-                                                        <div className="StudentResume__educationVerticalLine"></div>
+                                        {educationDetails.map((edu, index) => (
+                                            <div key={edu.id || index} className="StudentResume__educationItem">
+                                                <div className="StudentResume__educationTimeline">
+                                                    <div className="StudentResume__educationYears">
+                                                        {edu.startDate && edu.endDate ? (
+                                                            <span>{edu.startDate} - {edu.endDate}<br/></span>
+                                                        ) : edu.startDate ? (
+                                                            <span>С {edu.startDate}</span>
+                                                        ) : edu.endDate ? (
+                                                            <span>До {edu.endDate}</span>
+                                                        ) : null}
                                                     </div>
-                                                    <div className="StudentResume__educationInfo">
-                                                        <h3 className="StudentResume__educationName">{edu.name}</h3>
-                                                        {edu.speciality && (
-                                                            <p className="StudentResume__educationSpeciality">{edu.speciality}</p>
-                                                        )}
-                                                        {edu.webUrl && (
-                                                            <a
-                                                                href={edu.webUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="StudentResume__educationLink"
-                                                            >
-                                                                Узнать больше &#62;
-                                                            </a>
-                                                        )}
-                                                    </div>
+                                                    <div className="StudentResume__educationVerticalLine"></div>
                                                 </div>
-                                            );
-                                        })}
+                                                <div className="StudentResume__educationInfo">
+                                                    <h3 className="StudentResume__educationName">{edu.name}</h3>
+                                                    {edu.speciality && (
+                                                        <p className="StudentResume__educationSpeciality">{edu.speciality}</p>
+                                                    )}
+                                                    {edu.webUrl && (
+                                                        <a
+                                                            href={edu.webUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="StudentResume__educationLink"
+                                                        >
+                                                            Узнать больше &#62;
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 ) : (
                                     <p>пока пусто :D</p>
@@ -628,8 +461,7 @@ const StudentResume = () => {
                     <h2 className="StudentResume__contactTitle">Свяжитесь со студентом</h2>
                     <div className="StudentResume__contactContent">
                         <div className="StudentResume__contactSlider">
-                            {/* Временно используем Debug компонент */}
-                            <DebugStudentSliderCard student={student} isActive={true} />
+                            {student && <StudentSliderCard student={student} isActive={true} />}
                         </div>
 
                         <div className="StudentResume__contactInfo">
@@ -655,15 +487,16 @@ const StudentResume = () => {
                     <div className="StudentResume__similarSection">
                         <h2 className="StudentResume__similarTitle">Студенты с похожими навыками</h2>
                         <div className="StudentResume__similarList">
-                            {similarStudents.map((similarStudent, index) => {
-                                if (!similarStudent) return null;
-
-                                return (
-                                    <div key={similarStudent.id || `similar-${index}`} style={{ margin: '10px' }}>
-                                        <DebugStudentSliderCard student={similarStudent} isActive={false} />
-                                    </div>
-                                );
-                            })}
+                            {similarStudents.map((similarStudent) => (
+                                <Link
+                                    key={similarStudent.id}
+                                    to={`/studentsResume/${similarStudent.id}`}
+                                    className="StudentResume__similarLink"
+                                    style={{ textDecoration: 'none', color: 'inherit' }}
+                                >
+                                    <StudentSliderCard student={similarStudent} isActive={false} />
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 )}

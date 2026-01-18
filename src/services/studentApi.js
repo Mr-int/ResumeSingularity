@@ -10,7 +10,6 @@ export const getAllStudents = async () => {
             })
         });
 
-        // Обрабатываем новый формат ответа с data
         if (response && response.data) {
             return response.data;
         } else if (response && response.content) {
@@ -55,7 +54,6 @@ export const getPortfolioByStudentId = async (studentId) => {
             })
         });
 
-        // Обрабатываем новый формат с data
         if (data && data.data) {
             return data.data;
         } else if (data && data.content) {
@@ -94,15 +92,9 @@ export const getInstitutionsByStudentId = async (studentId) => {
         });
 
         if (data && data.data) {
-            return data.data.filter(item => {
-                return item.studentId === studentId ||
-                    (item.student && item.student.id === studentId);
-            });
+            return data.data;
         } else if (Array.isArray(data)) {
-            return data.filter(item => {
-                return item.studentId === studentId ||
-                    (item.student && item.student.id === studentId);
-            });
+            return data;
         }
         return [];
     } catch (error) {
@@ -136,8 +128,6 @@ export const getExperienceByStudentId = async (studentId) => {
 
         if (data && data.data) {
             return data.data;
-        } else if (data && data.content) {
-            return data.content;
         } else if (Array.isArray(data)) {
             return data;
         }
@@ -182,19 +172,9 @@ export const getEducationByStudentId = async (studentId) => {
         });
 
         if (data && data.data) {
-            const filtered = data.data.filter(item => {
-                return item.studentId === studentId ||
-                    (item.student && item.student.id === studentId);
-            });
-            console.log('[getEducationByStudentId] Filtered data for', studentId, ':', filtered);
-            return filtered;
+            return data.data;
         } else if (Array.isArray(data)) {
-            const filtered = data.filter(item => {
-                return item.studentId === studentId ||
-                    (item.student && item.student.id === studentId);
-            });
-            console.log('[getEducationByStudentId] Filtered data for', studentId, ':', filtered);
-            return filtered;
+            return data;
         }
         return [];
     } catch (error) {
@@ -301,7 +281,6 @@ export const filterStudents = async (filterData = {}) => {
             body: JSON.stringify(defaultFilter)
         });
 
-        // Возвращаем data или весь объект с пагинацией
         if (data && data.data) {
             return data;
         }
