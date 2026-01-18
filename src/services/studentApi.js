@@ -10,21 +10,16 @@ export const getAllStudents = async () => {
             })
         });
 
-        if (response && response.content) {
+        // Обрабатываем новый формат ответа с data
+        if (response && response.data) {
+            return response.data;
+        } else if (response && response.content) {
             return response.content;
         } else if (Array.isArray(response)) {
             return response;
-        } else if (response && response.data) {
-            return response.data;
-        } else if (response && typeof response === 'object') {
-            for (const key in response) {
-                if (Array.isArray(response[key])) {
-                    return response[key];
-                }
-            }
         }
 
-        return response || [];
+        return [];
     } catch (error) {
         console.error('[API] Error fetching students:', error);
         if (error.requiresAuth) {
@@ -54,13 +49,16 @@ export const getPortfolioByStudentId = async (studentId) => {
         const data = await apiClientJson(`portfolio/filter`, {
             method: 'POST',
             body: JSON.stringify({
+                studentId: studentId,
                 page: 0,
-                size: 100,
-                studentId: studentId
+                size: 100
             })
         });
 
-        if (data && data.content) {
+        // Обрабатываем новый формат с data
+        if (data && data.data) {
+            return data.data;
+        } else if (data && data.content) {
             return data.content;
         } else if (Array.isArray(data)) {
             return data;
@@ -86,11 +84,21 @@ export const getInstitutionById = async (id) => {
 
 export const getInstitutionsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`education/all`, {
-            method: 'GET',
+        const data = await apiClientJson(`institution/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                studentId: studentId,
+                page: 0,
+                size: 100
+            })
         });
 
-        if (Array.isArray(data)) {
+        if (data && data.data) {
+            return data.data.filter(item => {
+                return item.studentId === studentId ||
+                    (item.student && item.student.id === studentId);
+            });
+        } else if (Array.isArray(data)) {
             return data.filter(item => {
                 return item.studentId === studentId ||
                     (item.student && item.student.id === studentId);
@@ -120,13 +128,15 @@ export const getExperienceByStudentId = async (studentId) => {
         const data = await apiClientJson(`experience/filter`, {
             method: 'POST',
             body: JSON.stringify({
+                studentId: studentId,
                 page: 0,
-                size: 100,
-                studentId: studentId
+                size: 100
             })
         });
 
-        if (data && data.content) {
+        if (data && data.data) {
+            return data.data;
+        } else if (data && data.content) {
             return data.content;
         } else if (Array.isArray(data)) {
             return data;
@@ -140,10 +150,20 @@ export const getExperienceByStudentId = async (studentId) => {
 
 export const getAllEducation = async () => {
     try {
-        const data = await apiClientJson(`education/all`, {
-            method: 'GET',
+        const data = await apiClientJson(`institution/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 1000
+            })
         });
-        return data;
+
+        if (data && data.data) {
+            return data.data;
+        } else if (Array.isArray(data)) {
+            return data;
+        }
+        return [];
     } catch (error) {
         console.error('Error fetching all education:', error);
         throw error;
@@ -152,11 +172,23 @@ export const getAllEducation = async () => {
 
 export const getEducationByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`education/all`, {
-            method: 'GET',
+        const data = await apiClientJson(`institution/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                studentId: studentId,
+                page: 0,
+                size: 100
+            })
         });
 
-        if (Array.isArray(data)) {
+        if (data && data.data) {
+            const filtered = data.data.filter(item => {
+                return item.studentId === studentId ||
+                    (item.student && item.student.id === studentId);
+            });
+            console.log('[getEducationByStudentId] Filtered data for', studentId, ':', filtered);
+            return filtered;
+        } else if (Array.isArray(data)) {
             const filtered = data.filter(item => {
                 return item.studentId === studentId ||
                     (item.student && item.student.id === studentId);
@@ -173,10 +205,20 @@ export const getEducationByStudentId = async (studentId) => {
 
 export const getAllExperience = async () => {
     try {
-        const data = await apiClientJson(`experience/all`, {
-            method: 'GET',
+        const data = await apiClientJson(`experience/filter`, {
+            method: 'POST',
+            body: JSON.stringify({
+                page: 0,
+                size: 1000
+            })
         });
-        return data;
+
+        if (data && data.data) {
+            return data.data;
+        } else if (Array.isArray(data)) {
+            return data;
+        }
+        return [];
     } catch (error) {
         console.error('Error fetching all experience:', error);
         throw error;
@@ -200,13 +242,15 @@ export const getSkillsByStudentId = async (studentId) => {
         const data = await apiClientJson(`skill/filter`, {
             method: 'POST',
             body: JSON.stringify({
+                studentId: studentId,
                 page: 0,
-                size: 100,
-                studentId: studentId
+                size: 100
             })
         });
 
-        if (data && data.content) {
+        if (data && data.data) {
+            return data.data;
+        } else if (data && data.content) {
             return data.content;
         } else if (Array.isArray(data)) {
             return data;
@@ -256,6 +300,11 @@ export const filterStudents = async (filterData = {}) => {
             method: 'POST',
             body: JSON.stringify(defaultFilter)
         });
+
+        // Возвращаем data или весь объект с пагинацией
+        if (data && data.data) {
+            return data;
+        }
         return data;
     } catch (error) {
         console.error('[API] Error filtering students:', error);
