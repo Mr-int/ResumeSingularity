@@ -17,7 +17,6 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     }
 
     console.log('СТУДЕНТ ДАННЫЕ:', student);
-    console.log('ID специальности:', student.specialityId);
     console.log('Название специальности:', student.speciality);
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
@@ -74,58 +73,55 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         return courseMap[course] || 'курс';
     };
 
-    const getSkillIcon = (specialityId) => {
-        console.log('Выбор иконки для ID:', specialityId);
-
-        switch (specialityId) {
-            case 1:
-                console.log('Выбрана Java иконка');
-                return javaIcon;
-            case 2:
-                console.log('Выбрана Manager иконка');
-                return managerIcon;
-            case 3:
-                console.log('Выбрана Design иконка');
-                return designIcon;
-            case 4:
-                console.log('Выбрана Design иконка (веб)');
-                return designIcon;
-            case 5:
-                console.log('Выбрана Design иконка (таргет)');
-                return designIcon;
-            case 6:
-                console.log('Выбрана Analytics иконка');
-                return analyticsIcon;
-            case 7:
-                console.log('Выбрана Python иконка');
-                return pythonIcon;
-            case 9:
-                console.log('Выбрана Testing иконка');
-                return testingIcon;
-            default:
-                console.log('Выбрана Java иконка (по умолчанию)');
-                return javaIcon;
+    const getSkillIcon = (specialityName) => {
+        if (!specialityName) {
+            console.log('Нет названия специальности, выбрана Java иконка (по умолчанию)');
+            return javaIcon;
         }
-    };
 
-    const getSpecialityNameById = (specialityId) => {
-        const specialityMap = {
-            1: "Java-разработчик",
-            2: "Менеджер проектов",
-            3: "Графический дизайнер",
-            4: "Веб-разработчик",
-            5: "Таргетолог",
-            6: "Аналитик данных",
-            7: "Python-разработчик",
-            9: "Тестировщик"
-        };
-        return specialityMap[specialityId] || student.speciality || 'Специальность не указана';
+        const specLower = specialityName.toLowerCase();
+        console.log('Выбор иконки для специальности:', specialityName);
+
+        if (specLower.includes('java') || specLower.includes('джава')) {
+            console.log('Выбрана Java иконка');
+            return javaIcon;
+        }
+
+        if (specLower.includes('python') || specLower.includes('питон')) {
+            console.log('Выбрана Python иконка');
+            return pythonIcon;
+        }
+
+        if (specLower.includes('аналитик данных') || specLower.includes('аналитик') || specLower.includes('analytics')) {
+            console.log('Выбрана Analytics иконка');
+            return analyticsIcon;
+        }
+
+        if (specLower.includes('тестировщик') || specLower.includes('qa') || specLower.includes('testing')) {
+            console.log('Выбрана Testing иконка');
+            return testingIcon;
+        }
+
+        if (specLower.includes('менеджер проектов') || specLower.includes('project manager') || specLower.includes('менеджер')) {
+            console.log('Выбрана Manager иконка');
+            return managerIcon;
+        }
+
+        if (specLower.includes('дизайнер') || specLower.includes('design') ||
+            specLower.includes('веб-разработчик') || specLower.includes('web') ||
+            specLower.includes('таргетолог') || specLower.includes('target')) {
+            console.log('Выбрана Design иконка');
+            return designIcon;
+        }
+
+        console.log('Выбрана Java иконка (по умолчанию)');
+        return javaIcon;
     };
 
     const imageSrc = getStudentImageUrl(student);
     const courseImage = getCourseImage(student.course);
-    const skillIcon = getSkillIcon(student.specialityId);
-    const specialityName = getSpecialityNameById(student.specialityId);
+    const skillIcon = getSkillIcon(student.speciality);
+    const specialityName = student.speciality || 'Специальность не указана';
 
     console.log('Выбранная иконка:', skillIcon);
     console.log('Название специальности для отображения:', specialityName);
