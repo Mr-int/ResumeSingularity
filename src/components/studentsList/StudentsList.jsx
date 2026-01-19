@@ -181,63 +181,114 @@ const StudentsList = () => {
 
     const calculateAge = (dateOfBirth) => {
         if (!dateOfBirth) return 0;
-        const birthDate = new Date(dateOfBirth);
-        const today = new Date();
-        let age = today.getFullYear() - birthDate.getFullYear();
-        const monthDiff = today.getMonth() - birthDate.getMonth();
-        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            age--;
+        try {
+            const birthDate = new Date(dateOfBirth);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        } catch (error) {
+            console.error('Error calculating age:', error, dateOfBirth);
+            return 0;
         }
-        return age;
     };
 
     const applyFilters = useCallback((students, filters, query) => {
+        console.log('[FILTERS] Applying filters:', filters);
+        console.log('[FILTERS] Search query:', query);
+        console.log('[FILTERS] Total students:', students.length);
+
+        if (students.length === 0) {
+            console.log('[FILTERS] No students to filter');
+            return [];
+        }
+
         let result = [...students];
 
+        console.log('[FILTERS] First student structure:', students[0]);
+        console.log('[FILTERS] Student keys:', Object.keys(students[0]));
+
         if (filters.course) {
+            console.log('[FILTERS] Filtering by course:', filters.course);
             result = result.filter(student => {
-                const education = student.educationDetails || [];
-                return education.some(edu => edu.course?.toString() === filters.course);
+                const education = student.educationDetails || student.education || [];
+                console.log(`[FILTERS] Student ${student.id} education:`, education);
+
+                const hasCourse = education.some(edu => {
+                    const courseValue = edu.course || edu.courseNumber;
+                    console.log(`[FILTERS] Checking edu.course: ${edu.course}, edu.courseNumber: ${edu.courseNumber}`);
+                    return courseValue?.toString() === filters.course;
+                });
+
+                console.log(`[FILTERS] Student ${student.id} has course ${filters.course}:`, hasCourse);
+                return hasCourse;
             });
+            console.log('[FILTERS] After course filter:', result.length);
         }
 
         if (filters.adult) {
+            console.log('[FILTERS] Filtering by adult:', filters.adult);
             result = result.filter(student => {
                 const age = calculateAge(student.dateOfBirth);
+                console.log(`[FILTERS] Student ${student.id} dateOfBirth: ${student.dateOfBirth}, age: ${age}`);
                 return age >= 18;
             });
+            console.log('[FILTERS] After age filter:', result.length);
         }
 
         if (filters.specialty) {
+            console.log('[FILTERS] Filtering by specialty:', filters.specialty);
             result = result.filter(student => {
                 const skills = student.skills || [];
-                return skills.some(skill =>
-                    skill.name?.toLowerCase().includes(filters.specialty.name.toLowerCase()) ||
-                    (filters.specialty.name === "Веб-разработчик" &&
-                        (skill.name?.toLowerCase().includes("frontend") ||
-                            skill.name?.toLowerCase().includes("backend") ||
-                            skill.name?.toLowerCase().includes("fullstack"))) ||
-                    (filters.specialty.name === "Аналитик данных" &&
-                        skill.name?.toLowerCase().includes("аналитик")) ||
-                    (filters.specialty.name === "Тестировщик" &&
-                        skill.name?.toLowerCase().includes("тестиров"))
+                const experiences = student.experience || [];
+                const education = student.educationDetails || student.education || [];
+
+                const specialtyName = filters.specialty.name.toLowerCase();
+
+                const skillMatch = skills.some(skill =>
+                    skill.name?.toLowerCase().includes(specialtyName) ||
+                    skill.description?.toLowerCase().includes(specialtyName)
                 );
+
+                const experienceMatch = experiences.some(exp =>
+                    exp.position?.toLowerCase().includes(specialtyName) ||
+                    exp.description?.toLowerCase().includes(specialtyName)
+                );
+
+                const educationMatch = education.some(edu =>
+                    edu.specialization?.toLowerCase().includes(specialtyName) ||
+                    edu.degree?.toLowerCase().includes(specialtyName)
+                );
+
+                console.log(`[FILTERS] Student ${student.id} skillMatch: ${skillMatch}, experienceMatch: ${experienceMatch}, educationMatch: ${educationMatch}`);
+
+                return skillMatch || experienceMatch || educationMatch;
             });
+            console.log('[FILTERS] After specialty filter:', result.length);
         }
 
         if (query.trim()) {
             const searchTerm = query.toLowerCase().trim();
+            console.log('[FILTERS] Filtering by search term:', searchTerm);
+
             result = result.filter(student => {
                 const fullName = `${student.firstName || ''} ${student.lastName || ''} ${student.middleName || ''}`.toLowerCase();
-                const skillsText = (student.skills || []).map(skill => skill.name?.toLowerCase() || '').join(' ');
-                const experienceText = (student.experience || []).map(exp =>
-                    `${exp.position || ''} ${exp.company || ''}`.toLowerCase()
-                ).join(' ');
-                const educationText = (student.educationDetails || []).map(edu =>
-                    `${edu.specialization || ''} ${edu.universityName || ''}`.toLowerCase()
+                const skillsText = (student.skills || []).map(skill =>
+                    `${skill.name || ''} ${skill.description || ''}`.toLowerCase()
                 ).join(' ');
 
-                return (
+                const experienceText = (student.experience || []).map(exp =>
+                    `${exp.position || ''} ${exp.company || ''} ${exp.description || ''}`.toLowerCase()
+                ).join(' ');
+
+                const educationText = (student.educationDetails || student.education || []).map(edu =>
+                    `${edu.specialization || ''} ${edu.universityName || edu.institutionName || ''} ${edu.degree || ''}`.toLowerCase()
+                ).join(' ');
+
+                const matches = (
                     fullName.includes(searchTerm) ||
                     (student.email?.toLowerCase() || '').includes(searchTerm) ||
                     (student.phone || '').includes(searchTerm) ||
@@ -245,9 +296,17 @@ const StudentsList = () => {
                     experienceText.includes(searchTerm) ||
                     educationText.includes(searchTerm)
                 );
+
+                if (matches) {
+                    console.log(`[FILTERS] Student ${student.id} matches search term`);
+                }
+
+                return matches;
             });
+            console.log('[FILTERS] After search filter:', result.length);
         }
 
+        console.log('[FILTERS] Final filtered count:', result.length);
         return result;
     }, []);
 
@@ -255,30 +314,17 @@ const StudentsList = () => {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
+                console.log('[API] Fetching all students...');
                 const data = await getAllStudents();
+                console.log('[API] Received data:', data);
 
-                const studentsWithDetails = await Promise.all(
-                    data.map(async (student) => {
-                        try {
-                            const educationDetails = student.educationDetails || [];
-                            const skills = student.skills || [];
-                            const experience = student.experience || [];
+                if (data && data.length > 0) {
+                    console.log('[API] First student data structure:', data[0]);
+                    console.log('[API] Student keys:', Object.keys(data[0]));
+                }
 
-                            return {
-                                ...student,
-                                educationDetails,
-                                skills,
-                                experience
-                            };
-                        } catch (err) {
-                            console.error(`Error processing student ${student.id}:`, err);
-                            return student;
-                        }
-                    })
-                );
-
-                setAllStudents(studentsWithDetails);
-                setFilteredStudents(studentsWithDetails);
+                setAllStudents(data || []);
+                setFilteredStudents(data || []);
             } catch (err) {
                 setError(err.message);
                 console.error('Failed to fetch students:', err);
@@ -319,6 +365,7 @@ const StudentsList = () => {
     }, [isMobile, searchExpanded, filterExpanded]);
 
     useEffect(() => {
+        console.log('[EFFECT] Recalculating filters');
         const filtered = applyFilters(allStudents, currentFilters, searchQuery);
         setFilteredStudents(filtered);
     }, [allStudents, currentFilters, searchQuery, applyFilters]);
@@ -361,18 +408,18 @@ const StudentsList = () => {
     };
 
     const handleApplyFilters = (filters) => {
+        console.log('[ACTION] Applying filters:', filters);
         setCurrentFilters(filters);
-        console.log('Applied filters:', filters);
     };
 
     const handleResetFilters = () => {
+        console.log('[ACTION] Resetting filters');
         setCurrentFilters({
             course: null,
             adult: false,
             specialty: null
         });
         setSearchQuery("");
-        console.log('Filters reset');
     };
 
     const clearSearch = () => {
