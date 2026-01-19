@@ -17,7 +17,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [recruiterId, setRecruiterId] = useState(null);
     const [telegramBotLink, setTelegramBotLink] = useState('');
 
     const handleChange = (e) => {
@@ -95,9 +94,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 body: JSON.stringify(requestData)
             });
 
-            if (response && response.id) {
-                setRecruiterId(response.id);
-                const token = generateTelegramToken(response.id);
+            if (response && response.recruiterId) {
+                const token = generateTelegramToken(response.recruiterId);
                 const botLink = `https://t.me/singularity_resume_robot?start=${token}`;
                 setTelegramBotLink(botLink);
             }
