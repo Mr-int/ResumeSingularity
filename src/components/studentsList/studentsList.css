@@ -358,6 +358,14 @@
     overflow-y: auto;
     padding: 24px;
     animation: slideUp 0.3s ease;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.filters-container::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 @keyframes slideUp {
@@ -500,7 +508,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-.specialty-select:hover .specialty-dropdown {
+.specialty-dropdown.show {
     display: block;
     animation: fadeIn 0.3s ease;
 }

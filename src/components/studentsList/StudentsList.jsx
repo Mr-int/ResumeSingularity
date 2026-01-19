@@ -16,9 +16,12 @@ const StudentsList = () => {
     const [selectedCourse, setSelectedCourse] = useState("1");
     const [isAdult, setIsAdult] = useState(false);
     const [selectedSpecialty, setSelectedSpecialty] = useState(null);
+    const [showSpecialtyDropdown, setShowSpecialtyDropdown] = useState(false);
     const searchRef = useRef(null);
     const filterRef = useRef(null);
     const filtersRef = useRef(null);
+    const specialtyBtnRef = useRef(null);
+    const specialtyDropdownRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -54,14 +57,27 @@ const StudentsList = () => {
                     setFilterExpanded(false);
                 }
             }
+
             if (showFilters && filtersRef.current && !filtersRef.current.contains(event.target) && !filterRef.current.contains(event.target)) {
                 setShowFilters(false);
+            }
+
+            if (showSpecialtyDropdown &&
+                specialtyBtnRef.current &&
+                !specialtyBtnRef.current.contains(event.target) &&
+                specialtyDropdownRef.current &&
+                !specialtyDropdownRef.current.contains(event.target)) {
+                setShowSpecialtyDropdown(false);
             }
         };
 
         const handleEscape = (event) => {
-            if (event.key === 'Escape' && showFilters) {
-                setShowFilters(false);
+            if (event.key === 'Escape') {
+                if (showSpecialtyDropdown) {
+                    setShowSpecialtyDropdown(false);
+                } else if (showFilters) {
+                    setShowFilters(false);
+                }
             }
         };
 
@@ -74,7 +90,7 @@ const StudentsList = () => {
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('keydown', handleEscape);
         };
-    }, [isMobile, searchExpanded, filterExpanded, showFilters]);
+    }, [isMobile, searchExpanded, filterExpanded, showFilters, showSpecialtyDropdown]);
 
     const handleSearchClick = () => {
         if (isMobile) {
@@ -93,6 +109,7 @@ const StudentsList = () => {
             }
         }
         setShowFilters(!showFilters);
+        setShowSpecialtyDropdown(false);
     };
 
     const handleCourseSelect = (course) => {
@@ -101,6 +118,12 @@ const StudentsList = () => {
 
     const handleSpecialtySelect = (specialty) => {
         setSelectedSpecialty(specialty);
+        setShowSpecialtyDropdown(false);
+    };
+
+    const handleSpecialtyClick = (e) => {
+        e.stopPropagation();
+        setShowSpecialtyDropdown(!showSpecialtyDropdown);
     };
 
     const handleApplyFilters = () => {
@@ -110,12 +133,14 @@ const StudentsList = () => {
             specialty: selectedSpecialty
         });
         setShowFilters(false);
+        setShowSpecialtyDropdown(false);
     };
 
     const handleResetFilters = () => {
         setSelectedCourse("1");
         setIsAdult(false);
         setSelectedSpecialty(null);
+        setShowSpecialtyDropdown(false);
         setShowFilters(false);
     };
 
@@ -216,10 +241,17 @@ const StudentsList = () => {
                         <div className="filter-section">
                             <h3 className="section-title">Специальность</h3>
                             <div className="specialty-select">
-                                <button className="specialty-btn">
+                                <button
+                                    ref={specialtyBtnRef}
+                                    className={`specialty-btn ${showSpecialtyDropdown ? 'active' : ''}`}
+                                    onClick={handleSpecialtyClick}
+                                >
                                     {selectedSpecialty ? selectedSpecialty.name : "Выберите специальность"}
                                 </button>
-                                <div className="specialty-dropdown">
+                                <div
+                                    ref={specialtyDropdownRef}
+                                    className={`specialty-dropdown ${showSpecialtyDropdown ? 'show' : ''}`}
+                                >
                                     {[
                                         { id: "1", name: "Java-разработчик" },
                                         { id: "2", name: "Менеджер проектов" },
