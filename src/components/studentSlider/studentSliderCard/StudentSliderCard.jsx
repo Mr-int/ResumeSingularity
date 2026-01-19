@@ -72,26 +72,44 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         switch (specialityId) {
             case 1: // Java-разработчик
                 return javaIcon;
+            case 2: // Менеджер проектов
+                return designIcon; // Временное решение, можно создать manager.png
             case 3: // Графический дизайнер
                 return designIcon;
             case 4: // Веб-разработчик
-                return designIcon; // Можно использовать designIcon или создать отдельную для веба
+                return designIcon; // Можно создать web.png
+            case 5: // Таргетолог
+                return designIcon; // Временное решение
             case 6: // Аналитик данных
                 return pythonIcon;
             case 7: // Python-разработчик
                 return pythonIcon;
-            case 2: // Менеджер проектов
-                return designIcon; // Временное решение - используем designIcon
             case 9: // Тестировщик
-                return javaIcon; // Временное решение - используем javaIcon
+                return javaIcon; // Временное решение, можно создать qa.png
             default:
                 return javaIcon; // Иконка по умолчанию
         }
     };
 
+    const getSpecialityNameById = (specialityId) => {
+        // Маппинг ID специальностей на названия
+        const specialityMap = {
+            1: "Java-разработчик",
+            2: "Менеджер проектов",
+            3: "Графический дизайнер",
+            4: "Веб-разработчик",
+            5: "Таргетолог",
+            6: "Аналитик данных",
+            7: "Python-разработчик",
+            9: "Тестировщик"
+        };
+        return specialityMap[specialityId] || student.speciality || 'Специальность не указана';
+    };
+
     const imageSrc = getStudentImageUrl(student);
     const courseImage = getCourseImage(student.course);
     const skillIcon = getSkillIcon(student.specialityId);
+    const specialityName = getSpecialityNameById(student.specialityId);
 
     const handleClick = (e) => {
         if (onClick) {
@@ -113,11 +131,10 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                     {isActive && <span>{getCourseText(student.course)}</span>}
                 </div>
 
-                {student.specialityId && (
-                    <div className="student-slider-card__extraIco">
-                        <img src={skillIcon} alt={`Иконка специальности: ${student.speciality || 'специальность'}`}/>
-                    </div>
-                )}
+                {/* ВСЕГДА показываем иконку специальности */}
+                <div className="student-slider-card__extraIco">
+                    <img src={skillIcon} alt={`Иконка специальности: ${specialityName}`}/>
+                </div>
             </div>
 
             <div className="student-slider-card__text">
@@ -126,7 +143,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                 </div>
 
                 <div className="student-slider-card__job">
-                    {student.speciality || 'Специальность не указана'}
+                    {specialityName}
                 </div>
             </div>
         </div>
