@@ -179,19 +179,27 @@ const StudentsList = () => {
     const filterRef = useRef(null);
     const searchInputRef = useRef(null);
 
-    const calculateAge = (dateOfBirth) => {
-        if (!dateOfBirth) return 0;
+    const calculateAge = (birthDate) => {
+        if (!birthDate) return 0;
         try {
-            const birthDate = new Date(dateOfBirth);
+            const birthDateObj = new Date(birthDate);
             const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+
+            if (isNaN(birthDateObj.getTime())) {
+                console.error('Invalid birthDate:', birthDate);
+                return 0;
+            }
+
+            let age = today.getFullYear() - birthDateObj.getFullYear();
+            const monthDiff = today.getMonth() - birthDateObj.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
                 age--;
             }
+
             return age;
         } catch (error) {
-            console.error('Error calculating age:', error, dateOfBirth);
+            console.error('Error calculating age:', error, birthDate);
             return 0;
         }
     };
@@ -208,84 +216,68 @@ const StudentsList = () => {
 
         let result = [...students];
 
-        console.log('[FILTERS] First student structure:', students[0]);
-        console.log('[FILTERS] Student keys:', Object.keys(students[0]));
-
+        // Фильтрация по курсу
         if (filters.course) {
             console.log('[FILTERS] Filtering by course:', filters.course);
             result = result.filter(student => {
-                const education = student.educationDetails || student.education || [];
-                console.log(`[FILTERS] Student ${student.id} education:`, education);
-
-                const hasCourse = education.some(edu => {
-                    const courseValue = edu.course || edu.courseNumber;
-                    console.log(`[FILTERS] Checking edu.course: ${edu.course}, edu.courseNumber: ${edu.courseNumber}`);
-                    return courseValue?.toString() === filters.course;
-                });
-
-                console.log(`[FILTERS] Student ${student.id} has course ${filters.course}:`, hasCourse);
+                const studentCourse = student.course?.toString();
+                const hasCourse = studentCourse === filters.course;
+                console.log(`[FILTERS] Student ${student.firstName} course: ${studentCourse}, matches: ${hasCourse}`);
                 return hasCourse;
             });
             console.log('[FILTERS] After course filter:', result.length);
         }
 
+        // Фильтрация по возрасту
         if (filters.adult) {
             console.log('[FILTERS] Filtering by adult:', filters.adult);
             result = result.filter(student => {
-                const age = calculateAge(student.dateOfBirth);
-                console.log(`[FILTERS] Student ${student.id} dateOfBirth: ${student.dateOfBirth}, age: ${age}`);
-                return age >= 18;
+                const age = calculateAge(student.birthDate);
+                const isAdult = age >= 18;
+                console.log(`[FILTERS] Student ${student.firstName} birthDate: ${student.birthDate}, age: ${age}, isAdult: ${isAdult}`);
+                return isAdult;
             });
             console.log('[FILTERS] After age filter:', result.length);
         }
 
+        // Фильтрация по специальности
         if (filters.specialty) {
             console.log('[FILTERS] Filtering by specialty:', filters.specialty);
+            const specialtyName = filters.specialty.name.toLowerCase();
+
             result = result.filter(student => {
+                // Проверка поля speciality
+                const studentSpecialty = student.speciality?.toLowerCase() || '';
+                const specialtyMatch = studentSpecialty.includes(specialtyName);
+
+                // Проверка навыков
                 const skills = student.skills || [];
-                const experiences = student.experience || [];
-                const education = student.educationDetails || student.education || [];
+                const skillsMatch = skills.some(skill => {
+                    const skillName = skill.name?.toLowerCase() || '';
+                    const skillDescription = skill.description?.toLowerCase() || '';
+                    return skillName.includes(specialtyName) || skillDescription.includes(specialtyName);
+                });
 
-                const specialtyName = filters.specialty.name.toLowerCase();
+                // Проверка bio
+                const bioMatch = (student.bio?.toLowerCase() || '').includes(specialtyName);
 
-                const skillMatch = skills.some(skill =>
-                    skill.name?.toLowerCase().includes(specialtyName) ||
-                    skill.description?.toLowerCase().includes(specialtyName)
-                );
+                const matches = specialtyMatch || skillsMatch || bioMatch;
+                console.log(`[FILTERS] Student ${student.firstName}: specialty="${student.speciality}", matches=${matches}`);
 
-                const experienceMatch = experiences.some(exp =>
-                    exp.position?.toLowerCase().includes(specialtyName) ||
-                    exp.description?.toLowerCase().includes(specialtyName)
-                );
-
-                const educationMatch = education.some(edu =>
-                    edu.specialization?.toLowerCase().includes(specialtyName) ||
-                    edu.degree?.toLowerCase().includes(specialtyName)
-                );
-
-                console.log(`[FILTERS] Student ${student.id} skillMatch: ${skillMatch}, experienceMatch: ${experienceMatch}, educationMatch: ${educationMatch}`);
-
-                return skillMatch || experienceMatch || educationMatch;
+                return matches;
             });
             console.log('[FILTERS] After specialty filter:', result.length);
         }
 
+        // Поиск по запросу
         if (query.trim()) {
             const searchTerm = query.toLowerCase().trim();
             console.log('[FILTERS] Filtering by search term:', searchTerm);
 
             result = result.filter(student => {
-                const fullName = `${student.firstName || ''} ${student.lastName || ''} ${student.middleName || ''}`.toLowerCase();
+                const fullName = `${student.firstName || ''} ${student.lastName || ''}`.toLowerCase();
                 const skillsText = (student.skills || []).map(skill =>
                     `${skill.name || ''} ${skill.description || ''}`.toLowerCase()
-                ).join(' ');
-
-                const experienceText = (student.experience || []).map(exp =>
-                    `${exp.position || ''} ${exp.company || ''} ${exp.description || ''}`.toLowerCase()
-                ).join(' ');
-
-                const educationText = (student.educationDetails || student.education || []).map(edu =>
-                    `${edu.specialization || ''} ${edu.universityName || edu.institutionName || ''} ${edu.degree || ''}`.toLowerCase()
                 ).join(' ');
 
                 const matches = (
@@ -293,13 +285,10 @@ const StudentsList = () => {
                     (student.email?.toLowerCase() || '').includes(searchTerm) ||
                     (student.phone || '').includes(searchTerm) ||
                     skillsText.includes(searchTerm) ||
-                    experienceText.includes(searchTerm) ||
-                    educationText.includes(searchTerm)
+                    (student.bio?.toLowerCase() || '').includes(searchTerm) ||
+                    (student.speciality?.toLowerCase() || '').includes(searchTerm) ||
+                    (student.city?.toLowerCase() || '').includes(searchTerm)
                 );
-
-                if (matches) {
-                    console.log(`[FILTERS] Student ${student.id} matches search term`);
-                }
 
                 return matches;
             });
