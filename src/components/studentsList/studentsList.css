@@ -396,6 +396,7 @@
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 16px;
+    font-family: StratosSemiLight;
 }
 
 .course-buttons {
@@ -416,6 +417,7 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
+    font-family: StratosSemiLight;
 }
 
 .course-btn:hover {
@@ -465,6 +467,7 @@
     color: white;
     font-size: 16px;
     user-select: none;
+    font-family: StratosSemiLight;
 }
 
 .specialty-select {
@@ -486,6 +489,7 @@
     position: relative;
     transition: transform 0.2s;
     outline: none;
+    font-family: StratosSemiLight;
 }
 
 .specialty-btn:focus {
