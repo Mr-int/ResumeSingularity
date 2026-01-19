@@ -570,6 +570,7 @@
     border-radius: 6px;
     transition: background-color 0.2s;
     font-size: 15px;
+    font-family: StratosSemiLight;
 }
 
 .specialty-option:hover {
@@ -597,7 +598,7 @@
 .action-btn {
     flex: 1;
     padding: 16px;
-    border-radius: 8px;
+    border-radius: 50px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
@@ -606,7 +607,7 @@
 }
 
 .apply-btn {
-    background-color: white;
+    background-image: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     color: black;
 }
 
@@ -618,7 +619,7 @@
 .reset-btn {
     background-color: transparent;
     color: white;
-    border: 1px solid #525252;
+    border: 2px solid #525252;
 }
 
 .reset-btn:hover {

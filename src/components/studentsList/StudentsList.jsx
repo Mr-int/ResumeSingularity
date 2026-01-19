@@ -147,7 +147,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
 
                 <div className="action-buttons">
                     <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApply(); setShowFilters(false); }}>
-                        Применить
+                        Принять
                     </button>
                     <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleReset(); setShowFilters(false); }}>
                         Сбросить
