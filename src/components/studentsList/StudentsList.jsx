@@ -4,7 +4,7 @@ import "./studentsList.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
-import { getAllStudents } from "../../services/studentApi.js";
+import { filterStudents } from "../../services/studentApi.js";
 
 const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters }) => {
     const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || null);
@@ -169,7 +169,6 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
 
 const StudentsList = () => {
     const [allStudents, setAllStudents] = useState([]);
-    const [filteredStudents, setFilteredStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchExpanded, setSearchExpanded] = useState(false);
@@ -187,171 +186,32 @@ const StudentsList = () => {
     const filterRef = useRef(null);
     const searchInputRef = useRef(null);
 
-    const calculateAge = (birthDate) => {
-        if (!birthDate) return 0;
+    const fetchFilteredStudents = useCallback(async (filters, query) => {
         try {
-            const birthDateObj = new Date(birthDate);
-            const today = new Date();
+            setLoading(true);
 
-            if (isNaN(birthDateObj.getTime())) {
-                console.error('Invalid birthDate:', birthDate);
-                return 0;
-            }
-
-            let age = today.getFullYear() - birthDateObj.getFullYear();
-            const monthDiff = today.getMonth() - birthDateObj.getMonth();
-
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDateObj.getDate())) {
-                age--;
-            }
-
-            return age;
-        } catch (error) {
-            console.error('Error calculating age:', error, birthDate);
-            return 0;
-        }
-    };
-
-    const applyFilters = useCallback((students, filters, query) => {
-        console.log('[FILTERS] Applying filters:', filters);
-        console.log('[FILTERS] Search query:', query);
-        console.log('[FILTERS] Total students:', students.length);
-
-        if (students.length === 0) {
-            console.log('[FILTERS] No students to filter');
-            return [];
-        }
-
-        // Функция для конвертации курса
-        const convertCourseToNumber = (course) => {
-            if (!course) return null;
-
-            const courseMap = {
-                'FIRST': '1',
-                'SECOND': '2',
-                'THIRD': '3',
-                'FOURTH': '4',
-                '1': '1',
-                '2': '2',
-                '3': '3',
-                '4': '4'
+            const filterData = {
+                findString: query.trim() || null,
+                course: filters.course ? [filters.course] : [],
+                bornAfter: filters.adult ? "2006-01-01" : null,
+                specialitiesIds: filters.specialty ? [filters.specialty.id] : []
             };
 
-            return courseMap[course.toString().toUpperCase()] || course;
-        };
+            console.log('[API] Sending filter request:', filterData);
+            const data = await filterStudents(filterData);
+            console.log('[API] Received filtered students:', data);
 
-        let result = [...students];
-
-        // Фильтрация по курсу (только если выбран курс)
-        if (filters.course) {
-            console.log('[FILTERS] Filtering by course:', filters.course);
-            result = result.filter(student => {
-                const studentCourse = convertCourseToNumber(student.course);
-                const filterCourse = filters.course;
-
-                const hasCourse = studentCourse === filterCourse;
-                console.log(`[FILTERS] Student ${student.firstName} course: ${student.course} -> ${studentCourse}, filter: ${filterCourse}, matches: ${hasCourse}`);
-                return hasCourse;
-            });
-            console.log('[FILTERS] After course filter:', result.length);
+            return data || [];
+        } catch (err) {
+            console.error('Failed to fetch filtered students:', err);
+            setError(err.message);
+            return [];
+        } finally {
+            setLoading(false);
         }
-
-        // Фильтрация по возрасту
-        if (filters.adult) {
-            console.log('[FILTERS] Filtering by adult:', filters.adult);
-            result = result.filter(student => {
-                const age = calculateAge(student.birthDate);
-                const isAdult = age >= 18;
-                console.log(`[FILTERS] Student ${student.firstName} birthDate: ${student.birthDate}, age: ${age}, isAdult: ${isAdult}`);
-                return isAdult;
-            });
-            console.log('[FILTERS] After age filter:', result.length);
-        }
-
-        // Фильтрация по специальности
-        if (filters.specialty) {
-            console.log('[FILTERS] Filtering by specialty:', filters.specialty);
-            const specialtyName = filters.specialty.name.toLowerCase();
-
-            result = result.filter(student => {
-                // Проверка поля speciality
-                const studentSpecialty = student.speciality?.toLowerCase() || '';
-                const specialtyMatch = studentSpecialty.includes(specialtyName);
-
-                // Проверка навыков
-                const skills = student.skills || [];
-                const skillsMatch = skills.some(skill => {
-                    const skillName = skill.name?.toLowerCase() || '';
-                    const skillDescription = skill.description?.toLowerCase() || '';
-                    return skillName.includes(specialtyName) || skillDescription.includes(specialtyName);
-                });
-
-                // Проверка bio
-                const bioMatch = (student.bio?.toLowerCase() || '').includes(specialtyName);
-
-                const matches = specialtyMatch || skillsMatch || bioMatch;
-                console.log(`[FILTERS] Student ${student.firstName}: specialty="${student.speciality}", matches=${matches}`);
-
-                return matches;
-            });
-            console.log('[FILTERS] After specialty filter:', result.length);
-        }
-
-        // Поиск по запросу
-        if (query.trim()) {
-            const searchTerm = query.toLowerCase().trim();
-            console.log('[FILTERS] Filtering by search term:', searchTerm);
-
-            result = result.filter(student => {
-                const fullName = `${student.firstName || ''} ${student.lastName || ''}`.toLowerCase();
-                const skillsText = (student.skills || []).map(skill =>
-                    `${skill.name || ''} ${skill.description || ''}`.toLowerCase()
-                ).join(' ');
-
-                const matches = (
-                    fullName.includes(searchTerm) ||
-                    (student.email?.toLowerCase() || '').includes(searchTerm) ||
-                    (student.phone || '').includes(searchTerm) ||
-                    skillsText.includes(searchTerm) ||
-                    (student.bio?.toLowerCase() || '').includes(searchTerm) ||
-                    (student.speciality?.toLowerCase() || '').includes(searchTerm) ||
-                    (student.city?.toLowerCase() || '').includes(searchTerm)
-                );
-
-                return matches;
-            });
-            console.log('[FILTERS] After search filter:', result.length);
-        }
-
-        console.log('[FILTERS] Final filtered count:', result.length);
-        return result;
     }, []);
 
     useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                setLoading(true);
-                console.log('[API] Fetching all students...');
-                const data = await getAllStudents();
-                console.log('[API] Received data:', data);
-
-                if (data && data.length > 0) {
-                    console.log('[API] First student data structure:', data[0]);
-                    console.log('[API] Student keys:', Object.keys(data[0]));
-                }
-
-                setAllStudents(data || []);
-                setFilteredStudents(data || []);
-            } catch (err) {
-                setError(err.message);
-                console.error('Failed to fetch students:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStudents();
-
         const handleResize = () => {
             const mobile = window.innerWidth <= 768;
             setIsMobile(mobile);
@@ -372,6 +232,20 @@ const StudentsList = () => {
             }
         };
 
+        const initialFetch = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchFilteredStudents({}, "");
+                setAllStudents(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initialFetch();
+
         window.addEventListener('resize', handleResize);
         document.addEventListener('mousedown', handleClickOutside);
 
@@ -379,13 +253,20 @@ const StudentsList = () => {
             window.removeEventListener('resize', handleResize);
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isMobile, searchExpanded, filterExpanded]);
+    }, [isMobile, searchExpanded, filterExpanded, fetchFilteredStudents]);
 
     useEffect(() => {
-        console.log('[EFFECT] Recalculating filters');
-        const filtered = applyFilters(allStudents, currentFilters, searchQuery);
-        setFilteredStudents(filtered);
-    }, [allStudents, currentFilters, searchQuery, applyFilters]);
+        const applyFilters = async () => {
+            const data = await fetchFilteredStudents(currentFilters, searchQuery);
+            setAllStudents(data);
+        };
+
+        const timeoutId = setTimeout(() => {
+            applyFilters();
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [currentFilters, searchQuery, fetchFilteredStudents]);
 
     const handleSearchClick = () => {
         if (isMobile) {
@@ -561,8 +442,8 @@ const StudentsList = () => {
                 </header>
 
                 <div className="studentsList__cardsWrapper">
-                    {filteredStudents.length > 0 ? (
-                        filteredStudents.map((student) => (
+                    {allStudents.length > 0 ? (
+                        allStudents.map((student) => (
                             <StudentsListCard key={student.id} student={student} />
                         ))
                     ) : (
