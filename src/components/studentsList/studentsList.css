@@ -608,7 +608,7 @@
 
 .apply-btn {
     background-image: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    color: black;
+    color: #fff;
 }
 
 .apply-btn:hover {
@@ -619,7 +619,7 @@
 .reset-btn {
     background-color: transparent;
     color: white;
-    border: 2px solid #525252;
+    border: 2px solid #fff;
 }
 
 .reset-btn:hover {
