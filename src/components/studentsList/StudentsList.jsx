@@ -16,7 +16,8 @@ const StudentsList = () => {
     const [selectedCourse, setSelectedCourse] = useState("1");
     const [isAdult, setIsAdult] = useState(false);
     const [selectedSpecialty, setSelectedSpecialty] = useState(null);
-    const [showSpecialtyDropdown, setShowSpecialtyDropdown] = useState(false);
+    const [specialtyDropdownOpen, setSpecialtyDropdownOpen] = useState(false);
+
     const searchRef = useRef(null);
     const filterRef = useRef(null);
     const filtersRef = useRef(null);
@@ -63,22 +64,22 @@ const StudentsList = () => {
                 !filtersRef.current.contains(event.target) &&
                 !filterRef.current.contains(event.target)) {
                 setShowFilters(false);
-                setShowSpecialtyDropdown(false);
+                setSpecialtyDropdownOpen(false);
             }
 
-            if (showSpecialtyDropdown &&
+            if (specialtyDropdownOpen &&
                 specialtyBtnRef.current &&
                 !specialtyBtnRef.current.contains(event.target) &&
                 specialtyDropdownRef.current &&
                 !specialtyDropdownRef.current.contains(event.target)) {
-                setShowSpecialtyDropdown(false);
+                setSpecialtyDropdownOpen(false);
             }
         };
 
         const handleEscape = (event) => {
             if (event.key === 'Escape') {
-                if (showSpecialtyDropdown) {
-                    setShowSpecialtyDropdown(false);
+                if (specialtyDropdownOpen) {
+                    setSpecialtyDropdownOpen(false);
                 } else if (showFilters) {
                     setShowFilters(false);
                 }
@@ -94,7 +95,7 @@ const StudentsList = () => {
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('keydown', handleEscape);
         };
-    }, [isMobile, searchExpanded, filterExpanded, showFilters, showSpecialtyDropdown]);
+    }, [isMobile, searchExpanded, filterExpanded, showFilters, specialtyDropdownOpen]);
 
     const handleSearchClick = () => {
         if (isMobile) {
@@ -113,7 +114,7 @@ const StudentsList = () => {
             }
         }
         setShowFilters(!showFilters);
-        setShowSpecialtyDropdown(false);
+        setSpecialtyDropdownOpen(false);
     };
 
     const handleCourseSelect = (course) => {
@@ -122,19 +123,13 @@ const StudentsList = () => {
 
     const handleSpecialtySelect = (specialty) => {
         setSelectedSpecialty(specialty);
-        setShowSpecialtyDropdown(false);
+        setSpecialtyDropdownOpen(false);
     };
 
     const handleSpecialtyClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        setShowSpecialtyDropdown(!showSpecialtyDropdown);
-    };
-
-    const handleSpecialtyOptionClick = (e, specialty) => {
-        e.preventDefault();
-        e.stopPropagation();
-        handleSpecialtySelect(specialty);
+        setSpecialtyDropdownOpen(!specialtyDropdownOpen);
     };
 
     const handleApplyFilters = () => {
@@ -144,20 +139,26 @@ const StudentsList = () => {
             specialty: selectedSpecialty
         });
         setShowFilters(false);
-        setShowSpecialtyDropdown(false);
+        setSpecialtyDropdownOpen(false);
     };
 
     const handleResetFilters = () => {
         setSelectedCourse("1");
         setIsAdult(false);
         setSelectedSpecialty(null);
-        setShowSpecialtyDropdown(false);
+        setSpecialtyDropdownOpen(false);
         setShowFilters(false);
     };
 
-    const handleFiltersContainerClick = (e) => {
-        e.stopPropagation();
-    };
+    const specialties = [
+        { id: "1", name: "Java-разработчик" },
+        { id: "2", name: "Менеджер проектов" },
+        { id: "3", name: "Графический дизайнер" },
+        { id: "4", name: "Веб-разработчик" },
+        { id: "7", name: "Python-разработчик" },
+        { id: "6", name: "Аналитик данных" },
+        { id: "9", name: "Тестировщик" }
+    ];
 
     if (loading) {
         return (
@@ -222,83 +223,76 @@ const StudentsList = () => {
                 </div>
             </div>
 
-            {showFilters && (
-                <div className="filters-overlay" onClick={() => { setShowFilters(false); setShowSpecialtyDropdown(false); }}>
-                    <div className="filters-container" ref={filtersRef} onClick={handleFiltersContainerClick}>
-                        <div className="filter-section">
-                            <h3 className="section-title">Курс</h3>
-                            <div className="course-buttons">
-                                {["1", "2", "3", "4"].map((course) => (
-                                    <button
-                                        key={course}
-                                        className={`course-btn ${selectedCourse === course ? 'active' : ''}`}
-                                        onClick={(e) => { e.stopPropagation(); handleCourseSelect(course); }}
+            <div
+                className={`filters-overlay ${showFilters ? 'visible' : ''}`}
+                onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); }}
+            >
+                <div className="filters-container" ref={filtersRef} onClick={(e) => e.stopPropagation()}>
+                    <div className="filter-section">
+                        <h3 className="section-title">Курс</h3>
+                        <div className="course-buttons">
+                            {["1", "2", "3", "4"].map((course) => (
+                                <button
+                                    key={course}
+                                    className={`course-btn ${selectedCourse === course ? 'active' : ''}`}
+                                    onClick={(e) => { e.stopPropagation(); handleCourseSelect(course); }}
+                                >
+                                    {course}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="filter-section">
+                        <h3 className="section-title">Возраст</h3>
+                        <div
+                            className="checkbox-container"
+                            onClick={(e) => { e.stopPropagation(); setIsAdult(!isAdult); }}
+                        >
+                            <div className={`custom-checkbox ${isAdult ? 'checked' : ''}`}>
+                                <span className="checkbox-tick">✓</span>
+                            </div>
+                            <span className="checkbox-label">Старше 18 лет</span>
+                        </div>
+                    </div>
+
+                    <div className="filter-section">
+                        <h3 className="section-title">Специальность</h3>
+                        <div className="specialty-select">
+                            <button
+                                ref={specialtyBtnRef}
+                                className={`specialty-btn ${specialtyDropdownOpen ? 'active' : ''}`}
+                                onClick={handleSpecialtyClick}
+                            >
+                                {selectedSpecialty ? selectedSpecialty.name : "Выберите специальность"}
+                            </button>
+                            <div
+                                ref={specialtyDropdownRef}
+                                className={`specialty-dropdown ${specialtyDropdownOpen ? 'open' : ''}`}
+                            >
+                                {specialties.map((specialty) => (
+                                    <div
+                                        key={specialty.id}
+                                        className={`specialty-option ${selectedSpecialty && selectedSpecialty.id === specialty.id ? 'selected' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); handleSpecialtySelect(specialty); }}
                                     >
-                                        {course}
-                                    </button>
+                                        {specialty.name}
+                                    </div>
                                 ))}
                             </div>
                         </div>
+                    </div>
 
-                        <div className="filter-section">
-                            <h3 className="section-title">Возраст</h3>
-                            <div
-                                className="checkbox-container"
-                                onClick={(e) => { e.stopPropagation(); setIsAdult(!isAdult); }}
-                            >
-                                <div className={`custom-checkbox ${isAdult ? 'checked' : ''}`}>
-                                    <span className="checkbox-tick">✓</span>
-                                </div>
-                                <span className="checkbox-label">Старше 18 лет</span>
-                            </div>
-                        </div>
-
-                        <div className="filter-section">
-                            <h3 className="section-title">Специальность</h3>
-                            <div className="specialty-select">
-                                <button
-                                    ref={specialtyBtnRef}
-                                    className={`specialty-btn ${showSpecialtyDropdown ? 'active' : ''}`}
-                                    onClick={handleSpecialtyClick}
-                                >
-                                    {selectedSpecialty ? selectedSpecialty.name : "Выберите специальность"}
-                                </button>
-                                <div
-                                    ref={specialtyDropdownRef}
-                                    className={`specialty-dropdown ${showSpecialtyDropdown ? 'show' : ''}`}
-                                >
-                                    {[
-                                        { id: "1", name: "Java-разработчик" },
-                                        { id: "2", name: "Менеджер проектов" },
-                                        { id: "3", name: "Графический дизайнер" },
-                                        { id: "4", name: "Веб-разработчик" },
-                                        { id: "7", name: "Python-разработчик" },
-                                        { id: "6", name: "Аналитик данных" },
-                                        { id: "9", name: "Тестировщик" }
-                                    ].map((specialty) => (
-                                        <div
-                                            key={specialty.id}
-                                            className={`specialty-option ${selectedSpecialty && selectedSpecialty.id === specialty.id ? 'selected' : ''}`}
-                                            onClick={(e) => handleSpecialtyOptionClick(e, specialty)}
-                                        >
-                                            {specialty.name}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="action-buttons">
-                            <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApplyFilters(); }}>
-                                Применить
-                            </button>
-                            <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleResetFilters(); }}>
-                                Сбросить
-                            </button>
-                        </div>
+                    <div className="action-buttons">
+                        <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApplyFilters(); }}>
+                            Применить
+                        </button>
+                        <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleResetFilters(); }}>
+                            Сбросить
+                        </button>
                     </div>
                 </div>
-            )}
+            </div>
         </section>
     )
 }
