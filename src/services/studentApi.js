@@ -334,17 +334,29 @@ export const filterStudents = async (filterData = {}) => {
             ...filterData
         };
 
+        console.log('[API] Filtering students with data:', defaultFilter);
+
         const data = await apiClientJson('student/filter', {
             method: 'POST',
             body: JSON.stringify(defaultFilter)
         });
 
+        console.log('[API] Filter response:', data);
+
         if (data && data.data) {
+            return data.data;
+        } else if (data && data.content) {
+            return data.content;
+        } else if (Array.isArray(data)) {
             return data;
         }
-        return data;
+
+        return [];
     } catch (error) {
         console.error('[API] Error filtering students:', error);
+        if (error.requiresAuth) {
+            throw error;
+        }
         throw error;
     }
 };

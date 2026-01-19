@@ -62,6 +62,13 @@
     padding: 0 55px;
     color: #fff;
     transition: all 0.3s ease;
+    font-family: StratosSemiLight;
+}
+
+.studentsList__search:focus {
+    outline: none;
+    border-color: rgba(128, 172, 255, 0.7);
+    box-shadow: 0 0 10px rgba(128, 172, 255, 0.3);
 }
 
 .studentsList__search::placeholder {
@@ -95,6 +102,24 @@
     transition: all 0.3s ease;
     letter-spacing: 1px;
     margin-left: auto;
+    position: relative;
+    font-family: StratosSemiLight;
+}
+
+.studentsList__filter.has-filters {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border-color: transparent;
+}
+
+.filter-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    background-color: #ff4444;
+    border-radius: 50%;
+    border: 2px solid #000;
 }
 
 .studentsList__cardsWrapper {
@@ -220,6 +245,11 @@
         padding: 0 40px;
         font-size: 16px;
         width: 100%;
+    }
+
+    .studentsList__search-wrapper.expanded .studentsList__search:focus {
+        border-color: #fff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
     .studentsList__search-icon {
@@ -604,6 +634,7 @@
     cursor: pointer;
     border: none;
     transition: all 0.2s;
+    font-family: StratosSemiLight;
 }
 
 .apply-btn {
@@ -612,8 +643,8 @@
 }
 
 .apply-btn:hover {
-    background-color: #f0f0f0;
     transform: translateY(-2px);
+    opacity: 0.9;
 }
 
 .reset-btn {
@@ -665,5 +696,87 @@
     .action-btn {
         padding: 14px;
         font-size: 14px;
+    }
+}
+
+.active-filters {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.active-filter-tag {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: StratosSemiLight;
+}
+
+.clear-all-filters {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: StratosSemiLight;
+    transition: all 0.2s;
+}
+
+.clear-all-filters:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.no-results-message {
+    color: #fff;
+    text-align: center;
+    font-size: 18px;
+    padding: 40px;
+    font-family: StratosSemiLight;
+    opacity: 0.8;
+    width: 100%;
+}
+
+.clear-search {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #fff;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.clear-search:hover {
+    opacity: 1;
+}
+
+.studentsList__search-wrapper.expanded .clear-search {
+    right: 10px;
+}
+
+@media (max-width: 768px) {
+    .active-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .active-filter-tag, .clear-all-filters {
+        font-size: 12px;
     }
 }

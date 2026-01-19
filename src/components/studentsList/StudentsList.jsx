@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import ReactDOM from "react-dom";
 import "./studentsList.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
@@ -147,7 +147,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
 
                 <div className="action-buttons">
                     <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApply(); setShowFilters(false); }}>
-                        Принять
+                        Применить
                     </button>
                     <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleReset(); setShowFilters(false); }}>
                         Сбросить
@@ -160,7 +160,8 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
 };
 
 const StudentsList = () => {
-    const [students, setStudents] = useState([]);
+    const [allStudents, setAllStudents] = useState([]);
+    const [filteredStudents, setFilteredStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchExpanded, setSearchExpanded] = useState(false);
@@ -168,20 +169,116 @@ const StudentsList = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [showFilters, setShowFilters] = useState(false);
     const [currentFilters, setCurrentFilters] = useState({
-        course: "1",
+        course: null,
         adult: false,
         specialty: null
     });
+    const [searchQuery, setSearchQuery] = useState("");
 
     const searchRef = useRef(null);
     const filterRef = useRef(null);
+    const searchInputRef = useRef(null);
+
+    const calculateAge = (dateOfBirth) => {
+        if (!dateOfBirth) return 0;
+        const birthDate = new Date(dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const applyFilters = useCallback((students, filters, query) => {
+        let result = [...students];
+
+        if (filters.course) {
+            result = result.filter(student => {
+                const education = student.educationDetails || [];
+                return education.some(edu => edu.course?.toString() === filters.course);
+            });
+        }
+
+        if (filters.adult) {
+            result = result.filter(student => {
+                const age = calculateAge(student.dateOfBirth);
+                return age >= 18;
+            });
+        }
+
+        if (filters.specialty) {
+            result = result.filter(student => {
+                const skills = student.skills || [];
+                return skills.some(skill =>
+                    skill.name?.toLowerCase().includes(filters.specialty.name.toLowerCase()) ||
+                    (filters.specialty.name === "Веб-разработчик" &&
+                        (skill.name?.toLowerCase().includes("frontend") ||
+                            skill.name?.toLowerCase().includes("backend") ||
+                            skill.name?.toLowerCase().includes("fullstack"))) ||
+                    (filters.specialty.name === "Аналитик данных" &&
+                        skill.name?.toLowerCase().includes("аналитик")) ||
+                    (filters.specialty.name === "Тестировщик" &&
+                        skill.name?.toLowerCase().includes("тестиров"))
+                );
+            });
+        }
+
+        if (query.trim()) {
+            const searchTerm = query.toLowerCase().trim();
+            result = result.filter(student => {
+                const fullName = `${student.firstName || ''} ${student.lastName || ''} ${student.middleName || ''}`.toLowerCase();
+                const skillsText = (student.skills || []).map(skill => skill.name?.toLowerCase() || '').join(' ');
+                const experienceText = (student.experience || []).map(exp =>
+                    `${exp.position || ''} ${exp.company || ''}`.toLowerCase()
+                ).join(' ');
+                const educationText = (student.educationDetails || []).map(edu =>
+                    `${edu.specialization || ''} ${edu.universityName || ''}`.toLowerCase()
+                ).join(' ');
+
+                return (
+                    fullName.includes(searchTerm) ||
+                    (student.email?.toLowerCase() || '').includes(searchTerm) ||
+                    (student.phone || '').includes(searchTerm) ||
+                    skillsText.includes(searchTerm) ||
+                    experienceText.includes(searchTerm) ||
+                    educationText.includes(searchTerm)
+                );
+            });
+        }
+
+        return result;
+    }, []);
 
     useEffect(() => {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
                 const data = await getAllStudents();
-                setStudents(data);
+
+                const studentsWithDetails = await Promise.all(
+                    data.map(async (student) => {
+                        try {
+                            const educationDetails = student.educationDetails || [];
+                            const skills = student.skills || [];
+                            const experience = student.experience || [];
+
+                            return {
+                                ...student,
+                                educationDetails,
+                                skills,
+                                experience
+                            };
+                        } catch (err) {
+                            console.error(`Error processing student ${student.id}:`, err);
+                            return student;
+                        }
+                    })
+                );
+
+                setAllStudents(studentsWithDetails);
+                setFilteredStudents(studentsWithDetails);
             } catch (err) {
                 setError(err.message);
                 console.error('Failed to fetch students:', err);
@@ -221,11 +318,34 @@ const StudentsList = () => {
         };
     }, [isMobile, searchExpanded, filterExpanded]);
 
+    useEffect(() => {
+        const filtered = applyFilters(allStudents, currentFilters, searchQuery);
+        setFilteredStudents(filtered);
+    }, [allStudents, currentFilters, searchQuery, applyFilters]);
+
     const handleSearchClick = () => {
         if (isMobile) {
             setSearchExpanded(!searchExpanded);
             if (!searchExpanded) {
                 setFilterExpanded(false);
+                setTimeout(() => {
+                    if (searchInputRef.current) {
+                        searchInputRef.current.focus();
+                    }
+                }, 100);
+            }
+        }
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (isMobile) {
+                setSearchExpanded(false);
             }
         }
     };
@@ -247,18 +367,26 @@ const StudentsList = () => {
 
     const handleResetFilters = () => {
         setCurrentFilters({
-            course: "1",
+            course: null,
             adult: false,
             specialty: null
         });
+        setSearchQuery("");
         console.log('Filters reset');
+    };
+
+    const clearSearch = () => {
+        setSearchQuery("");
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
     };
 
     if (loading) {
         return (
             <section className="studentsList-section">
                 <div className="studentsList">
-                    <p style={{color: '#fff', textAlign: 'center'}}>Загрузка студентов...</p>
+                    <p style={{color: '#fff', textAlign: 'center', fontFamily: 'StratosSemiLight'}}>Загрузка студентов...</p>
                 </div>
             </section>
         );
@@ -268,11 +396,13 @@ const StudentsList = () => {
         return (
             <section className="studentsList-section">
                 <div className="studentsList">
-                    <p style={{color: '#fff', textAlign: 'center'}}>Ошибка загрузки: {error}</p>
+                    <p style={{color: '#fff', textAlign: 'center', fontFamily: 'StratosSemiLight'}}>Ошибка загрузки: {error}</p>
                 </div>
             </section>
         );
     }
+
+    const hasActiveFilters = currentFilters.course || currentFilters.adult || currentFilters.specialty || searchQuery;
 
     return (
         <section className="studentsList-section">
@@ -288,31 +418,114 @@ const StudentsList = () => {
                                 <img src={searchIcon} alt="search"/>
                             </div>
                             <input
+                                ref={searchInputRef}
                                 type="text"
                                 className="studentsList__search"
                                 placeholder="Профессия / Стэк ..."
                                 autoFocus={searchExpanded}
+                                value={searchQuery}
+                                onChange={handleSearchChange}
+                                onKeyDown={handleSearchKeyDown}
                             />
+                            {searchQuery && (
+                                <div
+                                    className="clear-search"
+                                    onClick={(e) => { e.stopPropagation(); clearSearch(); }}
+                                    style={{
+                                        position: 'absolute',
+                                        right: '20px',
+                                        top: '50%',
+                                        transform: 'translateY(-50%)',
+                                        cursor: 'pointer',
+                                        color: '#fff',
+                                        fontSize: '20px',
+                                        width: '20px',
+                                        height: '20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    ×
+                                </div>
+                            )}
                         </div>
                         <h2 className="studentsList__title">Студенты</h2>
                         <button
                             ref={filterRef}
-                            className={`studentsList__filter ${filterExpanded ? 'expanded' : ''}`}
+                            className={`studentsList__filter ${filterExpanded ? 'expanded' : ''} ${hasActiveFilters ? 'has-filters' : ''}`}
                             onClick={handleFilterClick}
                         >
                             <img src={filterIcon} alt="filter"/>
                             <span>Фильтр</span>
+                            {hasActiveFilters && (
+                                <span className="filter-badge"></span>
+                            )}
                         </button>
                     </div>
+
+                    {hasActiveFilters && (
+                        <div className="active-filters">
+                            {currentFilters.course && (
+                                <div className="active-filter-tag">
+                                    Курс: {currentFilters.course}
+                                </div>
+                            )}
+                            {currentFilters.adult && (
+                                <div className="active-filter-tag">
+                                    Старше 18 лет
+                                </div>
+                            )}
+                            {currentFilters.specialty && (
+                                <div className="active-filter-tag">
+                                    {currentFilters.specialty.name}
+                                </div>
+                            )}
+                            {searchQuery && (
+                                <div className="active-filter-tag">
+                                    Поиск: "{searchQuery}"
+                                </div>
+                            )}
+                            <button
+                                className="clear-all-filters"
+                                onClick={handleResetFilters}
+                            >
+                                Сбросить все
+                            </button>
+                        </div>
+                    )}
                 </header>
 
                 <div className="studentsList__cardsWrapper">
-                    {students.length > 0 ? (
-                        students.map((student) => (
+                    {filteredStudents.length > 0 ? (
+                        filteredStudents.map((student) => (
                             <StudentsListCard key={student.id} student={student} />
                         ))
                     ) : (
-                        <p style={{color: '#fff'}}>Студенты не найдены</p>
+                        <div className="no-results-message">
+                            {hasActiveFilters
+                                ? "Студенты по заданным критериям не найдены"
+                                : "Студенты не найдены"}
+                            <br />
+                            {hasActiveFilters && (
+                                <button
+                                    onClick={handleResetFilters}
+                                    style={{
+                                        marginTop: '20px',
+                                        background: 'transparent',
+                                        border: '1px solid #fff',
+                                        color: '#fff',
+                                        padding: '10px 20px',
+                                        borderRadius: '25px',
+                                        cursor: 'pointer',
+                                        fontFamily: 'StratosSemiLight',
+                                        fontSize: '16px'
+                                    }}
+                                >
+                                    Сбросить фильтры
+                                </button>
+                            )}
+                        </div>
                     )}
                 </div>
             </div>
