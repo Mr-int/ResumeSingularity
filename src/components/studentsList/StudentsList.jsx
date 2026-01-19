@@ -214,15 +214,35 @@ const StudentsList = () => {
             return [];
         }
 
+        // Функция для конвертации курса
+        const convertCourseToNumber = (course) => {
+            if (!course) return null;
+
+            const courseMap = {
+                'FIRST': '1',
+                'SECOND': '2',
+                'THIRD': '3',
+                'FOURTH': '4',
+                '1': '1',
+                '2': '2',
+                '3': '3',
+                '4': '4'
+            };
+
+            return courseMap[course.toString().toUpperCase()] || course;
+        };
+
         let result = [...students];
 
         // Фильтрация по курсу
         if (filters.course) {
             console.log('[FILTERS] Filtering by course:', filters.course);
             result = result.filter(student => {
-                const studentCourse = student.course?.toString();
-                const hasCourse = studentCourse === filters.course;
-                console.log(`[FILTERS] Student ${student.firstName} course: ${studentCourse}, matches: ${hasCourse}`);
+                const studentCourse = convertCourseToNumber(student.course);
+                const filterCourse = filters.course;
+
+                const hasCourse = studentCourse === filterCourse;
+                console.log(`[FILTERS] Student ${student.firstName} course: ${student.course} -> ${studentCourse}, filter: ${filterCourse}, matches: ${hasCourse}`);
                 return hasCourse;
             });
             console.log('[FILTERS] After course filter:', result.length);
