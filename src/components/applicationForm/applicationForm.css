@@ -78,16 +78,73 @@
     height: 24px;
 }
 
-.applicationForm__subtitle {
-    color: #bdf7ff;
-    font-size: 16px;
-    margin: 0 0 30px 0;
+.applicationForm__success {
     text-align: center;
+    color: white;
     font-family: 'StratosSkyeng', sans-serif;
 }
 
-.applicationForm__subtitle strong {
-    color: #fff;
+.applicationForm__success h3 {
+    color: #bdf7ff;
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.applicationForm__success p {
+    font-size: 18px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.applicationForm__telegram-section {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 25px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.applicationForm__telegram-title {
+    color: #bdf7ff;
+    font-size: 20px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.applicationForm__telegram-link {
+    display: block;
+    background: white;
+    color: #4655FF;
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 16px;
+    word-break: break-all;
+    margin: 10px 0;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    font-family: monospace;
+}
+
+.applicationForm__telegram-link:hover {
+    background: #f0f0ff;
+    border-color: #4655FF;
+    transform: translateY(-2px);
+}
+
+.applicationForm__telegram-hint {
+    font-size: 14px;
+    color: #bdf7ff;
+    margin-top: 10px;
+    opacity: 0.8;
+}
+
+.applicationForm__countdown {
+    color: #bdf7ff;
+    font-size: 16px;
+    margin-top: 20px;
+    opacity: 0.8;
 }
 
 .applicationForm__form {
@@ -214,6 +271,7 @@
         opacity: 1;
     }
 }
+
 @media (max-width: 1650px) {
     .applicationForm__content {
         width: 100%;
@@ -255,6 +313,23 @@
         position: absolute;
         bottom: -30px;
         right: -82px;
+    }
+
+    .applicationForm__success h3 {
+        font-size: 24px;
+    }
+
+    .applicationForm__success p {
+        font-size: 16px;
+    }
+
+    .applicationForm__telegram-title {
+        font-size: 18px;
+    }
+
+    .applicationForm__telegram-link {
+        font-size: 14px;
+        padding: 10px 16px;
     }
 }
 
@@ -341,9 +416,30 @@
         height: 18px;
     }
 
-    .applicationForm__subtitle {
+    .applicationForm__success h3 {
+        font-size: 20px;
+    }
+
+    .applicationForm__success p {
         font-size: 14px;
-        margin-bottom: 20px;
+    }
+
+    .applicationForm__telegram-section {
+        padding: 15px;
+        margin: 20px 0;
+    }
+
+    .applicationForm__telegram-title {
+        font-size: 16px;
+    }
+
+    .applicationForm__telegram-link {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .applicationForm__telegram-hint {
+        font-size: 12px;
     }
 
     .applicationForm__form {

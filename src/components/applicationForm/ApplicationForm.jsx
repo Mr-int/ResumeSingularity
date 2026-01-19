@@ -17,6 +17,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [recruiterId, setRecruiterId] = useState(null);
+    const [telegramBotLink, setTelegramBotLink] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -46,10 +48,16 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         return result;
     };
 
+    const generateTelegramToken = (recruiterUuid) => {
+        const randomNumber = Math.floor(Math.random() * (9999 - 5000 + 1)) + 5000;
+        return `${randomNumber}_${recruiterUuid}`;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess(false);
+        setTelegramBotLink('');
 
         if (!formData.name.trim()) {
             setError('Пожалуйста, укажите ваше имя');
@@ -80,8 +88,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 ...(studentId && { studentId })
             };
 
-            console.log('Sending application data:', requestData);
-
             const endpoint = studentId ? 'request' : 'recruiter';
 
             const response = await apiClientJson(endpoint, {
@@ -89,7 +95,12 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 body: JSON.stringify(requestData)
             });
 
-            console.log('Application submitted successfully:', response);
+            if (response && response.id) {
+                setRecruiterId(response.id);
+                const token = generateTelegramToken(response.id);
+                const botLink = `https://t.me/singularity_resume_robot?start=${token}`;
+                setTelegramBotLink(botLink);
+            }
 
             setSuccess(true);
 
@@ -99,10 +110,9 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
 
             setTimeout(() => {
                 onClose();
-            }, 2000);
+            }, 5000);
 
         } catch (err) {
-            console.error('Application form error:', err);
             if (err.message && err.message.includes('HTTP error! status: 401')) {
                 setError('Ошибка авторизации. Пожалуйста, войдите в систему.');
             } else {
@@ -143,7 +153,25 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                     <div className="applicationForm__success">
                         <h3>✅ Заявка успешно отправлена!</h3>
                         <p>Мы свяжемся с вами в течение 24 часов.</p>
-                        <p>Форма закроется автоматически...</p>
+
+                        {telegramBotLink && (
+                            <div className="applicationForm__telegram-section">
+                                <p className="applicationForm__telegram-title">Наш бот для связи:</p>
+                                <a
+                                    href={telegramBotLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="applicationForm__telegram-link"
+                                >
+                                    {telegramBotLink}
+                                </a>
+                                <p className="applicationForm__telegram-hint">
+                                    Нажмите на ссылку, чтобы перейти в Telegram бот
+                                </p>
+                            </div>
+                        )}
+
+                        <p className="applicationForm__countdown">Форма закроется через 5 секунд...</p>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="applicationForm__form">
