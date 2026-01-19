@@ -302,7 +302,7 @@ export const getSkillsByStudentId = async (studentId) => {
 
 export const sendStudentRequest = async (requestData) => {
     try {
-        const data = await apiClientJson('request/create', {
+        const data = await apiClientJson('request', {
             method: 'POST',
             body: JSON.stringify(requestData)
         });
@@ -315,7 +315,7 @@ export const sendStudentRequest = async (requestData) => {
 
 export const createRecruiterRequest = async (recruiterData) => {
     try {
-        const data = await apiClientJson('recruiter/create', {
+        const data = await apiClientJson('recruiter', {
             method: 'POST',
             body: JSON.stringify(recruiterData)
         });

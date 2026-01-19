@@ -51,7 +51,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         setError('');
         setSuccess(false);
 
-        // Валидация
         if (!formData.name.trim()) {
             setError('Пожалуйста, укажите ваше имя');
             return;
@@ -67,7 +66,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
 
         setLoading(true);
         try {
-            // Подготовка данных для API
             const { firstName, lastName } = splitFullName(formData.name);
             const username = generateUsername();
 
@@ -84,10 +82,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
 
             console.log('Sending application data:', requestData);
 
-            // Определяем endpoint в зависимости от типа заявки
-            const endpoint = studentId ? 'request/create' : 'recruiter/create';
+            const endpoint = studentId ? 'request' : 'recruiter';
 
-            // Отправка через apiClientJson
             const response = await apiClientJson(endpoint, {
                 method: 'POST',
                 body: JSON.stringify(requestData)
@@ -97,12 +93,10 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
 
             setSuccess(true);
 
-            // Если передан обработчик onSubmit, вызываем его
             if (onSubmit) {
                 await onSubmit(requestData);
             }
 
-            // Закрываем форму через 2 секунды после успешной отправки
             setTimeout(() => {
                 onClose();
             }, 2000);
