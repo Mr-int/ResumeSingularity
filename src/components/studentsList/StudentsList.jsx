@@ -58,8 +58,12 @@ const StudentsList = () => {
                 }
             }
 
-            if (showFilters && filtersRef.current && !filtersRef.current.contains(event.target) && !filterRef.current.contains(event.target)) {
+            if (showFilters &&
+                filtersRef.current &&
+                !filtersRef.current.contains(event.target) &&
+                !filterRef.current.contains(event.target)) {
                 setShowFilters(false);
+                setShowSpecialtyDropdown(false);
             }
 
             if (showSpecialtyDropdown &&
@@ -122,8 +126,15 @@ const StudentsList = () => {
     };
 
     const handleSpecialtyClick = (e) => {
+        e.preventDefault();
         e.stopPropagation();
         setShowSpecialtyDropdown(!showSpecialtyDropdown);
+    };
+
+    const handleSpecialtyOptionClick = (e, specialty) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleSpecialtySelect(specialty);
     };
 
     const handleApplyFilters = () => {
@@ -142,6 +153,10 @@ const StudentsList = () => {
         setSelectedSpecialty(null);
         setShowSpecialtyDropdown(false);
         setShowFilters(false);
+    };
+
+    const handleFiltersContainerClick = (e) => {
+        e.stopPropagation();
     };
 
     if (loading) {
@@ -208,8 +223,8 @@ const StudentsList = () => {
             </div>
 
             {showFilters && (
-                <div className="filters-overlay">
-                    <div className="filters-container" ref={filtersRef}>
+                <div className="filters-overlay" onClick={() => { setShowFilters(false); setShowSpecialtyDropdown(false); }}>
+                    <div className="filters-container" ref={filtersRef} onClick={handleFiltersContainerClick}>
                         <div className="filter-section">
                             <h3 className="section-title">Курс</h3>
                             <div className="course-buttons">
@@ -217,7 +232,7 @@ const StudentsList = () => {
                                     <button
                                         key={course}
                                         className={`course-btn ${selectedCourse === course ? 'active' : ''}`}
-                                        onClick={() => handleCourseSelect(course)}
+                                        onClick={(e) => { e.stopPropagation(); handleCourseSelect(course); }}
                                     >
                                         {course}
                                     </button>
@@ -229,7 +244,7 @@ const StudentsList = () => {
                             <h3 className="section-title">Возраст</h3>
                             <div
                                 className="checkbox-container"
-                                onClick={() => setIsAdult(!isAdult)}
+                                onClick={(e) => { e.stopPropagation(); setIsAdult(!isAdult); }}
                             >
                                 <div className={`custom-checkbox ${isAdult ? 'checked' : ''}`}>
                                     <span className="checkbox-tick">✓</span>
@@ -264,7 +279,7 @@ const StudentsList = () => {
                                         <div
                                             key={specialty.id}
                                             className={`specialty-option ${selectedSpecialty && selectedSpecialty.id === specialty.id ? 'selected' : ''}`}
-                                            onClick={() => handleSpecialtySelect(specialty)}
+                                            onClick={(e) => handleSpecialtyOptionClick(e, specialty)}
                                         >
                                             {specialty.name}
                                         </div>
@@ -274,10 +289,10 @@ const StudentsList = () => {
                         </div>
 
                         <div className="action-buttons">
-                            <button className="action-btn apply-btn" onClick={handleApplyFilters}>
+                            <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApplyFilters(); }}>
                                 Применить
                             </button>
-                            <button className="action-btn reset-btn" onClick={handleResetFilters}>
+                            <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleResetFilters(); }}>
                                 Сбросить
                             </button>
                         </div>

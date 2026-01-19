@@ -475,6 +475,11 @@
     text-align: left;
     position: relative;
     transition: transform 0.2s;
+    outline: none;
+}
+
+.specialty-btn:focus {
+    outline: 2px solid rgba(62, 142, 255, 0.5);
 }
 
 .specialty-btn:hover {
@@ -506,11 +511,13 @@
     padding: 8px;
     z-index: 10;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    max-height: 300px;
+    overflow-y: auto;
 }
 
 .specialty-dropdown.show {
     display: block;
-    animation: fadeIn 0.3s ease;
+    animation: fadeIn 0.2s ease;
 }
 
 @keyframes fadeIn {
@@ -522,6 +529,24 @@
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.specialty-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.specialty-dropdown::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 3px;
+}
+
+.specialty-dropdown::-webkit-scrollbar-thumb {
+    background: #525252;
+    border-radius: 3px;
+}
+
+.specialty-dropdown::-webkit-scrollbar-thumb:hover {
+    background: #626262;
 }
 
 .specialty-option {
