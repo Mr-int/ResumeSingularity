@@ -4,6 +4,9 @@ import test from "../../../assets/other/test.png";
 import javaIcon from "../../../assets/other/java.png";
 import pythonIcon from "../../../assets/other/python.png";
 import designIcon from "../../../assets/other/design.png";
+import analyticsIcon from "../../../assets/other/analytics.png";
+import testingIcon from "../../../assets/other/testing.png";
+import managerIcon from "../../../assets/other/manager.png";
 import course4 from "../../../assets/other/course4.png";
 import course3 from "../../../assets/other/thirdCourse.png";
 import course2 from "../../../assets/other/secondCourse.png";
@@ -68,31 +71,29 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     };
 
     const getSkillIcon = (specialityId) => {
-        // Маппинг ID специальностей на иконки
         switch (specialityId) {
-            case 1: // Java-разработчик
+            case 1:
                 return javaIcon;
-            case 2: // Менеджер проектов
-                return designIcon; // Временное решение, можно создать manager.png
-            case 3: // Графический дизайнер
+            case 2:
+                return managerIcon;
+            case 3:
                 return designIcon;
-            case 4: // Веб-разработчик
-                return designIcon; // Можно создать web.png
-            case 5: // Таргетолог
-                return designIcon; // Временное решение
-            case 6: // Аналитик данных
+            case 4:
+                return designIcon;
+            case 5:
+                return designIcon;
+            case 6:
+                return analyticsIcon;
+            case 7:
                 return pythonIcon;
-            case 7: // Python-разработчик
-                return pythonIcon;
-            case 9: // Тестировщик
-                return javaIcon; // Временное решение, можно создать qa.png
+            case 9:
+                return testingIcon;
             default:
-                return javaIcon; // Иконка по умолчанию
+                return javaIcon;
         }
     };
 
     const getSpecialityNameById = (specialityId) => {
-        // Маппинг ID специальностей на названия
         const specialityMap = {
             1: "Java-разработчик",
             2: "Менеджер проектов",
@@ -127,13 +128,12 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                 <img src={imageSrc} alt={`Фото ${fullName}`} className="student-slider-card__photo"/>
 
                 <div className="student-slider-card__course">
-                    <img src={courseImage} className="student-slider-card__courseIco" alt="Иконка курса"/>
+                    <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
                     {isActive && <span>{getCourseText(student.course)}</span>}
                 </div>
 
-                {/* ВСЕГДА показываем иконку специальности */}
                 <div className="student-slider-card__extraIco">
-                    <img src={skillIcon} alt={`Иконка специальности: ${specialityName}`}/>
+                    <img src={skillIcon} alt=""/>
                 </div>
             </div>
 
