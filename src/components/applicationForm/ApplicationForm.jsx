@@ -18,6 +18,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [telegramBotLink, setTelegramBotLink] = useState('');
+    const [countdown, setCountdown] = useState(15);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -57,6 +58,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         setError('');
         setSuccess(false);
         setTelegramBotLink('');
+        setCountdown(15);
 
         if (!formData.name.trim()) {
             setError('Пожалуйста, укажите ваше имя');
@@ -106,9 +108,18 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 await onSubmit(requestData);
             }
 
-            setTimeout(() => {
-                onClose();
-            }, 5000);
+            const countdownInterval = setInterval(() => {
+                setCountdown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(countdownInterval);
+                        onClose();
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            return () => clearInterval(countdownInterval);
 
         } catch (err) {
             if (err.message && err.message.includes('HTTP error! status: 401')) {
@@ -169,7 +180,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                             </div>
                         )}
 
-                        <p className="applicationForm__countdown">Форма закроется через 5 секунд...</p>
+                        <p className="applicationForm__countdown">Форма закроется через {countdown} секунд...</p>
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="applicationForm__form">
