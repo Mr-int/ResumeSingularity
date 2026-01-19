@@ -16,6 +16,10 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         return null;
     }
 
+    console.log('СТУДЕНТ ДАННЫЕ:', student);
+    console.log('ID специальности:', student.specialityId);
+    console.log('Название специальности:', student.speciality);
+
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
 
     const getStudentImageUrl = (studentData) => {
@@ -71,24 +75,35 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     };
 
     const getSkillIcon = (specialityId) => {
+        console.log('Выбор иконки для ID:', specialityId);
+
         switch (specialityId) {
             case 1:
+                console.log('Выбрана Java иконка');
                 return javaIcon;
             case 2:
+                console.log('Выбрана Manager иконка');
                 return managerIcon;
             case 3:
+                console.log('Выбрана Design иконка');
                 return designIcon;
             case 4:
+                console.log('Выбрана Design иконка (веб)');
                 return designIcon;
             case 5:
+                console.log('Выбрана Design иконка (таргет)');
                 return designIcon;
             case 6:
+                console.log('Выбрана Analytics иконка');
                 return analyticsIcon;
             case 7:
+                console.log('Выбрана Python иконка');
                 return pythonIcon;
             case 9:
+                console.log('Выбрана Testing иконка');
                 return testingIcon;
             default:
+                console.log('Выбрана Java иконка (по умолчанию)');
                 return javaIcon;
         }
     };
@@ -111,6 +126,9 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     const courseImage = getCourseImage(student.course);
     const skillIcon = getSkillIcon(student.specialityId);
     const specialityName = getSpecialityNameById(student.specialityId);
+
+    console.log('Выбранная иконка:', skillIcon);
+    console.log('Название специальности для отображения:', specialityName);
 
     const handleClick = (e) => {
         if (onClick) {
