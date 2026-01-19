@@ -2,6 +2,8 @@ import React from "react";
 import './studentSliderCard.css';
 import test from "../../../assets/other/test.png";
 import javaIcon from "../../../assets/other/java.png";
+import pythonIcon from "../../../assets/other/python.png";
+import designIcon from "../../../assets/other/design.png";
 import course4 from "../../../assets/other/course4.png";
 import course3 from "../../../assets/other/thirdCourse.png";
 import course2 from "../../../assets/other/secondCourse.png";
@@ -65,8 +67,31 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         return courseMap[course] || 'курс';
     };
 
+    const getSkillIcon = (specialityId) => {
+        // Маппинг ID специальностей на иконки
+        switch (specialityId) {
+            case 1: // Java-разработчик
+                return javaIcon;
+            case 3: // Графический дизайнер
+                return designIcon;
+            case 4: // Веб-разработчик
+                return designIcon; // Можно использовать designIcon или создать отдельную для веба
+            case 6: // Аналитик данных
+                return pythonIcon;
+            case 7: // Python-разработчик
+                return pythonIcon;
+            case 2: // Менеджер проектов
+                return designIcon; // Временное решение - используем designIcon
+            case 9: // Тестировщик
+                return javaIcon; // Временное решение - используем javaIcon
+            default:
+                return javaIcon; // Иконка по умолчанию
+        }
+    };
+
     const imageSrc = getStudentImageUrl(student);
     const courseImage = getCourseImage(student.course);
+    const skillIcon = getSkillIcon(student.specialityId);
 
     const handleClick = (e) => {
         if (onClick) {
@@ -84,13 +109,13 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                 <img src={imageSrc} alt={`Фото ${fullName}`} className="student-slider-card__photo"/>
 
                 <div className="student-slider-card__course">
-                    <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
+                    <img src={courseImage} className="student-slider-card__courseIco" alt="Иконка курса"/>
                     {isActive && <span>{getCourseText(student.course)}</span>}
                 </div>
 
-                {student.skills && student.skills.length > 0 && (
+                {student.specialityId && (
                     <div className="student-slider-card__extraIco">
-                        <img src={javaIcon} alt=""/>
+                        <img src={skillIcon} alt={`Иконка специальности: ${student.speciality || 'специальность'}`}/>
                     </div>
                 )}
             </div>
