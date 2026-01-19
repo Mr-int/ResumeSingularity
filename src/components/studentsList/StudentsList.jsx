@@ -7,7 +7,7 @@ import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { getAllStudents } from "../../services/studentApi.js";
 
 const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters }) => {
-    const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || "1");
+    const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || null);
     const [isAdult, setIsAdult] = useState(initialFilters.adult || false);
     const [selectedSpecialty, setSelectedSpecialty] = useState(initialFilters.specialty || null);
     const [specialtyDropdownOpen, setSpecialtyDropdownOpen] = useState(false);
@@ -56,6 +56,14 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
         setSpecialtyDropdownOpen(!specialtyDropdownOpen);
     };
 
+    const handleCourseClick = (course) => {
+        if (selectedCourse === course) {
+            setSelectedCourse(null);
+        } else {
+            setSelectedCourse(course);
+        }
+    };
+
     const handleApply = () => {
         onApplyFilters({
             course: selectedCourse,
@@ -65,7 +73,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     };
 
     const handleReset = () => {
-        setSelectedCourse("1");
+        setSelectedCourse(null);
         setIsAdult(false);
         setSelectedSpecialty(null);
         setSpecialtyDropdownOpen(false);
@@ -97,7 +105,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                             <button
                                 key={course}
                                 className={`course-btn ${selectedCourse === course ? 'active' : ''}`}
-                                onClick={(e) => { e.stopPropagation(); setSelectedCourse(course); }}
+                                onClick={(e) => { e.stopPropagation(); handleCourseClick(course); }}
                             >
                                 {course}
                             </button>
@@ -234,7 +242,7 @@ const StudentsList = () => {
 
         let result = [...students];
 
-        // Фильтрация по курсу
+        // Фильтрация по курсу (только если выбран курс)
         if (filters.course) {
             console.log('[FILTERS] Filtering by course:', filters.course);
             result = result.filter(student => {
