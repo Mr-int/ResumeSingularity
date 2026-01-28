@@ -461,10 +461,6 @@
         border: none;
     }
 
-    .studentSlider__filter:hover {
-        opacity: 0.8;
-    }
-
     .studentSlider__filter span {
         display: none;
     }
@@ -544,11 +540,9 @@
 
     .studentSlider__list {
         gap: 10px;
-        overflow-x: auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
         padding-bottom: 10px;
-        justify-content: flex-start;
         scroll-snap-type: x mandatory;
         scroll-behavior: smooth;
     }

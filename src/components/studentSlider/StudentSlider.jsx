@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './studentSlider.css';
-import searchIconDark from "../../assets/icons/searchIconDark.svg";
+// import searchIconDark from "../../assets/icons/searchIconDark.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
