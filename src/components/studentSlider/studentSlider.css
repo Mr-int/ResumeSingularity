@@ -139,10 +139,6 @@
     transition: opacity 0.3s ease;
 }
 
-.studentSlider__filter img {
-    transition: all 0.3s ease;
-}
-
 .studentSlider__container {
     width: 100%;
     position: relative;
@@ -469,7 +465,6 @@
         margin: 0;
         width: 24px;
         height: 24px;
-        filter: brightness(0) invert(1);
     }
 
     .studentSlider__list {
