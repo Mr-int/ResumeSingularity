@@ -67,7 +67,7 @@
 
 .student-slider-card__courseText {
     display: none;
-    font-size: 10px;
+    font-size: 12px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -102,7 +102,7 @@
 .student-slider-card__text {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 3px;
 }
 
 .student-slider-card__name {
@@ -156,10 +156,10 @@
         left: 8px;
     }
     .student-slider-card--active .student-slider-card__course {
-        width: 90px;
+        width: 100px;
     }
     .student-slider-card--active .student-slider-card__courseText {
-        font-size: 9px;
+        font-size: 11px;
     }
     .student-slider-card__courseIco {
         width: 36px;
@@ -205,10 +205,10 @@
         bottom: 50px;
     }
     .student-slider-card--active .student-slider-card__course {
-        width: 80px;
+        width: 90px;
     }
     .student-slider-card--active .student-slider-card__courseText {
-        font-size: 8px;
+        font-size: 10px;
     }
     .student-slider-card__courseIco {
         width: 32px;
@@ -263,10 +263,10 @@
         bottom: 45px;
     }
     .student-slider-card--active .student-slider-card__course {
-        width: 75px;
+        width: 80px;
     }
     .student-slider-card--active .student-slider-card__courseText {
-        font-size: 7px;
+        font-size: 9px;
     }
     .student-slider-card__courseIco {
         width: 28px;
@@ -325,7 +325,7 @@
         width: 70px;
     }
     .student-slider-card--active .student-slider-card__courseText {
-        font-size: 6px;
+        font-size: 8px;
     }
     .student-slider-card__courseIco {
         width: 24px;
@@ -369,7 +369,7 @@
         width: 65px;
     }
     .student-slider-card--active .student-slider-card__courseText {
-        font-size: 5px;
+        font-size: 7px;
     }
     .student-slider-card__courseIco {
         width: 22px;
@@ -411,7 +411,7 @@
         width: 60px;
     }
     .student-slider-card--active .student-slider-card__courseText {
-        font-size: 4px;
+        font-size: 6px;
     }
     .student-slider-card__courseIco {
         width: 20px;
