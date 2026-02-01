@@ -42,9 +42,9 @@
 
 .student-slider-card__course, .student-slider-card__extraIco {
     position: absolute;
-    width: 40px;
-    height: 40px;
-    left: 10px;
+    width: 30px;
+    height: 30px;
+    left: 5px;
     border-radius: 7px;
 }
 
@@ -116,6 +116,7 @@
     font-family: 'StratosRegular';
     font-size: 12px;
     font-weight: 400;
+    padding-bottom: 10px;
 }
 
 .student-slider-card--active .student-slider-card__name {
