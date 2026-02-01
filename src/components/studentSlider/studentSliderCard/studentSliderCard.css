@@ -68,6 +68,7 @@
 .student-slider-card__courseText {
     display: none;
     font-size: 12px;
+    font-family: StratosSemiLight;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
