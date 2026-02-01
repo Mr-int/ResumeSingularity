@@ -100,7 +100,7 @@
 
 .student-slider-card__job {
     font-family: 'StratosRegular';
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 400;
 }
 
@@ -109,7 +109,7 @@
 }
 
 .student-slider-card--active .student-slider-card__job {
-    font-size: 16px;
+    font-size: 14px;
 }
 
 @media (max-width: 1200px) {
