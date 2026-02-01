@@ -156,9 +156,9 @@
         left: 8px;
     }
     .student-slider-card--active .student-slider-card__course {
-        width: 100px;
+        width: 90px;
     }
-    .student-slider-card--active .student-slider-card__courseText {
+    .student-slider-card__courseText {
         font-size: 11px;
     }
     .student-slider-card__courseIco {
@@ -205,9 +205,9 @@
         bottom: 50px;
     }
     .student-slider-card--active .student-slider-card__course {
-        width: 90px;
+        width: 80px;
     }
-    .student-slider-card--active .student-slider-card__courseText {
+    .student-slider-card__courseText {
         font-size: 10px;
     }
     .student-slider-card__courseIco {
@@ -263,9 +263,9 @@
         bottom: 45px;
     }
     .student-slider-card--active .student-slider-card__course {
-        width: 80px;
+        width: 75px;
     }
-    .student-slider-card--active .student-slider-card__courseText {
+    .student-slider-card__courseText {
         font-size: 9px;
     }
     .student-slider-card__courseIco {
@@ -324,7 +324,7 @@
     .student-slider-card--active .student-slider-card__course {
         width: 70px;
     }
-    .student-slider-card--active .student-slider-card__courseText {
+    .student-slider-card__courseText {
         font-size: 8px;
     }
     .student-slider-card__courseIco {
@@ -368,7 +368,7 @@
     .student-slider-card--active .student-slider-card__course {
         width: 65px;
     }
-    .student-slider-card--active .student-slider-card__courseText {
+    .student-slider-card__courseText {
         font-size: 7px;
     }
     .student-slider-card__courseIco {
@@ -410,7 +410,7 @@
     .student-slider-card--active .student-slider-card__course {
         width: 60px;
     }
-    .student-slider-card--active .student-slider-card__courseText {
+    .student-slider-card__courseText {
         font-size: 6px;
     }
     .student-slider-card__courseIco {
