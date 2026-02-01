@@ -87,7 +87,7 @@
 .student-slider-card__name {
     font-family: 'StratosMedium';
     letter-spacing: 1px;
-    font-size: 24px;
+    font-size: 21px;
     width: 50%;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .student-slider-card--active .student-slider-card__name {
-    font-size: 26px;
+    font-size: 24px;
 }
 
 .student-slider-card--active .student-slider-card__job {
