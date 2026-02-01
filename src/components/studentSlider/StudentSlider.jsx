@@ -14,11 +14,12 @@ const StudentSlider = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-    const [displayedStudents, setDisplayedStudents] = useState([]);
-    const [isAnimating, setIsAnimating] = useState(false);
+    const [listWrapperStyle, setListWrapperStyle] = useState({});
+    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const searchInputRef = useRef(null);
-    const animationTimeoutRef = useRef(null);
+    const listWrapperRef = useRef(null);
+    const transitionTimeoutRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -27,21 +28,8 @@ const StudentSlider = () => {
                 const data = await getAllStudents();
                 setStudents(data);
                 if (data.length > 0) {
-                    const totalToShow = Math.min(5, data.length);
-                    const middleIndex = Math.floor(totalToShow / 2);
+                    const middleIndex = Math.min(2, Math.floor(data.slice(0, 5).length / 2));
                     setActiveCardIndex(middleIndex);
-
-                    const cyclicArray = [];
-                    for (let i = 0; i < totalToShow; i++) {
-                        cyclicArray.push(data[i]);
-                    }
-
-                    const extended = [
-                        data[totalToShow - 1],
-                        ...cyclicArray,
-                        data[0]
-                    ];
-                    setDisplayedStudents(extended);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -52,58 +40,36 @@ const StudentSlider = () => {
 
         fetchStudents();
         return () => {
-            if (animationTimeoutRef.current) {
-                clearTimeout(animationTimeoutRef.current);
+            if (transitionTimeoutRef.current) {
+                clearTimeout(transitionTimeoutRef.current);
             }
         };
     }, []);
 
-    const handlePrevClick = () => {
-        if (students.length === 0 || isAnimating) return;
+    useEffect(() => {
+        const updatePosition = () => {
+            if (!listWrapperRef.current || students.slice(0, 5).length === 0) return;
 
-        setIsAnimating(true);
-        const totalToShow = Math.min(5, students.length);
+            const wrapper = listWrapperRef.current;
+            const activeIndex = Math.min(activeCardIndex, students.slice(0, 5).length - 1);
+            const activeContainer = wrapper.children[activeIndex];
 
-        setActiveCardIndex(prev => {
-            let newIndex = prev - 1;
+            if (activeContainer) {
+                const wrapperRect = wrapper.getBoundingClientRect();
+                const activeRect = activeContainer.getBoundingClientRect();
+                const offset = (wrapperRect.width / 2) - (activeRect.width / 2) - activeRect.left + wrapperRect.left;
 
-            if (newIndex < 0) {
-                newIndex = totalToShow - 1;
+                setListWrapperStyle({
+                    transform: `translateX(${offset}px)`,
+                    transition: isTransitioning ? 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
+                });
             }
+        };
 
-            return newIndex;
-        });
-
-        animationTimeoutRef.current = setTimeout(() => {
-            setIsAnimating(false);
-        }, 300);
-    };
-
-    const handleNextClick = () => {
-        if (students.length === 0 || isAnimating) return;
-
-        setIsAnimating(true);
-        const totalToShow = Math.min(5, students.length);
-
-        setActiveCardIndex(prev => {
-            let newIndex = prev + 1;
-
-            if (newIndex >= totalToShow) {
-                newIndex = 0;
-            }
-
-            return newIndex;
-        });
-
-        animationTimeoutRef.current = setTimeout(() => {
-            setIsAnimating(false);
-        }, 300);
-    };
-
-    const handleCardClick = (index) => {
-        if (isAnimating) return;
-        setActiveCardIndex(index);
-    };
+        requestAnimationFrame(updatePosition);
+        window.addEventListener('resize', updatePosition);
+        return () => window.removeEventListener('resize', updatePosition);
+    }, [activeCardIndex, students, isTransitioning]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -124,13 +90,45 @@ const StudentSlider = () => {
         }
     }
 
-    const getActiveStudent = () => {
-        if (students.length === 0) return null;
-        return students[activeCardIndex];
+    const handlePrevClick = () => {
+        if (students.length === 0 || isTransitioning) return;
+
+        setIsTransitioning(true);
+
+        setActiveCardIndex((prev) => {
+            const maxIndex = Math.min(students.length - 1, 4);
+            const newIndex = prev === 0 ? maxIndex : prev - 1;
+            return newIndex;
+        });
+
+        transitionTimeoutRef.current = setTimeout(() => {
+            setIsTransitioning(false);
+        }, 500);
     };
 
-    const activeStudent = getActiveStudent();
-    const totalToShow = Math.min(5, students.length);
+    const handleNextClick = () => {
+        if (students.length === 0 || isTransitioning) return;
+
+        setIsTransitioning(true);
+
+        setActiveCardIndex((prev) => {
+            const maxIndex = Math.min(students.length - 1, 4);
+            const newIndex = prev === maxIndex ? 0 : prev + 1;
+            return newIndex;
+        });
+
+        transitionTimeoutRef.current = setTimeout(() => {
+            setIsTransitioning(false);
+        }, 500);
+    };
+
+    const handleCardClick = (index) => {
+        if (isTransitioning) return;
+        setActiveCardIndex(index);
+    };
+
+    const displayedStudents = students.slice(0, 5);
+    const activeStudent = displayedStudents.length > 0 ? displayedStudents[activeCardIndex] : null;
 
     return (
         <section className="studentSlider">
@@ -168,25 +166,19 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div className="studentSlider__listWrapper">
-                                    {displayedStudents.map((student, index) => {
-                                        const isActive = index === activeCardIndex + 1;
-                                        const isClickable = index > 0 && index <= totalToShow;
-
-                                        return (
-                                            <div
-                                                key={`${student.id}-${index}`}
-                                                className={`studentSlider__cardContainer ${isActive ? 'active' : ''} ${isAnimating ? 'animating' : ''}`}
-                                                onClick={() => isClickable && handleCardClick(index - 1)}
-                                            >
-                                                <StudentSliderCard
-                                                    student={student}
-                                                    isActive={isActive}
-                                                    onClick={() => isClickable && handleCardClick(index - 1)}
-                                                />
-                                            </div>
-                                        );
-                                    })}
+                                <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
+                                    {displayedStudents.map((student, index) => (
+                                        <div
+                                            key={student.id}
+                                            className={`studentSlider__cardContainer ${index === activeCardIndex ? 'active' : ''}`}
+                                        >
+                                            <StudentSliderCard
+                                                student={student}
+                                                isActive={index === activeCardIndex}
+                                                onClick={() => handleCardClick(index)}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>

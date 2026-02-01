@@ -167,18 +167,15 @@
 .studentSlider__cardContainer {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
-    opacity: 0.6;
-    transform: scale(0.85);
 }
 
 .studentSlider__cardContainer.active {
-    opacity: 1;
-    transform: scale(1);
     z-index: 3;
 }
 
-.studentSlider__cardContainer.animating {
-    transition: all 0.3s ease;
+.studentSlider__cardContainer:not(.active) {
+    opacity: 0.6;
+    transform: scale(0.85);
 }
 
 .studentSlider__listButton {
