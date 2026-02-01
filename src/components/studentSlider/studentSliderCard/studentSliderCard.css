@@ -24,13 +24,20 @@
 .student-slider-card__photoWrapper {
     height: 70%;
     position: relative;
+    display: flex;
+    justify-content: center;
 }
 
 .student-slider-card__photo {
-    width: 171px;
-    height: 186px;
+    width: 153px;
+    height: 167px;
     object-fit: cover;
     border-radius: 8px;
+}
+
+.student-slider-card--active .student-slider-card__photo {
+    width: 171px;
+    height: 186px;
 }
 
 .student-slider-card__course, .student-slider-card__extraIco {
@@ -110,31 +117,33 @@
         width: 200px;
         height: 320px;
     }
-
     .student-slider-card--active {
         width: 240px;
         height: 350px;
     }
-
+    .student-slider-card__photo {
+        width: 188px;
+        height: 205px;
+    }
+    .student-slider-card--active .student-slider-card__photo {
+        width: 226px;
+        height: 246px;
+    }
     .student-slider-card__name {
         font-size: 22px;
     }
-
     .student-slider-card--active .student-slider-card__name {
         font-size: 24px;
     }
-
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 36px;
         height: 36px;
         left: 8px;
     }
-
     .student-slider-card--active .student-slider-card__course {
         width: 90px;
         font-size: 12px;
     }
-
     .student-slider-card__courseIco {
         width: 36px;
     }
@@ -146,46 +155,44 @@
         height: 290px;
         gap: 10px;
     }
-
     .student-slider-card--active {
         width: 210px;
         height: 320px;
     }
-
+    .student-slider-card__photo {
+        width: 168px;
+        height: 183px;
+    }
+    .student-slider-card--active .student-slider-card__photo {
+        width: 196px;
+        height: 213px;
+    }
     .student-slider-card__name {
         font-size: 20px;
     }
-
     .student-slider-card--active .student-slider-card__name {
         font-size: 22px;
     }
-
     .student-slider-card__job {
         font-size: 13px;
     }
-
     .student-slider-card--active .student-slider-card__job {
         font-size: 15px;
     }
-
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 32px;
         height: 32px;
         left: 6px;
     }
-
     .student-slider-card__extraIco {
         bottom: 50px;
     }
-
     .student-slider-card--active .student-slider-card__course {
         width: 80px;
     }
-
     .student-slider-card__courseIco {
         width: 32px;
     }
-
     .student-slider-card__extraIco img {
         width: 18px;
         height: 26px;
@@ -200,50 +207,48 @@
         gap: 8px;
         flex-shrink: 0;
     }
-
     .student-slider-card--active {
         width: 180px;
         height: 290px;
         padding: 6px;
         flex-shrink: 0;
     }
-
+    .student-slider-card__photo {
+        width: 148px;
+        height: 161px;
+    }
+    .student-slider-card--active .student-slider-card__photo {
+        width: 166px;
+        height: 181px;
+    }
     .student-slider-card__name {
         font-size: 18px;
         width: 100%;
     }
-
     .student-slider-card--active .student-slider-card__name {
         font-size: 20px;
     }
-
     .student-slider-card__job {
         font-size: 12px;
     }
-
     .student-slider-card--active .student-slider-card__job {
         font-size: 14px;
     }
-
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 28px;
         height: 28px;
         left: 5px;
     }
-
     .student-slider-card__extraIco {
         bottom: 45px;
     }
-
     .student-slider-card--active .student-slider-card__course {
         width: 75px;
         padding-right: 4px;
     }
-
     .student-slider-card__courseIco {
         width: 28px;
     }
-
     .student-slider-card__extraIco img {
         width: 16px;
         height: 24px;
@@ -258,55 +263,50 @@
         padding: 4px;
         gap: 6px;
     }
-
     .student-slider-card--active {
         width: 150px;
         height: 250px;
         border-radius: 10px;
         padding: 5px;
     }
-
     .student-slider-card__photo {
+        width: 130px;
+        height: 142px;
         border-radius: 6px;
     }
-
+    .student-slider-card--active .student-slider-card__photo {
+        width: 140px;
+        height: 152px;
+    }
     .student-slider-card__name {
         font-size: 16px;
     }
-
     .student-slider-card--active .student-slider-card__name {
         font-size: 18px;
     }
-
     .student-slider-card__job {
         font-size: 11px;
     }
-
     .student-slider-card--active .student-slider-card__job {
         font-size: 13px;
     }
-
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 24px;
         height: 24px;
         left: 4px;
         border-radius: 5px;
     }
-
     .student-slider-card__extraIco {
         bottom: 40px;
     }
-
     .student-slider-card--active .student-slider-card__course {
         width: 70px;
         padding-right: 3px;
         font-size: 14px;
     }
-
     .student-slider-card__courseIco {
         width: 24px;
     }
-
     .student-slider-card__extraIco img {
         width: 14px;
         height: 20px;
@@ -319,31 +319,33 @@
         height: 210px;
         border-width: 1px;
     }
-
     .student-slider-card--active {
         width: 140px;
         height: 230px;
         border-width: 1px;
     }
-
+    .student-slider-card__photo {
+        width: 120px;
+        height: 131px;
+    }
+    .student-slider-card--active .student-slider-card__photo {
+        width: 128px;
+        height: 139px;
+    }
     .student-slider-card__name {
         font-size: 15px;
     }
-
     .student-slider-card--active .student-slider-card__name {
         font-size: 16px;
     }
-
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 22px;
         height: 22px;
     }
-
     .student-slider-card--active .student-slider-card__course {
         width: 65px;
         font-size: 13px;
     }
-
     .student-slider-card__courseIco {
         width: 22px;
     }
@@ -354,20 +356,24 @@
         width: 120px;
         height: 190px;
     }
-
     .student-slider-card--active {
         width: 130px;
         height: 210px;
     }
-
+    .student-slider-card__photo {
+        width: 110px;
+        height: 120px;
+    }
+    .student-slider-card--active .student-slider-card__photo {
+        width: 118px;
+        height: 129px;
+    }
     .student-slider-card__name {
         font-size: 14px;
     }
-
     .student-slider-card--active .student-slider-card__name {
         font-size: 15px;
     }
-
     .student-slider-card--active .student-slider-card__course {
         width: 60px;
         font-size: 12px;
