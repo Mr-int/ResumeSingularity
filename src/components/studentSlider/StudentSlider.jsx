@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './studentSlider.css';
+// import searchIconDark from "../../assets/icons/searchIconDark.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
@@ -15,11 +16,9 @@ const StudentSlider = () => {
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
-    const [isTransitioning, setIsTransitioning] = useState(false);
 
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
-    const transitionTimeoutRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -39,11 +38,6 @@ const StudentSlider = () => {
         };
 
         fetchStudents();
-        return () => {
-            if (transitionTimeoutRef.current) {
-                clearTimeout(transitionTimeoutRef.current);
-            }
-        };
     }, []);
 
     useEffect(() => {
@@ -60,8 +54,7 @@ const StudentSlider = () => {
                 const offset = (wrapperRect.width / 2) - (activeRect.width / 2) - activeRect.left + wrapperRect.left;
 
                 setListWrapperStyle({
-                    transform: `translateX(${offset}px)`,
-                    transition: isTransitioning ? 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)' : 'none'
+                    transform: `translateX(${offset}px)`
                 });
             }
         };
@@ -69,7 +62,7 @@ const StudentSlider = () => {
         requestAnimationFrame(updatePosition);
         window.addEventListener('resize', updatePosition);
         return () => window.removeEventListener('resize', updatePosition);
-    }, [activeCardIndex, students, isTransitioning]);
+    }, [activeCardIndex, students]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -91,39 +84,29 @@ const StudentSlider = () => {
     }
 
     const handlePrevClick = () => {
-        if (students.length === 0 || isTransitioning) return;
-
-        setIsTransitioning(true);
-
-        setActiveCardIndex((prev) => {
-            const maxIndex = Math.min(students.length - 1, 4);
-            const newIndex = prev === 0 ? maxIndex : prev - 1;
-            return newIndex;
-        });
-
-        transitionTimeoutRef.current = setTimeout(() => {
-            setIsTransitioning(false);
-        }, 500);
+        if (students.length > 0) {
+            setActiveCardIndex((prev) => {
+                if (prev === 0) {
+                    return Math.min(students.length - 1, 4);
+                }
+                return prev - 1;
+            });
+        }
     };
 
     const handleNextClick = () => {
-        if (students.length === 0 || isTransitioning) return;
-
-        setIsTransitioning(true);
-
-        setActiveCardIndex((prev) => {
+        if (students.length > 0) {
             const maxIndex = Math.min(students.length - 1, 4);
-            const newIndex = prev === maxIndex ? 0 : prev + 1;
-            return newIndex;
-        });
-
-        transitionTimeoutRef.current = setTimeout(() => {
-            setIsTransitioning(false);
-        }, 500);
+            setActiveCardIndex((prev) => {
+                if (prev === maxIndex) {
+                    return 0;
+                }
+                return prev + 1;
+            });
+        }
     };
 
     const handleCardClick = (index) => {
-        if (isTransitioning) return;
         setActiveCardIndex(index);
     };
 
@@ -146,11 +129,20 @@ const StudentSlider = () => {
                             onBlur={handleSearchBlur}
                             disabled
                         />
+                        {/*<img*/}
+                        {/*    src={searchIconDark}*/}
+                        {/*    alt="Поиск"*/}
+                        {/*    className="studentSlider__searchIcon"*/}
+                        {/*    width="20px"*/}
+                        {/*    height="20px"*/}
+                        {/*/>*/}
                     </div>
 
                     <h2 className="studentSlider__title">Студенты</h2>
 
-                    <button className={`studentSlider__filter`}>
+                    <button
+                        className={`studentSlider__filter`}
+                    >
                         <span>Фильтр</span>
                         <img src={filterIcon} alt="Фильтр"/>
                     </button>
