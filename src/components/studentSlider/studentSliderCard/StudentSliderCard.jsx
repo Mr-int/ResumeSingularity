@@ -143,7 +143,11 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
 
                 <div className="student-slider-card__course">
                     <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
-                    {isActive && <span>{getCourseText(student.course)}</span>}
+                    {isActive && (
+                        <span className="student-slider-card__courseText">
+                            {getCourseText(student.course)}
+                        </span>
+                    )}
                 </div>
 
                 <div className="student-slider-card__extraIco">
