@@ -108,7 +108,7 @@
 .student-slider-card__name {
     font-family: 'StratosMedium';
     letter-spacing: 1px;
-    font-size: 21px;
+    font-size: 20px;
     width: 50%;
 }
 
@@ -119,7 +119,7 @@
 }
 
 .student-slider-card--active .student-slider-card__name {
-    font-size: 24px;
+    font-size: 22px;
 }
 
 .student-slider-card--active .student-slider-card__job {
@@ -144,10 +144,10 @@
         height: 246px;
     }
     .student-slider-card__name {
-        font-size: 22px;
+        font-size: 20px;
     }
     .student-slider-card--active .student-slider-card__name {
-        font-size: 24px;
+        font-size: 22px;
     }
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 36px;
@@ -184,10 +184,10 @@
         height: 213px;
     }
     .student-slider-card__name {
-        font-size: 20px;
+        font-size: 18px;
     }
     .student-slider-card--active .student-slider-card__name {
-        font-size: 22px;
+        font-size: 20px;
     }
     .student-slider-card__job {
         font-size: 13px;
@@ -241,11 +241,11 @@
         height: 181px;
     }
     .student-slider-card__name {
-        font-size: 18px;
+        font-size: 16px;
         width: 100%;
     }
     .student-slider-card--active .student-slider-card__name {
-        font-size: 20px;
+        font-size: 18px;
     }
     .student-slider-card__job {
         font-size: 12px;
@@ -300,10 +300,10 @@
         height: 152px;
     }
     .student-slider-card__name {
-        font-size: 16px;
+        font-size: 14px;
     }
     .student-slider-card--active .student-slider-card__name {
-        font-size: 18px;
+        font-size: 16px;
     }
     .student-slider-card__job {
         font-size: 11px;
@@ -355,10 +355,10 @@
         height: 139px;
     }
     .student-slider-card__name {
-        font-size: 15px;
+        font-size: 13px;
     }
     .student-slider-card--active .student-slider-card__name {
-        font-size: 16px;
+        font-size: 15px;
     }
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 22px;
@@ -393,10 +393,10 @@
         height: 129px;
     }
     .student-slider-card__name {
-        font-size: 14px;
+        font-size: 12px;
     }
     .student-slider-card--active .student-slider-card__name {
-        font-size: 15px;
+        font-size: 14px;
     }
     .student-slider-card__course, .student-slider-card__extraIco {
         width: 20px;
