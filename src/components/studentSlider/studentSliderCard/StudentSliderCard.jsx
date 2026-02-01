@@ -59,20 +59,6 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         }
     };
 
-    const getCourseText = (course) => {
-        const courseMap = {
-            'FIRST': '1 курс',
-            'SECOND': '2 курс',
-            'THIRD': '3 курс',
-            'FOURTH': '4 курс',
-            '1': '1 курс',
-            '2': '2 курс',
-            '3': '3 курс',
-            '4': '4 курс',
-        };
-        return courseMap[course] || 'курс';
-    };
-
     const getSkillIcon = (specialityName) => {
         if (!specialityName) {
             console.log('Нет названия специальности, выбрана Java иконка (по умолчанию)');
@@ -145,7 +131,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                     <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
                     {isActive && (
                         <span className="student-slider-card__courseText">
-                            {getCourseText(student.course)}
+                            курс
                         </span>
                     )}
                 </div>
