@@ -146,7 +146,7 @@
 }
 
 .studentsCard__button:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
 }
 
 .course4 {
