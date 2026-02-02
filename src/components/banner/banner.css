@@ -94,6 +94,8 @@
 }
 
 .banner__button:hover {
+    animation-duration: 12s;
+    transition-duration: 0.5s;
     background: none;
     border: 2px solid #fff;
 }
