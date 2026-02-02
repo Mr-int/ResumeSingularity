@@ -16,7 +16,7 @@ const StudentSlider = () => {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
     const [visibleCards, setVisibleCards] = useState([]);
-    const [isAnimating, setIsAnimating] = useState(false);
+    const [direction, setDirection] = useState(null);
 
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
@@ -42,14 +42,14 @@ const StudentSlider = () => {
         fetchStudents();
     }, []);
 
-    const shiftCards = (direction) => {
-        if (isAnimating || students.length === 0) return;
+    const shiftCards = (newDirection) => {
+        if (students.length === 0) return;
 
-        setIsAnimating(true);
+        setDirection(newDirection);
         const maxIndex = Math.min(students.length - 1, 4);
         let newActiveIndex;
 
-        if (direction === 'prev') {
+        if (newDirection === 'prev') {
             newActiveIndex = activeCardIndex === 0 ? maxIndex : activeCardIndex - 1;
         } else {
             newActiveIndex = activeCardIndex === maxIndex ? 0 : activeCardIndex + 1;
@@ -63,10 +63,6 @@ const StudentSlider = () => {
 
         setVisibleCards(newVisibleCards);
         setActiveCardIndex(newActiveIndex);
-
-        setTimeout(() => {
-            setIsAnimating(false);
-        }, 500);
     };
 
     useEffect(() => {
@@ -83,7 +79,7 @@ const StudentSlider = () => {
 
                 setListWrapperStyle({
                     transform: `translateX(${offset}px)`,
-                    transition: 'transform 0.5s ease'
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 });
             }
         };
@@ -125,9 +121,6 @@ const StudentSlider = () => {
     };
 
     const handleCardClick = (index) => {
-        if (isAnimating) return;
-
-        setIsAnimating(true);
         const maxIndex = Math.min(students.length - 1, 4);
         const newActiveIndex = Math.min(index, maxIndex);
         const newVisibleCards = [];
@@ -137,10 +130,6 @@ const StudentSlider = () => {
         }
         setVisibleCards(newVisibleCards);
         setActiveCardIndex(newActiveIndex);
-
-        setTimeout(() => {
-            setIsAnimating(false);
-        }, 500);
     };
 
     const activeStudent = visibleCards[2] || null;
@@ -177,7 +166,7 @@ const StudentSlider = () => {
                     <>
                         <div className="studentSlider__container">
                             <div className="studentSlider__list">
-                                <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick} disabled={isAnimating}>
+                                <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick}>
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
@@ -186,6 +175,15 @@ const StudentSlider = () => {
                                         <div
                                             key={`${student.id}-${index}`}
                                             className={`studentSlider__cardContainer ${index === 2 ? 'active' : ''}`}
+                                            style={{
+                                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                transform: direction === 'prev'
+                                                    ? `translateX(${index === 2 ? '0px' : index < 2 ? '-20px' : '20px'})`
+                                                    : direction === 'next'
+                                                        ? `translateX(${index === 2 ? '0px' : index < 2 ? '20px' : '-20px'})`
+                                                        : 'translateX(0px)',
+                                                opacity: index === 2 ? 1 : 0.7
+                                            }}
                                         >
                                             <StudentSliderCard
                                                 student={student}
@@ -196,16 +194,16 @@ const StudentSlider = () => {
                                     ))}
                                 </div>
 
-                                <button className="studentSlider__listButton desktop-only" onClick={handleNextClick} disabled={isAnimating}>
+                                <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
                                     <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
                                 </button>
                             </div>
 
                             <div className="studentSlider__mobileControls">
-                                <button className="studentSlider__mobileButton" onClick={handlePrevClick} disabled={isAnimating}>
+                                <button className="studentSlider__mobileButton" onClick={handlePrevClick}>
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
-                                <button className="studentSlider__mobileButton" onClick={handleNextClick} disabled={isAnimating}>
+                                <button className="studentSlider__mobileButton" onClick={handleNextClick}>
                                     <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
                                 </button>
                             </div>
