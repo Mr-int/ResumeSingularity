@@ -4,7 +4,7 @@
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 60px 0;
+    padding: 120px 0;
 }
 
 .banner__wrapper {
@@ -123,7 +123,6 @@
 }
 
 .banner__button:hover {
-    border-color: #fff;
     background: none;
     border: 2px solid #fff;
 }
