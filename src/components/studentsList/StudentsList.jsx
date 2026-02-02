@@ -181,6 +181,8 @@ const StudentsList = () => {
         specialty: null
     });
     const [searchQuery, setSearchQuery] = useState("");
+    const [tempSearchQuery, setTempSearchQuery] = useState("");
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     const searchRef = useRef(null);
     const filterRef = useRef(null);
@@ -191,7 +193,7 @@ const StudentsList = () => {
             setLoading(true);
 
             const filterData = {
-                findString: query.trim() || null,
+                findString: query?.trim() || null,
                 course: filters.course ? [filters.course] : [],
                 bornAfter: filters.adult ? "2006-01-01" : null,
                 specialitiesIds: filters.specialty ? [filters.specialty.id] : []
@@ -212,6 +214,25 @@ const StudentsList = () => {
     }, []);
 
     useEffect(() => {
+        const loadInitialData = async () => {
+            try {
+                setLoading(true);
+                const data = await fetchFilteredStudents({}, "");
+                setAllStudents(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+                setIsInitialLoad(false);
+            }
+        };
+
+        if (isInitialLoad) {
+            loadInitialData();
+        }
+    }, [isInitialLoad, fetchFilteredStudents]);
+
+    useEffect(() => {
         const handleResize = () => {
             const mobile = window.innerWidth <= 768;
             setIsMobile(mobile);
@@ -221,6 +242,11 @@ const StudentsList = () => {
             }
         };
 
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (isMobile) {
                 if (searchExpanded && searchRef.current && !searchRef.current.contains(event.target)) {
@@ -232,28 +258,9 @@ const StudentsList = () => {
             }
         };
 
-        const initialFetch = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchFilteredStudents({}, "");
-                setAllStudents(data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        initialFetch();
-
-        window.addEventListener('resize', handleResize);
         document.addEventListener('mousedown', handleClickOutside);
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isMobile, searchExpanded, filterExpanded, fetchFilteredStudents]);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isMobile, searchExpanded, filterExpanded]);
 
     useEffect(() => {
         const applyFilters = async () => {
@@ -261,12 +268,8 @@ const StudentsList = () => {
             setAllStudents(data);
         };
 
-        const timeoutId = setTimeout(() => {
-            applyFilters();
-        }, 300);
-
-        return () => clearTimeout(timeoutId);
-    }, [currentFilters, searchQuery, fetchFilteredStudents]);
+        applyFilters();
+    }, [currentFilters, fetchFilteredStudents]);
 
     const handleSearchClick = () => {
         if (isMobile) {
@@ -283,15 +286,23 @@ const StudentsList = () => {
     };
 
     const handleSearchChange = (e) => {
-        setSearchQuery(e.target.value);
+        setTempSearchQuery(e.target.value);
     };
 
     const handleSearchKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
+            setSearchQuery(tempSearchQuery);
             if (isMobile) {
                 setSearchExpanded(false);
             }
+        }
+    };
+
+    const handleSearchSubmit = () => {
+        setSearchQuery(tempSearchQuery);
+        if (isMobile) {
+            setSearchExpanded(false);
         }
     };
 
@@ -318,16 +329,18 @@ const StudentsList = () => {
             specialty: null
         });
         setSearchQuery("");
+        setTempSearchQuery("");
     };
 
     const clearSearch = () => {
         setSearchQuery("");
+        setTempSearchQuery("");
         if (searchInputRef.current) {
             searchInputRef.current.focus();
         }
     };
 
-    if (loading) {
+    if (loading && isInitialLoad) {
         return (
             <section className="studentsList-section">
                 <div className="studentsList">
@@ -359,7 +372,14 @@ const StudentsList = () => {
                             className={`studentsList__search-wrapper ${searchExpanded ? 'expanded' : ''}`}
                             onClick={handleSearchClick}
                         >
-                            <div className="studentsList__search-icon">
+                            <div
+                                className="studentsList__search-icon"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSearchSubmit();
+                                }}
+                                style={{ cursor: 'pointer' }}
+                            >
                                 <img src={searchIcon} alt="search"/>
                             </div>
                             <input
@@ -368,11 +388,11 @@ const StudentsList = () => {
                                 className="studentsList__search"
                                 placeholder="Профессия / Стэк ..."
                                 autoFocus={searchExpanded}
-                                value={searchQuery}
+                                value={tempSearchQuery}
                                 onChange={handleSearchChange}
                                 onKeyDown={handleSearchKeyDown}
                             />
-                            {searchQuery && (
+                            {tempSearchQuery && (
                                 <div
                                     className="clear-search"
                                     onClick={(e) => { e.stopPropagation(); clearSearch(); }}
