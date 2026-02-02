@@ -158,37 +158,24 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: max-content;
     margin: 0 auto;
     will-change: transform;
 }
 
 .studentSlider__cardContainer {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
 
 .studentSlider__cardContainer.active {
     z-index: 3;
-    transform: scale(1) !important;
-    opacity: 1 !important;
 }
 
-.studentSlider__cardContainer.prev-card {
+.studentSlider__cardContainer:not(.active) {
     opacity: 0.6;
-    transform: scale(0.85) translateX(-40px);
-}
-
-.studentSlider__cardContainer.next-card {
-    opacity: 0.6;
-    transform: scale(0.85) translateX(40px);
-}
-
-.studentSlider__cardContainer.far-left,
-.studentSlider__cardContainer.far-right {
-    opacity: 0.3;
-    transform: scale(0.7);
+    transform: scale(0.85);
 }
 
 .studentSlider__listButton {
@@ -281,96 +268,67 @@
     box-shadow: 0 5px 15px rgba(233, 90, 87, 0.3);
 }
 
-@keyframes slideInFromRight {
-    from {
-        opacity: 0;
-        transform: translateX(100px) scale(0.85);
+.studentSlider__listWrapper.sliding-left {
+    animation: slideToRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__listWrapper.sliding-right {
+    animation: slideToLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideToRight {
+    0% {
+        transform: translateX(0);
     }
-    to {
-        opacity: 0.6;
-        transform: translateX(40px) scale(0.85);
+    100% {
+        transform: translateX(100px);
     }
 }
 
-@keyframes slideInFromLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-100px) scale(0.85);
+@keyframes slideToLeft {
+    0% {
+        transform: translateX(0);
     }
-    to {
-        opacity: 0.6;
-        transform: translateX(-40px) scale(0.85);
+    100% {
+        transform: translateX(-100px);
     }
 }
 
-@keyframes slideOutToRight {
-    from {
-        opacity: 0.6;
-        transform: translateX(40px) scale(0.85);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100px) scale(0.85);
-    }
-}
-
-@keyframes slideOutToLeft {
-    from {
-        opacity: 0.6;
-        transform: translateX(-40px) scale(0.85);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(-100px) scale(0.85);
-    }
-}
-
-@keyframes becomeActiveFromRight {
-    from {
-        opacity: 0.6;
-        transform: translateX(40px) scale(0.85);
-    }
-    to {
+@keyframes fadeOut {
+    0% {
         opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.85);
     }
 }
 
-@keyframes becomeActiveFromLeft {
-    from {
-        opacity: 0.6;
-        transform: translateX(-40px) scale(0.85);
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85);
     }
-    to {
+    100% {
         opacity: 1;
-        transform: translateX(0) scale(1);
+        transform: scale(1);
     }
 }
 
-.slide-in-right {
-    animation: slideInFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.studentSlider__cardContainer:not(.active) {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.slide-in-left {
-    animation: slideInFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.studentSlider__listButton,
+.studentSlider__mobileButton {
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.slide-out-right {
-    animation: slideOutToRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    pointer-events: none;
-}
-
-.slide-out-left {
-    animation: slideOutToLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    pointer-events: none;
-}
-
-.become-active-right {
-    animation: becomeActiveFromRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.become-active-left {
-    animation: becomeActiveFromLeft 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.studentSlider__listButton:active,
+.studentSlider__mobileButton:active {
+    transform: scale(0.95);
 }
 
 @media (max-width: 1440px) {

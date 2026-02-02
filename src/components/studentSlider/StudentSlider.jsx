@@ -44,33 +44,28 @@ const StudentSlider = () => {
         };
     }, []);
 
-    // Определяем позиции карточек
     const getCardPositions = () => {
         const positions = [];
 
         if (students.length === 0) return positions;
 
-        // Центральная карточка (активная)
         positions.push({
             index: activeIndex,
             position: 'active'
         });
 
-        // Левая карточка
         const leftIndex = activeIndex > 0 ? activeIndex - 1 : students.length - 1;
         positions.push({
             index: leftIndex,
             position: 'prev-card'
         });
 
-        // Правая карточка
         const rightIndex = activeIndex < students.length - 1 ? activeIndex + 1 : 0;
         positions.push({
             index: rightIndex,
             position: 'next-card'
         });
 
-        // Крайняя левая карточка
         const farLeftIndex = leftIndex > 0 ? leftIndex - 1 : students.length - 1;
         if (farLeftIndex !== activeIndex && farLeftIndex !== rightIndex) {
             positions.push({
@@ -79,7 +74,6 @@ const StudentSlider = () => {
             });
         }
 
-        // Крайняя правая карточка
         const farRightIndex = rightIndex < students.length - 1 ? rightIndex + 1 : 0;
         if (farRightIndex !== activeIndex && farRightIndex !== leftIndex && positions.length < 5) {
             positions.push({
@@ -97,7 +91,6 @@ const StudentSlider = () => {
         setIsAnimating(true);
         setSlideDirection(direction);
 
-        // Определяем новые анимации для карточек
         const newAnimations = {};
         const positions = getCardPositions();
 
@@ -127,7 +120,6 @@ const StudentSlider = () => {
 
         setAnimations(newAnimations);
 
-        // Обновляем активный индекс после небольшой задержки
         setTimeout(() => {
             let newIndex;
             if (direction === 'prev') {
@@ -138,7 +130,6 @@ const StudentSlider = () => {
             setActiveIndex(newIndex);
         }, 100);
 
-        // Сбрасываем анимации
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
         }
