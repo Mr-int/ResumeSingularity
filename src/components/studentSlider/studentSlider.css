@@ -158,14 +158,14 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: max-content;
     margin: 0 auto;
     will-change: transform;
 }
 
 .studentSlider__cardContainer {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
 
@@ -266,6 +266,134 @@
 .studentSlider__button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(233, 90, 87, 0.3);
+}
+
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100%) scale(0.85);
+    }
+    to {
+        opacity: 0.6;
+        transform: translateX(0) scale(0.85);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%) scale(0.85);
+    }
+    to {
+        opacity: 0.6;
+        transform: translateX(0) scale(0.85);
+    }
+}
+
+@keyframes slideOutToLeft {
+    from {
+        opacity: 0.6;
+        transform: translateX(0) scale(0.85);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-100%) scale(0.85);
+    }
+}
+
+@keyframes slideOutToRight {
+    from {
+        opacity: 0.6;
+        transform: translateX(0) scale(0.85);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%) scale(0.85);
+    }
+}
+
+@keyframes slideInFromLeftActive {
+    from {
+        opacity: 0;
+        transform: translateX(-100%) scale(1);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes slideInFromRightActive {
+    from {
+        opacity: 0;
+        transform: translateX(100%) scale(1);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes slideOutToLeftActive {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-100%) scale(1);
+    }
+}
+
+@keyframes slideOutToRightActive {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%) scale(1);
+    }
+}
+
+.studentSlider__cardContainer.slide-in-left {
+    animation: slideInFromLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__cardContainer.slide-in-right {
+    animation: slideInFromRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__cardContainer.slide-out-left {
+    animation: slideOutToLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+}
+
+.studentSlider__cardContainer.slide-out-right {
+    animation: slideOutToRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+}
+
+.studentSlider__cardContainer.active.slide-in-left {
+    animation: slideInFromLeftActive 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__cardContainer.active.slide-in-right {
+    animation: slideInFromRightActive 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__cardContainer.active.slide-out-left {
+    animation: slideOutToLeftActive 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+}
+
+.studentSlider__cardContainer.active.slide-out-right {
+    animation: slideOutToRightActive 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+}
+
+.studentSlider__cardContainer:not(.active) .studentSliderCard {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (max-width: 1440px) {
