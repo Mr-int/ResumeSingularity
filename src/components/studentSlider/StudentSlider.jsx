@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
-    const [activeCardIndex, setActiveCardIndex] = useState(0);
+    const [activeCardIndex, setActiveCardIndex] = useState(2);
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -25,6 +25,10 @@ const StudentSlider = () => {
                 setLoading(true);
                 const data = await getAllStudents();
                 setStudents(data);
+                if (data.length > 0) {
+                    const middleIndex = Math.min(2, Math.floor(data.slice(0, 5).length / 2));
+                    setActiveCardIndex(middleIndex);
+                }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
             } finally {
@@ -35,15 +39,22 @@ const StudentSlider = () => {
         fetchStudents();
     }, []);
 
+    const getCycledIndex = (index) => {
+        const maxVisible = 5;
+        const normalizedIndex = ((index % maxVisible) + maxVisible) % maxVisible;
+        return Math.min(normalizedIndex, students.length - 1);
+    };
+
     useEffect(() => {
         const updatePosition = () => {
-            if (!listWrapperRef.current || students.length === 0) return;
+            if (!listWrapperRef.current || students.slice(0, 5).length === 0) return;
 
             const wrapper = listWrapperRef.current;
-            const wrapperRect = wrapper.getBoundingClientRect();
-            const activeContainer = wrapper.children[activeCardIndex % students.length];
+            const cycledIndex = getCycledIndex(activeCardIndex);
+            const activeContainer = wrapper.children[cycledIndex];
 
             if (activeContainer) {
+                const wrapperRect = wrapper.getBoundingClientRect();
                 const activeRect = activeContainer.getBoundingClientRect();
                 const offset = (wrapperRect.width / 2) - (activeRect.width / 2) - activeRect.left + wrapperRect.left;
 
@@ -79,13 +90,24 @@ const StudentSlider = () => {
 
     const handlePrevClick = () => {
         if (students.length > 0) {
-            setActiveCardIndex((prev) => prev - 1);
+            setActiveCardIndex((prev) => {
+                if (prev === 0) {
+                    return Math.min(students.length - 1, 4);
+                }
+                return prev - 1;
+            });
         }
     };
 
     const handleNextClick = () => {
         if (students.length > 0) {
-            setActiveCardIndex((prev) => prev + 1);
+            const maxIndex = Math.min(students.length - 1, 4);
+            setActiveCardIndex((prev) => {
+                if (prev === maxIndex) {
+                    return 0;
+                }
+                return prev + 1;
+            });
         }
     };
 
@@ -93,26 +115,9 @@ const StudentSlider = () => {
         setActiveCardIndex(index);
     };
 
-    const displayedStudents = students;
-    const activeStudent = students.length > 0 ? students[activeCardIndex % students.length] : null;
-
-    const renderedCards = students.length > 0 ? (
-        Array.from({ length: Math.max(5, students.length) }, (_, i) => {
-            const studentIndex = (activeCardIndex + i - 2 + students.length) % students.length;
-            return (
-                <div
-                    key={`card-${studentIndex}-${i}`}
-                    className={`studentSlider__cardContainer ${i === 2 ? 'active' : ''}`}
-                >
-                    <StudentSliderCard
-                        student={students[studentIndex]}
-                        isActive={i === 2}
-                        onClick={() => handleCardClick(activeCardIndex + i - 2)}
-                    />
-                </div>
-            );
-        })
-    ) : null;
+    const displayedStudents = students.slice(0, 5);
+    const cycledActiveIndex = getCycledIndex(activeCardIndex);
+    const activeStudent = displayedStudents.length > 0 ? displayedStudents[cycledActiveIndex] : null;
 
     return (
         <section className="studentSlider">
@@ -134,7 +139,7 @@ const StudentSlider = () => {
 
                     <h2 className="studentSlider__title">Студенты</h2>
 
-                    <button className="studentSlider__filter">
+                    <button className={`studentSlider__filter`}>
                         <span>Фильтр</span>
                         <img src={filterIcon} alt="Фильтр"/>
                     </button>
@@ -151,7 +156,18 @@ const StudentSlider = () => {
                                 </button>
 
                                 <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
-                                    {renderedCards}
+                                    {displayedStudents.map((student, index) => (
+                                        <div
+                                            key={student.id}
+                                            className={`studentSlider__cardContainer ${index === cycledActiveIndex ? 'active' : ''}`}
+                                        >
+                                            <StudentSliderCard
+                                                student={student}
+                                                isActive={index === cycledActiveIndex}
+                                                onClick={() => handleCardClick(index)}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
