@@ -116,13 +116,14 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: black;
+    background: transparent;
     border-radius: 100px;
     z-index: -2;
 }
 
 .banner__button:hover {
     border-color: #fff;
+    background: none;
 }
 
 .banner__button:hover::before {
