@@ -158,14 +158,14 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     width: max-content;
     margin: 0 auto;
     will-change: transform;
 }
 
 .studentSlider__cardContainer {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
 
@@ -266,69 +266,6 @@
 .studentSlider__button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(233, 90, 87, 0.3);
-}
-
-.studentSlider__listWrapper.sliding-left {
-    animation: slideToRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.studentSlider__listWrapper.sliding-right {
-    animation: slideToLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes slideToRight {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(100px);
-    }
-}
-
-@keyframes slideToLeft {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-100px);
-    }
-}
-
-@keyframes fadeOut {
-    0% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(0.85);
-    }
-}
-
-@keyframes fadeIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.85);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.studentSlider__cardContainer:not(.active) {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.studentSlider__listButton,
-.studentSlider__mobileButton {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.studentSlider__listButton:active,
-.studentSlider__mobileButton:active {
-    transform: scale(0.95);
 }
 
 @media (max-width: 1440px) {
