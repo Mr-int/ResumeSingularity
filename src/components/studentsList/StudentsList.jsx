@@ -300,6 +300,7 @@ const StudentsList = () => {
     };
 
     const handleSearchSubmit = () => {
+
         setSearchQuery(tempSearchQuery);
         if (isMobile) {
             setSearchExpanded(false);
