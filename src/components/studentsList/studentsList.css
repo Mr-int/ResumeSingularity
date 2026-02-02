@@ -106,6 +106,10 @@
     font-family: StratosSemiLight;
 }
 
+.studentsList__filter:hover {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+}
+
 .studentsList__filter.has-filters {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border-color: transparent;
