@@ -178,22 +178,22 @@ const StudentsList = () => {
     const [currentFilters, setCurrentFilters] = useState({
         course: null,
         adult: false,
-        specialty: null
+        specialty: null,
+        searchQuery: "" // Добавляем searchQuery в фильтры
     });
-    const [searchQuery, setSearchQuery] = useState("");
-    const [tempSearchQuery, setTempSearchQuery] = useState("");
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    const [tempSearchQuery, setTempSearchQuery] = useState(""); // Для временного хранения значения в поле ввода
 
     const searchRef = useRef(null);
     const filterRef = useRef(null);
     const searchInputRef = useRef(null);
 
-    const fetchFilteredStudents = useCallback(async (filters, query) => {
+    // Мемоизированная функция для получения студентов с фильтрами
+    const fetchFilteredStudents = useCallback(async (filters) => {
         try {
             setLoading(true);
 
             const filterData = {
-                findString: query?.trim() || null,
+                findString: filters.searchQuery?.trim() || null,
                 course: filters.course ? [filters.course] : [],
                 bornAfter: filters.adult ? "2006-01-01" : null,
                 specialitiesIds: filters.specialty ? [filters.specialty.id] : []
@@ -213,25 +213,39 @@ const StudentsList = () => {
         }
     }, []);
 
+    // Первоначальная загрузка данных
     useEffect(() => {
         const loadInitialData = async () => {
             try {
                 setLoading(true);
-                const data = await fetchFilteredStudents({}, "");
+                const data = await fetchFilteredStudents({
+                    course: null,
+                    adult: false,
+                    specialty: null,
+                    searchQuery: ""
+                });
                 setAllStudents(data);
             } catch (err) {
                 setError(err.message);
             } finally {
                 setLoading(false);
-                setIsInitialLoad(false);
             }
         };
 
-        if (isInitialLoad) {
-            loadInitialData();
-        }
-    }, [isInitialLoad, fetchFilteredStudents]);
+        loadInitialData();
+    }, [fetchFilteredStudents]);
 
+    // Применение фильтров при изменении currentFilters
+    useEffect(() => {
+        const applyFilters = async () => {
+            const data = await fetchFilteredStudents(currentFilters);
+            setAllStudents(data);
+        };
+
+        applyFilters();
+    }, [currentFilters, fetchFilteredStudents]);
+
+    // Обработчик изменения размеров окна
     useEffect(() => {
         const handleResize = () => {
             const mobile = window.innerWidth <= 768;
@@ -246,6 +260,7 @@ const StudentsList = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Обработчик кликов вне элементов поиска/фильтра
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (isMobile) {
@@ -262,15 +277,6 @@ const StudentsList = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isMobile, searchExpanded, filterExpanded]);
 
-    useEffect(() => {
-        const applyFilters = async () => {
-            const data = await fetchFilteredStudents(currentFilters, searchQuery);
-            setAllStudents(data);
-        };
-
-        applyFilters();
-    }, [currentFilters, fetchFilteredStudents]);
-
     const handleSearchClick = () => {
         if (isMobile) {
             setSearchExpanded(!searchExpanded);
@@ -286,13 +292,17 @@ const StudentsList = () => {
     };
 
     const handleSearchChange = (e) => {
-        setTempSearchQuery(e.target.value);
+        setTempSearchQuery(e.target.value); // Сохраняем во временное состояние
     };
 
     const handleSearchKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            setSearchQuery(tempSearchQuery);
+            // Применяем поиск только при нажатии Enter
+            setCurrentFilters(prev => ({
+                ...prev,
+                searchQuery: tempSearchQuery
+            }));
             if (isMobile) {
                 setSearchExpanded(false);
             }
@@ -300,8 +310,11 @@ const StudentsList = () => {
     };
 
     const handleSearchSubmit = () => {
-
-        setSearchQuery(tempSearchQuery);
+        // Применяем поиск при клике на иконку
+        setCurrentFilters(prev => ({
+            ...prev,
+            searchQuery: tempSearchQuery
+        }));
         if (isMobile) {
             setSearchExpanded(false);
         }
@@ -319,7 +332,11 @@ const StudentsList = () => {
 
     const handleApplyFilters = (filters) => {
         console.log('[ACTION] Applying filters:', filters);
-        setCurrentFilters(filters);
+        setCurrentFilters(prev => ({
+            ...prev,
+            ...filters,
+            searchQuery: prev.searchQuery // Сохраняем текущий поисковый запрос
+        }));
     };
 
     const handleResetFilters = () => {
@@ -327,21 +344,24 @@ const StudentsList = () => {
         setCurrentFilters({
             course: null,
             adult: false,
-            specialty: null
+            specialty: null,
+            searchQuery: ""
         });
-        setSearchQuery("");
         setTempSearchQuery("");
     };
 
     const clearSearch = () => {
-        setSearchQuery("");
+        setCurrentFilters(prev => ({
+            ...prev,
+            searchQuery: ""
+        }));
         setTempSearchQuery("");
         if (searchInputRef.current) {
             searchInputRef.current.focus();
         }
     };
 
-    if (loading && isInitialLoad) {
+    if (loading) {
         return (
             <section className="studentsList-section">
                 <div className="studentsList">
@@ -361,7 +381,7 @@ const StudentsList = () => {
         );
     }
 
-    const hasActiveFilters = currentFilters.course || currentFilters.adult || currentFilters.specialty || searchQuery;
+    const hasActiveFilters = currentFilters.course || currentFilters.adult || currentFilters.specialty || currentFilters.searchQuery;
 
     return (
         <section className="studentsList-section">
@@ -392,6 +412,10 @@ const StudentsList = () => {
                                 value={tempSearchQuery}
                                 onChange={handleSearchChange}
                                 onKeyDown={handleSearchKeyDown}
+                                onBlur={() => {
+                                    // При потере фокуса можно применить поиск, если нужно
+                                    // или просто сохранить значение в temp
+                                }}
                             />
                             {tempSearchQuery && (
                                 <div
@@ -447,9 +471,9 @@ const StudentsList = () => {
                                     {currentFilters.specialty.name}
                                 </div>
                             )}
-                            {searchQuery && (
+                            {currentFilters.searchQuery && (
                                 <div className="active-filter-tag">
-                                    Поиск: "{searchQuery}"
+                                    Поиск: "{currentFilters.searchQuery}"
                                 </div>
                             )}
                             <button
