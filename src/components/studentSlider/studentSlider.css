@@ -261,44 +261,11 @@
     box-sizing: border-box;
     transition: all 0.3s ease;
     text-align: center;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    outline: none;
-}
-
-.studentSlider__button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    border-radius: 100px;
-    z-index: -1;
-    transition: opacity 0.3s ease;
-}
-
-.studentSlider__button::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: transparent;
-    border-radius: 100px;
-    z-index: -2;
 }
 
 .studentSlider__button:hover {
     background: none;
     border: 2px solid #fff;
-}
-
-.studentSlider__button:hover::before {
-    opacity: 0;
 }
 
 @media (max-width: 1440px) {
