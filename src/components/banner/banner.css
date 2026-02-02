@@ -125,6 +125,7 @@
 .banner__button:hover {
     border-color: #fff;
     background: none;
+    border: 2px solid #fff;
 }
 
 .banner__button:hover::before {
