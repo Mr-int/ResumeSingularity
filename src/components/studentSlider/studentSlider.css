@@ -264,8 +264,8 @@
 }
 
 .studentSlider__button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(233, 90, 87, 0.3);
+    background: none;
+    border: 2px solid #fff;
 }
 
 @media (max-width: 1440px) {
