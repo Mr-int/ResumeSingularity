@@ -86,6 +86,7 @@
     width: 290px;
     height: 46px;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    outline: none;
     border: none;
     border-radius: 100px;
     color: #fff;
@@ -98,13 +99,45 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: all 0.3s ease;
     text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.hero__button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border-radius: 100px;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.hero__button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    border-radius: 100px;
+    z-index: -2;
 }
 
 .hero__button:hover {
     background: none;
     border: 2px solid #fff;
+}
+
+.hero__button:hover::before {
+    opacity: 0;
 }
 
 .button__icon {
