@@ -15,8 +15,9 @@ const StudentSlider = () => {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
     const [slideDirection, setSlideDirection] = useState(null);
+    const [animations, setAnimations] = useState({});
     const [isAnimating, setIsAnimating] = useState(false);
-    const animationRef = useRef(null);
+    const animationTimeoutRef = useRef(null);
 
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
@@ -37,37 +38,51 @@ const StudentSlider = () => {
         fetchStudents();
 
         return () => {
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
+            if (animationTimeoutRef.current) {
+                clearTimeout(animationTimeoutRef.current);
             }
         };
     }, []);
 
-    const getVisibleCards = () => {
-        if (students.length === 0) return [];
+    const getCardPositions = () => {
+        const positions = [];
 
-        const visibleCards = [];
-        const totalCards = Math.min(5, students.length);
+        if (students.length === 0) return positions;
 
-        for (let i = -2; i <= 2; i++) {
-            let cardIndex = activeIndex + i;
+        positions.push({
+            index: activeIndex,
+            position: 'active'
+        });
 
-            if (cardIndex < 0) {
-                cardIndex = students.length + cardIndex;
-            } else if (cardIndex >= students.length) {
-                cardIndex = cardIndex % students.length;
-            }
+        const leftIndex = activeIndex > 0 ? activeIndex - 1 : students.length - 1;
+        positions.push({
+            index: leftIndex,
+            position: 'prev-card'
+        });
 
-            if (cardIndex >= 0 && cardIndex < students.length) {
-                visibleCards.push({
-                    student: students[cardIndex],
-                    position: i,
-                    isActive: i === 0
-                });
-            }
+        const rightIndex = activeIndex < students.length - 1 ? activeIndex + 1 : 0;
+        positions.push({
+            index: rightIndex,
+            position: 'next-card'
+        });
+
+        const farLeftIndex = leftIndex > 0 ? leftIndex - 1 : students.length - 1;
+        if (farLeftIndex !== activeIndex && farLeftIndex !== rightIndex) {
+            positions.push({
+                index: farLeftIndex,
+                position: 'far-left'
+            });
         }
 
-        return visibleCards;
+        const farRightIndex = rightIndex < students.length - 1 ? rightIndex + 1 : 0;
+        if (farRightIndex !== activeIndex && farRightIndex !== leftIndex && positions.length < 5) {
+            positions.push({
+                index: farRightIndex,
+                position: 'far-right'
+            });
+        }
+
+        return positions;
     };
 
     const shiftCards = (direction) => {
@@ -76,19 +91,53 @@ const StudentSlider = () => {
         setIsAnimating(true);
         setSlideDirection(direction);
 
-        let newIndex;
-        if (direction === 'prev') {
-            newIndex = activeIndex === 0 ? students.length - 1 : activeIndex - 1;
-        } else {
-            newIndex = (activeIndex + 1) % students.length;
-        }
+        const newAnimations = {};
+        const positions = getCardPositions();
 
-        setActiveIndex(newIndex);
+        positions.forEach(card => {
+            if (direction === 'prev') {
+                if (card.position === 'active') {
+                    newAnimations[card.index] = 'become-active-left';
+                } else if (card.position === 'prev-card') {
+                    newAnimations[card.index] = 'slide-out-left';
+                } else if (card.position === 'next-card') {
+                    newAnimations[card.index] = 'slide-in-right';
+                } else if (card.position === 'far-left') {
+                    newAnimations[card.index] = 'slide-in-left';
+                }
+            } else if (direction === 'next') {
+                if (card.position === 'active') {
+                    newAnimations[card.index] = 'become-active-right';
+                } else if (card.position === 'prev-card') {
+                    newAnimations[card.index] = 'slide-in-left';
+                } else if (card.position === 'next-card') {
+                    newAnimations[card.index] = 'slide-out-right';
+                } else if (card.position === 'far-right') {
+                    newAnimations[card.index] = 'slide-in-right';
+                }
+            }
+        });
+
+        setAnimations(newAnimations);
 
         setTimeout(() => {
-            setIsAnimating(false);
+            let newIndex;
+            if (direction === 'prev') {
+                newIndex = activeIndex > 0 ? activeIndex - 1 : students.length - 1;
+            } else {
+                newIndex = activeIndex < students.length - 1 ? activeIndex + 1 : 0;
+            }
+            setActiveIndex(newIndex);
+        }, 100);
+
+        if (animationTimeoutRef.current) {
+            clearTimeout(animationTimeoutRef.current);
+        }
+        animationTimeoutRef.current = setTimeout(() => {
+            setAnimations({});
             setSlideDirection(null);
-        }, 300);
+            setIsAnimating(false);
+        }, 500);
     };
 
     const handleSearchChange = (e) => {
@@ -119,17 +168,17 @@ const StudentSlider = () => {
     };
 
     const handleCardClick = (position) => {
-        if (isAnimating || position === 0) return;
+        if (isAnimating) return;
 
-        if (position < 0) {
+        if (position === 'prev-card') {
             handlePrevClick();
-        } else if (position > 0) {
+        } else if (position === 'next-card') {
             handleNextClick();
         }
     };
 
     const activeStudent = students.length > 0 ? students[activeIndex] : null;
-    const visibleCards = getVisibleCards();
+    const cardPositions = getCardPositions();
 
     return (
         <section className="studentSlider">
@@ -171,25 +220,24 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div
-                                    className={`studentSlider__listWrapper ${
-                                        slideDirection === 'prev' ? 'sliding-left' :
-                                            slideDirection === 'next' ? 'sliding-right' : ''
-                                    }`}
-                                    ref={listWrapperRef}
-                                >
-                                    {visibleCards.map((card, index) => (
-                                        <div
-                                            key={`${card.student.id}-${index}`}
-                                            className={`studentSlider__cardContainer ${card.isActive ? 'active' : ''}`}
-                                            onClick={() => handleCardClick(card.position)}
-                                        >
-                                            <StudentSliderCard
-                                                student={card.student}
-                                                isActive={card.isActive}
-                                            />
-                                        </div>
-                                    ))}
+                                <div className="studentSlider__listWrapper" ref={listWrapperRef}>
+                                    {cardPositions.map((card, idx) => {
+                                        const student = students[card.index];
+                                        const animationClass = animations[card.index] || '';
+
+                                        return (
+                                            <div
+                                                key={`${student.id}-${idx}`}
+                                                className={`studentSlider__cardContainer ${card.position} ${animationClass}`}
+                                                onClick={() => handleCardClick(card.position)}
+                                            >
+                                                <StudentSliderCard
+                                                    student={student}
+                                                    isActive={card.position === 'active'}
+                                                />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
 
                                 <button
