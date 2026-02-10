@@ -166,6 +166,10 @@
 }
 
 .studentSlider__cardContainer {
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
 }
@@ -420,6 +424,9 @@
     .studentSlider__container {
         min-height: 320px;
     }
+    .studentSlider__cardContainer {
+        height: 300px;
+    }
 
     .studentSlider__content::before,
     .studentSlider__content::after {
@@ -560,6 +567,9 @@
     .studentSlider__container {
         min-height: 290px;
     }
+    .studentSlider__cardContainer {
+        height: 270px;
+    }
 
     .studentSlider__title {
         font-size: 20px;
@@ -666,6 +676,9 @@
     }
     .studentSlider__container {
         min-height: 260px;
+    }
+    .studentSlider__cardContainer {
+        height: 240px;
     }
 
     .studentSlider__content::before,
