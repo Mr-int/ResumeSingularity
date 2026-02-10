@@ -10,13 +10,11 @@ import { Link } from "react-router-dom";
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
-    const [activeCardIndex, setActiveCardIndex] = useState(2); // индекс активной карточки в общем списке
+    const [activeCardIndex, setActiveCardIndex] = useState(0); // индекс активной карточки в общем списке
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
-    const [visibleCards, setVisibleCards] = useState([]); // всегда 5 карточек в слайдере
-    const [direction, setDirection] = useState(null); // 'prev' | 'next' | null
     const animationTimeoutRef = useRef(null);
 
     const searchInputRef = useRef(null);
@@ -32,14 +30,6 @@ const StudentSlider = () => {
                 if (data.length > 0) {
                     const middleIndex = Math.floor(data.length / 2);
                     setActiveCardIndex(middleIndex);
-
-                    // сформировать первоначальное окно из 5 карточек, где центральная всегда по индексу 2
-                    const newVisibleCards = [];
-                    for (let i = 0; i < 5; i++) {
-                        const cardIndex = (middleIndex + i - 2 + data.length) % data.length;
-                        newVisibleCards[i] = data[cardIndex];
-                    }
-                    setVisibleCards(newVisibleCards);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -57,65 +47,42 @@ const StudentSlider = () => {
         };
     }, []);
 
-    // центрируем контейнер так, чтобы карточка с индексом 2 (середина окна) всегда была строго по центру слайдера
+    // центрируем контейнер так, чтобы активная карточка из общего списка была в центре.
+    // при этом используем плавный translateX контейнера + transition карточек (scale/opacity),
+    // чтобы старая центральная карточка "усаживалась" в сторону, а новая мягко выезжала в центр.
     useEffect(() => {
         const updatePosition = () => {
-            if (!listWrapperRef.current || visibleCards.length === 0) return;
+            if (!listWrapperRef.current || students.length === 0) return;
 
             const wrapper = listWrapperRef.current;
-            const activeContainer = wrapper.children[2]; // центральная карточка в окне
+            const container = wrapper.parentElement;
+            if (!container) return;
 
-            if (activeContainer) {
-                const wrapperRect = wrapper.getBoundingClientRect();
-                const activeRect = activeContainer.getBoundingClientRect();
+            const children = Array.from(wrapper.children);
+            if (children.length === 0) return;
 
-                const offset =
-                    (wrapperRect.width / 2) -
-                    (activeRect.width / 2) -
-                    activeRect.left +
-                    wrapperRect.left;
+            const firstRect = children[0].getBoundingClientRect();
+            const secondRect = children[1] ? children[1].getBoundingClientRect() : null;
 
-                setListWrapperStyle({
-                    transform: `translateX(${offset}px)`,
-                    transition: 'transform 0.4s ease'
-                });
-            }
+            const cardWidthWithGap = secondRect
+                ? Math.abs(secondRect.left - firstRect.left)
+                : firstRect.width;
+
+            const containerRect = container.getBoundingClientRect();
+            const offset = containerRect.width / 2 - cardWidthWithGap / 2;
+
+            const translateX = -(activeCardIndex * cardWidthWithGap) + offset;
+
+            setListWrapperStyle({
+                transform: `translateX(${translateX}px)`,
+                transition: 'transform 0.4s ease'
+            });
         };
 
         requestAnimationFrame(updatePosition);
         window.addEventListener('resize', updatePosition);
         return () => window.removeEventListener('resize', updatePosition);
-    }, [visibleCards]);
-
-    // сдвиг окна карточек по кругу, при этом центральная остаётся в геометрическом центре,
-    // а данные для неё обновляются (бесконечный цикл по students)
-    const shiftCards = (newDirection) => {
-        if (students.length === 0) return;
-
-        setDirection(newDirection);
-
-        const total = students.length;
-        const newActiveIndex =
-            newDirection === 'prev'
-                ? (activeCardIndex - 1 + total) % total
-                : (activeCardIndex + 1) % total;
-
-        const newVisibleCards = [];
-        for (let i = 0; i < 5; i++) {
-            const cardIndex = (newActiveIndex + i - 2 + total) % total;
-            newVisibleCards[i] = students[cardIndex];
-        }
-
-        setActiveCardIndex(newActiveIndex);
-        setVisibleCards(newVisibleCards);
-
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, 300);
-    };
+    }, [students, activeCardIndex]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -137,54 +104,34 @@ const StudentSlider = () => {
     }
 
     const handlePrevClick = () => {
-        if (students.length > 0) {
-            shiftCards('prev');
-        }
+        if (students.length === 0) return;
+
+        setActiveCardIndex((prevIndex) => {
+            if (students.length === 0) return prevIndex;
+            // бесконечный цикл по списку
+            return (prevIndex - 1 + students.length) % students.length;
+        });
     };
 
     const handleNextClick = () => {
-        if (students.length > 0) {
-            shiftCards('next');
-        }
+        if (students.length === 0) return;
+
+        setActiveCardIndex((prevIndex) => {
+            if (students.length === 0) return prevIndex;
+            // бесконечный цикл по списку
+            return (prevIndex + 1) % students.length;
+        });
     };
 
     const handleCardClick = (index) => {
         if (students.length === 0) return;
 
-        // центральная уже в фокусе
-        if (index === 2) return;
+        if (index === activeCardIndex) return;
 
-        const clickedStudent = visibleCards[index];
-        if (!clickedStudent) return;
-
-        // найти глобальный индекс кликнутого студента
-        const globalIndex = students.findIndex((s) => s.id === clickedStudent.id);
-        if (globalIndex === -1) return;
-
-        const newDirection = index < 2 ? 'prev' : 'next';
-        setDirection(newDirection);
-
-        const total = students.length;
-        const newActiveIndex = globalIndex;
-
-        const newVisibleCards = [];
-        for (let i = 0; i < 5; i++) {
-            const cardIndex = (newActiveIndex + i - 2 + total) % total;
-            newVisibleCards[i] = students[cardIndex];
-        }
-
-        setActiveCardIndex(newActiveIndex);
-        setVisibleCards(newVisibleCards);
-
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, 300);
+        setActiveCardIndex(index);
     };
 
-    const activeStudent = visibleCards[2] || null;
+    const activeStudent = students[activeCardIndex] || null;
 
     return (
         <section className="studentSlider">
@@ -223,24 +170,14 @@ const StudentSlider = () => {
                                 </button>
 
                                 <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
-                                    {visibleCards.map((student, index) => (
+                                    {students.map((student, index) => (
                                         <div
-                                            key={`${student.id}-${index}`}
-                                            className={`studentSlider__cardContainer ${index === 2 ? 'active' : ''} ${
-                                                direction === 'prev' && index === 4
-                                                    ? 'slide-in-left'
-                                                    : direction === 'next' && index === 0
-                                                        ? 'slide-in-right'
-                                                        : direction === 'prev' && index === 0
-                                                            ? 'slide-out-right'
-                                                            : direction === 'next' && index === 4
-                                                                ? 'slide-out-left'
-                                                                : ''
-                                            }`}
+                                            key={student.id}
+                                            className={`studentSlider__cardContainer ${index === activeCardIndex ? 'active' : ''}`}
                                         >
                                             <StudentSliderCard
                                                 student={student}
-                                                isActive={index === 2}
+                                                isActive={index === activeCardIndex}
                                                 onClick={() => handleCardClick(index)}
                                             />
                                         </div>
