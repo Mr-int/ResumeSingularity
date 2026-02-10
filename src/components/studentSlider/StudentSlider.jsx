@@ -12,7 +12,6 @@ const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
     const [activeCardIndex, setActiveCardIndex] = useState(0);
     const [students, setStudents] = useState([]);
-    const [displayedCards, setDisplayedCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
@@ -20,9 +19,6 @@ const StudentSlider = () => {
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
     const sliderContainerRef = useRef(null);
-    const isAnimating = useRef(false);
-
-    const DUPLICATE_COUNT = 3;
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -34,7 +30,6 @@ const StudentSlider = () => {
                 if (data.length > 0) {
                     const middleIndex = Math.floor(data.length / 2);
                     setActiveCardIndex(middleIndex);
-                    createDisplayedCards(data, middleIndex);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -46,91 +41,37 @@ const StudentSlider = () => {
         fetchStudents();
     }, []);
 
-    const createDisplayedCards = (studentsArray, centerIndex) => {
-        if (studentsArray.length === 0) {
-            setDisplayedCards([]);
-            return;
-        }
-
-        const total = studentsArray.length;
-        const displayed = [];
-
-        for (let i = 0; i < DUPLICATE_COUNT; i++) {
-            const index = (centerIndex - DUPLICATE_COUNT + i + total) % total;
-            displayed.push({
-                student: studentsArray[index],
-                originalIndex: index,
-                isDuplicate: true
-            });
-        }
-
-        studentsArray.forEach((student, index) => {
-            displayed.push({
-                student,
-                originalIndex: index,
-                isDuplicate: false
-            });
-        });
-
-        for (let i = 0; i < DUPLICATE_COUNT; i++) {
-            const index = (centerIndex + i + 1) % total;
-            displayed.push({
-                student: studentsArray[index],
-                originalIndex: index,
-                isDuplicate: true
-            });
-        }
-
-        setDisplayedCards(displayed);
-    };
-
-    useEffect(() => {
-        if (students.length > 0) {
-            createDisplayedCards(students, activeCardIndex);
-        }
-    }, [students, activeCardIndex]);
-
+    // центрируем ленту так, чтобы активная карточка всегда была в центре контейнера
     useEffect(() => {
         const updatePosition = () => {
-            if (!listWrapperRef.current || !sliderContainerRef.current || displayedCards.length === 0) return;
+            if (!listWrapperRef.current || !sliderContainerRef.current || students.length === 0) return;
 
             const wrapper = listWrapperRef.current;
             const container = sliderContainerRef.current;
 
             const children = Array.from(wrapper.children);
-            if (children.length === 0) return;
+            if (children.length < 2) return;
 
-            const firstOriginalIndex = DUPLICATE_COUNT;
-            const firstCard = children[firstOriginalIndex];
-            const secondCard = children[firstOriginalIndex + 1];
+            const firstRect = children[0].getBoundingClientRect();
+            const secondRect = children[1].getBoundingClientRect();
 
-            if (!firstCard) return;
-
-            const firstRect = firstCard.getBoundingClientRect();
-            const secondRect = secondCard ? secondCard.getBoundingClientRect() : null;
-
-            const cardWidthWithGap = secondRect
-                ? Math.abs(secondRect.left - firstRect.left)
-                : firstRect.width;
+            const cardWidthWithGap = Math.abs(secondRect.left - firstRect.left) || firstRect.width;
 
             const containerWidth = container.offsetWidth;
             const centerOffset = containerWidth / 2 - cardWidthWithGap / 2;
 
-            const displayedActiveIndex = DUPLICATE_COUNT + activeCardIndex;
-            const translateX = -(displayedActiveIndex * cardWidthWithGap) + centerOffset;
+            const translateX = -(activeCardIndex * cardWidthWithGap) + centerOffset;
 
             setListWrapperStyle({
                 transform: `translateX(${translateX}px)`,
-                transition: isAnimating.current ? 'transform 0.4s ease' : 'none'
+                transition: 'transform 0.4s ease'
             });
-
-            isAnimating.current = false;
         };
 
         requestAnimationFrame(updatePosition);
         window.addEventListener('resize', updatePosition);
         return () => window.removeEventListener('resize', updatePosition);
-    }, [displayedCards, activeCardIndex]);
+    }, [students, activeCardIndex]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -152,34 +93,26 @@ const StudentSlider = () => {
     }
 
     const handlePrevClick = () => {
-        if (students.length === 0 || isAnimating.current) return;
+        if (students.length === 0) return;
 
-        isAnimating.current = true;
         setActiveCardIndex((prevIndex) => {
             const total = students.length;
-            return (prevIndex - 1 + total) % total;
+            return (prevIndex - 1 + total) % total; // 5 1 2 3 4 5 1
         });
     };
 
     const handleNextClick = () => {
-        if (students.length === 0 || isAnimating.current) return;
+        if (students.length === 0) return;
 
-        isAnimating.current = true;
         setActiveCardIndex((prevIndex) => {
             const total = students.length;
-            return (prevIndex + 1) % total;
+            return (prevIndex + 1) % total; // 5 1 2 3 4 5 1
         });
     };
 
     const handleCardClick = (index) => {
-        if (students.length === 0 || isAnimating.current || index === activeCardIndex) return;
-
-        isAnimating.current = true;
+        if (students.length === 0 || index === activeCardIndex) return;
         setActiveCardIndex(index);
-    };
-
-    const getIsActive = (originalIndex) => {
-        return originalIndex === activeCardIndex;
     };
 
     const activeStudent = students[activeCardIndex] || null;
@@ -221,26 +154,18 @@ const StudentSlider = () => {
                                 </button>
 
                                 <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
-                                    {displayedCards.map((cardData, index) => {
-                                        const displayedActiveIndex = DUPLICATE_COUNT + activeCardIndex;
-                                        const offset = index - displayedActiveIndex;
-                                        const isVisible = Math.abs(offset) <= 2; // только 5 карточек: центральная и по 2 с каждой стороны
-
-                                        return (
-                                            <div
-                                                key={`${cardData.student.id}-${index}-${cardData.isDuplicate ? 'dup' : 'orig'}`}
-                                                className={`studentSlider__cardContainer ${getIsActive(cardData.originalIndex) ? 'active' : ''} ${
-                                                    isVisible ? '' : 'studentSlider__cardContainer--hidden'
-                                                }`}
-                                            >
-                                                <StudentSliderCard
-                                                    student={cardData.student}
-                                                    isActive={getIsActive(cardData.originalIndex)}
-                                                    onClick={() => handleCardClick(cardData.originalIndex)}
-                                                />
-                                            </div>
-                                        );
-                                    })}
+                                    {students.map((student, index) => (
+                                        <div
+                                            key={student.id}
+                                            className={`studentSlider__cardContainer ${index === activeCardIndex ? 'active' : ''}`}
+                                        >
+                                            <StudentSliderCard
+                                                student={student}
+                                                isActive={index === activeCardIndex}
+                                                onClick={() => handleCardClick(index)}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
 
                                 <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
