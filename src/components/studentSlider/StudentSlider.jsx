@@ -19,6 +19,7 @@ const StudentSlider = () => {
 
     const searchInputRef = useRef(null);
     const listWrapperRef = useRef(null);
+    const sliderContainerRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -47,16 +48,13 @@ const StudentSlider = () => {
         };
     }, []);
 
-    // центрируем контейнер так, чтобы активная карточка из общего списка была в центре.
-    // при этом используем плавный translateX контейнера + transition карточек (scale/opacity),
-    // чтобы старая центральная карточка "усаживалась" в сторону, а новая мягко выезжала в центр.
+    // центрируем контейнер так, чтобы активная карточка из общего списка была геометрически по центру слайдера
     useEffect(() => {
         const updatePosition = () => {
-            if (!listWrapperRef.current || students.length === 0) return;
+            if (!listWrapperRef.current || !sliderContainerRef.current || students.length === 0) return;
 
             const wrapper = listWrapperRef.current;
-            const container = wrapper.parentElement;
-            if (!container) return;
+            const container = sliderContainerRef.current;
 
             const children = Array.from(wrapper.children);
             if (children.length === 0) return;
@@ -68,10 +66,10 @@ const StudentSlider = () => {
                 ? Math.abs(secondRect.left - firstRect.left)
                 : firstRect.width;
 
-            const containerRect = container.getBoundingClientRect();
-            const offset = containerRect.width / 2 - cardWidthWithGap / 2;
+            const containerWidth = container.offsetWidth;
+            const centerOffset = containerWidth / 2 - cardWidthWithGap / 2;
 
-            const translateX = -(activeCardIndex * cardWidthWithGap) + offset;
+            const translateX = -(activeCardIndex * cardWidthWithGap) + centerOffset;
 
             setListWrapperStyle({
                 transform: `translateX(${translateX}px)`,
@@ -163,7 +161,7 @@ const StudentSlider = () => {
                     <p style={{color: '#fff'}}>Загрузка студентов...</p>
                 ) : students.length > 0 ? (
                     <>
-                        <div className="studentSlider__container">
+                        <div className="studentSlider__container" ref={sliderContainerRef}>
                             <div className="studentSlider__list">
                                 <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick}>
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
