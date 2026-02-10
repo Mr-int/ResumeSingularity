@@ -10,13 +10,11 @@ import { Link } from "react-router-dom";
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
-    const [activeCardIndex, setActiveCardIndex] = useState(2);
+    const [activeCardIndex, setActiveCardIndex] = useState(0);
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
-    const [visibleCards, setVisibleCards] = useState([]);
-    const [direction, setDirection] = useState(null);
     const animationTimeoutRef = useRef(null);
 
     const searchInputRef = useRef(null);
@@ -29,9 +27,8 @@ const StudentSlider = () => {
                 const data = await getAllStudents();
                 setStudents(data);
                 if (data.length > 0) {
-                    const middleIndex = Math.min(2, Math.floor(data.slice(0, 5).length / 2));
+                    const middleIndex = Math.floor(data.length / 2);
                     setActiveCardIndex(middleIndex);
-                    setVisibleCards(data.slice(0, 5));
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -49,60 +46,39 @@ const StudentSlider = () => {
         };
     }, []);
 
-    const shiftCards = (newDirection) => {
-        if (students.length === 0) return;
-
-        setDirection(newDirection);
-
-        const maxIndex = Math.min(students.length - 1, 4);
-        let newActiveIndex;
-
-        if (newDirection === 'prev') {
-            newActiveIndex = activeCardIndex === 0 ? maxIndex : activeCardIndex - 1;
-        } else {
-            newActiveIndex = activeCardIndex === maxIndex ? 0 : activeCardIndex + 1;
-        }
-
-        const newVisibleCards = [];
-        for (let i = 0; i < 5; i++) {
-            const cardIndex = (newActiveIndex + i - 2 + students.length) % students.length;
-            newVisibleCards[i] = students[cardIndex];
-        }
-
-        setVisibleCards(newVisibleCards);
-        setActiveCardIndex(newActiveIndex);
-
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, 300);
-    };
-
     useEffect(() => {
         const updatePosition = () => {
-            if (!listWrapperRef.current || visibleCards.length === 0) return;
+            if (!listWrapperRef.current || students.length === 0) return;
 
             const wrapper = listWrapperRef.current;
-            const activeContainer = wrapper.children[2];
+            const container = wrapper.parentElement;
+            if (!container) return;
 
-            if (activeContainer) {
-                const wrapperRect = wrapper.getBoundingClientRect();
-                const activeRect = activeContainer.getBoundingClientRect();
-                const offset = (wrapperRect.width / 2) - (activeRect.width / 2) - activeRect.left + wrapperRect.left;
+            const children = Array.from(wrapper.children);
+            if (children.length === 0) return;
 
-                setListWrapperStyle({
-                    transform: `translateX(${offset}px)`,
-                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                });
-            }
+            const firstRect = children[0].getBoundingClientRect();
+            const secondRect = children[1] ? children[1].getBoundingClientRect() : null;
+
+            const cardWidthWithGap = secondRect
+                ? Math.abs(secondRect.left - firstRect.left)
+                : firstRect.width;
+
+            const containerRect = container.getBoundingClientRect();
+            const visibleCenterOffset = containerRect.width / 2 - cardWidthWithGap / 2;
+
+            const translateX = -(activeCardIndex * cardWidthWithGap) + visibleCenterOffset;
+
+            setListWrapperStyle({
+                transform: `translateX(${translateX}px)`,
+                transition: 'transform 0.4s ease'
+            });
         };
 
         requestAnimationFrame(updatePosition);
         window.addEventListener('resize', updatePosition);
         return () => window.removeEventListener('resize', updatePosition);
-    }, [visibleCards]);
+    }, [students, activeCardIndex]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -124,44 +100,30 @@ const StudentSlider = () => {
     }
 
     const handlePrevClick = () => {
-        if (students.length > 0) {
-            shiftCards('prev');
-        }
+        if (students.length === 0) return;
+
+        setActiveCardIndex((prevIndex) =>
+            prevIndex === 0 ? 0 : prevIndex - 1
+        );
     };
 
     const handleNextClick = () => {
-        if (students.length > 0) {
-            shiftCards('next');
-        }
+        if (students.length === 0) return;
+
+        setActiveCardIndex((prevIndex) =>
+            prevIndex === students.length - 1 ? students.length - 1 : prevIndex + 1
+        );
     };
 
     const handleCardClick = (index) => {
         if (students.length === 0) return;
 
-        if (index === 2) return;
+        if (index === activeCardIndex) return;
 
-        const newDirection = index < 2 ? 'prev' : 'next';
-        setDirection(newDirection);
-
-        const maxIndex = Math.min(students.length - 1, 4);
-        const newActiveIndex = Math.min(index, maxIndex);
-        const newVisibleCards = [];
-        for (let i = 0; i < 5; i++) {
-            const cardIndex = (newActiveIndex + i - 2 + students.length) % students.length;
-            newVisibleCards[i] = students[cardIndex];
-        }
-        setVisibleCards(newVisibleCards);
-        setActiveCardIndex(newActiveIndex);
-
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, 300);
+        setActiveCardIndex(index);
     };
 
-    const activeStudent = visibleCards[2] || null;
+    const activeStudent = students[activeCardIndex] || null;
 
     return (
         <section className="studentSlider">
@@ -200,19 +162,14 @@ const StudentSlider = () => {
                                 </button>
 
                                 <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
-                                    {visibleCards.map((student, index) => (
+                                    {students.map((student, index) => (
                                         <div
                                             key={`${student.id}-${index}`}
-                                            className={`studentSlider__cardContainer ${index === 2 ? 'active' : ''} ${
-                                                direction === 'prev' && index === 4 ? 'slide-in-left' :
-                                                    direction === 'next' && index === 0 ? 'slide-in-right' :
-                                                        direction === 'prev' && index === 0 ? 'slide-out-right' :
-                                                            direction === 'next' && index === 4 ? 'slide-out-left' : ''
-                                            }`}
+                                            className={`studentSlider__cardContainer ${index === activeCardIndex ? 'active' : ''}`}
                                         >
                                             <StudentSliderCard
                                                 student={student}
-                                                isActive={index === 2}
+                                                isActive={index === activeCardIndex}
                                                 onClick={() => handleCardClick(index)}
                                             />
                                         </div>
