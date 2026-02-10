@@ -141,6 +141,7 @@
 .studentSlider__container {
     width: 100%;
     position: relative;
+    min-height: 360px;
 }
 
 .studentSlider__list {
@@ -416,6 +417,9 @@
         gap: 24px;
         border-radius: 28px;
     }
+    .studentSlider__container {
+        min-height: 320px;
+    }
 
     .studentSlider__content::before,
     .studentSlider__content::after {
@@ -553,6 +557,9 @@
         padding: 22px 25px;
         gap: 22px;
     }
+    .studentSlider__container {
+        min-height: 290px;
+    }
 
     .studentSlider__title {
         font-size: 20px;
@@ -656,6 +663,9 @@
         padding: 20px;
         gap: 20px;
         border-radius: 24px;
+    }
+    .studentSlider__container {
+        min-height: 260px;
     }
 
     .studentSlider__content::before,

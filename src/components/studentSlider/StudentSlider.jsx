@@ -106,8 +106,8 @@ const StudentSlider = () => {
         if (students.length === 0) return;
 
         setActiveCardIndex((prevIndex) => {
-            if (prevIndex === 0) return 0; // пока без бесконечного цикла, как в примере
-            return prevIndex - 1;
+            const total = students.length;
+            return (prevIndex - 1 + total) % total; // бесконечный цикл влево
         });
     };
 
@@ -115,8 +115,8 @@ const StudentSlider = () => {
         if (students.length === 0) return;
 
         setActiveCardIndex((prevIndex) => {
-            if (prevIndex === students.length - 1) return prevIndex; // пока без бесконечного цикла, как в примере
-            return prevIndex + 1;
+            const total = students.length;
+            return (prevIndex + 1) % total; // бесконечный цикл вправо
         });
     };
 
