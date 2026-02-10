@@ -10,9 +10,8 @@ import { Link } from "react-router-dom";
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
-    const [activeCardIndex, setActiveCardIndex] = useState(0); // индекс активной карточки в loopedStudents
-    const [students, setStudents] = useState([]); // оригинальный список
-    const [loopedStudents, setLoopedStudents] = useState([]); // тройной список для бесконечной прокрутки
+    const [activeCardIndex, setActiveCardIndex] = useState(0); // индекс активной карточки в исходном списке
+    const [students, setStudents] = useState([]); // исходный список студентов
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [listWrapperStyle, setListWrapperStyle] = useState({});
@@ -30,12 +29,8 @@ const StudentSlider = () => {
                 setStudents(data);
 
                 if (data.length > 0) {
-                    const extended = [...data, ...data, ...data];
-                    setLoopedStudents(extended);
-
-                    const baseMiddle = Math.floor(data.length / 2);
-                    const startIndex = data.length + baseMiddle; // середина среднего блока
-                    setActiveCardIndex(startIndex);
+                    const middleIndex = Math.floor(data.length / 2);
+                    setActiveCardIndex(middleIndex);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -57,7 +52,7 @@ const StudentSlider = () => {
     // при нажатии на стрелки/карточки вся лента сдвигается (как в твоём HTML-примере).
     useEffect(() => {
         const updatePosition = () => {
-            if (!listWrapperRef.current || !sliderContainerRef.current || loopedStudents.length === 0) return;
+            if (!listWrapperRef.current || !sliderContainerRef.current || students.length === 0) return;
 
             const wrapper = listWrapperRef.current;
             const container = sliderContainerRef.current;
@@ -86,7 +81,7 @@ const StudentSlider = () => {
         requestAnimationFrame(updatePosition);
         window.addEventListener('resize', updatePosition);
         return () => window.removeEventListener('resize', updatePosition);
-    }, [loopedStudents, activeCardIndex]);
+    }, [students, activeCardIndex]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -108,49 +103,32 @@ const StudentSlider = () => {
     }
 
     const handlePrevClick = () => {
-        if (students.length === 0 || loopedStudents.length === 0) return;
+        if (students.length === 0) return;
 
         setActiveCardIndex((prevIndex) => {
-            const total = loopedStudents.length;
-            let nextIndex = prevIndex - 1;
-
-            // если ушли слишком далеко влево, перенормализуем обратно в средний блок
-            if (nextIndex < students.length / 2) {
-                nextIndex += students.length;
-            }
-
-            return (nextIndex + total) % total;
+            const total = students.length;
+            return (prevIndex - 1 + total) % total; // бесконечный цикл влево по списку
         });
     };
 
     const handleNextClick = () => {
-        if (students.length === 0 || loopedStudents.length === 0) return;
+        if (students.length === 0) return;
 
         setActiveCardIndex((prevIndex) => {
-            const total = loopedStudents.length;
-            let nextIndex = prevIndex + 1;
-
-            // если ушли слишком далеко вправо, перенормализуем обратно в средний блок
-            if (nextIndex > total - students.length / 2) {
-                nextIndex -= students.length;
-            }
-
-            return nextIndex % total;
+            const total = students.length;
+            return (prevIndex + 1) % total; // бесконечный цикл вправо по списку
         });
     };
 
     const handleCardClick = (index) => {
-        if (students.length === 0 || loopedStudents.length === 0) return;
+        if (students.length === 0) return;
 
         if (index === activeCardIndex) return;
 
         setActiveCardIndex(index);
     };
 
-    const activeStudent =
-        loopedStudents.length > 0
-            ? loopedStudents[activeCardIndex]
-            : null;
+    const activeStudent = students[activeCardIndex] || null;
 
     return (
         <section className="studentSlider">
@@ -189,7 +167,7 @@ const StudentSlider = () => {
                                 </button>
 
                                 <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
-                                    {loopedStudents.map((student, index) => (
+                                    {students.map((student, index) => (
                                         <div
                                             key={student.id}
                                             className={`studentSlider__cardContainer ${index === activeCardIndex ? 'active' : ''}`}
