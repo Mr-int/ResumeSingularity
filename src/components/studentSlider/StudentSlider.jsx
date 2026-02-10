@@ -41,29 +41,28 @@ const StudentSlider = () => {
         fetchStudents();
     }, []);
 
-    // центрируем ленту так, чтобы активная карточка всегда была в центре контейнера
+    // центрируем ленту так, чтобы именно активная карточка геометрически стояла по центру контейнера
     useEffect(() => {
         const updatePosition = () => {
             if (!listWrapperRef.current || !sliderContainerRef.current || students.length === 0) return;
 
             const wrapper = listWrapperRef.current;
             const container = sliderContainerRef.current;
-
             const children = Array.from(wrapper.children);
-            if (children.length < 2) return;
 
-            const firstRect = children[0].getBoundingClientRect();
-            const secondRect = children[1].getBoundingClientRect();
+            const activeChild = children[activeCardIndex];
+            if (!activeChild) return;
 
-            const cardWidthWithGap = Math.abs(secondRect.left - firstRect.left) || firstRect.width;
+            const containerRect = container.getBoundingClientRect();
+            const activeRect = activeChild.getBoundingClientRect();
 
-            const containerWidth = container.offsetWidth;
-            const centerOffset = containerWidth / 2 - cardWidthWithGap / 2;
-
-            const translateX = -(activeCardIndex * cardWidthWithGap) + centerOffset;
+            // смещение так, чтобы центр активной карточки совпал с центром контейнера
+            const containerCenter = containerRect.left + containerRect.width / 2;
+            const activeCenter = activeRect.left + activeRect.width / 2;
+            const offset = containerCenter - activeCenter;
 
             setListWrapperStyle({
-                transform: `translateX(${translateX}px)`,
+                transform: `translateX(${offset}px)`,
                 transition: 'transform 0.4s ease'
             });
         };
