@@ -152,7 +152,7 @@
     align-items: center;
     gap: 35px;
     width: 100%;
-    overflow: visible;
+    overflow: hidden;
     position: relative;
 }
 
