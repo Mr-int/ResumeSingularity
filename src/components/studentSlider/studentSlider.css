@@ -175,6 +175,10 @@
     flex-shrink: 0;
 }
 
+.studentSlider__cardContainer--hidden {
+    visibility: hidden;
+}
+
 .studentSlider__cardContainer.active {
     z-index: 3;
 }

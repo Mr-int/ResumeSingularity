@@ -221,18 +221,26 @@ const StudentSlider = () => {
                                 </button>
 
                                 <div className="studentSlider__listWrapper" ref={listWrapperRef} style={listWrapperStyle}>
-                                    {displayedCards.map((cardData, index) => (
-                                        <div
-                                            key={`${cardData.student.id}-${index}-${cardData.isDuplicate ? 'dup' : 'orig'}`}
-                                            className={`studentSlider__cardContainer ${getIsActive(cardData.originalIndex) ? 'active' : ''}`}
-                                        >
-                                            <StudentSliderCard
-                                                student={cardData.student}
-                                                isActive={getIsActive(cardData.originalIndex)}
-                                                onClick={() => handleCardClick(cardData.originalIndex)}
-                                            />
-                                        </div>
-                                    ))}
+                                    {displayedCards.map((cardData, index) => {
+                                        const displayedActiveIndex = DUPLICATE_COUNT + activeCardIndex;
+                                        const offset = index - displayedActiveIndex;
+                                        const isVisible = Math.abs(offset) <= 2; // только 5 карточек: центральная и по 2 с каждой стороны
+
+                                        return (
+                                            <div
+                                                key={`${cardData.student.id}-${index}-${cardData.isDuplicate ? 'dup' : 'orig'}`}
+                                                className={`studentSlider__cardContainer ${getIsActive(cardData.originalIndex) ? 'active' : ''} ${
+                                                    isVisible ? '' : 'studentSlider__cardContainer--hidden'
+                                                }`}
+                                            >
+                                                <StudentSliderCard
+                                                    student={cardData.student}
+                                                    isActive={getIsActive(cardData.originalIndex)}
+                                                    onClick={() => handleCardClick(cardData.originalIndex)}
+                                                />
+                                            </div>
+                                        );
+                                    })}
                                 </div>
 
                                 <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
