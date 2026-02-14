@@ -85,7 +85,7 @@
 .hero__button {
     width: 290px;
     height: 46px;
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    background: transparent;
     outline: none;
     border: 2px solid transparent;
     border-radius: 100px;
@@ -99,8 +99,7 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
-    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     position: relative;
     overflow: hidden;
@@ -111,12 +110,12 @@
 .hero__button::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    border-radius: 100px;
+    border-radius: 98px;
     z-index: -1;
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -134,7 +133,6 @@
 }
 
 .hero__button:hover {
-    background: transparent;
     border-color: #fff;
 }
 
