@@ -26,11 +26,12 @@
     font-size: 18px;
     font-family: "Sansation", sans-serif;
     cursor: pointer;
-    transition: 0.3s;
+    transition: color 0.3s ease, background 0.3s ease, background-clip 0.3s ease;
     text-decoration: none;
 }
 
-.header__searchBtn:hover, .header__homeBtn:hover {
+.header__search:hover .header__searchBtn,
+.header__homeBtn:hover {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     -webkit-background-clip: text;
     background-clip: text;
@@ -54,6 +55,7 @@
     justify-self: end;
     gap: 10px;
     position: relative;
+    text-decoration: none;
 }
 
 .header__searchIconContainer {
@@ -80,19 +82,11 @@
     opacity: 0;
 }
 
-.header__searchIcon.fade-out {
+.header__search:hover .header__searchIcon {
     opacity: 0;
 }
 
-.header__searchIcon.fade-in {
-    opacity: 1;
-}
-
-.header__searchIconGradient.fade-out {
-    opacity: 0;
-}
-
-.header__searchIconGradient.fade-in {
+.header__search:hover .header__searchIconGradient {
     opacity: 1;
 }
 

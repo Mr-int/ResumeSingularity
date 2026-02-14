@@ -7,7 +7,6 @@ import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isSearchHovered, setIsSearchHovered] = useState(false);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -34,29 +33,25 @@ const Header = () => {
                     />
                 </Link>
 
-                <div
-                    className="header__search"
-                    onMouseEnter={() => setIsSearchHovered(true)}
-                    onMouseLeave={() => setIsSearchHovered(false)}
-                >
-                    <Link to="/students" className="header__searchBtn">найти стажера</Link>
+                <Link to="/students" className="header__search">
+                    <span className="header__searchBtn">найти стажера</span>
                     <div className="header__searchIconContainer">
                         <img
                             src={searchIcon}
                             alt="search"
-                            className={`header__searchIcon ${isSearchHovered ? 'fade-out' : 'fade-in'}`}
+                            className="header__searchIcon"
                             width="20"
                             height="20"
                         />
                         <img
                             src={gradientSearchIcon}
                             alt="search"
-                            className={`header__searchIconGradient ${isSearchHovered ? 'fade-in' : 'fade-out'}`}
+                            className="header__searchIconGradient"
                             width="20"
                             height="20"
                         />
                     </div>
-                </div>
+                </Link>
 
                 <button
                     className={`header__burger ${isMenuOpen ? 'active' : ''}`}
