@@ -254,8 +254,8 @@
     width: 430px;
     max-width: 90%;
     height: 46px;
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    border: none;
+    background: transparent;
+    border: 2px solid transparent;
     border-radius: 100px;
     color: #fff;
     font-family: "Sansation", sans-serif;
@@ -269,13 +269,44 @@
     gap: 10px;
     text-decoration: none;
     box-sizing: border-box;
-    transition: all 0.3s ease;
+    transition: border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.studentSlider__button::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border-radius: 98px;
+    z-index: -1;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.studentSlider__button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    border-radius: 100px;
+    z-index: -2;
 }
 
 .studentSlider__button:hover {
-    background: none;
-    border: 2px solid #fff;
+    border-color: #fff;
+}
+
+.studentSlider__button:hover::before {
+    opacity: 0;
 }
 
 @media (max-width: 1440px) {
