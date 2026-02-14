@@ -26,7 +26,9 @@
     font-size: 18px;
     font-family: "Sansation", sans-serif;
     cursor: pointer;
-    transition: color 0.3s ease, background 0.3s ease, background-clip 0.3s ease;
+    transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                background-clip 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
 }
 
@@ -71,7 +73,7 @@
     left: 0;
     width: 20px;
     height: 20px;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header__searchIcon {
