@@ -101,6 +101,7 @@
 .banner__button::before {
     content: '';
     position: absolute;
+    height: 45px;
     top: 2px;
     left: 2px;
     right: 2px;
