@@ -87,7 +87,7 @@
     height: 46px;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     outline: none;
-    border: none;
+    border: 2px solid transparent;
     border-radius: 100px;
     color: #fff;
     font-family: "Sansation", sans-serif;
@@ -99,11 +99,13 @@
     justify-content: center;
     align-items: center;
     gap: 10px;
-    transition: all 0.3s ease;
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     position: relative;
     overflow: hidden;
     z-index: 1;
+    box-sizing: border-box;
 }
 
 .hero__button::before {
@@ -116,7 +118,7 @@
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border-radius: 100px;
     z-index: -1;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero__button::after {
@@ -132,8 +134,8 @@
 }
 
 .hero__button:hover {
-    background: none;
-    border: 2px solid #fff;
+    background: transparent;
+    border-color: #fff;
 }
 
 .hero__button:hover::before {
