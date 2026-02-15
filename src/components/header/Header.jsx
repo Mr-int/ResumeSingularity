@@ -34,7 +34,10 @@ const Header = () => {
                 </Link>
 
                 <Link to="/students" className="header__search">
-                    <span className="header__searchBtn">найти стажера</span>
+                    <span className="header__searchBtn">
+                        <span className="header__searchBtnWhite">найти стажера</span>
+                        <span className="header__searchBtnGradient" aria-hidden="true">найти стажера</span>
+                    </span>
                     <div className="header__searchIconContainer">
                         <img
                             src={searchIcon}

@@ -33,7 +33,6 @@
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.header__search:hover .header__searchBtn,
 .header__homeBtn:hover {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     -webkit-background-clip: text;
@@ -62,13 +61,14 @@
     text-decoration: none;
 }
 
-.header__search .header__searchBtn,
 .header__search .header__searchIcon,
 .header__search .header__searchIconGradient {
-    transition: all var(--header-search-ease);
+    transition: opacity var(--header-search-ease);
 }
 
 .header__searchBtn {
+    position: relative;
+    display: inline-block;
     background: none;
     border: none;
     color: #fff;
@@ -77,6 +77,35 @@
     font-family: "Sansation", sans-serif;
     cursor: pointer;
     text-decoration: none;
+}
+
+.header__searchBtnWhite,
+.header__searchBtnGradient {
+    transition: opacity var(--header-search-ease);
+}
+
+.header__searchBtnWhite {
+    display: inline-block;
+}
+
+.header__searchBtnGradient {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.header__search:hover .header__searchBtnWhite {
+    opacity: 0;
+}
+
+.header__search:hover .header__searchBtnGradient {
+    opacity: 1;
 }
 
 .header__searchIconContainer {
@@ -106,13 +135,13 @@
     z-index: 1;
 }
 
-.header__searchBtn:hover {
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+.header__search:hover .header__searchIcon {
+    opacity: 0;
 }
 
+.header__search:hover .header__searchIconGradient {
+    opacity: 1;
+}
 
 .header__burger {
     display: none;
