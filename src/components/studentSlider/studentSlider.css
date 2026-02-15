@@ -166,13 +166,29 @@
 }
 
 .studentSlider__listWrapper.studentSlider__listWrapper_sliding-next {
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateX(-20%);
+    animation: listSlideFromRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .studentSlider__listWrapper.studentSlider__listWrapper_sliding-prev {
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateX(20%);
+    animation: listSlideFromLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes listSlideFromRight {
+    from {
+        transform: translateX(20%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes listSlideFromLeft {
+    from {
+        transform: translateX(-20%);
+    }
+    to {
+        transform: translateX(0);
+    }
 }
 
 .studentSlider__cardContainer {

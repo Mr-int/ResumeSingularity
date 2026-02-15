@@ -99,13 +99,13 @@ const StudentSlider = () => {
 
         const total = students.length;
         const newIndex = (activeCardIndex - 1 + total) % total;
+        setActiveCardIndex(newIndex);
+        updateVisibleCards(students, newIndex);
         setDirection('prev');
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
         }
         animationTimeoutRef.current = setTimeout(() => {
-            setActiveCardIndex(newIndex);
-            updateVisibleCards(students, newIndex);
             setDirection(null);
         }, ANIMATION_DURATION);
     };
@@ -115,13 +115,13 @@ const StudentSlider = () => {
 
         const total = students.length;
         const newIndex = (activeCardIndex + 1) % total;
+        setActiveCardIndex(newIndex);
+        updateVisibleCards(students, newIndex);
         setDirection('next');
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
         }
         animationTimeoutRef.current = setTimeout(() => {
-            setActiveCardIndex(newIndex);
-            updateVisibleCards(students, newIndex);
             setDirection(null);
         }, ANIMATION_DURATION);
     };
@@ -136,13 +136,13 @@ const StudentSlider = () => {
         const newIndex = (activeCardIndex + offset + total) % total;
         const dir = offset < 0 ? 'prev' : 'next';
 
+        setActiveCardIndex(newIndex);
+        updateVisibleCards(students, newIndex);
         setDirection(dir);
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
         }
         animationTimeoutRef.current = setTimeout(() => {
-            setActiveCardIndex(newIndex);
-            updateVisibleCards(students, newIndex);
             setDirection(null);
         }, ANIMATION_DURATION);
     };
