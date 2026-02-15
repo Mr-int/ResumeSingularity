@@ -106,18 +106,18 @@
     z-index: 1;
 }
 
-.header__search:hover {
+.header__searchBtn:hover {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
 }
 
-.header__search:hover .header__searchIcon {
+.header__searchBtn:hover .header__searchIcon {
     opacity: 0;
 }
 
-.header__search:hover .header__searchIconGradient {
+.header__searchBtn:hover .header__searchIconGradient {
     opacity: 1;
 }
 
