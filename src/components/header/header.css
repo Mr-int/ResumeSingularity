@@ -26,9 +26,9 @@
     font-size: 18px;
     font-family: "Sansation", sans-serif;
     cursor: pointer;
-    transition: color 0.55s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.55s cubic-bezier(0.4, 0, 0.2, 1),
-                background-clip 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                background-clip 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
 }
 
