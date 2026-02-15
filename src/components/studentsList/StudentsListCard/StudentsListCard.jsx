@@ -103,7 +103,7 @@ const StudentsListCard = ({ student }) => {
                 </div>
 
                 <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
-                    Смотреть резюме
+                    <span className="studentsCard__buttonText">Смотреть резюме</span>
                 </Link>
             </div>
         </div>

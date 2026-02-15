@@ -144,8 +144,12 @@
     flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    box-sizing: border-box;
     transition: border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.studentsCard__buttonText {
+    position: relative;
+    z-index: 1;
 }
 
 .studentsCard__button::before {
@@ -157,7 +161,7 @@
     bottom: 2px;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border-radius: 88px;
-    z-index: -1;
+    z-index: 0;
     opacity: 0;
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
