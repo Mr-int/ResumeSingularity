@@ -11,7 +11,7 @@ const Benefits = () => {
         <div className="benefits">
             <div className="benefits__wrapper">
                 <h2 className="benefits__title">Обучение в
-                    <span className="gradient-text">Singularity</span>
+                    <a href="https://singularity.academy/school_web-1" target="_blank" rel="noopener noreferrer" className="gradient-text benefits__singularity-link">Singularity</a>
                     <span className="gradient-circle">
                         <img src={gradientArrow} alt=""/>
                     </span>

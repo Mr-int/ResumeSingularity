@@ -37,6 +37,12 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+}
+
+.benefits__singularity-link {
+    text-decoration: none;
+    cursor: pointer;
+}
     display: inline-block;
 }
 
