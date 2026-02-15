@@ -146,17 +146,13 @@ const StudentSlider = () => {
 
         setActiveCardIndex(newIndex);
         updateVisibleCards(students, newIndex);
+        setDirection(dir);
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
         }
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setDirection(dir);
-                animationTimeoutRef.current = setTimeout(() => {
-                    setDirection(null);
-                }, ANIMATION_DURATION);
-            });
-        });
+        animationTimeoutRef.current = setTimeout(() => {
+            setDirection(null);
+        }, ANIMATION_DURATION);
     };
 
     const activeStudent = visibleCards[2] || null;
