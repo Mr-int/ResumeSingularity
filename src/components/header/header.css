@@ -113,13 +113,6 @@
     color: transparent;
 }
 
-.header__searchBtn:hover .header__searchIcon {
-    opacity: 0;
-}
-
-.header__searchBtn:hover .header__searchIconGradient {
-    opacity: 1;
-}
 
 .header__burger {
     display: none;
