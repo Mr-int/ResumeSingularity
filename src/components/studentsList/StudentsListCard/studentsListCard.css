@@ -164,6 +164,7 @@
     z-index: 0;
     opacity: 0;
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 45px;
 }
 
 .studentsCard__button:hover {
