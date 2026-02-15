@@ -107,11 +107,11 @@ const StudentSlider = () => {
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
                 setDirection('prev');
-                animationTimeoutRef.current = setTimeout(() => {
-                    setDirection(null);
-                }, ANIMATION_DURATION);
             });
         });
+        animationTimeoutRef.current = setTimeout(() => {
+            setDirection(null);
+        }, ANIMATION_DURATION);
     };
 
     const handleNextClick = () => {
@@ -121,17 +121,13 @@ const StudentSlider = () => {
         const newIndex = (activeCardIndex + 1) % total;
         setActiveCardIndex(newIndex);
         updateVisibleCards(students, newIndex);
+        setDirection('next');
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
         }
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setDirection('next');
-                animationTimeoutRef.current = setTimeout(() => {
-                    setDirection(null);
-                }, ANIMATION_DURATION);
-            });
-        });
+        animationTimeoutRef.current = setTimeout(() => {
+            setDirection(null);
+        }, ANIMATION_DURATION);
     };
 
     const handleCardClick = (indexInWindow) => {
