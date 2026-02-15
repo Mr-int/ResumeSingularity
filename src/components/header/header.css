@@ -30,9 +30,7 @@
 }
 
 .header__homeBtn {
-    transition: color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-                background-clip 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header__search:hover .header__searchBtn,
@@ -108,7 +106,7 @@
     z-index: 1;
 }
 
-.header__search:hover .header__searchBtn {
+.header__search:hover {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     -webkit-background-clip: text;
     background-clip: text;
@@ -121,19 +119,6 @@
 
 .header__search:hover .header__searchIconGradient {
     opacity: 1;
-}
-
-.header__search:not(:hover) .header__searchBtn {
-    background: none;
-    color: #fff;
-}
-
-.header__search:not(:hover) .header__searchIcon {
-    opacity: 1;
-}
-
-.header__search:not(:hover) .header__searchIconGradient {
-    opacity: 0;
 }
 
 .header__burger {
@@ -152,7 +137,7 @@
     width: 100%;
     height: 3px;
     background: #fff;
-    transition: 0.3s;
+    transition: all 0.3s ease;
 }
 
 .header__burger.active .header__burgerLine {
@@ -200,7 +185,7 @@
     font-size: 18px;
     font-family: "Sansation", sans-serif;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     padding: 10px 0;
     text-decoration: none;
     width: 100%;
