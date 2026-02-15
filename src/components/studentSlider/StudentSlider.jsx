@@ -82,6 +82,8 @@ const StudentSlider = () => {
         }
     }
 
+    const ANIMATION_DURATION = 350;
+
     const triggerDirectionReset = (dir) => {
         setDirection(dir);
         if (animationTimeoutRef.current) {
@@ -89,7 +91,7 @@ const StudentSlider = () => {
         }
         animationTimeoutRef.current = setTimeout(() => {
             setDirection(null);
-        }, 350);
+        }, ANIMATION_DURATION);
     };
 
     const handlePrevClick = () => {
@@ -97,9 +99,15 @@ const StudentSlider = () => {
 
         const total = students.length;
         const newIndex = (activeCardIndex - 1 + total) % total;
-        triggerDirectionReset('prev');
-        setActiveCardIndex(newIndex);
-        updateVisibleCards(students, newIndex);
+        setDirection('prev');
+        if (animationTimeoutRef.current) {
+            clearTimeout(animationTimeoutRef.current);
+        }
+        animationTimeoutRef.current = setTimeout(() => {
+            setActiveCardIndex(newIndex);
+            updateVisibleCards(students, newIndex);
+            setDirection(null);
+        }, ANIMATION_DURATION);
     };
 
     const handleNextClick = () => {
@@ -107,26 +115,36 @@ const StudentSlider = () => {
 
         const total = students.length;
         const newIndex = (activeCardIndex + 1) % total;
-        triggerDirectionReset('next');
-        setActiveCardIndex(newIndex);
-        updateVisibleCards(students, newIndex);
+        setDirection('next');
+        if (animationTimeoutRef.current) {
+            clearTimeout(animationTimeoutRef.current);
+        }
+        animationTimeoutRef.current = setTimeout(() => {
+            setActiveCardIndex(newIndex);
+            updateVisibleCards(students, newIndex);
+            setDirection(null);
+        }, ANIMATION_DURATION);
     };
 
     const handleCardClick = (indexInWindow) => {
         if (students.length === 0) return;
 
-        // центральная уже активна
         if (indexInWindow === 2) return;
 
         const total = students.length;
-        const offset = indexInWindow - 2; // -2, -1, 1, 2
+        const offset = indexInWindow - 2;
         const newIndex = (activeCardIndex + offset + total) % total;
-
         const dir = offset < 0 ? 'prev' : 'next';
-        triggerDirectionReset(dir);
 
-        setActiveCardIndex(newIndex);
-        updateVisibleCards(students, newIndex);
+        setDirection(dir);
+        if (animationTimeoutRef.current) {
+            clearTimeout(animationTimeoutRef.current);
+        }
+        animationTimeoutRef.current = setTimeout(() => {
+            setActiveCardIndex(newIndex);
+            updateVisibleCards(students, newIndex);
+            setDirection(null);
+        }, ANIMATION_DURATION);
     };
 
     const activeStudent = visibleCards[2] || null;
@@ -167,21 +185,11 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div className="studentSlider__listWrapper">
+                                <div className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}>
                                     {visibleCards.map((student, index) => (
                                         <div
                                             key={student?.id ?? index}
-                                            className={`studentSlider__cardContainer ${index === 2 ? 'active' : ''} ${
-                                                direction === 'prev' && index === 0
-                                                    ? 'slide-in-left'
-                                                    : direction === 'next' && index === 4
-                                                        ? 'slide-in-right'
-                                                        : direction === 'prev' && index === 3
-                                                            ? 'slide-out-right'
-                                                            : direction === 'next' && index === 1
-                                                                ? 'slide-out-left'
-                                                                : ''
-                                            }`}
+                                            className={`studentSlider__cardContainer ${index === 2 ? 'active' : ''}`}
                                         >
                                             <StudentSliderCard
                                                 student={student}
