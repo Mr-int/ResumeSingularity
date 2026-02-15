@@ -128,7 +128,7 @@
 
 .studentsCard__button {
     width: 280px;
-    background: none;
+    background: transparent;
     border: 2px solid #fff;
     border-radius: 90px;
     height: 45px;
@@ -142,12 +142,32 @@
     font-family: 'Sansation';
     font-weight: 300;
     flex-shrink: 0;
-    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.studentsCard__button::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border-radius: 88px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .studentsCard__button:hover {
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    border: none;
+    border-color: transparent;
+}
+
+.studentsCard__button:hover::before {
+    opacity: 1;
 }
 
 .course4 {
