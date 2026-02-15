@@ -143,7 +143,6 @@
     font-weight: 300;
     flex-shrink: 0;
     position: relative;
-    overflow: hidden;
     transition: border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

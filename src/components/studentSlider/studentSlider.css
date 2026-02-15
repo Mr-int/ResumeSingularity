@@ -188,6 +188,58 @@
     transform: scale(0.9);
 }
 
+.studentSlider__cardContainer.slide-in-left {
+    animation: slideInLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__cardContainer.slide-in-right {
+    animation: slideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__cardContainer.slide-out-left {
+    animation: slideOutLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.studentSlider__cardContainer.slide-out-right {
+    animation: slideOutRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%) scale(0.9);
+    }
+    to {
+        transform: translateX(0) scale(0.9);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%) scale(0.9);
+    }
+    to {
+        transform: translateX(0) scale(0.9);
+    }
+}
+
+@keyframes slideOutLeft {
+    from {
+        transform: translateX(0) scale(0.9);
+    }
+    to {
+        transform: translateX(-100%) scale(0.9);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0) scale(0.9);
+    }
+    to {
+        transform: translateX(100%) scale(0.9);
+    }
+}
+
 .studentSlider__listButton {
     width: 45px;
     height: 45px;

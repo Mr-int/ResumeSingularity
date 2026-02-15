@@ -172,13 +172,13 @@ const StudentSlider = () => {
                                         <div
                                             key={student?.id ?? index}
                                             className={`studentSlider__cardContainer ${index === 2 ? 'active' : ''} ${
-                                                direction === 'prev' && index === 4
+                                                direction === 'prev' && index === 0
                                                     ? 'slide-in-left'
-                                                    : direction === 'next' && index === 0
+                                                    : direction === 'next' && index === 4
                                                         ? 'slide-in-right'
-                                                        : direction === 'prev' && index === 0
+                                                        : direction === 'prev' && index === 3
                                                             ? 'slide-out-right'
-                                                            : direction === 'next' && index === 4
+                                                            : direction === 'next' && index === 1
                                                                 ? 'slide-out-left'
                                                                 : ''
                                             }`}
