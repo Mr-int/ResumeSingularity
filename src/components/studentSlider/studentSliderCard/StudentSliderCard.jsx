@@ -92,10 +92,25 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         return javaIcon;
     };
 
+    const getExtraIcoGradientModifier = (specialityName) => {
+        if (!specialityName) return '';
+        const specLower = specialityName.toLowerCase();
+        if (specLower.includes('менеджер проектов') || specLower.includes('project manager') || specLower.includes('менеджер')) {
+            return 'student-slider-card__extraIco--manager';
+        }
+        if (specLower.includes('дизайнер') || specLower.includes('design') ||
+            specLower.includes('веб-разработчик') || specLower.includes('web') ||
+            specLower.includes('графический')) {
+            return 'student-slider-card__extraIco--designer';
+        }
+        return '';
+    };
+
     const imageSrc = getStudentImageUrl(student);
     const courseImage = getCourseImage(student.course);
     const skillIcon = getSkillIcon(student.speciality);
     const specialityName = student.speciality || 'Специальность не указана';
+    const extraIcoModifier = getExtraIcoGradientModifier(student.speciality);
 
     const handleClick = (e) => {
         if (onClick) {
@@ -121,7 +136,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                     )}
                 </div>
 
-                <div className="student-slider-card__extraIco">
+                <div className={`student-slider-card__extraIco ${extraIcoModifier}`}>
                     <img src={skillIcon} alt=""/>
                 </div>
             </div>
