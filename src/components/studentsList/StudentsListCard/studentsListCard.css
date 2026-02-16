@@ -97,8 +97,7 @@
 .studentsCard__description {
     flex: 1;
     margin: 0;
-    overflow: hidden;
-    min-height: 0;
+    height: fit-content;
 }
 
 .studentsCard__description p {
