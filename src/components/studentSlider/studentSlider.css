@@ -197,23 +197,44 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
-                opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transform: translateZ(0); /* отдельный слой, чтобы переход не конфликтовал с анимацией списка */
 }
 
 .studentSlider__cardContainer--hidden {
     visibility: hidden;
 }
 
+/* Плавный переход в активное состояние */
 .studentSlider__cardContainer.active {
     z-index: 3;
-    transform: scale(1);
-    opacity: 1;
+    animation: cardBecomeActive 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
+/* Плавный переход в неактивное состояние */
 .studentSlider__cardContainer:not(.active) {
-    transform: scale(0.9);
-    opacity: 0.85;
+    animation: cardBecomeInactive 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes cardBecomeActive {
+    from {
+        transform: translateZ(0) scale(0.9);
+        opacity: 0.85;
+    }
+    to {
+        transform: translateZ(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes cardBecomeInactive {
+    from {
+        transform: translateZ(0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translateZ(0) scale(0.9);
+        opacity: 0.85;
+    }
 }
 
 .studentSlider__cardContainer.slide-in-left {
