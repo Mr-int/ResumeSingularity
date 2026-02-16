@@ -329,6 +329,7 @@
     transform: rotate(45deg);
     transition: transform 0.3s;
     margin-left: 15px;
+    margin-top: 5px;
 }
 
 .StudentResume__expandableArrow.expanded {
@@ -540,12 +541,13 @@
 
 .StudentResume__similarList {
     display: flex;
-    gap: 30px;
+    gap: 16px;
     width: 100%;
     overflow-x: auto;
-    padding-bottom: 10px;
+    padding: 4px 0 14px 0;
     scrollbar-width: thin;
     scrollbar-color: #4655FF #000;
+    scroll-behavior: smooth;
 }
 
 .StudentResume__similarList::-webkit-scrollbar {
@@ -565,11 +567,16 @@
 .StudentResume__similarLink {
     text-decoration: none;
     color: inherit;
-    transition: transform 0.3s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: block;
     cursor: pointer;
     flex-shrink: 0;
     min-width: 200px;
+    border-radius: 13px;
+}
+
+.StudentResume__similarLink:hover {
+    transform: translateY(-4px);
 }
 
 .StudentResume__similarLink .student-slider-card {
