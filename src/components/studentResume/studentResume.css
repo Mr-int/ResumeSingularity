@@ -65,6 +65,7 @@
     width: 340px;
     position: relative;
     flex-shrink: 0;
+    align-self: flex-start;
 }
 
 .StudentResume__personFace img {
@@ -90,7 +91,7 @@
 
 .StudentResume__personName p {
     font-size: 28px;
-    margin-bottom: 50px;
+    margin-bottom: 24px;
 }
 
 .StudentResume__flexInfo {
@@ -845,7 +846,6 @@
 
     .StudentResume__personName p {
         font-size: 22px;
-        margin-bottom: 30px;
     }
 
     .StudentResume__sendBid {
