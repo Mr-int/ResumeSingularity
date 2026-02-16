@@ -165,20 +165,26 @@
     will-change: transform;
 }
 
-/* Одна и та же анимация: для правой кнопки сдвиг справа→0, для левой — слева→0 (зеркало) */
 .studentSlider__listWrapper.studentSlider__listWrapper_sliding-next {
-    --slide-sign: 1;
-    animation: listSlide 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: listSlideFromRight 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .studentSlider__listWrapper.studentSlider__listWrapper_sliding-prev {
-    --slide-sign: -1;
-    animation: listSlide 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: listSlideFromLeft 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-@keyframes listSlide {
+@keyframes listSlideFromRight {
     from {
-        transform: translateX(calc(var(--slide-sign) * 100% / 5));
+        transform: translateX(calc(100% / 5));
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes listSlideFromLeft {
+    from {
+        transform: translateX(calc(-100% / 5));
     }
     to {
         transform: translateX(0);
