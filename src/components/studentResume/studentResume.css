@@ -826,6 +826,7 @@
 
     .StudentResume__contactSlider .student-slider-card,
     .StudentResume__contactSlider .student-slider-card--active {
+        display: none;
         height: 350px;
         min-height: 350px;
     }
