@@ -14,6 +14,7 @@ const StudentSlider = () => {
     const [students, setStudents] = useState([]);
     const [visibleCards, setVisibleCards] = useState([]);
     const [direction, setDirection] = useState(null); // 'prev' | 'next' | null
+    const [slideKey, setSlideKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
@@ -82,7 +83,7 @@ const StudentSlider = () => {
         }
     }
 
-    const ANIMATION_DURATION = 500;
+    const ANIMATION_DURATION = 550;
 
     const triggerDirectionReset = (dir) => {
         setDirection(dir);
@@ -98,15 +99,11 @@ const StudentSlider = () => {
         if (animationTimeoutRef.current) {
             clearTimeout(animationTimeoutRef.current);
         }
-        setDirection(null);
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setDirection(dir);
-                animationTimeoutRef.current = setTimeout(() => {
-                    setDirection(null);
-                }, ANIMATION_DURATION);
-            });
-        });
+        setSlideKey((k) => k + 1);
+        setDirection(dir);
+        animationTimeoutRef.current = setTimeout(() => {
+            setDirection(null);
+        }, ANIMATION_DURATION);
     };
 
     const handlePrevClick = () => {
@@ -182,7 +179,7 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}>
+                                <div key={slideKey} className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}>
                                     {visibleCards.map((student, index) => (
                                         <div
                                             key={student?.id ?? index}
