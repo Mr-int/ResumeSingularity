@@ -94,6 +94,21 @@ const StudentSlider = () => {
         }, ANIMATION_DURATION);
     };
 
+    const runSlideAnimation = (dir) => {
+        if (animationTimeoutRef.current) {
+            clearTimeout(animationTimeoutRef.current);
+        }
+        setDirection(null);
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setDirection(dir);
+                animationTimeoutRef.current = setTimeout(() => {
+                    setDirection(null);
+                }, ANIMATION_DURATION);
+            });
+        });
+    };
+
     const handlePrevClick = () => {
         if (students.length === 0) return;
 
@@ -101,17 +116,7 @@ const StudentSlider = () => {
         const newIndex = (activeCardIndex - 1 + total) % total;
         setActiveCardIndex(newIndex);
         updateVisibleCards(students, newIndex);
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setDirection('prev');
-            });
-        });
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, ANIMATION_DURATION);
+        runSlideAnimation('prev');
     };
 
     const handleNextClick = () => {
@@ -121,13 +126,7 @@ const StudentSlider = () => {
         const newIndex = (activeCardIndex + 1) % total;
         setActiveCardIndex(newIndex);
         updateVisibleCards(students, newIndex);
-        setDirection('next');
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, ANIMATION_DURATION);
+        runSlideAnimation('next');
     };
 
     const handleCardClick = (indexInWindow) => {
@@ -142,13 +141,7 @@ const StudentSlider = () => {
 
         setActiveCardIndex(newIndex);
         updateVisibleCards(students, newIndex);
-        setDirection(dir);
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, ANIMATION_DURATION);
+        runSlideAnimation(dir);
     };
 
     const activeStudent = visibleCards[2] || null;
