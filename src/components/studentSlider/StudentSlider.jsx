@@ -91,7 +91,7 @@ const StudentSlider = () => {
     };
 
     const handlePrevClick = () => {
-        if (students.length === 0) return;
+        if (direction !== null || students.length === 0) return;
 
         const total = students.length;
         const newIndex = (activeCardIndex - 1 + total) % total;
@@ -101,7 +101,7 @@ const StudentSlider = () => {
     };
 
     const handleNextClick = () => {
-        if (students.length === 0) return;
+        if (direction !== null || students.length === 0) return;
 
         const total = students.length;
         const newIndex = (activeCardIndex + 1) % total;
@@ -111,7 +111,7 @@ const StudentSlider = () => {
     };
 
     const handleCardClick = (indexInWindow) => {
-        if (students.length === 0) return;
+        if (direction !== null || students.length === 0) return;
 
         if (indexInWindow === 2) return;
 
