@@ -55,14 +55,18 @@ const StudentsListCard = ({ student }) => {
     const imageSrc = getStudentImageUrl(student);
     const courseImage = getCourseImage(student.course);
 
-    const MAX_BIO_PREVIEW_LENGTH = 150;
+    // ~3 строки в блоке описания (line-clamp: 3, ~70–80 символов на строку)
+    const MAX_BIO_PREVIEW_LENGTH = 220;
 
     const truncateAtWord = (text, maxLen) => {
         if (!text || text.length <= maxLen) return text;
         const truncated = text.substring(0, maxLen);
         const lastSpace = truncated.lastIndexOf(' ');
         const cutIndex = lastSpace > 0 ? lastSpace : maxLen;
-        return text.substring(0, cutIndex).trim();
+        let result = text.substring(0, cutIndex).trim();
+        // убираем запятую и др. в конце, чтобы не было «слово, ...», а «слово ...»
+        result = result.replace(/[,\s;:]+$/, '').trim();
+        return result;
     };
 
     const isBioTruncated = student.bio && student.bio.length > MAX_BIO_PREVIEW_LENGTH;

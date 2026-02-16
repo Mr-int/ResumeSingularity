@@ -64,7 +64,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 15px;
     flex-shrink: 0;
     max-height: 60px;
     overflow: hidden;
@@ -205,10 +204,6 @@
         font-size: 16px;
     }
 
-    .studentsCard__skills {
-        margin-bottom: 12px;
-    }
-
     .skill-tag {
         font-size: 16px;
         padding: 5px 10px;
@@ -257,7 +252,6 @@
 
     .studentsCard__skills {
         gap: 8px;
-        margin-bottom: 10px;
     }
 
     .skill-tag {
@@ -339,7 +333,6 @@
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-bottom: 0;
         max-height: none;
         overflow: visible;
     }
