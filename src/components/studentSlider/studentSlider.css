@@ -196,8 +196,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
+    transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+                opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 .studentSlider__cardContainer--hidden {
@@ -206,11 +207,13 @@
 
 .studentSlider__cardContainer.active {
     z-index: 3;
+    transform: scale(1);
+    opacity: 1;
 }
 
 .studentSlider__cardContainer:not(.active) {
-    opacity: 1;
     transform: scale(0.9);
+    opacity: 0.85;
 }
 
 .studentSlider__cardContainer.slide-in-left {
