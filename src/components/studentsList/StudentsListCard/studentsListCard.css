@@ -116,8 +116,7 @@
 }
 
 .studentsCard__read-more {
-    display: block;
-    margin: 0;
+    white-space: nowrap;
 }
 
 .read-more-link {

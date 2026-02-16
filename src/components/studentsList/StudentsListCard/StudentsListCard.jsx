@@ -78,10 +78,12 @@ const StudentsListCard = ({ student }) => {
             : student.bio)
         : 'Описание отсутствует';
 
+    const maxVisibleSkills = 5;
+    const showAllIfOneRemaining = student.skills && student.skills.length === maxVisibleSkills + 1; // 6 скиллов — показываем все
     const skills = student.skills && student.skills.length > 0
-        ? student.skills.slice(0, 5)
+        ? student.skills.slice(0, showAllIfOneRemaining ? student.skills.length : maxVisibleSkills)
         : [{ id: 1, name: 'Навыки не указаны' }];
-    const hasMoreSkills = student.skills && student.skills.length > 5;
+    const hasMoreSkills = student.skills && student.skills.length > maxVisibleSkills && !showAllIfOneRemaining;
 
     return (
         <div className="studentsCard">
@@ -100,18 +102,20 @@ const StudentsListCard = ({ student }) => {
                         <span key={skill.id} className="skill-tag">{skill.name}</span>
                     ))}
                     {hasMoreSkills && (
-                        <span className="skill-more">... и еще ({student.skills.length - 5})</span>
+                        <span className="skill-more">... и еще ({student.skills.length - maxVisibleSkills})</span>
                     )}
                 </div>
 
                 <div className="studentsCard__description">
-                    <p>{bioPreview}</p>
-                    {isBioTruncated && !showFullBio && (
-                        <span className="studentsCard__read-more">
-                            {' ... '}
-                            <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
-                        </span>
-                    )}
+                    <p>
+                        {bioPreview}
+                        {isBioTruncated && !showFullBio && (
+                            <span className="studentsCard__read-more">
+                                {' ... '}
+                                <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
+                            </span>
+                        )}
+                    </p>
                 </div>
 
                 <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
