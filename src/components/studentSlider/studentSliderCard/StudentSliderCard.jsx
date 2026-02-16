@@ -103,6 +103,9 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
             specLower.includes('графический')) {
             return 'student-slider-card__extraIco--designer';
         }
+        if (specLower.includes('аналитик данных') || specLower.includes('аналитик') || specLower.includes('analytics')) {
+            return 'student-slider-card__extraIco--analyst';
+        }
         return '';
     };
 

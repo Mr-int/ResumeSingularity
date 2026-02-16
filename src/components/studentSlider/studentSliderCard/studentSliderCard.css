@@ -95,14 +95,19 @@
     background: #fff;
 }
 
-/* Менеджер проектов: градиент в центр — белый в центре, #FF0D00 по бокам */
+/* Менеджер проектов: рассеянный градиент — белый в центре, #FF0D00 по бокам */
 .student-slider-card__extraIco--manager {
-    background: radial-gradient(circle at center, #FFFFFF 0%, #FFFFFF 35%, #FF0D00 100%);
+    background: radial-gradient(circle at center, #FFFFFF 0%, #FFFFFF 55%, rgba(255, 13, 0, 0.35) 80%, #FF0D00 100%);
 }
 
-/* Графический дизайнер: градиент в центр — белый в центре, #C300FF по бокам */
+/* Графический дизайнер: рассеянный градиент — белый в центре, #C300FF по бокам */
 .student-slider-card__extraIco--designer {
-    background: radial-gradient(circle at center, #FFFFFF 0%, #FFFFFF 35%, #C300FF 100%);
+    background: radial-gradient(circle at center, #FFFFFF 0%, #FFFFFF 55%, rgba(195, 0, 255, 0.35) 80%, #C300FF 100%);
+}
+
+/* Аналитик данных: рассеянный градиент — белый в центре, #0077FF по бокам */
+.student-slider-card__extraIco--analyst {
+    background: radial-gradient(circle at center, #FFFFFF 0%, #FFFFFF 55%, rgba(0, 119, 255, 0.35) 80%, #0077FF 100%);
 }
 
 .student-slider-card__extraIco img {
