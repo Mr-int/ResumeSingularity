@@ -92,6 +92,7 @@ const StudentSlider = () => {
 
     const handlePrevClick = () => {
         if (direction !== null || students.length === 0) return;
+        console.log('Нажата левая кнопка');
 
         const total = students.length;
         const newIndex = (activeCardIndex - 1 + total) % total;
@@ -102,6 +103,7 @@ const StudentSlider = () => {
 
     const handleNextClick = () => {
         if (direction !== null || students.length === 0) return;
+        console.log('Нажата правая кнопка');
 
         const total = students.length;
         const newIndex = (activeCardIndex + 1) % total;
