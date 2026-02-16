@@ -86,14 +86,8 @@ const StudentSlider = () => {
 
     const runSlideAnimation = (dir) => {
         if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
-        // Сначала даём React отрисовать новый список, потом включаем анимацию —
-        // так браузер гарантированно применит первый кадр (from) для обоих направлений
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setDirection(dir);
-                animationTimeoutRef.current = setTimeout(() => setDirection(null), ANIMATION_DURATION);
-            });
-        });
+        setDirection(dir);
+        animationTimeoutRef.current = setTimeout(() => setDirection(null), ANIMATION_DURATION);
     };
 
     const handlePrevClick = () => {
