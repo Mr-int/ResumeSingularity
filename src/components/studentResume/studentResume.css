@@ -823,10 +823,13 @@
     .StudentResume__contactSlider {
         min-height: 350px;
     }
+    
+    .StudentResume__contactSlider {
+        display: none;
+    }
 
     .StudentResume__contactSlider .student-slider-card,
     .StudentResume__contactSlider .student-slider-card--active {
-        display: none;
         height: 350px;
         min-height: 350px;
     }
