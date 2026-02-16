@@ -198,6 +198,33 @@
     justify-content: center;
     flex-shrink: 0;
     transform: translateZ(0); /* отдельный слой, чтобы переход не конфликтовал с анимацией списка */
+    /* адаптив: ширина слота не больше 1/5 экрана, чтобы 5 карточек + отступы влезали */
+    width: min(185px, max(60px, calc((100vw - 80px) / 5)));
+    max-width: 185px;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* карточка заполняет слот и сжимается при нехватке места */
+.studentSlider__cardContainer .student-slider-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+}
+
+.studentSlider__cardContainer.active .student-slider-card {
+    max-width: 100% !important;
+}
+
+/* содержимое карточки не вылезает при узком слоте */
+.studentSlider__cardContainer .student-slider-card__photo {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.studentSlider__cardContainer .student-slider-card__photoWrapper {
+    max-width: 100%;
 }
 
 .studentSlider__cardContainer--hidden {
