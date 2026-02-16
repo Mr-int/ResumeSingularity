@@ -1,5 +1,4 @@
 import './hero.css';
-import studentsHero from "../../assets/other/Students.png";
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import arrowIcon from "../../assets/icons/arrow.svg";
 import { useEffect, useState } from 'react';
@@ -41,11 +40,12 @@ const Hero = () => {
                 </div>
 
                 {!isMobile && (
-                    <img
-                        src={studentsHero}
-                        alt="student"
-                        className="hero__right-content"
-                    />
+                    <div className="hero__right">
+                        <div className="hero__right-glow hero__right-glow--1" aria-hidden />
+                        <div className="hero__right-glow hero__right-glow--2" aria-hidden />
+                        <div className="hero__right-block hero__right-block--1" />
+                        <div className="hero__right-block hero__right-block--2" />
+                    </div>
                 )}
 
                 <img src={arrowIcon} alt="arrow" className="hero__arrow"/>
