@@ -82,7 +82,7 @@ const StudentSlider = () => {
         }
     }
 
-    const ANIMATION_DURATION = 350;
+    const ANIMATION_DURATION = 500;
 
     const triggerDirectionReset = (dir) => {
         setDirection(dir);

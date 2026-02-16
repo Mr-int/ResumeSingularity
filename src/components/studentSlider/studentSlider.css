@@ -166,11 +166,11 @@
 }
 
 .studentSlider__listWrapper.studentSlider__listWrapper_sliding-next {
-    animation: listSlideFromRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: listSlideFromRight 0.5s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 
 .studentSlider__listWrapper.studentSlider__listWrapper_sliding-prev {
-    animation: listSlideFromLeft 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: listSlideFromLeft 0.5s cubic-bezier(0.33, 1, 0.68, 1) forwards;
 }
 
 @keyframes listSlideFromRight {
