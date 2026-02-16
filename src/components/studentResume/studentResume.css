@@ -722,7 +722,7 @@
     }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1150px) {
     .StudentResume {
         padding: 30px 40px 0;
     }
@@ -740,7 +740,7 @@
 
     .StudentResume__person {
         flex-direction: row;
-        gap: 25px;
+        gap: 0;
         width: 100%;
         justify-content: center;
         align-self: flex-start;
@@ -817,7 +817,7 @@
     }
 
     .StudentResume__wrapper {
-        padding-top: 150px;
+        padding-top: 80px;
         border-radius: 20px;
     }
 
@@ -827,9 +827,19 @@
         gap: 20px;
     }
 
+    .StudentResume__personFace {
+        align-self: center;
+    }
+
     .StudentResume__personFace img {
         width: 250px;
         height: 250px;
+    }
+
+    .StudentResume__personName {
+        width: 100%;
+        text-align: left;
+        align-self: flex-start;
     }
 
     .StudentResume__personName h2 {
@@ -838,6 +848,10 @@
 
     .StudentResume__personName p {
         font-size: 22px;
+    }
+
+    .StudentResume__personName .StudentResume__sendBid {
+        display: none;
     }
 
     .StudentResume__sendBid {
