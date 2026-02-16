@@ -827,8 +827,15 @@
         gap: 20px;
     }
 
+    .StudentResume__personName p {
+        margin: 0;
+    }
+
     .StudentResume__personFace {
+        display: flex;
         align-self: center;
+        height: 141px;
+        justify-content: center;
     }
 
     .StudentResume__personFace img {
