@@ -107,12 +107,6 @@
     margin: 0;
     color: white;
     font-family: 'StratosSemiLight';
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-height: 90px;
 }
 
 .studentsCard__read-more {
@@ -218,7 +212,6 @@
 
     .studentsCard__description p {
         font-size: 18px;
-        -webkit-line-clamp: 3;
     }
 
     .studentsCard__button {
@@ -269,7 +262,6 @@
     .studentsCard__description p {
         font-size: 16px;
         line-height: 1.4;
-        -webkit-line-clamp: 3;
     }
 
     .studentsCard__button {
@@ -355,10 +347,7 @@
 
     .studentsCard__description p {
         font-size: 16px;
-        -webkit-line-clamp: 4;
-        max-height: none;
         white-space: normal;
-        display: block;
     }
 
     .studentsCard__button {
@@ -429,9 +418,7 @@
 
     .studentsCard__description p {
         font-size: 14px;
-        -webkit-line-clamp: 2 !important;
         line-height: 1.4;
-        max-height: 56px !important;
     }
 
     .studentsCard__button {
@@ -478,7 +465,6 @@
 
     .studentsCard__description p {
         font-size: 13px;
-        -webkit-line-clamp: 2 !important;
     }
 
     .studentsCard__button {
