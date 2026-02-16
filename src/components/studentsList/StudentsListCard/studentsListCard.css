@@ -115,6 +115,11 @@
     max-height: 90px;
 }
 
+.studentsCard__read-more {
+    display: block;
+    margin: 0;
+}
+
 .read-more-link {
     display: inline-block !important;
     color: grey;

@@ -79,9 +79,9 @@ const StudentsListCard = ({ student }) => {
         : 'Описание отсутствует';
 
     const skills = student.skills && student.skills.length > 0
-        ? student.skills.slice(0, 4)
+        ? student.skills.slice(0, 5)
         : [{ id: 1, name: 'Навыки не указаны' }];
-    const hasMoreSkills = student.skills && student.skills.length > 4;
+    const hasMoreSkills = student.skills && student.skills.length > 5;
 
     return (
         <div className="studentsCard">
@@ -100,20 +100,18 @@ const StudentsListCard = ({ student }) => {
                         <span key={skill.id} className="skill-tag">{skill.name}</span>
                     ))}
                     {hasMoreSkills && (
-                        <span className="skill-more">... и еще ({student.skills.length - 4})</span>
+                        <span className="skill-more">... и еще ({student.skills.length - 5})</span>
                     )}
                 </div>
 
                 <div className="studentsCard__description">
-                    <p>
-                        {bioPreview}
-                        {isBioTruncated && !showFullBio && (
-                            <>
-                                {' ... '}
-                                <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
-                            </>
-                        )}
-                    </p>
+                    <p>{bioPreview}</p>
+                    {isBioTruncated && !showFullBio && (
+                        <span className="studentsCard__read-more">
+                            {' ... '}
+                            <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
+                        </span>
+                    )}
                 </div>
 
                 <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
