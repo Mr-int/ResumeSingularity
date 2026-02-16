@@ -531,10 +531,10 @@
         border-radius: 28px;
     }
     .studentSlider__container {
-        min-height: 320px;
+        min-height: 290px;
     }
     .studentSlider__cardContainer {
-        height: 300px;
+        height: 282px;
     }
 
     .studentSlider__content::before,
@@ -674,10 +674,10 @@
         gap: 22px;
     }
     .studentSlider__container {
-        min-height: 290px;
+        min-height: 270px;
     }
     .studentSlider__cardContainer {
-        height: 270px;
+        height: 262px;
     }
 
     .studentSlider__title {
@@ -784,10 +784,10 @@
         border-radius: 24px;
     }
     .studentSlider__container {
-        min-height: 260px;
+        min-height: 250px;
     }
     .studentSlider__cardContainer {
-        height: 240px;
+        height: 242px;
     }
 
     .studentSlider__content::before,

@@ -132,19 +132,19 @@
 @media (max-width: 1200px) {
     .student-slider-card {
         width: 200px;
-        height: 320px;
+        height: 256px;
     }
     .student-slider-card--active {
         width: 240px;
-        height: 350px;
+        height: 282px;
     }
     .student-slider-card__photo {
         width: 188px;
-        height: 205px;
+        height: 178px;
     }
     .student-slider-card--active .student-slider-card__photo {
         width: 226px;
-        height: 246px;
+        height: 215px;
     }
     .student-slider-card__name {
         font-size: 20px;
@@ -171,20 +171,20 @@
 @media (max-width: 992px) {
     .student-slider-card {
         width: 180px;
-        height: 290px;
+        height: 238px;
         gap: 10px;
     }
     .student-slider-card--active {
         width: 210px;
-        height: 320px;
+        height: 262px;
     }
     .student-slider-card__photo {
         width: 168px;
-        height: 183px;
+        height: 156px;
     }
     .student-slider-card--active .student-slider-card__photo {
         width: 196px;
-        height: 213px;
+        height: 182px;
     }
     .student-slider-card__name {
         font-size: 18px;
@@ -224,24 +224,24 @@
 @media (max-width: 768px) {
     .student-slider-card {
         width: 160px;
-        height: 260px;
+        height: 218px;
         padding: 5px;
         gap: 8px;
         flex-shrink: 0;
     }
     .student-slider-card--active {
         width: 180px;
-        height: 290px;
+        height: 242px;
         padding: 6px;
         flex-shrink: 0;
     }
     .student-slider-card__photo {
         width: 148px;
-        height: 161px;
+        height: 140px;
     }
     .student-slider-card--active .student-slider-card__photo {
         width: 166px;
-        height: 181px;
+        height: 158px;
     }
     .student-slider-card__name {
         font-size: 16px;
@@ -282,25 +282,25 @@
 @media (max-width: 576px) {
     .student-slider-card {
         width: 140px;
-        height: 230px;
+        height: 198px;
         border-radius: 10px;
         padding: 4px;
         gap: 6px;
     }
     .student-slider-card--active {
         width: 150px;
-        height: 250px;
+        height: 218px;
         border-radius: 10px;
         padding: 5px;
     }
     .student-slider-card__photo {
         width: 130px;
-        height: 142px;
+        height: 122px;
         border-radius: 6px;
     }
     .student-slider-card--active .student-slider-card__photo {
         width: 140px;
-        height: 152px;
+        height: 132px;
     }
     .student-slider-card__name {
         font-size: 14px;
@@ -341,21 +341,21 @@
 @media (max-width: 480px) {
     .student-slider-card {
         width: 130px;
-        height: 210px;
+        height: 182px;
         border-width: 1px;
     }
     .student-slider-card--active {
         width: 140px;
-        height: 230px;
+        height: 198px;
         border-width: 1px;
     }
     .student-slider-card__photo {
         width: 120px;
-        height: 131px;
+        height: 112px;
     }
     .student-slider-card--active .student-slider-card__photo {
         width: 128px;
-        height: 139px;
+        height: 120px;
     }
     .student-slider-card__name {
         font-size: 13px;
@@ -381,19 +381,19 @@
 @media (max-width: 360px) {
     .student-slider-card {
         width: 120px;
-        height: 190px;
+        height: 168px;
     }
     .student-slider-card--active {
         width: 130px;
-        height: 210px;
+        height: 182px;
     }
     .student-slider-card__photo {
         width: 110px;
-        height: 120px;
+        height: 102px;
     }
     .student-slider-card--active .student-slider-card__photo {
         width: 118px;
-        height: 129px;
+        height: 110px;
     }
     .student-slider-card__name {
         font-size: 12px;
