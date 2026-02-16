@@ -591,8 +591,9 @@
 }
 
 .StudentResume__similarLink .student-slider-card__photoWrapper {
-    flex: 1;
-    min-height: 0;
+    height: 301px;
+    min-height: 301px;
+    flex-shrink: 0;
     display: flex;
     justify-content: center;
     align-items: center;
