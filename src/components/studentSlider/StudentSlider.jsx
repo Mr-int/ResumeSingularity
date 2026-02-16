@@ -86,18 +86,12 @@ const StudentSlider = () => {
 
     const runSlideAnimation = (dir) => {
         if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
-        // Класс анимации добавляем в следующем кадре после отрисовки нового списка — тогда анимация стартует с первого кадра в обе стороны
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setDirection(dir);
-                animationTimeoutRef.current = setTimeout(() => setDirection(null), ANIMATION_DURATION);
-            });
-        });
+        setDirection(dir);
+        animationTimeoutRef.current = setTimeout(() => setDirection(null), ANIMATION_DURATION);
     };
 
     const handlePrevClick = () => {
         if (direction !== null || students.length === 0) return;
-        console.log('Нажата левая кнопка');
 
         const total = students.length;
         const newIndex = (activeCardIndex - 1 + total) % total;
@@ -108,7 +102,6 @@ const StudentSlider = () => {
 
     const handleNextClick = () => {
         if (direction !== null || students.length === 0) return;
-        console.log('Нажата правая кнопка');
 
         const total = students.length;
         const newIndex = (activeCardIndex + 1) % total;
