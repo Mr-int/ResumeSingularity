@@ -165,8 +165,8 @@
     will-change: transform;
 }
 
-.studentSlider__listWrapper.studentSlider__listWrapper_sliding-next,
-.studentSlider__listWrapper.studentSlider__listWrapper_sliding-prev {
+/* Анимация только для правой кнопки; для левой пока без анимации */
+.studentSlider__listWrapper.studentSlider__listWrapper_sliding-next {
     animation: listSlideFromRight 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
