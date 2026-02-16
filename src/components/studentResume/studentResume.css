@@ -411,13 +411,13 @@
 .StudentResume__contactSlider .student-slider-card {
     height: 380px;
     min-height: 380px;
-    width: 185px;
+    width: 280px;
 }
 
 .StudentResume__contactSlider .student-slider-card--active {
     height: 380px;
     min-height: 380px;
-    width: 185px;
+    width: 280px;
 }
 
 .StudentResume__contactSlider .student-slider-card__photoWrapper {
@@ -440,7 +440,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 380px;
+    height: 380px;
     background-position: center center;
     background-size: 100% 100%;
     position: relative;
