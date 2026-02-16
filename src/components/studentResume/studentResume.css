@@ -742,11 +742,7 @@
         gap: 25px;
         width: 100%;
         justify-content: center;
-    }
-
-    .StudentResume__personFace {
-        width: 280px;
-        height: 280px;
+        align-self: flex-start;
     }
 
     .StudentResume__personFace img {
