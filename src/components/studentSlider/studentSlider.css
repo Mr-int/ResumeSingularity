@@ -184,7 +184,7 @@
 
 @keyframes listSlideFromLeft {
     from {
-        transform: translateX(calc(-100% / 5 + 3px));
+        transform: translateX(calc(-100% / 5));
     }
     to {
         transform: translateX(0);
