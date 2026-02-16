@@ -50,7 +50,7 @@
     align-items: flex-end;
     width: 90%;
     padding-top: 35px;
-    padding-bottom: 20px;
+    padding-bottom: 48px;
     min-height: 200px;
 }
 
@@ -181,6 +181,7 @@
 }
 
 .StudentResume__sectionTitle {
+    font-family: "StratosSemiLight", serif;
     color: #fff;
     font-size: 32px;
     margin: 0;
@@ -201,11 +202,12 @@
 }
 
 .StudentResume__skillCapsule {
+    font-family: StratosRegular, sans-serif;
     background: #fff;
     color: #000;
-    padding: 12px 26px;
+    padding: 6px 24px;
     border-radius: 100px;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 500;
 }
 
@@ -314,7 +316,7 @@
     color: #fff;
     font-size: 32px;
     margin: 0;
-    font-family: Sansation, sans-serif;
+    font-family: StratosSemiLight, sans-serif;
     font-weight: 400;
 }
 
@@ -386,7 +388,7 @@
 .StudentResume__contactTitle {
     color: #fff;
     font-size: 40px;
-    font-family: 'StratosSkyeng', sans-serif;
+    font-family: StratosSemiLight, sans-serif;
     margin-bottom: 40px;
     text-align: left;
     font-weight: 300;
@@ -501,7 +503,7 @@
 .StudentResume__similarTitle {
     color: #fff;
     font-size: 40px;
-    font-family: 'StratosSkyeng', sans-serif;
+    font-family: StratosSemiLight, sans-serif;
     margin-bottom: 40px;
     text-align: left;
     font-weight: 300;
