@@ -55,10 +55,20 @@ const StudentsListCard = ({ student }) => {
     const imageSrc = getStudentImageUrl(student);
     const courseImage = getCourseImage(student.course);
 
-    const isBioTruncated = student.bio && student.bio.length > 150;
+    const MAX_BIO_PREVIEW_LENGTH = 150;
+
+    const truncateAtWord = (text, maxLen) => {
+        if (!text || text.length <= maxLen) return text;
+        const truncated = text.substring(0, maxLen);
+        const lastSpace = truncated.lastIndexOf(' ');
+        const cutIndex = lastSpace > 0 ? lastSpace : maxLen;
+        return text.substring(0, cutIndex).trim();
+    };
+
+    const isBioTruncated = student.bio && student.bio.length > MAX_BIO_PREVIEW_LENGTH;
     const bioPreview = student.bio
         ? (isBioTruncated && !showFullBio
-            ? student.bio.substring(0, 150) + '...'
+            ? truncateAtWord(student.bio, MAX_BIO_PREVIEW_LENGTH)
             : student.bio)
         : 'Описание отсутствует';
 
@@ -92,12 +102,15 @@ const StudentsListCard = ({ student }) => {
                     <p>
                         {bioPreview}
                         {isBioTruncated && !showFullBio && (
-                            <Link
-                                to={`/studentsResume/${student.id}`}
-                                className="read-more-link"
-                            >
-                                Читать дальше
-                            </Link>
+                            <>
+                                {' ... '}
+                                <Link
+                                    to={`/studentsResume/${student.id}`}
+                                    className="read-more-link"
+                                >
+                                    Читать дальше
+                                </Link>
+                            </>
                         )}
                     </p>
                 </div>
