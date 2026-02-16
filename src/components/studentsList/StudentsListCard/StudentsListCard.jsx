@@ -64,8 +64,10 @@ const StudentsListCard = ({ student }) => {
         const lastSpace = truncated.lastIndexOf(' ');
         const cutIndex = lastSpace > 0 ? lastSpace : maxLen;
         let result = text.substring(0, cutIndex).trim();
-        // убираем запятую и др. в конце, чтобы не было «слово, ...», а «слово ...»
+        // убираем запятую и др. в конце
         result = result.replace(/[,\s;:]+$/, '').trim();
+        // убираем точки в конце — перед ссылкой будут ровно три точки
+        result = result.replace(/\.+$/, '').trim();
         return result;
     };
 
@@ -108,12 +110,7 @@ const StudentsListCard = ({ student }) => {
                         {isBioTruncated && !showFullBio && (
                             <>
                                 {' ... '}
-                                <Link
-                                    to={`/studentsResume/${student.id}`}
-                                    className="read-more-link"
-                                >
-                                    Читать дальше
-                                </Link>
+                                <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
                             </>
                         )}
                     </p>
