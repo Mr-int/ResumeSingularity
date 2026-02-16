@@ -14,7 +14,6 @@ const StudentSlider = () => {
     const [students, setStudents] = useState([]);
     const [visibleCards, setVisibleCards] = useState([]);
     const [direction, setDirection] = useState(null); // 'prev' | 'next' | null
-    const [slideKey, setSlideKey] = useState(0);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
@@ -83,27 +82,12 @@ const StudentSlider = () => {
         }
     }
 
-    const ANIMATION_DURATION = 550;
-
-    const triggerDirectionReset = (dir) => {
-        setDirection(dir);
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, ANIMATION_DURATION);
-    };
+    const ANIMATION_DURATION = 380;
 
     const runSlideAnimation = (dir) => {
-        if (animationTimeoutRef.current) {
-            clearTimeout(animationTimeoutRef.current);
-        }
-        setSlideKey((k) => k + 1);
+        if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
         setDirection(dir);
-        animationTimeoutRef.current = setTimeout(() => {
-            setDirection(null);
-        }, ANIMATION_DURATION);
+        animationTimeoutRef.current = setTimeout(() => setDirection(null), ANIMATION_DURATION);
     };
 
     const handlePrevClick = () => {
@@ -179,7 +163,7 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div key={slideKey} className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}>
+                                <div className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}>
                                     {visibleCards.map((student, index) => (
                                         <div
                                             key={student?.id ?? index}
