@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import test from "../../../assets/other/test.png";
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import { Link } from "react-router-dom";
 import './studentsListCard.css';
 import course4 from "../../../assets/other/course4.png";
@@ -14,11 +14,11 @@ const StudentsListCard = ({ student }) => {
     }
 
     const getStudentImageUrl = (studentData) => {
-        if (!studentData) return test;
+        if (!studentData) return PLACEHOLDER_AVATAR;
 
         const imagePath = studentData.imagePath || studentData.image || studentData.photo;
 
-        if (!imagePath) return test;
+        if (!imagePath) return PLACEHOLDER_AVATAR;
 
         if (imagePath.startsWith('http')) {
             return imagePath;
@@ -27,7 +27,7 @@ const StudentsListCard = ({ student }) => {
         const baseUrl = 'https://api.singularity-resume.ru/main/photo';
         const studentId = studentData.id;
 
-        if (!studentId) return test;
+        if (!studentId) return PLACEHOLDER_AVATAR;
 
         return `${baseUrl}/${studentId}.jpg`;
     };

@@ -1,6 +1,6 @@
 import React from "react";
 import './studentSliderCard.css';
-import test from "../../../assets/other/test.png";
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import javaIcon from "../../../assets/other/java.png";
 import pythonIcon from "../../../assets/other/python.png";
 import designIcon from "../../../assets/other/design.png";
@@ -19,11 +19,11 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
 
     const getStudentImageUrl = (studentData) => {
-        if (!studentData) return test;
+        if (!studentData) return PLACEHOLDER_AVATAR;
 
         const imagePath = studentData.imagePath || studentData.image || studentData.photo;
 
-        if (!imagePath) return test;
+        if (!imagePath) return PLACEHOLDER_AVATAR;
 
         if (imagePath.startsWith('http')) {
             return imagePath;
@@ -32,7 +32,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         const baseUrl = 'https://api.singularity-resume.ru/main/photo';
         const studentId = studentData.id;
 
-        if (!studentId) return test;
+        if (!studentId) return PLACEHOLDER_AVATAR;
 
         return `${baseUrl}/${studentId}.jpg`;
     };

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
-import face from "../../assets/other/test.png";
+// Плейсхолдер аватара, когда у студента нет фото
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
@@ -179,11 +180,11 @@ const StudentResume = () => {
     };
 
     const getStudentImageUrl = (studentData) => {
-        if (!studentData) return face;
+        if (!studentData) return PLACEHOLDER_AVATAR;
 
         const imagePath = studentData.imagePath || studentData.image || studentData.photo || studentData.avatar;
 
-        if (!imagePath) return face;
+        if (!imagePath) return PLACEHOLDER_AVATAR;
 
         if (imagePath.startsWith('http')) {
             return imagePath;
