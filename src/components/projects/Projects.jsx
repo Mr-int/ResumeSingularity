@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import "./projects.css";
 import GameChebImg from "../../assets/other/GameCheb.png";
 import VrImg from "../../assets/other/vrProject.png";
-import rollImg from "../../assets/other/animBlock.png";
+import resumeProjectImg from "../../assets/logos/singularityLogo.svg";
 
 const Projects = () => {
     const [activeCard, setActiveCard] = useState(1);
@@ -229,7 +229,7 @@ const Projects = () => {
                                             </div>
                                         </div>
                                         <div className="card__image">
-                                            <img src={rollImg} alt="Singularity Resume проект" />
+                                            <img src={resumeProjectImg} alt="Singularity Resume проект" />
                                         </div>
                                     </div>
                                 </>
