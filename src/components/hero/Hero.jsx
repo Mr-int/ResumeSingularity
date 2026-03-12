@@ -1,6 +1,8 @@
 import './hero.css';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import arrowIcon from "../../assets/icons/arrow.svg";
+import romanActive from '../../assets/heroAnimation/roman_active.png';
+import leraUnactive from '../../assets/heroAnimation/lera_unactive.png';
 import { useEffect, useState } from 'react';
 import { Link } from "react-router-dom";
 
@@ -41,10 +43,13 @@ const Hero = () => {
 
                 {!isMobile && (
                     <div className="hero__right">
-                        <div className="hero__right-glow hero__right-glow--1" aria-hidden />
-                        <div className="hero__right-glow hero__right-glow--2" aria-hidden />
-                        <div className="hero__right-block hero__right-block--1" />
-                        <div className="hero__right-block hero__right-block--2" />
+                        <div className="hero__right-glow" aria-hidden />
+                        <div className="hero__right-block hero__right-block--1">
+                            <img src={romanActive} alt="" loading="lazy" className="hero__right-block-img" />
+                        </div>
+                        <div className="hero__right-block hero__right-block--2">
+                            <img src={leraUnactive} alt="" loading="lazy" className="hero__right-block-img" />
+                        </div>
                     </div>
                 )}
 
