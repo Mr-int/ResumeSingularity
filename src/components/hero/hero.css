@@ -29,55 +29,141 @@
     width: 780px;
     height: 600px;
     right: 0;
-    top: 70px;
+    top: 95px;
     z-index: 1;
     overflow: visible;
+    transform: translateX(80px);
 }
 
-/* Один блок свечения по центру правой части */
+/* Крутящийся фон: numbers из левой карточки, emoji из правой при наведении */
+.hero__right-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.hero__right-bg-item {
+    position: absolute;
+    top: 32%;
+    width: 720px;
+    height: 720px;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.5s ease;
+}
+
+.hero__right-bg-item--numbers {
+    left: 42%;
+    opacity: 1;
+}
+
+.hero__right-bg-item--emoji {
+    left: 72%;
+    opacity: 0;
+}
+
+.hero__right:hover .hero__right-bg-item--numbers {
+    opacity: 0;
+}
+
+.hero__right:hover .hero__right-bg-item--emoji {
+    opacity: 1;
+}
+
+.hero__right-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: heroBgSpin 50s linear infinite;
+}
+
+@keyframes heroBgSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Тень исходит из левой карточки по умолчанию, из правой при наведении */
 .hero__right-glow {
     position: absolute;
-    left: 50%;
-    top: 50%;
+    left: 42%;
+    top: 32%;
     transform: translate(-50%, -50%);
     border-radius: 50%;
-    filter: blur(30px);
-    height: 600px;
-    width: 600px;
+    filter: blur(50px);
+    height: 640px;
+    width: 640px;
     pointer-events: none;
     z-index: 1;
-    transition: background 0.4s ease;
-    background: radial-gradient(circle at 50% 50%, #4655FF40 0, #BDF7FF26 35%, #4655FF0d 55%, #0000 80%);
+    transition: left 0.5s ease, background 0.5s ease;
+    background: radial-gradient(circle at 50% 50%, #4655FF50 0, #BDF7FF35 30%, #4655FF18 50%, #0000 75%);
 }
 
 .hero__right:hover .hero__right-glow {
-    background: radial-gradient(circle at 50% 50%, #FF46FF40 0, #FFBDFF26 35%, #FF46FF0d 55%, #0000 80%);
+    left: 78%;
+    background: radial-gradient(circle at 50% 50%, #FF46FF50 0, #FFBDFF35 30%, #FF46FF18 50%, #0000 75%);
 }
 
-/* Два блока с картинками в правой части */
+/* Два блока с картинками справа, картинки целиком без обрезки */
 .hero__right-block {
     position: absolute;
-    width: 100px;
-    height: 400px;
     z-index: 2;
-    overflow: hidden;
 }
 
 .hero__right-block-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
     display: block;
+    vertical-align: bottom;
+    transition: opacity 0.45s ease;
+}
+
+.hero__right-block-img--default {
+    opacity: 1;
+}
+
+.hero__right-block-img--hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.hero__right:hover .hero__right-block-img--default {
+    opacity: 0;
+}
+
+.hero__right:hover .hero__right-block-img--hover {
+    opacity: 1;
+}
+
+.hero__right-block--1 .hero__right-block-img {
+    height: 430px;
+}
+
+.hero__right-block--2 .hero__right-block-img {
+    height: 410px;
 }
 
 .hero__right-block--1 {
-    left: 100px;
-    top: 100px;
+    top: -8px;
+    right: 300px;
+    z-index: 3;
 }
 
 .hero__right-block--2 {
-    left: 210px;
-    top: 100px;
+    top: 20px;
+    right: 75px;
+    z-index: 2;
+}
+
+.hero__right:hover .hero__right-block--1 {
+    z-index: 2;
+}
+
+.hero__right:hover .hero__right-block--2 {
+    z-index: 4;
 }
 
 .hero__left-content {
@@ -208,11 +294,94 @@
     }
 }
 
+@media (max-width: 1200px) {
+    .hero__right {
+        width: 620px;
+        height: 520px;
+        transform: translateX(40px);
+    }
+
+    .hero__right-bg-item {
+        width: 560px;
+        height: 560px;
+        top: 34%;
+    }
+
+    .hero__right-glow {
+        height: 500px;
+        width: 500px;
+        top: 34%;
+    }
+
+    .hero__right-block--1 .hero__right-block-img {
+        height: 360px;
+    }
+
+    .hero__right-block--2 .hero__right-block-img {
+        height: 340px;
+    }
+
+    .hero__right-block--1 {
+        right: 240px;
+        top: -4px;
+    }
+
+    .hero__right-block--2 {
+        right: 50px;
+        top: 24px;
+    }
+}
+
 @media (max-width: 1024px) {
     .hero__right {
-        width: 500px;
-        height: 450px;
-        right: -20px;
+        width: 540px;
+        height: 480px;
+        right: -10px;
+        top: 98px;
+        transform: translateX(30px);
+    }
+
+    .hero__right-bg-item {
+        width: 480px;
+        height: 480px;
+        top: 34%;
+    }
+
+    .hero__right-bg-item--numbers {
+        left: 40%;
+    }
+
+    .hero__right-bg-item--emoji {
+        left: 68%;
+    }
+
+    .hero__right-glow {
+        height: 440px;
+        width: 440px;
+        left: 42%;
+        top: 34%;
+    }
+
+    .hero__right:hover .hero__right-glow {
+        left: 72%;
+    }
+
+    .hero__right-block--1 .hero__right-block-img {
+        height: 320px;
+    }
+
+    .hero__right-block--2 .hero__right-block-img {
+        height: 300px;
+    }
+
+    .hero__right-block--1 {
+        right: 195px;
+        top: -2px;
+    }
+
+    .hero__right-block--2 {
+        right: 25px;
+        top: 22px;
     }
 
     .left-content__title {
@@ -231,30 +400,200 @@
     }
 }
 
+/* Адаптив 845px: блок hero__right нужен, промежуточные размеры */
+@media (max-width: 845px) {
+    .hero__right {
+        width: 480px;
+        height: 420px;
+        right: -15px;
+        top: 90px;
+        transform: translateX(15px);
+    }
+
+    .hero__right-bg-item {
+        width: 420px;
+        height: 420px;
+        top: 34%;
+    }
+
+    .hero__right-bg-item--numbers {
+        left: 41%;
+    }
+
+    .hero__right-bg-item--emoji {
+        left: 67%;
+    }
+
+    .hero__right-glow {
+        height: 380px;
+        width: 380px;
+        left: 42%;
+        top: 34%;
+    }
+
+    .hero__right:hover .hero__right-glow {
+        left: 70%;
+    }
+
+    .hero__right-block--1 .hero__right-block-img {
+        height: 280px;
+    }
+
+    .hero__right-block--2 .hero__right-block-img {
+        height: 260px;
+    }
+
+    .hero__right-block--1 {
+        right: 175px;
+        top: 0;
+    }
+
+    .hero__right-block--2 {
+        right: 18px;
+        top: 24px;
+    }
+}
+
 @media (max-width: 768px) {
     .hero {
-        height: 60vh;
-        min-height: 400px;
         padding: 0 20px;
+        align-items: flex-start;
     }
 
     .hero__wrapper {
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: center;
         text-align: center;
+        isolation: isolate;
+        min-height: 0;
+        height: auto;
+        padding-bottom: 80px;
     }
 
     .hero__left-content {
         width: 100%;
+        height: auto;
         padding: 0;
         gap: 32px;
         align-items: center;
         justify-content: center;
+        position: relative;
+        z-index: 2;
+        order: 1;
     }
 
     .hero__right {
-        display: none;
+        position: relative;
+        width: 100%;
+        height: fit-content;
+        min-height: 220px;
+        right: auto;
+        top: auto;
+        left: auto;
+        bottom: auto;
+        transform: none;
+        flex-shrink: 0;
+        order: -1;
+        isolation: isolate;
+        pointer-events: none;
+        overflow: visible;
+    }
+
+    .hero__arrow {
+        order: 2;
+    }
+
+    .hero__right-bg-item {
+        width: 150px;
+        height: 150px;
+        transform: translate(-50%, -50%);
+    }
+
+    .hero__right-bg-item--numbers {
+        left: 42%;
+        top: 39%;
+        opacity: 1;
+    }
+
+    .hero__right-bg-item--emoji {
+        left: 58%;
+        top: 39%;
+        opacity: 1;
+    }
+
+    .hero__right:hover .hero__right-bg-item--numbers,
+    .hero__right:hover .hero__right-bg-item--emoji {
+        opacity: 1;
+    }
+
+    .hero__right-glow {
+        left: 40%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        height: 160px;
+        width: 160px;
+        filter: blur(28px);
+    }
+
+    .hero__right:hover .hero__right-glow {
+        left: 32%;
+        background: radial-gradient(circle at 50% 50%, #4655FF50 0, #BDF7FF35 30%, #4655FF18 50%, #0000 75%);
+    }
+
+    .hero__right::after {
+        content: '';
+        position: absolute;
+        left: 68%;
+        top: 59%;
+        transform: translate(-50%, -50%);
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        filter: blur(28px);
+        background: radial-gradient(circle at 50% 50%, #FF46FF50 0, #FFBDFF35 30%, #FF46FF18 50%, #0000 75%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    .hero__right-block--1 .hero__right-block-img {
+        height: 130px;
+    }
+
+    .hero__right-block--2 .hero__right-block-img {
+        height: 115px;
+    }
+
+    .hero__right-block--1 {
+        right: 48%;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+    }
+
+    .hero__right-block--2 {
+        left: 48%;
+        right: auto;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1;
+    }
+
+    .hero__right:hover .hero__right-block--1,
+    .hero__right:hover .hero__right-block--2 {
+        z-index: 0;
+    }
+
+    .hero__right-block-img--hover {
+        opacity: 0 !important;
+    }
+
+    .hero__right:hover .hero__right-block-img--default {
+        opacity: 1;
+    }
+
+    .hero__right:hover .hero__right-block-img--hover {
+        opacity: 0;
     }
 
     .left-content__title {
@@ -294,10 +633,14 @@
     }
 }
 
-@media (max-width: 480px) {
-    .hero {
-        height: 70vh;
-        min-height: 350px;
+@media (max-width: 490px) {
+    .hero__right-block--1 {
+        right: 47%;
+
+    }
+
+    .hero__right-block--2 {
+        left: 47%;
     }
 
     .left-content__title {
@@ -314,20 +657,30 @@
         height: 38px;
         font-size: 18px;
     }
+
+    .hero__right-bg-item--numbers {
+        left: 38%;
+        top: 41%;
+        width: 196px;
+        height: 196px;
+    }
+
+    .hero__right-bg-item--emoji {
+        left: 65%;
+        top: 39%;
+        width: 180px;
+        height: 180px;
+    }
+
 }
 
-@media (max-width: 768px) and (orientation: landscape) {
-    .hero {
-        height: 80vh;
-        min-height: 300px;
+@media (max-width: 390px) {
+    .hero__right-block--1 {
+        right: 46%;
+
     }
 
-    .hero__left-content {
-        gap: 20px;
-    }
-
-    .left-content__title {
-        font-size: 24px;
-        line-height: 30px;
+    .hero__right-block--2 {
+        left: 46%;
     }
 }
