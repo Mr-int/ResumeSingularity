@@ -844,10 +844,6 @@
         --visible-cards: 1;
     }
 
-    .studentSlider__cardContainer {
-        height: 200px;
-    }
-
     .studentSlider__title {
         font-size: 16px;
         white-space: normal;
@@ -929,10 +925,6 @@
 
     .studentSlider__track {
         --visible-cards: 1;
-    }
-
-    .studentSlider__cardContainer {
-        height: 190px;
     }
 
     .studentSlider__title {
