@@ -173,6 +173,47 @@
     animation: listSlideFromLeft 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
+/* Плавные анимации на мобильном — без дёрганий */
+@media (max-width: 1440px) {
+    .studentSlider__listWrapper.studentSlider__listWrapper_sliding-next {
+        animation: listSlideFromRight 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    }
+
+    .studentSlider__listWrapper.studentSlider__listWrapper_sliding-prev {
+        animation: listSlideFromLeft 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    }
+
+    .studentSlider__cardContainer.active {
+        animation: cardBecomeActiveMobile 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    }
+
+    .studentSlider__cardContainer:not(.active) {
+        animation: cardBecomeInactiveMobile 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    }
+}
+
+@keyframes cardBecomeActiveMobile {
+    from {
+        transform: translateZ(0) scale(0.95);
+        opacity: 0.9;
+    }
+    to {
+        transform: translateZ(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes cardBecomeInactiveMobile {
+    from {
+        transform: translateZ(0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translateZ(0) scale(0.95);
+        opacity: 0.9;
+    }
+}
+
 @keyframes listSlideFromRight {
     from {
         transform: translateX(calc(100% / 5));

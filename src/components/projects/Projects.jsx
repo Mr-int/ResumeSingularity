@@ -149,6 +149,13 @@ const Projects = () => {
                                 )}
                             </div>
 
+                            {isMobile && !isCardExpanded(1) && (
+                                <div className="card__open-hint">
+                                    <span className="card__open-text">открыть</span>
+                                    <span className="card__open-arrow" aria-hidden>▼</span>
+                                </div>
+                            )}
+
                             {(!isMobile || isCardExpanded(1)) && (
                                 <>
                                     <p className="card__description">
@@ -205,6 +212,13 @@ const Projects = () => {
                                     <h3 className="card__title">{getProjectTitle(2)}</h3>
                                 )}
                             </div>
+
+                            {isMobile && !isCardExpanded(2) && (
+                                <div className="card__open-hint">
+                                    <span className="card__open-text">открыть</span>
+                                    <span className="card__open-arrow" aria-hidden>▼</span>
+                                </div>
+                            )}
 
                             {(!isMobile || isCardExpanded(2)) && (
                                 <>
@@ -264,6 +278,13 @@ const Projects = () => {
                                     <h3 className="card__title">{getProjectTitle(3)}</h3>
                                 )}
                             </div>
+
+                            {isMobile && !isCardExpanded(3) && (
+                                <div className="card__open-hint">
+                                    <span className="card__open-text">открыть</span>
+                                    <span className="card__open-arrow" aria-hidden>▼</span>
+                                </div>
+                            )}
 
                             {(!isMobile || isCardExpanded(3)) && (
                                 <>
