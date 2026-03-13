@@ -38,20 +38,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         return { firstName: '', lastName: '' };
     };
 
-    const generateUsername = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let result = '';
-        for (let i = 0; i < 20; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-    };
-
-    const generateTelegramToken = (recruiterUuid) => {
-        const randomNumber = Math.floor(Math.random() * (9999 - 5000 + 1)) + 5000;
-        return `${randomNumber}_${recruiterUuid}`;
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -74,38 +60,26 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         setLoading(true);
         try {
             const { firstName, lastName } = splitFullName(formData.name);
-            const username = generateUsername();
 
             const requestData = {
-                companyName: formData.company,
-                firstName,
-                lastName: lastName || firstName,
-                username,
-                email: formData.email || null,
-                phoneNumber: formData.phone || null,
-                telegramUsername: formData.telegram || null,
-                ...(studentId && { studentId })
+                companyName: formData.company.trim(),
+                firstName: firstName || '',
+                lastName: lastName || '',
+                email: formData.email?.trim() || '',
+                phoneNumber: formData.phone?.trim() || '',
+                telegramUsername: formData.telegram?.trim() || '',
+                studentId: studentId || ''
             };
 
-            const endpoint = studentId ? 'request' : 'recruiter';
-
-            const response = await apiClientJson(endpoint, {
+            await apiClientJson('request', {
                 method: 'POST',
                 body: JSON.stringify(requestData)
             });
 
-            if (response && response.recruiterId) {
-                const token = generateTelegramToken(response.recruiterId);
-                const botLink = `https://t.me/singularity_resume_robot?start=${token}`;
-                setTelegramBotLink(botLink);
-            }
-
             setSuccess(true);
-
             if (onSubmit) {
                 await onSubmit(requestData);
             }
-
         } catch (err) {
             if (err.message && err.message.includes('HTTP error! status: 401')) {
                 setError('Ошибка авторизации. Пожалуйста, войдите в систему.');
