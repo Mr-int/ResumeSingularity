@@ -160,7 +160,6 @@
     position: relative;
 }
 
-/* --- Слайдер: viewport по центру на всех экранах --- */
 .studentSlider__viewport {
     display: flex;
     justify-content: center;
@@ -172,7 +171,6 @@
     min-width: 0;
 }
 
-/* Центровка относительно видимой области: --viewport-half задаётся из JS (половина ширины viewport), иначе 50vw */
 .studentSlider__track {
     --slot-width: min(201px, 20vw);
     --visible-cards: 5;

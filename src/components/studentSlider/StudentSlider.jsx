@@ -19,6 +19,10 @@ const StudentSlider = () => {
     const viewportRef = useRef(null);
     const [viewportHalfPx, setViewportHalfPx] = useState(0);
 
+    const total = students.length;
+    const SPACERS_PER_SIDE = 2;
+    const SLOTS_TOTAL = total > 0 ? SPACERS_PER_SIDE * 2 + total : 0;
+
     useEffect(() => {
         const el = viewportRef.current;
         if (!el) return;
@@ -47,10 +51,6 @@ const StudentSlider = () => {
         };
         fetchStudents();
     }, []);
-
-    const total = students.length;
-    const SPACERS_PER_SIDE = 2;
-    const SLOTS_TOTAL = total > 0 ? SPACERS_PER_SIDE * 2 + total : 0;
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
