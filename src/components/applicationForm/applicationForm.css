@@ -23,12 +23,12 @@
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     animation: slideIn 0.3s ease-in-out;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    overflow: hidden;
+    justify-content: flex-start;
 }
 
 .applicationForm__close {
@@ -214,15 +214,15 @@
     border-radius: 100px;
     color: #fff;
     font-family: 'StratosSkyeng', sans-serif;
-    font-size: 24px;
-    padding: 8px 20px 8px 24px;
+    font-size: 18px;
+    padding: 8px 18px 8px 20px;
     cursor: pointer;
     transition: all 0.3s;
     margin-top: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    min-width: 200px;
+    gap: 6px;
+    min-width: 160px;
 }
 
 .applicationForm__submit:hover:not(:disabled) {
@@ -235,9 +235,9 @@
 }
 
 .applicationForm__submit-icon {
-    width: 60%;
-    height: 60%;
-    position: relative;
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
 }
 
 .applicationForm__sunIcon {
@@ -278,22 +278,41 @@
     }
 }
 
-@media (max-height: 888px) {
+/* Низкий экран: форма с прокруткой по вертикали */
+@media (max-height: 900px) {
     .applicationForm__content {
-        max-height: 100vh;
+        max-height: 85vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
     }
 
     .applicationForm__form {
-        gap: 5px;
+        gap: 12px;
     }
 
     .applicationForm__info {
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
-    .applicationForm__field {
-        font-size: 22px;
-        padding-top: 8px 30px;
+    .applicationForm__field label {
+        font-size: 20px;
+    }
+
+    .applicationForm__field input {
+        padding: 10px 24px;
+        font-size: 20px;
+    }
+
+    .applicationForm__submit {
+        font-size: 16px;
+        padding: 6px 14px 6px 16px;
+    }
+
+    .applicationForm__submit-icon {
+        width: 16px;
+        height: 16px;
     }
 }
 
@@ -364,7 +383,13 @@
     }
 
     .applicationForm__submit {
+        font-size: 16px;
         padding: 8px 16px 8px 20px;
+    }
+
+    .applicationForm__submit-icon {
+        width: 16px;
+        height: 16px;
     }
 
     .applicationForm__sunIcon {
@@ -452,8 +477,14 @@
     }
 
     .applicationForm__submit {
+        font-size: 15px;
         padding: 8px 14px 8px 16px;
         gap: 6px;
+    }
+
+    .applicationForm__submit-icon {
+        width: 14px;
+        height: 14px;
     }
 
     .applicationForm__sunIcon {
@@ -506,12 +537,13 @@
     }
 
     .applicationForm__submit {
+        font-size: 14px;
         padding: 6px 12px 6px 14px;
         gap: 4px;
     }
 
     .applicationForm__submit-icon {
-        width: 40%;
-        height: 40%;
+        width: 14px;
+        height: 14px;
     }
 }
