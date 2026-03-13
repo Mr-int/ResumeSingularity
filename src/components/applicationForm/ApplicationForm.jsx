@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import './applicationForm.css';
 import exclamationIcon from "../../assets/icons/exclamationIcon.svg";
 import mailIcon from "../../assets/icons/mailIcon.svg";
@@ -19,24 +19,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [telegramBotLink, setTelegramBotLink] = useState('');
-    const [needsScroll, setNeedsScroll] = useState(false);
-    const contentRef = useRef(null);
-
-    const checkIfClipped = () => {
-        const el = contentRef.current;
-        if (!el) return;
-        const padding = 40;
-        const viewportHeight = window.innerHeight - padding;
-        const contentHeight = el.scrollHeight;
-        setNeedsScroll(contentHeight > viewportHeight);
-    };
-
-    useEffect(() => {
-        const run = () => requestAnimationFrame(() => checkIfClipped());
-        run();
-        const t = setTimeout(run, 100);
-        return () => clearTimeout(t);
-    }, [success]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -152,11 +134,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
 
     return (
         <div className="applicationForm__overlay" onClick={onClose}>
-            <div
-                ref={contentRef}
-                className={`applicationForm__content${needsScroll ? ' applicationForm__content_scrollable' : ''}`}
-                onClick={(e) => e.stopPropagation()}
-            >
+            <div className="applicationForm__content" onClick={(e) => e.stopPropagation()}>
                 <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
                 <button className="applicationForm__close" onClick={onClose}>×</button>
 
