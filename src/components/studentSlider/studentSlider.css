@@ -163,14 +163,16 @@
     min-width: 0;
 }
 
-/* Ширина слота = карточка (185px макс) + 16px между карточками; не больше 20vw чтобы на узких экранах сжималось */
+/* Ширина слота = карточка (185px макс) + 16px между карточками; не больше 20vw. Центр по активной карточке через --center-offset */
 .studentSlider__track {
     --slot-width: min(201px, 20vw);
+    --visible-cards: 5;
+    --center-offset: calc(50% - (var(--visible-cards) / 2) * var(--slot-width));
     display: grid;
     grid-template-columns: repeat(var(--slots-total), var(--slot-width));
     column-gap: 0;
     width: calc(var(--slots-total) * var(--slot-width));
-    transform: translateX(calc(-1 * var(--active-index, 0) * var(--slot-width)));
+    transform: translateX(calc(-1 * var(--active-index, 0) * var(--slot-width) + var(--center-offset)));
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform;
 }
@@ -419,6 +421,7 @@
 
     .studentSlider__track {
         --slot-width: min(190px, 28vw);
+        --visible-cards: 3;
     }
 
     .studentSlider__container {
@@ -563,6 +566,7 @@
 
     .studentSlider__track {
         --slot-width: min(180px, 30vw);
+        --visible-cards: 3;
     }
 
     .studentSlider__container {
@@ -670,7 +674,8 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(201px, 100%);
+        --slot-width: min(160px, 78vw);
+        --visible-cards: 1;
     }
 
     .studentSlider__container {
@@ -781,7 +786,8 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(201px, 100%);
+        --slot-width: min(150px, 75vw);
+        --visible-cards: 1;
     }
 
     .studentSlider__cardContainer {
