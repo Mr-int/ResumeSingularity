@@ -14,7 +14,6 @@ const StudentSlider = () => {
     const [students, setStudents] = useState([]);
     const [visibleCards, setVisibleCards] = useState([]);
     const [direction, setDirection] = useState(null); // 'prev' | 'next' | null
-    const [isAnimating, setIsAnimating] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
@@ -83,20 +82,16 @@ const StudentSlider = () => {
         }
     }
 
-    const ANIMATION_DURATION = 600;
+    const ANIMATION_DURATION = 550;
 
     const runSlideAnimation = (dir) => {
         if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
         setDirection(dir);
-        setIsAnimating(true);
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => setDirection(null));
-        });
-        animationTimeoutRef.current = setTimeout(() => setIsAnimating(false), ANIMATION_DURATION);
+        animationTimeoutRef.current = setTimeout(() => setDirection(null), ANIMATION_DURATION);
     };
 
     const handlePrevClick = () => {
-        if (direction !== null || isAnimating || students.length === 0) return;
+        if (direction !== null || students.length === 0) return;
 
         const total = students.length;
         const newIndex = (activeCardIndex - 1 + total) % total;
@@ -106,7 +101,7 @@ const StudentSlider = () => {
     };
 
     const handleNextClick = () => {
-        if (direction !== null || isAnimating || students.length === 0) return;
+        if (direction !== null || students.length === 0) return;
 
         const total = students.length;
         const newIndex = (activeCardIndex + 1) % total;
@@ -116,7 +111,7 @@ const StudentSlider = () => {
     };
 
     const handleCardClick = (indexInWindow) => {
-        if (direction !== null || isAnimating || students.length === 0) return;
+        if (direction !== null || students.length === 0) return;
 
         if (indexInWindow === 2) return;
 
@@ -168,7 +163,7 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div className={`studentSlider__listWrapper ${direction ? `studentSlider__listWrapper_sliding-${direction}` : ''}`}>
+                                <div className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}>
                                     {visibleCards.map((student, index) => (
                                         <div
                                             key={student?.id ?? index}
