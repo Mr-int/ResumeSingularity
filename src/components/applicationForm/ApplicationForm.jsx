@@ -112,7 +112,11 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 await onSubmit(requestData);
             }
         } catch (err) {
-            setError(getFriendlyError(err));
+            if (err.message && err.message.includes('HTTP error! status: 401')) {
+                setError('Ошибка авторизации. Пожалуйста, войдите в систему.');
+            } else {
+                setError(err.message || 'Ошибка при отправке заявки. Попробуйте еще раз.');
+            }
         } finally {
             setLoading(false);
         }
@@ -125,7 +129,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     };
 
     const showMailIcon = () => {
-        return !loading && !success;
+        return !loading && !studentName && !success;
     };
 
     return (

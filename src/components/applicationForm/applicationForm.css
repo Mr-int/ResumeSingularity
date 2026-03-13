@@ -21,6 +21,9 @@
     width: 50%;
     min-width: 300px;
     max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     animation: slideIn 0.3s ease-in-out;
     display: flex;
@@ -244,10 +247,9 @@
 }
 
 .applicationForm__cloudMailIcon {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    z-index: 10001;
+    position: absolute;
+    bottom: -20px;
+    right: -72px;
 }
 
 @keyframes fadeIn {
@@ -325,6 +327,12 @@
         left: -95px;
     }
 
+    .applicationForm__cloudMailIcon {
+        position: absolute;
+        bottom: -30px;
+        right: -82px;
+    }
+
     .applicationForm__success h3 {
         font-size: 24px;
     }
@@ -389,6 +397,11 @@
         left: -115px;
     }
 
+    .applicationForm__cloudMailIcon {
+        position: absolute;
+        bottom: -50px;
+        right: -82px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -479,6 +492,11 @@
         left: -115px;
     }
 
+    .applicationForm__cloudMailIcon {
+        position: absolute;
+        bottom: -80px;
+        right: -82px;
+    }
 }
 
 @media (max-width: 375px) {
