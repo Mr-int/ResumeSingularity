@@ -420,6 +420,14 @@
     }
 }
 
+/* С 1024px переходим на 3 карточки, чтобы на ~994px слайдер не слетал и фокус оставался по центру */
+@media (max-width: 1024px) {
+    .studentSlider__track {
+        --slot-width: min(190px, 28vw);
+        --visible-cards: 3;
+    }
+}
+
 @media (max-width: 992px) {
     .studentSlider {
         padding: 0 40px;
