@@ -158,6 +158,8 @@
 
 /* --- Слайдер: слоты фиксированной ширины (под карточку), без огромных 1fr --- */
 .studentSlider__viewport {
+    display: flex;
+    justify-content: center;
     flex: 1;
     overflow: hidden;
     min-width: 0;
