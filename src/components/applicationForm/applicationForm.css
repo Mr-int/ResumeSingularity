@@ -212,15 +212,18 @@
     border-radius: 100px;
     color: #fff;
     font-family: 'StratosSkyeng', sans-serif;
-    font-size: 18px;
-    padding: 8px 18px 8px 20px;
+    font-size: 24px;
+    width: 226px;
+    height: 45px;
+    padding: 0 20px;
     cursor: pointer;
     transition: all 0.3s;
     margin-top: 10px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    min-width: 160px;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
 }
 
 .applicationForm__submit:hover:not(:disabled) {
@@ -233,8 +236,8 @@
 }
 
 .applicationForm__submit-icon {
-    width: 18px;
-    height: 18px;
+    width: 28px;
+    height: 20px;
     object-fit: contain;
 }
 
