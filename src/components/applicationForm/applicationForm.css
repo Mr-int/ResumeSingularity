@@ -191,6 +191,7 @@
     transition: border-color 0.3s;
     resize: vertical;
     box-sizing: border-box;
+    z-index: 1;
 }
 
 .applicationForm__field input:focus {
@@ -267,6 +268,7 @@
     position: absolute;
     bottom: -20px;
     right: -72px;
+    z-index: 0;
 }
 
 @keyframes fadeIn {
@@ -286,5 +288,11 @@
     to {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@meida (max-width: 900px) {
+    .applicationForm__content {
+        padding: 50px 108px;
     }
 }
