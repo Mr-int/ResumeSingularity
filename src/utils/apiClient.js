@@ -39,10 +39,17 @@ export const apiClientJson = async (endpoint, options = {}) => {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`[API] HTTP error! status: ${response.status}, endpoint: ${endpoint}`);
-            const error = new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-            error.status = response.status;
-            throw error;
+            console.error(`[API] HTTP error! status: ${response.status}, endpoint: ${endpoint}`, errorText);
+            let responseBody = null;
+            try {
+                responseBody = errorText ? JSON.parse(errorText) : null;
+            } catch (_) {
+                responseBody = { message: errorText };
+            }
+            const err = new Error(responseBody?.message || `Ошибка ${response.status}`);
+            err.status = response.status;
+            err.responseBody = responseBody;
+            throw err;
         }
 
         const contentType = response.headers.get('content-type');

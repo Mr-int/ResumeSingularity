@@ -39,6 +39,24 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         return { firstName: '', lastName: '' };
     };
 
+    const isPhoneValid = (phone) => {
+        if (!phone.trim()) return true;
+        return /^[\d\s+()-]+$/.test(phone.trim());
+    };
+
+    const getFriendlyError = (err) => {
+        const body = err.responseBody;
+        const msg = (body?.message || err.message || '').toLowerCase();
+        if (err.status === 401) return 'Ошибка авторизации. Пожалуйста, войдите в систему.';
+        if (err.status === 403) return 'Доступ запрещён.';
+        if (msg.includes('null') || msg.includes('не должно равняться')) return 'Заполните все обязательные поля.';
+        if (msg.includes('email') || msg.includes('почт')) return 'Укажите корректный адрес почты.';
+        if (msg.includes('телефон') || msg.includes('phone') || msg.includes('номер')) return 'В номере телефона не может быть букв. Укажите только цифры, плюс, скобки или дефис.';
+        if (msg.includes('букв') || msg.includes('letter')) return 'В номере телефона не может быть букв. Укажите только цифры.';
+        if (body?.message) return body.message;
+        return 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.';
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -55,6 +73,10 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         }
         if (!formData.telegram.trim() && !formData.email.trim() && !formData.phone.trim()) {
             setError('Пожалуйста, укажите телеграмм, почту или телефон для связи');
+            return;
+        }
+        if (!isPhoneValid(formData.phone)) {
+            setError('В номере телефона не может быть букв. Укажите только цифры, плюс, скобки или дефис.');
             return;
         }
 
@@ -77,21 +99,20 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 studentId
             };
 
-            await apiClientJson('request', {
+            const response = await apiClientJson('request', {
                 method: 'POST',
                 body: JSON.stringify(requestData)
             });
 
+            if (response?.recruiterId) {
+                setTelegramBotLink(`https://t.me/singularity_resume_robot?start=re_${response.recruiterId}`);
+            }
             setSuccess(true);
             if (onSubmit) {
                 await onSubmit(requestData);
             }
         } catch (err) {
-            if (err.message && err.message.includes('HTTP error! status: 401')) {
-                setError('Ошибка авторизации. Пожалуйста, войдите в систему.');
-            } else {
-                setError(err.message || 'Ошибка при отправке заявки. Попробуйте еще раз.');
-            }
+            setError(getFriendlyError(err));
         } finally {
             setLoading(false);
         }
