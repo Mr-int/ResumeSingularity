@@ -37,7 +37,8 @@ const StudentSlider = () => {
     }, []);
 
     const total = students.length;
-    const SLOTS_TOTAL = total > 0 ? total + 4 : 0; // 2 spacer + N cards + 2 spacer
+    const SPACERS_PER_SIDE = 2;
+    const SLOTS_TOTAL = total > 0 ? SPACERS_PER_SIDE * 2 + total : 0;
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -120,8 +121,9 @@ const StudentSlider = () => {
                                             '--active-index': activeCardIndex,
                                         }}
                                     >
-                                        <div className="studentSlider__spacer" aria-hidden="true" />
-                                        <div className="studentSlider__spacer" aria-hidden="true" />
+                                        {Array.from({ length: SPACERS_PER_SIDE }, (_, i) => (
+                                            <div key={`left-${i}`} className="studentSlider__spacer" aria-hidden="true" />
+                                        ))}
                                         {students.map((student, index) => (
                                             <div
                                                 key={student?.id ?? index}
@@ -134,8 +136,9 @@ const StudentSlider = () => {
                                                 />
                                             </div>
                                         ))}
-                                        <div className="studentSlider__spacer" aria-hidden="true" />
-                                        <div className="studentSlider__spacer" aria-hidden="true" />
+                                        {Array.from({ length: SPACERS_PER_SIDE }, (_, i) => (
+                                            <div key={`right-${i}`} className="studentSlider__spacer" aria-hidden="true" />
+                                        ))}
                                     </div>
                                 </div>
 

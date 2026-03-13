@@ -191,7 +191,6 @@
     pointer-events: none;
 }
 
-/* Контейнер по размеру карточки; 16px между карточками за счёт padding */
 .studentSlider__cardContainer {
     width: fit-content;
     height: 320px;
@@ -200,7 +199,6 @@
     justify-content: center;
     flex-shrink: 0;
     min-width: 0;
-    padding: 0 8px;
     box-sizing: border-box;
     justify-self: center;
 }
