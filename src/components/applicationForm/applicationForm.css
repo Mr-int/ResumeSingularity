@@ -298,13 +298,16 @@
     }
 
     .applicationForm__submit {
-        font-size: 16px;
-        padding: 6px 14px 6px 16px;
+        width: 192px;
+        height: 38px;
+        font-size: 20px;
+        padding: 0 16px;
+        gap: 6px;
     }
 
     .applicationForm__submit-icon {
-        width: 16px;
-        height: 16px;
+        width: 24px;
+        height: 17px;
     }
 }
 
@@ -312,6 +315,19 @@
     .applicationForm__content {
         width: 80%;
         padding: 50px 80px;
+    }
+
+    .applicationForm__submit {
+        width: 200px;
+        height: 42px;
+        font-size: 20px;
+        padding: 0 16px;
+        gap: 6px;
+    }
+
+    .applicationForm__submit-icon {
+        width: 24px;
+        height: 17px;
     }
 
     .applicationForm__sunIcon {
@@ -375,12 +391,15 @@
     }
 
     .applicationForm__submit {
-        font-size: 16px;
-        padding: 8px 16px 8px 20px;
+        width: 180px;
+        height: 40px;
+        font-size: 18px;
+        padding: 0 14px;
+        gap: 6px;
     }
 
     .applicationForm__submit-icon {
-        width: 16px;
+        width: 22px;
         height: 16px;
     }
 
@@ -469,13 +488,15 @@
     }
 
     .applicationForm__submit {
-        font-size: 15px;
-        padding: 8px 14px 8px 16px;
+        width: 160px;
+        height: 38px;
+        font-size: 16px;
+        padding: 0 12px;
         gap: 6px;
     }
 
     .applicationForm__submit-icon {
-        width: 14px;
+        width: 20px;
         height: 14px;
     }
 
@@ -529,13 +550,15 @@
     }
 
     .applicationForm__submit {
+        width: 150px;
+        height: 36px;
         font-size: 14px;
-        padding: 6px 12px 6px 14px;
+        padding: 0 10px;
         gap: 4px;
     }
 
     .applicationForm__submit-icon {
-        width: 14px;
-        height: 14px;
+        width: 18px;
+        height: 13px;
     }
 }
