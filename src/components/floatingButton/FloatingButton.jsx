@@ -49,6 +49,11 @@ const FloatingButton = () => {
         return Promise.resolve();
     };
 
+    /* Заявки только от карточки студента: кнопка только на странице студента */
+    if (!studentId) {
+        return null;
+    }
+
     return (
         <>
             <button

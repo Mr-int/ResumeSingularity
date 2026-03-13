@@ -7,6 +7,7 @@ import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { apiClientJson } from '../../utils/apiClient.js';
 
 const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
+    const hasStudent = Boolean(studentId);
     const [formData, setFormData] = useState({
         name: '',
         company: '',
@@ -57,6 +58,11 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
             return;
         }
 
+        if (!hasStudent) {
+            setError('Заявка возможна только при выборе студента. Откройте карточку студента и нажмите «Оставить заявку».');
+            return;
+        }
+
         setLoading(true);
         try {
             const { firstName, lastName } = splitFullName(formData.name);
@@ -68,7 +74,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 email: formData.email?.trim() || '',
                 phoneNumber: formData.phone?.trim() || '',
                 telegramUsername: formData.telegram?.trim() || '',
-                studentId: studentId || ''
+                studentId
             };
 
             await apiClientJson('request', {
@@ -94,12 +100,11 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const getButtonText = () => {
         if (loading) return 'Отправка...';
         if (success) return 'Заявка отправлена!';
-        if (studentName) return 'Оставить заявку';
-        return 'Связаться';
+        return 'Оставить заявку';
     };
 
     const showMailIcon = () => {
-        return !loading && !studentName && !success;
+        return !loading && !success;
     };
 
     return (
