@@ -167,7 +167,7 @@
 .studentSlider__track {
     display: grid;
     grid-template-columns: repeat(var(--slots-total), 1fr);
-    column-gap: 6px;
+    column-gap: 0;
     width: calc((var(--slots-total) / var(--visible-cards, 5)) * 100%);
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform;
@@ -178,6 +178,7 @@
     pointer-events: none;
 }
 
+/* Строго 16px между карточками: padding по 8px по бокам ячейки, без column-gap и без разницы из‑за scale/активной карточки */
 .studentSlider__cardContainer {
     height: 320px;
     display: flex;
@@ -185,6 +186,8 @@
     justify-content: center;
     flex-shrink: 0;
     min-width: 0;
+    padding: 0 8px;
+    box-sizing: border-box;
 }
 
 .studentSlider__cardContainer.active {
@@ -620,11 +623,12 @@
 
     .studentSlider__track {
         padding: 0 4px;
-        column-gap: 4px;
+        column-gap: 0;
     }
 
     .studentSlider__cardContainer {
         height: 280px;
+        padding: 0 8px;
     }
 
     .studentSlider__button {
@@ -739,7 +743,11 @@
 
     .studentSlider__track {
         padding: 0 4px;
-        column-gap: 4px;
+        column-gap: 0;
+    }
+
+    .studentSlider__cardContainer {
+        padding: 0 8px;
     }
 
     .studentSlider__mobileControls {
@@ -801,7 +809,11 @@
 
     .studentSlider__track {
         padding: 0 4px;
-        column-gap: 4px;
+        column-gap: 0;
+    }
+
+    .studentSlider__cardContainer {
+        padding: 0 8px;
     }
 
     .studentSlider__mobileButton {
@@ -880,7 +892,11 @@
 
     .studentSlider__track {
         padding: 0 4px;
-        column-gap: 4px;
+        column-gap: 0;
+    }
+
+    .studentSlider__cardContainer {
+        padding: 0 8px;
     }
 
     .studentSlider__mobileControls {
@@ -928,7 +944,11 @@
 
     .studentSlider__track {
         padding: 0 4px;
-        column-gap: 4px;
+        column-gap: 0;
+    }
+
+    .studentSlider__cardContainer {
+        padding: 0 8px;
     }
 
     .studentSlider__mobileButton {
