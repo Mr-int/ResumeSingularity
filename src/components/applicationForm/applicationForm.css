@@ -14,12 +14,12 @@
 }
 
 .applicationForm__content {
-    width: 870px;
-    height: 710px;
+    width: 880px;
+    height: 750px;
     background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat center center;
     background-size: cover;
     border-radius: 20px;
-    padding: 66px 165px;
+    padding: 50px 165px;
     position: relative;
     overflow: hidden;
     animation: slideIn 0.3s ease-in-out;
