@@ -11,7 +11,6 @@
     z-index: 10000;
     animation: fadeIn 0.3s ease-in-out;
     padding: 20px;
-    pointer-events: none;
 }
 
 .applicationForm__content {
@@ -24,11 +23,17 @@
     max-width: 800px;
     position: relative;
     overflow: hidden;
-    pointer-events: auto;
     animation: slideIn 0.3s ease-in-out;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+
+.applicationForm__content_scrollable {
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .applicationForm__close {
