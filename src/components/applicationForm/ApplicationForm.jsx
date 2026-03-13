@@ -81,7 +81,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         }
 
         if (!hasStudent) {
-            setError('Заявка возможна только при выборе студента. Откройте карточку студента и нажмите «Оставить заявку».');
+            setError('Заявка возможна только при выборе студента. Откройте карточку студента и нажмите «Связаться».');
             return;
         }
 
@@ -121,7 +121,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const getButtonText = () => {
         if (loading) return 'Отправка...';
         if (success) return 'Заявка отправлена!';
-        return 'Оставить заявку';
+        return 'Связаться';
     };
 
     const showMailIcon = () => {
