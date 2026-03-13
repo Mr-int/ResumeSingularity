@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './studentSlider.css';
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
@@ -12,15 +12,10 @@ const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
     const [activeCardIndex, setActiveCardIndex] = useState(0);
     const [students, setStudents] = useState([]);
-    const [visibleCards, setVisibleCards] = useState([]);
-    const [direction, setDirection] = useState(null); // 'prev' | 'next' | null
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
     const searchInputRef = useRef(null);
-    const animationTimeoutRef = useRef(null);
-    const listWrapperRef = useRef(null);
-    const [slideOffsetPx, setSlideOffsetPx] = useState(0);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -28,11 +23,9 @@ const StudentSlider = () => {
                 setLoading(true);
                 const data = await getAllStudents();
                 setStudents(data);
-
                 if (data.length > 0) {
                     const middleIndex = Math.floor(data.length / 2);
                     setActiveCardIndex(middleIndex);
-                    updateVisibleCards(data, middleIndex);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -40,101 +33,46 @@ const StudentSlider = () => {
                 setLoading(false);
             }
         };
-
         fetchStudents();
-
-        return () => {
-            if (animationTimeoutRef.current) {
-                clearTimeout(animationTimeoutRef.current);
-            }
-        };
     }, []);
 
-    useLayoutEffect(() => {
-        const el = listWrapperRef.current;
-        if (!el || visibleCards.length !== 5) return;
-        const width = el.offsetWidth;
-        setSlideOffsetPx(width / 5);
-    }, [visibleCards]);
-
-    const updateVisibleCards = (studentsArray, centerIndex) => {
-        const total = studentsArray.length;
-        if (total === 0) {
-            setVisibleCards([]);
-            return;
-        }
-
-        const cards = [];
-        for (let offset = -2; offset <= 2; offset++) {
-            const idx = (centerIndex + offset + total) % total;
-            cards.push(studentsArray[idx]);
-        }
-        setVisibleCards(cards);
-    };
+    const total = students.length;
+    const SLOTS_TOTAL = total > 0 ? total + 4 : 0; // 2 spacer + N cards + 2 spacer
+    const translateX = SLOTS_TOTAL > 0 ? -activeCardIndex * (100 / SLOTS_TOTAL) : 0;
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
-    }
+    };
 
     const handleSearchClick = () => {
         if (window.innerWidth <= 480) {
             setIsSearchExpanded(true);
-            setTimeout(() => {
-                searchInputRef.current?.focus();
-            }, 100);
+            setTimeout(() => searchInputRef.current?.focus(), 100);
         }
-    }
+    };
 
     const handleSearchBlur = () => {
         if (window.innerWidth <= 480 && searchValue === '') {
             setIsSearchExpanded(false);
         }
-    }
-
-    const ANIMATION_DURATION = 550;
-
-    const runSlideAnimation = (dir) => {
-        if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
-        setDirection(dir);
-        animationTimeoutRef.current = setTimeout(() => setDirection(null), ANIMATION_DURATION);
     };
 
-    const handlePrevClick = () => {
-        if (direction !== null || students.length === 0) return;
-
-        const total = students.length;
-        const newIndex = (activeCardIndex - 1 + total) % total;
-        setActiveCardIndex(newIndex);
-        updateVisibleCards(students, newIndex);
-        runSlideAnimation('prev');
+    const goPrev = () => {
+        if (total === 0) return;
+        setActiveCardIndex((i) => (i > 0 ? i - 1 : total - 1));
     };
 
-    const handleNextClick = () => {
-        if (direction !== null || students.length === 0) return;
-
-        const total = students.length;
-        const newIndex = (activeCardIndex + 1) % total;
-        setActiveCardIndex(newIndex);
-        updateVisibleCards(students, newIndex);
-        runSlideAnimation('next');
+    const goNext = () => {
+        if (total === 0) return;
+        setActiveCardIndex((i) => (i < total - 1 ? i + 1 : 0));
     };
 
-    const handleCardClick = (indexInWindow) => {
-        if (direction !== null || students.length === 0) return;
-
-        if (indexInWindow === 2) return;
-
-        const total = students.length;
-        const offset = indexInWindow - 2;
-        const newIndex = (activeCardIndex + offset + total) % total;
-        const dir = offset < 0 ? 'prev' : 'next';
-
-        setActiveCardIndex(newIndex);
-        updateVisibleCards(students, newIndex);
-        runSlideAnimation(dir);
+    const handleCardClick = (index) => {
+        if (total === 0 || index === activeCardIndex) return;
+        setActiveCardIndex(index);
     };
 
-    const activeStudent = visibleCards[2] || null;
+    const activeStudent = total > 0 ? students[activeCardIndex] : null;
 
     return (
         <section className="studentSlider">
@@ -153,55 +91,81 @@ const StudentSlider = () => {
                             disabled
                         />
                     </div>
-
                     <h2 className="studentSlider__title">Студенты</h2>
-
-                    <button className={`studentSlider__filter`}>
+                    <button className="studentSlider__filter">
                         <span>Фильтр</span>
-                        <img src={filterIcon} alt="Фильтр"/>
+                        <img src={filterIcon} alt="Фильтр" />
                     </button>
                 </div>
 
                 {loading ? (
-                    <p style={{color: '#fff'}}>Загрузка студентов...</p>
-                ) : students.length > 0 ? (
+                    <p style={{ color: '#fff' }}>Загрузка студентов...</p>
+                ) : total > 0 ? (
                     <>
                         <div className="studentSlider__container">
                             <div className="studentSlider__list">
-                                <button className="studentSlider__listButton desktop-only" onClick={handlePrevClick}>
-                                    <img src={sliderArrowIcon} alt="Предыдущий"/>
+                                <button
+                                    type="button"
+                                    className="studentSlider__listButton desktop-only"
+                                    onClick={goPrev}
+                                    aria-label="Предыдущий"
+                                >
+                                    <img src={sliderArrowIcon} alt="Предыдущий" />
                                 </button>
 
-                                <div
-                                    ref={listWrapperRef}
-                                    className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}
-                                    style={{ '--slide-px': `${slideOffsetPx}px` }}
-                                >
-                                    {visibleCards.map((student, index) => (
-                                        <div
-                                            key={student?.id ?? index}
-                                            className={`studentSlider__cardContainer ${index === 2 ? 'active' : ''}`}
-                                        >
-                                            <StudentSliderCard
-                                                student={student}
-                                                isActive={index === 2}
-                                                onClick={() => handleCardClick(index)}
-                                            />
-                                        </div>
-                                    ))}
+                                <div className="studentSlider__viewport">
+                                    <div
+                                        className="studentSlider__track"
+                                        style={{
+                                            '--slots-total': SLOTS_TOTAL,
+                                            transform: `translateX(${translateX}%)`,
+                                        }}
+                                    >
+                                        <div className="studentSlider__spacer" aria-hidden="true" />
+                                        <div className="studentSlider__spacer" aria-hidden="true" />
+                                        {students.map((student, index) => (
+                                            <div
+                                                key={student?.id ?? index}
+                                                className={`studentSlider__cardContainer ${index === activeCardIndex ? 'active' : ''}`}
+                                            >
+                                                <StudentSliderCard
+                                                    student={student}
+                                                    isActive={index === activeCardIndex}
+                                                    onClick={() => handleCardClick(index)}
+                                                />
+                                            </div>
+                                        ))}
+                                        <div className="studentSlider__spacer" aria-hidden="true" />
+                                        <div className="studentSlider__spacer" aria-hidden="true" />
+                                    </div>
                                 </div>
 
-                                <button className="studentSlider__listButton desktop-only" onClick={handleNextClick}>
-                                    <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
+                                <button
+                                    type="button"
+                                    className="studentSlider__listButton desktop-only"
+                                    onClick={goNext}
+                                    aria-label="Следующий"
+                                >
+                                    <img src={sliderArrowIcon} alt="Следующий" className="rotateRight" />
                                 </button>
                             </div>
 
                             <div className="studentSlider__mobileControls">
-                                <button className="studentSlider__mobileButton" onClick={handlePrevClick}>
-                                    <img src={sliderArrowIcon} alt="Предыдущий"/>
+                                <button
+                                    type="button"
+                                    className="studentSlider__mobileButton"
+                                    onClick={goPrev}
+                                    aria-label="Предыдущий"
+                                >
+                                    <img src={sliderArrowIcon} alt="Предыдущий" />
                                 </button>
-                                <button className="studentSlider__mobileButton" onClick={handleNextClick}>
-                                    <img src={sliderArrowIcon} alt="Следующий" className="rotateRight"/>
+                                <button
+                                    type="button"
+                                    className="studentSlider__mobileButton"
+                                    onClick={goNext}
+                                    aria-label="Следующий"
+                                >
+                                    <img src={sliderArrowIcon} alt="Следующий" className="rotateRight" />
                                 </button>
                             </div>
                         </div>
@@ -222,7 +186,7 @@ const StudentSlider = () => {
                         </Link>
                     </>
                 ) : (
-                    <p style={{color: '#fff'}}>Для показа студентов ты должен быть авторизован :(</p>
+                    <p style={{ color: '#fff' }}>Для показа студентов ты должен быть авторизован :(</p>
                 )}
             </div>
         </section>
