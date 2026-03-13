@@ -296,3 +296,36 @@
         padding: 50px 108px;
     }
 }
+
+@media (max-width: 640px) {
+    .applicationForm__content {
+        height: 90vh;
+        width: 100%;
+        max-width: 100%;
+        padding: 40px 24px 32px;
+        justify-content: space-evenly;
+    }
+
+    .applicationForm__form {
+        gap: 24px;
+    }
+
+    .applicationForm__info {
+        margin-bottom: 20px;
+        padding: 18px 20px 18px 56px;
+    }
+
+    .applicationForm__field label {
+        font-size: 26px;
+    }
+
+    .applicationForm__field input {
+        height: 48px;
+        padding: 0 28px;
+        font-size: 20px;
+    }
+
+    .applicationForm__button-container {
+        margin-top: 8px;
+    }
+}
