@@ -16,22 +16,10 @@ const StudentSlider = () => {
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
     const searchInputRef = useRef(null);
-    const viewportRef = useRef(null);
-    const [viewportHalfPx, setViewportHalfPx] = useState(0);
 
     const total = students.length;
     const SPACERS_PER_SIDE = 2;
     const SLOTS_TOTAL = total > 0 ? SPACERS_PER_SIDE * 2 + total : 0;
-
-    useEffect(() => {
-        const el = viewportRef.current;
-        if (!el) return;
-        const update = () => setViewportHalfPx(el.offsetWidth / 2);
-        update();
-        const ro = new ResizeObserver(update);
-        ro.observe(el);
-        return () => ro.disconnect();
-    }, [total > 0]);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -125,11 +113,7 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий" />
                                 </button>
 
-                                <div
-                                    ref={viewportRef}
-                                    className="studentSlider__viewport"
-                                    style={{ '--viewport-half': `${viewportHalfPx}px` }}
-                                >
+                                <div className="studentSlider__viewport">
                                     <div
                                         className="studentSlider__track"
                                         style={{

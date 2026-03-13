@@ -161,36 +161,33 @@
 }
 
 .studentSlider__viewport {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     flex: 1;
     width: 100%;
-    max-width: 100%;
     overflow: hidden;
     min-width: 0;
 }
 
 .studentSlider__track {
-    --slot-width: min(201px, 20vw);
     --visible-cards: 5;
-    --center-offset: calc(var(--viewport-half, 50vw) - (var(--visible-cards) / 2) * var(--slot-width));
-    display: grid;
-    grid-template-columns: repeat(var(--slots-total), var(--slot-width));
-    column-gap: 0;
-    width: calc(var(--slots-total) * var(--slot-width));
-    transform: translateX(calc(-1 * var(--active-index, 0) * var(--slot-width) + var(--center-offset)));
+    --start-offset: calc(2 - (var(--visible-cards) - 1) / 2);
+    display: flex;
+    flex-direction: row;
+    width: calc((var(--slots-total) / var(--visible-cards)) * 100%);
+    transform: translateX(calc(-1 * (var(--active-index, 0) + var(--start-offset)) * 100 / var(--slots-total) * 1%));
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform;
 }
 
-.studentSlider__spacer {
+.studentSlider__track > * {
+    flex: 0 0 calc(100% / var(--slots-total));
     min-width: 0;
+}
+
+.studentSlider__spacer {
     pointer-events: none;
 }
 
 .studentSlider__cardContainer {
-    width: fit-content;
     height: 320px;
     display: flex;
     align-items: center;
@@ -198,7 +195,6 @@
     flex-shrink: 0;
     min-width: 0;
     box-sizing: border-box;
-    justify-self: center;
 }
 
 .studentSlider__cardContainer.active {
@@ -419,7 +415,6 @@
 /* С 1024px переходим на 3 карточки, чтобы на ~994px слайдер не слетал и фокус оставался по центру */
 @media (max-width: 1024px) {
     .studentSlider__track {
-        --slot-width: min(190px, 28vw);
         --visible-cards: 3;
     }
 }
@@ -438,7 +433,6 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(190px, 28vw);
         --visible-cards: 3;
     }
 
@@ -584,7 +578,6 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(180px, 30vw);
         --visible-cards: 3;
     }
 
@@ -641,11 +634,6 @@
         display: none;
     }
 
-    .studentSlider__track {
-        padding: 0 4px;
-        column-gap: 0;
-    }
-
     .studentSlider__cardContainer {
         height: 280px;
     }
@@ -694,7 +682,6 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(160px, 78vw);
         --visible-cards: 1;
     }
 
@@ -762,11 +749,6 @@
         padding-bottom: 8px;
     }
 
-    .studentSlider__track {
-        padding: 0 4px;
-        column-gap: 0;
-    }
-
     .studentSlider__mobileControls {
         margin-top: 15px;
     }
@@ -809,7 +791,6 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(150px, 75vw);
         --visible-cards: 1;
     }
 
@@ -826,11 +807,6 @@
         width: 120px;
         padding-left: 12px;
         padding-right: 35px;
-    }
-
-    .studentSlider__track {
-        padding: 0 4px;
-        column-gap: 0;
     }
 
     .studentSlider__mobileButton {
@@ -865,7 +841,6 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(140px, 72vw);
         --visible-cards: 1;
     }
 
@@ -914,11 +889,6 @@
         height: 18px;
     }
 
-    .studentSlider__track {
-        padding: 0 4px;
-        column-gap: 0;
-    }
-
     .studentSlider__mobileControls {
         gap: 20px;
     }
@@ -958,10 +928,7 @@
     }
 
     .studentSlider__track {
-        --slot-width: min(130px, 70vw);
         --visible-cards: 1;
-        padding: 0 4px;
-        column-gap: 0;
     }
 
     .studentSlider__cardContainer {
