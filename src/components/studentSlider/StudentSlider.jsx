@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import './studentSlider.css';
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
@@ -19,6 +19,8 @@ const StudentSlider = () => {
 
     const searchInputRef = useRef(null);
     const animationTimeoutRef = useRef(null);
+    const listWrapperRef = useRef(null);
+    const [slideOffsetPx, setSlideOffsetPx] = useState(0);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -47,6 +49,13 @@ const StudentSlider = () => {
             }
         };
     }, []);
+
+    useLayoutEffect(() => {
+        const el = listWrapperRef.current;
+        if (!el || visibleCards.length !== 5) return;
+        const width = el.offsetWidth;
+        setSlideOffsetPx(width / 5);
+    }, [visibleCards]);
 
     const updateVisibleCards = (studentsArray, centerIndex) => {
         const total = studentsArray.length;
@@ -163,7 +172,11 @@ const StudentSlider = () => {
                                     <img src={sliderArrowIcon} alt="Предыдущий"/>
                                 </button>
 
-                                <div className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}>
+                                <div
+                                    ref={listWrapperRef}
+                                    className={`studentSlider__listWrapper${direction === 'next' ? ' studentSlider__listWrapper_sliding-next' : ''}${direction === 'prev' ? ' studentSlider__listWrapper_sliding-prev' : ''}`}
+                                    style={{ '--slide-px': `${slideOffsetPx}px` }}
+                                >
                                     {visibleCards.map((student, index) => (
                                         <div
                                             key={student?.id ?? index}
