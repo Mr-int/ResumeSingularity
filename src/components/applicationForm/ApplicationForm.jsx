@@ -129,7 +129,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     };
 
     const showMailIcon = () => {
-        return !loading && !studentName && !success;
+        return !loading && !success;
     };
 
     return (
