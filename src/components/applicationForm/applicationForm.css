@@ -13,6 +13,15 @@
     padding: 20px;
 }
 
+/* От 1200px и выше форма не меняется — фиксированные размеры */
+@media (min-width: 1200px) {
+    .applicationForm__content {
+        width: 600px;
+        min-width: 600px;
+        max-width: 600px;
+    }
+}
+
 .applicationForm__content {
     background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat center center;
     background-size: cover;
