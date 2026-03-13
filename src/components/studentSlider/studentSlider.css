@@ -172,11 +172,11 @@
     min-width: 0;
 }
 
-/* Ширина слота = карточка (185px макс) + 16px между карточками; не больше 20vw. Центр по активной карточке через --center-offset */
+/* Центровка относительно видимой области: --viewport-half задаётся из JS (половина ширины viewport), иначе 50vw */
 .studentSlider__track {
     --slot-width: min(201px, 20vw);
     --visible-cards: 5;
-    --center-offset: calc(50% - (var(--visible-cards) / 2) * var(--slot-width));
+    --center-offset: calc(var(--viewport-half, 50vw) - (var(--visible-cards) / 2) * var(--slot-width));
     display: grid;
     grid-template-columns: repeat(var(--slots-total), var(--slot-width));
     column-gap: 0;
