@@ -173,10 +173,10 @@
     animation: listSlideFromLeft 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
 }
 
-/* Плавные анимации на мобильном — без дёрганий */
+/* Плавные анимации на мобильном — без дёрганий; вправо (next) отдельно мягче */
 @media (max-width: 1440px) {
     .studentSlider__listWrapper.studentSlider__listWrapper_sliding-next {
-        animation: listSlideFromRight 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+        animation: listSlideFromRightMobile 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     .studentSlider__listWrapper.studentSlider__listWrapper_sliding-prev {
@@ -189,6 +189,19 @@
 
     .studentSlider__cardContainer:not(.active) {
         animation: cardBecomeInactiveMobile 0.6s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+    }
+
+    /* При движении вправо (next) только слайд списка, без анимации масштаба карточек — убирает дёргание */
+    .studentSlider__listWrapper_sliding-next .studentSlider__cardContainer.active {
+        animation: none;
+        transform: translateZ(0) scale(1);
+        opacity: 1;
+    }
+
+    .studentSlider__listWrapper_sliding-next .studentSlider__cardContainer:not(.active) {
+        animation: none;
+        transform: translateZ(0) scale(0.95);
+        opacity: 0.9;
     }
 }
 
@@ -219,6 +232,16 @@
         transform: translateX(calc(100% / 5));
     }
     to {
+        transform: translateX(0);
+    }
+}
+
+/* Мобильная анимация вправо (next) — плавнее, без дёрганий */
+@keyframes listSlideFromRightMobile {
+    0% {
+        transform: translateX(calc(100% / 5));
+    }
+    100% {
         transform: translateX(0);
     }
 }

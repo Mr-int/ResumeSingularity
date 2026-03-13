@@ -82,7 +82,7 @@ const StudentSlider = () => {
         }
     }
 
-    const ANIMATION_DURATION = 600;
+    const ANIMATION_DURATION = 700;
 
     const runSlideAnimation = (dir) => {
         if (animationTimeoutRef.current) clearTimeout(animationTimeoutRef.current);
