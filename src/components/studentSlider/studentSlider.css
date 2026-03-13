@@ -156,17 +156,19 @@
     position: relative;
 }
 
-/* --- Слайдер: viewport + track, transition по transform (как в твоём слайдере) --- */
+/* --- Слайдер: viewport + track, transition по transform --- */
 .studentSlider__viewport {
     flex: 1;
     overflow: hidden;
     min-width: 0;
+    --visible-cards: 5;
 }
 
 .studentSlider__track {
     display: grid;
     grid-template-columns: repeat(var(--slots-total), 1fr);
-    width: calc((var(--slots-total) / 5) * 100%);
+    column-gap: 6px;
+    width: calc((var(--slots-total) / var(--visible-cards, 5)) * 100%);
     transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     will-change: transform;
 }
@@ -182,7 +184,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    /* Без анимации — только статичные масштаб и прозрачность, чтобы не конфликтовать со слайдом */
+    min-width: 0;
 }
 
 .studentSlider__cardContainer.active {
@@ -414,6 +416,11 @@
         gap: 24px;
         border-radius: 28px;
     }
+
+    .studentSlider__viewport {
+        --visible-cards: 3;
+    }
+
     .studentSlider__container {
         min-height: 320px;
     }
@@ -553,9 +560,15 @@
         padding: 22px 25px;
         gap: 22px;
     }
+
+    .studentSlider__viewport {
+        --visible-cards: 3;
+    }
+
     .studentSlider__container {
         min-height: 290px;
     }
+
     .studentSlider__title {
         font-size: 20px;
     }
@@ -595,12 +608,10 @@
     }
 
     .studentSlider__list {
-        gap: 10px;
+        gap: 8px;
         scrollbar-width: none;
         -ms-overflow-style: none;
         padding-bottom: 10px;
-        scroll-snap-type: x mandatory;
-        scroll-behavior: smooth;
     }
 
     .studentSlider__list::-webkit-scrollbar {
@@ -608,11 +619,12 @@
     }
 
     .studentSlider__track {
-        padding: 0 5px;
+        padding: 0 4px;
+        column-gap: 4px;
     }
 
-    .studentSlider__cardContainer.active {
-        scroll-snap-align: center;
+    .studentSlider__cardContainer {
+        height: 280px;
     }
 
     .studentSlider__button {
@@ -656,8 +668,17 @@
         gap: 20px;
         border-radius: 24px;
     }
+
+    .studentSlider__viewport {
+        --visible-cards: 1;
+    }
+
     .studentSlider__container {
         min-height: 260px;
+    }
+
+    .studentSlider__cardContainer {
+        height: 240px;
     }
 
     .studentSlider__content::before,
@@ -712,12 +733,13 @@
     }
 
     .studentSlider__list {
-        gap: 5px;
+        gap: 6px;
         padding-bottom: 8px;
     }
 
     .studentSlider__track {
-        padding: 0 5px;
+        padding: 0 4px;
+        column-gap: 4px;
     }
 
     .studentSlider__mobileControls {
@@ -758,6 +780,14 @@
         gap: 18px;
     }
 
+    .studentSlider__viewport {
+        --visible-cards: 1;
+    }
+
+    .studentSlider__cardContainer {
+        height: 220px;
+    }
+
     .studentSlider__title {
         font-size: 17px;
     }
@@ -770,7 +800,8 @@
     }
 
     .studentSlider__track {
-        padding: 0 5px;
+        padding: 0 4px;
+        column-gap: 4px;
     }
 
     .studentSlider__mobileButton {
@@ -800,6 +831,10 @@
         max-width: 1200px;
         padding: 15px 12px;
         gap: 16px;
+    }
+
+    .studentSlider__cardContainer {
+        height: 200px;
     }
 
     .studentSlider__title {
@@ -844,7 +879,8 @@
     }
 
     .studentSlider__track {
-        padding: 0 5px;
+        padding: 0 4px;
+        column-gap: 4px;
     }
 
     .studentSlider__mobileControls {
@@ -882,12 +918,17 @@
         max-width: 1200px;
     }
 
+    .studentSlider__cardContainer {
+        height: 190px;
+    }
+
     .studentSlider__title {
         font-size: 15px;
     }
 
     .studentSlider__track {
-        padding: 0 5px;
+        padding: 0 4px;
+        column-gap: 4px;
     }
 
     .studentSlider__mobileButton {
