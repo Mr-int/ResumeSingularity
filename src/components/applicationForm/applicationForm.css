@@ -291,7 +291,7 @@
     }
 }
 
-@meida (max-width: 900px) {
+@media (max-width: 900px) {
     .applicationForm__content {
         padding: 50px 108px;
     }
