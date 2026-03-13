@@ -38,7 +38,6 @@ const StudentSlider = () => {
 
     const total = students.length;
     const SLOTS_TOTAL = total > 0 ? total + 4 : 0; // 2 spacer + N cards + 2 spacer
-    const translateX = SLOTS_TOTAL > 0 ? -activeCardIndex * (100 / SLOTS_TOTAL) : 0;
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -118,7 +117,7 @@ const StudentSlider = () => {
                                         className="studentSlider__track"
                                         style={{
                                             '--slots-total': SLOTS_TOTAL,
-                                            transform: `translateX(${translateX}%)`,
+                                            '--active-index': activeCardIndex,
                                         }}
                                     >
                                         <div className="studentSlider__spacer" aria-hidden="true" />
