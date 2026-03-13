@@ -275,15 +275,7 @@
     }
 }
 
-/* Низкий экран: ограничиваем высоту и включаем прокрутку только когда не хватает места */
 @media (max-height: 900px) {
-    .applicationForm__content {
-        max-height: 85vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
-    }
-
     .applicationForm__form {
         gap: 12px;
     }
