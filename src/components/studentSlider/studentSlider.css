@@ -178,8 +178,9 @@
     pointer-events: none;
 }
 
-/* Строго 16px между карточками: padding по 8px по бокам ячейки, без column-gap и без разницы из‑за scale/активной карточки */
+/* Контейнер по размеру карточки (fit-content), не растягивается на весь 1fr; 16px между карточками за счёт padding */
 .studentSlider__cardContainer {
+    width: fit-content;
     height: 320px;
     display: flex;
     align-items: center;
@@ -188,17 +189,11 @@
     min-width: 0;
     padding: 0 8px;
     box-sizing: border-box;
+    justify-self: center;
 }
 
 .studentSlider__cardContainer.active {
     z-index: 3;
-    transform: scale(1);
-    opacity: 1;
-}
-
-.studentSlider__cardContainer:not(.active) {
-    transform: scale(0.92);
-    opacity: 0.88;
 }
 
 .studentSlider__cardContainer--hidden {
