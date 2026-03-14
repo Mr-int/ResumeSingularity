@@ -45,14 +45,13 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     };
 
     const getFriendlyError = (err) => {
-        const body = err.responseBody;
-        const msg = (body?.message || err.message || '').toLowerCase();
-        if (err.status === 401) return 'Ошибка авторизации. Пожалуйста, войдите в систему.';
-        if (err.status === 403) return 'Доступ запрещён.';
-        if (msg.includes('null') || msg.includes('не должно равняться')) return 'Заполните все обязательные поля.';
+        const body = err?.responseBody;
+        const msg = (body?.message || err?.message || '').toLowerCase();
+        if (err?.status === 401) return 'Ошибка авторизации. Пожалуйста, войдите в систему.';
+        if (err?.status === 403) return 'Доступ запрещён.';
+        if (msg.includes('null') || msg.includes('не должно равняться') || msg.includes('обязательн')) return 'Некоторые поля пустые. Заполните все обязательные поля.';
         if (msg.includes('email') || msg.includes('почт')) return 'Укажите корректный адрес почты.';
-        if (msg.includes('телефон') || msg.includes('phone') || msg.includes('номер')) return 'В номере телефона не может быть букв. Укажите только цифры, плюс, скобки или дефис.';
-        if (msg.includes('букв') || msg.includes('letter')) return 'В номере телефона не может быть букв. Укажите только цифры.';
+        if (msg.includes('телефон') || msg.includes('phone') || msg.includes('номер') || msg.includes('букв') || msg.includes('letter')) return 'Укажите номер телефона в верном формате (только цифры, плюс, скобки или дефис).';
         if (body?.message) return body.message;
         return 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.';
     };
@@ -63,20 +62,15 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         setSuccess(false);
         setTelegramBotLink('');
 
-        if (!formData.name.trim()) {
-            setError('Пожалуйста, укажите ваше имя');
-            return;
-        }
-        if (!formData.company.trim()) {
-            setError('Пожалуйста, укажите компанию или проект');
-            return;
-        }
-        if (!formData.telegram.trim() && !formData.email.trim() && !formData.phone.trim()) {
-            setError('Пожалуйста, укажите телеграмм, почту или телефон для связи');
+        const emptyName = !formData.name.trim();
+        const emptyCompany = !formData.company.trim();
+        const emptyContact = !formData.telegram.trim() && !formData.email.trim() && !formData.phone.trim();
+        if (emptyName || emptyCompany || emptyContact) {
+            setError('Некоторые поля пустые. Заполните все обязательные поля.');
             return;
         }
         if (!isPhoneValid(formData.phone)) {
-            setError('В номере телефона не может быть букв. Укажите только цифры, плюс, скобки или дефис.');
+            setError('Укажите номер телефона в верном формате (только цифры, плюс, скобки или дефис).');
             return;
         }
 
@@ -112,11 +106,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 await onSubmit(requestData);
             }
         } catch (err) {
-            if (err.message && err.message.includes('HTTP error! status: 401')) {
-                setError('Ошибка авторизации. Пожалуйста, войдите в систему.');
-            } else {
-                setError(err.message || 'Ошибка при отправке заявки. Попробуйте еще раз.');
-            }
+            setError(getFriendlyError(err));
         } finally {
             setLoading(false);
         }
@@ -149,25 +139,20 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 </div>
 
                 {success ? (
-                    <div className="applicationForm__success">
-                        <h3>✅ Заявка успешно отправлена!</h3>
-                        <p>Мы свяжемся с вами в течение 24 часов.</p>
-
+                    <div className="applicationForm__successWindow">
+                        <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
+                        <p className="applicationForm__successWindow-text">
+                            Студент ответит вам в течение 24 часов. Для связи перейдите в телеграм бота.
+                        </p>
                         {telegramBotLink && (
-                            <div className="applicationForm__telegram-section">
-                                <p className="applicationForm__telegram-title">Наш бот для связи:</p>
-                                <a
-                                    href={telegramBotLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="applicationForm__telegram-link"
-                                >
-                                    {telegramBotLink}
-                                </a>
-                                <p className="applicationForm__telegram-hint">
-                                    Нажмите на ссылку, чтобы перейти в Telegram бот
-                                </p>
-                            </div>
+                            <a
+                                href={telegramBotLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="applicationForm__successWindow-tgLink"
+                            >
+                                Перейти в Telegram бота
+                            </a>
                         )}
                     </div>
                 ) : (
