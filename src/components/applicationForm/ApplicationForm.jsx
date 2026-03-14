@@ -124,39 +124,45 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
 
     return (
         <div className="applicationForm__overlay" onClick={onClose}>
-            <div className="applicationForm__content" onClick={(e) => e.stopPropagation()}>
-                <div className="applicationForm__contentInner">
-                <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
-                <button className="applicationForm__close" onClick={onClose}>×</button>
-
-                <div className="applicationForm__info">
-                    <img
-                        src={exclamationIcon}
-                        alt="info"
-                        className="applicationForm__info-icon"
-                    />
-                    Отправьте заявку — мы свяжемся с вами в течение 24 часов, уточним задачу и подберём студентов, которые лучше всего подойдут.
-                </div>
-
+            <div
+                className={`applicationForm__content${success ? ' applicationForm__content_success' : ''}`}
+                onClick={(e) => e.stopPropagation()}
+            >
                 {success ? (
-                    <div className="applicationForm__successWindow">
-                        <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
-                        <p className="applicationForm__successWindow-text">
-                            Студент ответит вам в течение 24 часов. Для связи перейдите в телеграм бота.
-                        </p>
-                        {telegramBotLink && (
-                            <a
-                                href={telegramBotLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="applicationForm__successWindow-tgLink"
-                            >
-                                Перейти в Telegram бота
-                            </a>
-                        )}
-                    </div>
+                    <>
+                        <button className="applicationForm__close" onClick={onClose}>×</button>
+                        <div className="applicationForm__successWindow">
+                            <div className="applicationForm__successWindow-body">
+                                <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
+                                <p className="applicationForm__successWindow-text">
+                                    Студент ответит вам в течение 24 часов. Для связи перейдите в телеграм бота.
+                                </p>
+                            </div>
+                            {telegramBotLink && (
+                                <a
+                                    href={telegramBotLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="applicationForm__successWindow-tgLink"
+                                >
+                                    Перейти в телеграм бота для связи
+                                </a>
+                            )}
+                        </div>
+                    </>
                 ) : (
-                    <form onSubmit={handleSubmit} className="applicationForm__form">
+                    <div className="applicationForm__contentInner">
+                        <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
+                        <button className="applicationForm__close" onClick={onClose}>×</button>
+                        <div className="applicationForm__info">
+                            <img
+                                src={exclamationIcon}
+                                alt="info"
+                                className="applicationForm__info-icon"
+                            />
+                            Отправьте заявку — мы свяжемся с вами в течение 24 часов, уточним задачу и подберём студентов, которые лучше всего подойдут.
+                        </div>
+                        <form onSubmit={handleSubmit} className="applicationForm__form">
                         <div className="applicationForm__field">
                             <label htmlFor="name">Имя Фамилия</label>
                             <input
@@ -242,10 +248,10 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                                 )}
                             </button>
                         </div>
-                    </form>
+                        </form>
+                        <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
+                    </div>
                 )}
-                <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
-                </div>
             </div>
         </div>
     );
