@@ -50,12 +50,12 @@ const FloatingButton = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isExpanded, showForm]);
 
-    const handleSmallButtonClick = () => {
-        setIsExpanded(true);
-    };
-
-    const handleExpandedButtonClick = () => {
-        setShowForm(true);
+    const handleMainClick = () => {
+        if (isExpanded) {
+            setShowForm(true);
+        } else {
+            setIsExpanded(true);
+        }
     };
 
     const handleCloseForm = () => {
@@ -63,7 +63,8 @@ const FloatingButton = () => {
         setIsExpanded(false);
     };
 
-    const handleCloseButtonClick = () => {
+    const handleCloseButtonClick = (e) => {
+        e.stopPropagation();
         setIsHidden(true);
     };
 
@@ -78,40 +79,31 @@ const FloatingButton = () => {
 
     return (
         <div className="floatingButton__wrapper" ref={wrapperRef}>
-            {isExpanded ? (
-                <div className="floatingButton__expanded">
-                    <button
-                        type="button"
-                        className="floatingButton floatingButton_expanded"
-                        onClick={handleExpandedButtonClick}
-                        aria-label="Оставить заявку"
-                    >
-                        <span className="floatingButton__text">Оставить заявку</span>
-                        <span className="floatingButton__icon">
-                            <img src={mailIcon} alt="" />
-                        </span>
-                    </button>
-                    <button
-                        type="button"
-                        className="floatingButton__close"
-                        onClick={handleCloseButtonClick}
-                        aria-label="Скрыть кнопку"
-                    >
-                        ×
-                    </button>
-                </div>
-            ) : (
+            <div
+                className={`floatingButton__pill${isExpanded ? ' floatingButton__pill_expanded' : ''}`}
+            >
                 <button
                     type="button"
-                    className="floatingButton"
-                    onClick={handleSmallButtonClick}
+                    className={`floatingButton floatingButton_main${isExpanded ? ' floatingButton_main_expanded' : ''}`}
+                    onClick={handleMainClick}
                     aria-label="Оставить заявку"
                 >
                     <span className="floatingButton__icon">
                         <img src={mailIcon} alt="" />
                     </span>
+                    {isExpanded && (
+                        <span className="floatingButton__text">Оставить заявку</span>
+                    )}
                 </button>
-            )}
+                <button
+                    type="button"
+                    className="floatingButton__close"
+                    onClick={handleCloseButtonClick}
+                    aria-label="Скрыть кнопку"
+                >
+                    <span className="floatingButton__closeIcon" aria-hidden>×</span>
+                </button>
+            </div>
             {showForm && (
                 <ApplicationForm
                     studentName={studentName}

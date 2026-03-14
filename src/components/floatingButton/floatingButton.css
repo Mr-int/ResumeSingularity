@@ -8,34 +8,57 @@
     justify-content: flex-end;
 }
 
-.floatingButton {
+/* Один блок-таблетка: градиент и скругление */
+.floatingButton__pill {
+    position: relative;
     width: 46px;
     height: 46px;
     border-radius: 50%;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    overflow: hidden;
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-radius 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.floatingButton__pill_expanded {
+    width: 252px;
+    border-radius: 100px;
+}
+
+/* Основная кнопка (иконка / текст + иконка) */
+.floatingButton_main {
+    height: 46px;
+    min-width: 46px;
+    padding: 0;
     border: none;
+    background: transparent;
+    color: #fff;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.3s, filter 0.2s;
-    flex-shrink: 0;
+    gap: 10px;
+    transition: filter 0.2s;
 }
 
-.floatingButton:hover:not(.floatingButton_expanded) {
-    transform: scale(1.08);
+.floatingButton_main:hover {
+    filter: brightness(1.12);
 }
 
-.floatingButton:active {
-    transform: scale(0.95);
+.floatingButton_main_expanded {
+    flex: 1;
+    justify-content: flex-start;
+    padding-left: 22px;
 }
 
 .floatingButton__icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    line-height: 1;
+    flex-shrink: 0;
 }
 
 .floatingButton__icon img {
@@ -44,80 +67,62 @@
     object-fit: contain;
 }
 
-/* Развёрнутое состояние: бар влево + крестик справа */
-.floatingButton__expanded {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    border-radius: 100px;
-    overflow: hidden;
+.floatingButton__text {
+    font-size: 16px;
+    font-family: 'StratosSkyeng', sans-serif;
+    white-space: nowrap;
+    animation: floatingButton_textIn 0.3s ease 0.15s both;
 }
 
-.floatingButton__expanded .floatingButton {
-    transform-origin: right center;
-    animation: floatingButton_slideOut 0.35s ease-out;
-}
-
-@keyframes floatingButton_slideOut {
+@keyframes floatingButton_textIn {
     from {
-        transform: scaleX(0);
-        opacity: 0.8;
+        opacity: 0;
     }
     to {
-        transform: scaleX(1);
         opacity: 1;
     }
 }
 
-.floatingButton_expanded {
-    width: auto;
-    min-width: 46px;
-    height: 46px;
-    border-radius: 100px 0 0 100px;
-    padding: 0 20px 0 22px;
-    gap: 10px;
-    justify-content: center;
-    transition: filter 0.2s;
-}
-
-.floatingButton_expanded:hover {
-    filter: brightness(1.12);
-}
-
-.floatingButton__text {
-    color: #fff;
-    font-size: 16px;
-    font-family: 'StratosSkyeng', sans-serif;
-    white-space: nowrap;
-}
-
-.floatingButton__expanded .floatingButton__icon img {
-    width: 24px;
-    height: 16px;
-}
-
+/* Крестик — без фона, внутри того же блока */
 .floatingButton__close {
-    position: relative;
     width: 46px;
     height: 46px;
     flex-shrink: 0;
-    background: transparent;
     border: none;
+    background: transparent;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-size: 0;
-    transition: opacity 0.2s;
+    padding: 0;
+    opacity: 0;
+    transform: scale(0.5);
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s,
+                transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
+}
+
+.floatingButton__pill_expanded .floatingButton__close {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
 }
 
 .floatingButton__close:hover {
     opacity: 0.85;
 }
 
-.floatingButton__close::before,
-.floatingButton__close::after {
+.floatingButton__closeIcon {
+    position: relative;
+    display: block;
+    width: 18px;
+    height: 18px;
+    font-size: 0;
+    line-height: 1;
+}
+
+.floatingButton__closeIcon::before,
+.floatingButton__closeIcon::after {
     content: '';
     position: absolute;
     width: 18px;
@@ -126,10 +131,14 @@
     border-radius: 1px;
 }
 
-.floatingButton__close::before {
+.floatingButton__closeIcon::before {
     transform: rotate(45deg);
 }
 
-.floatingButton__close::after {
+.floatingButton__closeIcon::after {
     transform: rotate(-45deg);
+}
+
+.floatingButton__close {
+    position: relative;
 }
