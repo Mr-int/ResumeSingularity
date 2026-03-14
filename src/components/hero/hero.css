@@ -296,7 +296,7 @@
 
 @media (max-width: 1200px) {
     .hero {
-        min-height: 800px;
+        max-height: 800px;
     }
 
     .hero__right {
@@ -462,7 +462,7 @@
     .hero {
         padding: 0 20px;
         align-items: flex-start;
-        min-height: 660px;
+        max-height: 660px;
     }
 
     .hero__wrapper {
