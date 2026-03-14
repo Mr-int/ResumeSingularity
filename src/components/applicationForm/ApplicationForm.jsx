@@ -135,6 +135,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     return (
         <div className="applicationForm__overlay" onClick={onClose}>
             <div className="applicationForm__content" onClick={(e) => e.stopPropagation()}>
+                <div className="applicationForm__contentInner">
                 <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
                 <button className="applicationForm__close" onClick={onClose}>×</button>
 
@@ -259,6 +260,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                     </form>
                 )}
                 <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
+                </div>
             </div>
         </div>
     );

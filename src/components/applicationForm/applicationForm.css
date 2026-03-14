@@ -29,6 +29,15 @@
     box-sizing: border-box;
 }
 
+/* Внутренняя обёртка: к ней привязана иконка облака (низ блока), при скролле иконка уезжает вниз вместе с контентом */
+.applicationForm__contentInner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    min-height: min-content;
+}
+
 .applicationForm__close {
     position: absolute;
     top: 20px;
