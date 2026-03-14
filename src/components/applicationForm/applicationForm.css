@@ -210,11 +210,33 @@
     transform: translateY(-1px);
 }
 
+/* Адаптив окна успеха: при ширине ≤ 700px уменьшаем блок и содержимое */
+@media (max-width: 700px) {
+    .applicationForm__successWindow {
+        width: 100%;
+        max-width: 700px;
+        min-height: auto;
+        height: auto;
+        padding: 40px 24px;
+    }
+
+    .applicationForm__successWindow-inner {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .applicationForm__successWindow-tgLink {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
 .applicationForm__successWindow-waitText {
     color: #B3B3B3;
     font-family: 'StratosLight', sans-serif;
     font-size: 16px;
     margin: 0;
+    margin-top: 16px;
 }
 
 .applicationForm__countdown {
