@@ -319,8 +319,7 @@
     }
 }
 
-/* При высоте экрана меньше 755px — контент можно скроллить, скроллбар тонкий; иконка облака в правом низу блока */
-@media (max-height: 755px) {
+@media (max-height: 770px) {
     .applicationForm__content {
         max-height: calc(100vh - 40px);
         height: auto;
@@ -361,7 +360,7 @@
         bottom: -64px;
         right: -52px;
     }
-    
+
     .applicationForm__submit {
         height: 50px;
     }
