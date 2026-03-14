@@ -23,7 +23,7 @@
     flex-shrink: 0;
 }
 
-.floatingButton:hover {
+.floatingButton:hover:not(.floatingButton_expanded) {
     transform: scale(1.08);
     box-shadow: 0 6px 25px rgba(233, 90, 87, 0.6);
 }
@@ -56,13 +56,35 @@
     box-shadow: 0 4px 20px rgba(233, 90, 87, 0.4);
 }
 
+.floatingButton__expanded .floatingButton {
+    transform-origin: right center;
+    animation: floatingButton_slideOut 0.35s ease-out;
+}
+
+@keyframes floatingButton_slideOut {
+    from {
+        transform: scaleX(0);
+        opacity: 0.8;
+    }
+    to {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+}
+
 .floatingButton_expanded {
     width: auto;
+    min-width: 46px;
     height: 46px;
     border-radius: 100px 0 0 100px;
     padding: 0 20px 0 22px;
     gap: 10px;
     justify-content: center;
+}
+
+.floatingButton_expanded:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 6px 25px rgba(233, 90, 87, 0.55);
 }
 
 .floatingButton__text {
@@ -78,12 +100,12 @@
 }
 
 .floatingButton__close {
+    position: relative;
     width: 46px;
     height: 46px;
-    border-radius: 0 100px 100px 0;
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    flex-shrink: 0;
+    background: transparent;
     border: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.3);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -94,7 +116,7 @@
 }
 
 .floatingButton__close:hover {
-    opacity: 0.9;
+    opacity: 0.85;
 }
 
 .floatingButton__close::before,
@@ -113,8 +135,4 @@
 
 .floatingButton__close::after {
     transform: rotate(-45deg);
-}
-
-.floatingButton__close {
-    position: relative;
 }
