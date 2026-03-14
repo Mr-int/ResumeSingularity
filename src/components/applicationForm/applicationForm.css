@@ -266,6 +266,7 @@
     left: -85px;
 }
 
+/* Иконка облака — в правом низу блока .applicationForm__content (не экрана) */
 .applicationForm__cloudMailIcon {
     position: absolute;
     bottom: -20px;
@@ -296,6 +297,38 @@
 @media (max-width: 900px) {
     .applicationForm__content {
         padding: 50px 108px;
+    }
+}
+
+/* При высоте экрана меньше 755px — контент можно скроллить, скроллбар тонкий; иконка облака в правом низу блока */
+@media (max-height: 755px) {
+    .applicationForm__content {
+        max-height: calc(100vh - 40px);
+        height: auto;
+        min-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+    }
+
+    .applicationForm__content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .applicationForm__content::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 3px;
+    }
+
+    .applicationForm__content::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.35);
+        border-radius: 3px;
+    }
+
+    .applicationForm__content::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
     }
 }
 
