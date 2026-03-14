@@ -216,7 +216,6 @@
     transform: translateY(-1px);
 }
 
-/* Адаптив окна успеха: при ширине ≤ 700px уменьшаем блок и содержимое */
 @media (max-width: 700px) {
     .applicationForm__successWindow {
         width: 100%;
@@ -242,7 +241,6 @@
     }
 }
 
-/* Адаптив окна успеха: при ширине ≤ 500px уменьшаем весь блок и контент внутри tgLink */
 @media (max-width: 500px) {
     .applicationForm__successWindow {
         padding: 24px 16px;
@@ -261,6 +259,7 @@
 
     .applicationForm__successWindow-tgLink-telegramIcon {
         width: 120px;
+        height: 90%;
     }
 
     .applicationForm__successWindow-waitText {
