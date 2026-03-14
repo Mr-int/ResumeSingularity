@@ -100,7 +100,7 @@
 
 @keyframes floatingButton_iconClose {
     0% {
-        transform: translateX(0px);
+        transform: translateX(20px);
     }
     100% {
         transform: translateX(0);
