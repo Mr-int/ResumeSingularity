@@ -144,7 +144,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                             </p>
                         </div>
                         {telegramBotLink && (
-                            <>
+                            <div className="applicationForm__successWindow-tgBlock">
                                 <a
                                     href={telegramBotLink}
                                     target="_blank"
@@ -158,7 +158,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                                     <img src={telegramBorderIcon} alt="" className="applicationForm__successWindow-tgLink-telegramIcon" />
                                 </a>
                                 <p className="applicationForm__successWindow-waitText">Буду ждать письмо на почту</p>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>

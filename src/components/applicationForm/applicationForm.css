@@ -165,6 +165,12 @@
     text-align: left;
 }
 
+.applicationForm__successWindow-tgBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
 .applicationForm__successWindow-tgLink {
     display: flex;
     align-items: center;
@@ -225,9 +231,40 @@
         max-width: 100%;
     }
 
+    .applicationForm__successWindow-tgBlock {
+        width: 100%;
+        max-width: 100%;
+    }
+
     .applicationForm__successWindow-tgLink {
         width: 100%;
         max-width: 100%;
+    }
+}
+
+/* Адаптив окна успеха: при ширине ≤ 500px уменьшаем весь блок и контент внутри tgLink */
+@media (max-width: 500px) {
+    .applicationForm__successWindow {
+        padding: 24px 16px;
+    }
+
+    .applicationForm__successWindow-tgLink {
+        height: 120px;
+        padding-left: 24px;
+        padding-right: 16px;
+        font-size: 18px;
+    }
+
+    .applicationForm__successWindow-tgLink-textBlock {
+        gap: 8px;
+    }
+
+    .applicationForm__successWindow-tgLink-telegramIcon {
+        width: 120px;
+    }
+
+    .applicationForm__successWindow-waitText {
+        font-size: 14px;
     }
 }
 
@@ -236,7 +273,6 @@
     font-family: 'StratosLight', sans-serif;
     font-size: 16px;
     margin: 0;
-    margin-top: 16px;
 }
 
 .applicationForm__countdown {
