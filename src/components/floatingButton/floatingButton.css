@@ -20,9 +20,10 @@
     transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* При закрытии — без отскока, плавное сжатие */
+/* При закрытии — дольше и плавнее, с замедлением в конце */
 .floatingButton__pill_closing {
-    transition-timing-function: ease-in;
+    transition-duration: 0.7s;
+    transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .floatingButton__pill_expanded {
@@ -49,7 +50,8 @@
 }
 
 .floatingButton__pill_closing .floatingButton_main {
-    transition-timing-function: ease-in;
+    transition-duration: 0.7s;
+    transition-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
 }
 
 .floatingButton_main_expanded {

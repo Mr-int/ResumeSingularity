@@ -46,7 +46,7 @@ const FloatingButton = () => {
 
     useEffect(() => {
         if (!isClosing) return;
-        const t = setTimeout(() => setIsClosing(false), 520);
+        const t = setTimeout(() => setIsClosing(false), 720);
         return () => clearTimeout(t);
     }, [isClosing]);
 
