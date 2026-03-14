@@ -125,32 +125,32 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
 
     return (
         <div className="applicationForm__overlay" onClick={onClose}>
-            <div
-                className={`applicationForm__content${success ? ' applicationForm__content_success' : ''}`}
-                onClick={(e) => e.stopPropagation()}
-            >
-                {success ? (
-                    <div className="applicationForm__successWindow">
-                        <div className="applicationForm__successWindow-inner">
-                            <div className="applicationForm__successWindow-body">
-                                <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
-                                <p className="applicationForm__successWindow-text">
-                                    Студент ответит вам в течение 24 часов. Для связи перейдите в телеграм бота.
-                                </p>
-                            </div>
-                            {telegramBotLink && (
-                                <a
-                                    href={telegramBotLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="applicationForm__successWindow-tgLink"
-                                >
-                                    Перейти в телеграм бота для связи
-                                </a>
-                            )}
+            {success ? (
+                <div
+                    className="applicationForm__successWindow"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="applicationForm__successWindow-inner">
+                        <div className="applicationForm__successWindow-body">
+                            <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
+                            <p className="applicationForm__successWindow-text">
+                                Студент ответит вам в течение 24 часов. Для связи перейдите в телеграм бота.
+                            </p>
                         </div>
+                        {telegramBotLink && (
+                            <a
+                                href={telegramBotLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="applicationForm__successWindow-tgLink"
+                            >
+                                Перейти в телеграм бота для связи
+                            </a>
+                        )}
                     </div>
-                ) : (
+                </div>
+            ) : (
+                <div className="applicationForm__content" onClick={(e) => e.stopPropagation()}>
                     <div className="applicationForm__contentInner">
                         <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
                         <button className="applicationForm__close" onClick={onClose}>×</button>
@@ -251,8 +251,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                         </form>
                         <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -103,28 +103,19 @@
     height: 24px;
 }
 
-/* При успехе — только блок успеха 790×600, форма не показывается */
-.applicationForm__content_success {
+/* Окно успеха: отдельное окно 790×600, градиент, по центру оверлея */
+.applicationForm__successWindow {
     width: 790px;
     height: 600px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-}
-
-/* Окно успеха: градиент #363636 → #616161, весь контент по центру блока */
-.applicationForm__successWindow {
-    width: 100%;
-    height: 100%;
     border-radius: 20px;
     background: linear-gradient(180deg, #363636 0%, #616161 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    padding-left: 80px;
+    box-sizing: border-box;
     font-family: 'StratosLight', sans-serif;
+    animation: slideIn 0.3s ease-in-out;
 }
 
 /* Обёртка контента по центру, внутри блоки выровнены по левому краю */
