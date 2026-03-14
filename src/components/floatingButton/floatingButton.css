@@ -8,7 +8,7 @@
     justify-content: flex-end;
 }
 
-/* Родитель только задаёт размер и анимацию, без фона */
+/* Родитель: без overflow, чтобы ничего не обрезало анимацию */
 .floatingButton__pill {
     position: relative;
     width: 46px;
@@ -16,12 +16,25 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    overflow: hidden;
     transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .floatingButton__pill_expanded {
     width: 206px;
+}
+
+/* Закрытие — те же параметры, что и открытие, но в обратную сторону (keyframes реверс) */
+.floatingButton__pill_closing {
+    animation: floatingButton_pillClose 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes floatingButton_pillClose {
+    0% {
+        width: 206px;
+    }
+    100% {
+        width: 46px;
+    }
 }
 
 /* Градиент и скругление на самой кнопке */
@@ -45,6 +58,21 @@
 
 .floatingButton_main_expanded {
     border-radius: 100px;
+}
+
+/* Закрытие кнопки — реверс скругления (то же самое наоборот) */
+.floatingButton_main_closing {
+    transition: none;
+    animation: floatingButton_buttonClose 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes floatingButton_buttonClose {
+    0% {
+        border-radius: 100px;
+    }
+    100% {
+        border-radius: 50%;
+    }
 }
 
 .floatingButton_main:hover {

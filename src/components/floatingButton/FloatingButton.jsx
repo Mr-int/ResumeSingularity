@@ -8,6 +8,7 @@ import './floatingButton.css';
 const FloatingButton = () => {
     const [showForm, setShowForm] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isClosing, setIsClosing] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
     const [studentName, setStudentName] = useState(null);
     const [studentId, setStudentId] = useState(null);
@@ -38,17 +39,31 @@ const FloatingButton = () => {
         }
     }, [isStudentPage, currentStudentId]);
 
+    const startClosing = () => {
+        if (isClosing) return;
+        setIsClosing(true);
+    };
+
     useEffect(() => {
-        if (!isExpanded || showForm) return;
+        if (!isClosing) return;
+        const t = setTimeout(() => {
+            setIsExpanded(false);
+            setIsClosing(false);
+        }, 500);
+        return () => clearTimeout(t);
+    }, [isClosing]);
+
+    useEffect(() => {
+        if (!isExpanded || showForm || isClosing) return;
         const handleClickOutside = (e) => {
             if (!wrapperRef.current) return;
             if (wrapperRef.current.contains(e.target)) return;
             if (e.target.closest('.applicationForm__overlay')) return;
-            setIsExpanded(false);
+            startClosing();
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isExpanded, showForm]);
+    }, [isExpanded, showForm, isClosing]);
 
     const handleMainClick = () => {
         if (isExpanded) {
@@ -60,7 +75,7 @@ const FloatingButton = () => {
 
     const handleCloseForm = () => {
         setShowForm(false);
-        setIsExpanded(false);
+        startClosing();
     };
 
     const handleCloseButtonClick = (e) => {
@@ -80,11 +95,11 @@ const FloatingButton = () => {
     return (
         <div className="floatingButton__wrapper" ref={wrapperRef}>
             <div
-                className={`floatingButton__pill${isExpanded ? ' floatingButton__pill_expanded' : ''}`}
+                className={`floatingButton__pill${isExpanded ? ' floatingButton__pill_expanded' : ''}${isClosing ? ' floatingButton__pill_closing' : ''}`}
             >
                 <button
                     type="button"
-                    className={`floatingButton floatingButton_main${isExpanded ? ' floatingButton_main_expanded' : ''}`}
+                    className={`floatingButton floatingButton_main${isExpanded ? ' floatingButton_main_expanded' : ''}${isClosing ? ' floatingButton_main_closing' : ''}`}
                     onClick={handleMainClick}
                     aria-label="Оставить заявку"
                 >
@@ -96,7 +111,7 @@ const FloatingButton = () => {
                     )}
                 </button>
             </div>
-            {isExpanded && (
+            {isExpanded && !isClosing && (
                 <button
                     type="button"
                     className="floatingButton__close"
