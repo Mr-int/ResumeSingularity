@@ -18,14 +18,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 20px rgba(233, 90, 87, 0.4);
-    transition: transform 0.3s, box-shadow 0.3s, width 0.3s;
+    transition: transform 0.3s, filter 0.2s;
     flex-shrink: 0;
 }
 
 .floatingButton:hover:not(.floatingButton_expanded) {
     transform: scale(1.08);
-    box-shadow: 0 6px 25px rgba(233, 90, 87, 0.6);
 }
 
 .floatingButton:active {
@@ -53,7 +51,6 @@
     gap: 0;
     border-radius: 100px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(233, 90, 87, 0.4);
 }
 
 .floatingButton__expanded .floatingButton {
@@ -80,11 +77,11 @@
     padding: 0 20px 0 22px;
     gap: 10px;
     justify-content: center;
+    transition: filter 0.2s;
 }
 
 .floatingButton_expanded:hover {
-    filter: brightness(1.1);
-    box-shadow: 0 6px 25px rgba(233, 90, 87, 0.55);
+    filter: brightness(1.12);
 }
 
 .floatingButton__text {
