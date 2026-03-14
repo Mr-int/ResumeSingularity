@@ -271,15 +271,15 @@
 
 .applicationForm__sunIcon {
     position: absolute;
-    top: -85px;
-    left: -85px;
+    top: -131px;
+    left: -246px;
 }
 
 /* Иконка облака — в правом низу блока .applicationForm__content (не экрана) */
 .applicationForm__cloudMailIcon {
     position: absolute;
-    bottom: -20px;
-    right: -72px;
+    bottom: -90px;
+    right: -210px;
     z-index: 0;
 }
 
@@ -306,6 +306,16 @@
 @media (max-width: 900px) {
     .applicationForm__content {
         padding: 50px 108px;
+    }
+
+    .applicationForm__sunIcon {
+        top: -130px;
+        left: -190px;
+    }
+
+    .applicationForm__cloudMailIcon {
+        bottom: -95px;
+        right: -160px;
     }
 }
 
@@ -342,6 +352,20 @@
 }
 
 @media (max-width: 640px) {
+    .applicationForm__sunIcon {
+        top: -100px;
+        left: -110px;
+    }
+
+    .applicationForm__cloudMailIcon {
+        bottom: -64px;
+        right: -52px;
+    }
+    
+    .applicationForm__submit {
+        height: 50px;
+    }
+
     .applicationForm__content {
         height: 90vh;
         width: 100%;
