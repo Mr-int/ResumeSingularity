@@ -332,7 +332,8 @@
     }
 
     .applicationForm__cloudMailIcon {
-        bottom: -50px;
-        right: -46px;
+        bottom: -40px;
+        right: -30px;
+        width: 150px;
     }
 }

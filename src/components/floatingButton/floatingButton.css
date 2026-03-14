@@ -1,9 +1,16 @@
-.floatingButton {
+.floatingButton__wrapper {
     position: fixed;
     bottom: 30px;
     right: 50px;
-    width: 72px;
-    height: 72px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.floatingButton {
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border: none;
@@ -12,12 +19,12 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 20px rgba(233, 90, 87, 0.4);
-    transition: transform 0.3s, box-shadow 0.3s;
-    z-index: 9999;
+    transition: transform 0.3s, box-shadow 0.3s, width 0.3s;
+    flex-shrink: 0;
 }
 
 .floatingButton:hover {
-    transform: scale(1.1);
+    transform: scale(1.08);
     box-shadow: 0 6px 25px rgba(233, 90, 87, 0.6);
 }
 
@@ -26,30 +33,88 @@
 }
 
 .floatingButton__icon {
-    font-size: 28px;
-    color: #fff;
-    line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #fff;
+    line-height: 1;
 }
 
 .floatingButton__icon img {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 16px;
     object-fit: contain;
 }
 
-@media (max-width: 768px) {
-    .floatingButton {
-        width: 50px;
-        height: 50px;
-        bottom: 20px;
-        right: 20px;
-    }
-
-    .floatingButton__icon {
-        font-size: 24px;
-    }
+/* Развёрнутое состояние: бар влево + крестик справа */
+.floatingButton__expanded {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-radius: 100px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(233, 90, 87, 0.4);
 }
 
+.floatingButton_expanded {
+    width: auto;
+    height: 46px;
+    border-radius: 100px 0 0 100px;
+    padding: 0 20px 0 22px;
+    gap: 10px;
+    justify-content: center;
+}
+
+.floatingButton__text {
+    color: #fff;
+    font-size: 16px;
+    font-family: 'StratosSkyeng', sans-serif;
+    white-space: nowrap;
+}
+
+.floatingButton__expanded .floatingButton__icon img {
+    width: 24px;
+    height: 16px;
+}
+
+.floatingButton__close {
+    width: 46px;
+    height: 46px;
+    border-radius: 0 100px 100px 0;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0;
+    transition: opacity 0.2s;
+}
+
+.floatingButton__close:hover {
+    opacity: 0.9;
+}
+
+.floatingButton__close::before,
+.floatingButton__close::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 2px;
+    background: #fff;
+    border-radius: 1px;
+}
+
+.floatingButton__close::before {
+    transform: rotate(45deg);
+}
+
+.floatingButton__close::after {
+    transform: rotate(-45deg);
+}
+
+.floatingButton__close {
+    position: relative;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import ApplicationForm from '../applicationForm/ApplicationForm.jsx';
 import { getStudentById } from '../../services/studentApi.js';
@@ -7,8 +7,11 @@ import './floatingButton.css';
 
 const FloatingButton = () => {
     const [showForm, setShowForm] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isHidden, setIsHidden] = useState(false);
     const [studentName, setStudentName] = useState(null);
     const [studentId, setStudentId] = useState(null);
+    const wrapperRef = useRef(null);
     const location = useLocation();
 
     const isStudentPage = location.pathname.includes('/studentsResume/');
@@ -35,34 +38,80 @@ const FloatingButton = () => {
         }
     }, [isStudentPage, currentStudentId]);
 
-    const handleButtonClick = () => {
+    useEffect(() => {
+        if (!isExpanded || showForm) return;
+        const handleClickOutside = (e) => {
+            if (!wrapperRef.current) return;
+            if (wrapperRef.current.contains(e.target)) return;
+            if (e.target.closest('.applicationForm__overlay')) return;
+            setIsExpanded(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isExpanded, showForm]);
+
+    const handleSmallButtonClick = () => {
+        setIsExpanded(true);
+    };
+
+    const handleExpandedButtonClick = () => {
         setShowForm(true);
     };
 
     const handleCloseForm = () => {
         setShowForm(false);
+        setIsExpanded(false);
+    };
+
+    const handleCloseButtonClick = () => {
+        setIsHidden(true);
     };
 
     const handleSubmit = async (formData) => {
         console.log('Application submitted:', formData);
-        // Логика после успешной отправки, если нужна
         return Promise.resolve();
     };
 
-    /* Заявки только от карточки студента: кнопка только на странице студента */
-    if (!studentId) {
+    if (!studentId || isHidden) {
         return null;
     }
 
     return (
-        <>
-            <button
-                className="floatingButton"
-                onClick={handleButtonClick}
-                aria-label="Оставить заявку"
-            >
-                <span className="floatingButton__icon"><img src={mailIcon} alt=""/></span>
-            </button>
+        <div className="floatingButton__wrapper" ref={wrapperRef}>
+            {isExpanded ? (
+                <div className="floatingButton__expanded">
+                    <button
+                        type="button"
+                        className="floatingButton floatingButton_expanded"
+                        onClick={handleExpandedButtonClick}
+                        aria-label="Оставить заявку"
+                    >
+                        <span className="floatingButton__text">Оставить заявку</span>
+                        <span className="floatingButton__icon">
+                            <img src={mailIcon} alt="" />
+                        </span>
+                    </button>
+                    <button
+                        type="button"
+                        className="floatingButton__close"
+                        onClick={handleCloseButtonClick}
+                        aria-label="Скрыть кнопку"
+                    >
+                        ×
+                    </button>
+                </div>
+            ) : (
+                <button
+                    type="button"
+                    className="floatingButton"
+                    onClick={handleSmallButtonClick}
+                    aria-label="Оставить заявку"
+                >
+                    <span className="floatingButton__icon">
+                        <img src={mailIcon} alt="" />
+                    </span>
+                </button>
+            )}
             {showForm && (
                 <ApplicationForm
                     studentName={studentName}
@@ -71,7 +120,7 @@ const FloatingButton = () => {
                     onSubmit={handleSubmit}
                 />
             )}
-        </>
+        </div>
     );
 };
 
