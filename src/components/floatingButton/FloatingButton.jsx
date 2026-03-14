@@ -8,7 +8,6 @@ import './floatingButton.css';
 const FloatingButton = () => {
     const [showForm, setShowForm] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isClosing, setIsClosing] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
     const [studentName, setStudentName] = useState(null);
     const [studentId, setStudentId] = useState(null);
@@ -39,24 +38,13 @@ const FloatingButton = () => {
         }
     }, [isStudentPage, currentStudentId]);
 
-    const startClosing = () => {
-        setIsClosing(true);
-        setIsExpanded(false);
-    };
-
-    useEffect(() => {
-        if (!isClosing) return;
-        const t = setTimeout(() => setIsClosing(false), 720);
-        return () => clearTimeout(t);
-    }, [isClosing]);
-
     useEffect(() => {
         if (!isExpanded || showForm) return;
         const handleClickOutside = (e) => {
             if (!wrapperRef.current) return;
             if (wrapperRef.current.contains(e.target)) return;
             if (e.target.closest('.applicationForm__overlay')) return;
-            startClosing();
+            setIsExpanded(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -72,7 +60,7 @@ const FloatingButton = () => {
 
     const handleCloseForm = () => {
         setShowForm(false);
-        startClosing();
+        setIsExpanded(false);
     };
 
     const handleCloseButtonClick = (e) => {
@@ -92,7 +80,7 @@ const FloatingButton = () => {
     return (
         <div className="floatingButton__wrapper" ref={wrapperRef}>
             <div
-                className={`floatingButton__pill${isExpanded ? ' floatingButton__pill_expanded' : ''}${isClosing ? ' floatingButton__pill_closing' : ''}`}
+                className={`floatingButton__pill${isExpanded ? ' floatingButton__pill_expanded' : ''}`}
             >
                 <button
                     type="button"
