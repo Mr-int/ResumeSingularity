@@ -49,6 +49,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         const msg = (body?.message || err?.message || '').toLowerCase();
         if (err?.status === 401) return 'Ошибка авторизации. Пожалуйста, войдите в систему.';
         if (err?.status === 403) return 'Доступ запрещён.';
+        if (msg.includes('last name') || msg.includes('255') || msg.includes('characters')) return 'Вы должны вписать имя и фамилию через пробел.';
         if (msg.includes('null') || msg.includes('не должно равняться') || msg.includes('обязательн')) return 'Некоторые поля пустые. Заполните все обязательные поля.';
         if (msg.includes('email') || msg.includes('почт')) return 'Укажите корректный адрес почты.';
         if (msg.includes('телефон') || msg.includes('phone') || msg.includes('номер') || msg.includes('букв') || msg.includes('letter')) return 'Укажите номер телефона в верном формате (только цифры, плюс, скобки или дефис).';
@@ -129,9 +130,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 onClick={(e) => e.stopPropagation()}
             >
                 {success ? (
-                    <>
-                        <button className="applicationForm__close" onClick={onClose}>×</button>
-                        <div className="applicationForm__successWindow">
+                    <div className="applicationForm__successWindow">
+                        <div className="applicationForm__successWindow-inner">
                             <div className="applicationForm__successWindow-body">
                                 <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
                                 <p className="applicationForm__successWindow-text">
@@ -149,7 +149,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                                 </a>
                             )}
                         </div>
-                    </>
+                    </div>
                 ) : (
                     <div className="applicationForm__contentInner">
                         <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
