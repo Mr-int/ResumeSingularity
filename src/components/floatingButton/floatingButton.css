@@ -97,7 +97,7 @@
 
 /* При сворачивании — картинка письма чуть влево */
 .floatingButton_main_closing .floatingButton__icon {
-    transform: translateX(-16px);
+    transform: translateX(-10px);
 }
 
 .floatingButton__icon img {
