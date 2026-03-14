@@ -210,6 +210,13 @@
     transform: translateY(-1px);
 }
 
+.applicationForm__successWindow-waitText {
+    color: #B3B3B3;
+    font-family: 'StratosLight', sans-serif;
+    font-size: 16px;
+    margin: 0;
+}
+
 .applicationForm__countdown {
     color: #bdf7ff;
     font-size: 16px;

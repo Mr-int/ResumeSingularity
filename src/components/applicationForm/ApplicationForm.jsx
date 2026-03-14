@@ -4,6 +4,7 @@ import exclamationIcon from "../../assets/icons/exclamationIcon.svg";
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import successIcon from "../../assets/icons/success.svg";
 import strictArrowIcon from "../../assets/icons/strict_arrow.svg";
+import telegramBorderIcon from "../../assets/icons/telegram_border.svg";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { apiClientJson } from '../../utils/apiClient.js';
@@ -143,17 +144,21 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                             </p>
                         </div>
                         {telegramBotLink && (
-                            <a
-                                href={telegramBotLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="applicationForm__successWindow-tgLink"
-                            >
-                                <span className="applicationForm__successWindow-tgLink-textBlock">
-                                    <span className="applicationForm__successWindow-tgLink-text">Перейти в телеграм бота для связи</span>
-                                    <img src={strictArrowIcon} alt="" className="applicationForm__successWindow-tgLink-arrow" />
-                                </span>
-                            </a>
+                            <>
+                                <a
+                                    href={telegramBotLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="applicationForm__successWindow-tgLink"
+                                >
+                                    <span className="applicationForm__successWindow-tgLink-textBlock">
+                                        <span className="applicationForm__successWindow-tgLink-text">Перейти в телеграм бота для связи</span>
+                                        <img src={strictArrowIcon} alt="" className="applicationForm__successWindow-tgLink-arrow" />
+                                    </span>
+                                    <img src={telegramBorderIcon} alt="" className="applicationForm__successWindow-tgLink-telegramIcon" />
+                                </a>
+                                <p className="applicationForm__successWindow-waitText">Буду ждать письмо на почту</p>
+                            </>
                         )}
                     </div>
                 </div>
