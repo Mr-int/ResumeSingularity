@@ -330,4 +330,9 @@
     .applicationForm__button-container {
         margin-top: 8px;
     }
+
+    .applicationForm__cloudMailIcon {
+        bottom: -50px;
+        right: -46px;
+    }
 }

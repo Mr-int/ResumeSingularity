@@ -2,8 +2,8 @@
     position: fixed;
     bottom: 30px;
     right: 50px;
-    width: 60px;
-    height: 60px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border: none;
@@ -29,6 +29,15 @@
     font-size: 28px;
     color: #fff;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floatingButton__icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
 }
 
 @media (max-width: 768px) {
