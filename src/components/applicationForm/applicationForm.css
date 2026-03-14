@@ -70,7 +70,9 @@
 }
 
 .applicationForm__info {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 2px solid #fff;
     border-radius: 10px;
     padding: 16px 20px 16px 60px;
