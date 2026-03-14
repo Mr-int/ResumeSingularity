@@ -4,7 +4,7 @@ import exclamationIcon from "../../assets/icons/exclamationIcon.svg";
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import successIcon from "../../assets/icons/success.svg";
 import strictArrowIcon from "../../assets/icons/strict_arrow.svg";
-import telegramBorderIcon from "../../assets/icons/telegram_border.svg";
+import telegramBorderIcon from "../../assets/icons/telegram_border.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { apiClientJson } from '../../utils/apiClient.js';
