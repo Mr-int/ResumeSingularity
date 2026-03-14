@@ -213,7 +213,7 @@
 
 .hero__button {
     width: 290px;
-    height: 54px;
+    min-height: 54px;
     background: transparent;
     outline: none;
     border: 2px solid transparent;
@@ -295,6 +295,10 @@
 }
 
 @media (max-width: 1200px) {
+    .hero {
+        min-height: 800px;
+    }
+
     .hero__right {
         width: 620px;
         height: 520px;
@@ -458,6 +462,7 @@
     .hero {
         padding: 0 20px;
         align-items: flex-start;
+        min-height: 660px;
     }
 
     .hero__wrapper {
@@ -619,7 +624,7 @@
     .hero__arrow {
         width: 80px;
         height: 20px;
-        bottom: 30px;
+        bottom: 0;
         animation: floatArrowMobile 2s ease-in-out infinite;
     }
 
