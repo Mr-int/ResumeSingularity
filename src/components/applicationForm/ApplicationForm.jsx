@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './applicationForm.css';
 import exclamationIcon from "../../assets/icons/exclamationIcon.svg";
 import mailIcon from "../../assets/icons/mailIcon.svg";
+import successIcon from "../../assets/icons/success.svg";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { apiClientJson } from '../../utils/apiClient.js';
@@ -131,8 +132,11 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                     onClick={(e) => e.stopPropagation()}
                 >
                     <div className="applicationForm__successWindow-inner">
-                        <div className="applicationForm__successWindow-body">
-                            <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
+<div className="applicationForm__successWindow-body">
+                                <div className="applicationForm__successWindow-titleRow">
+                                    <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
+                                    <img src={successIcon} alt="" className="applicationForm__successWindow-titleIcon" width={40} height={40} />
+                                </div>
                             <p className="applicationForm__successWindow-text">
                                 Студент ответит вам в течение 24 часов. Для связи перейдите в телеграм бота.
                             </p>
