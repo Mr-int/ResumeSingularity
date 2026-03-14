@@ -95,6 +95,8 @@ const FloatingButton = () => {
                         <span className="floatingButton__text">Оставить заявку</span>
                     )}
                 </button>
+            </div>
+            {isExpanded && (
                 <button
                     type="button"
                     className="floatingButton__close"
@@ -103,7 +105,7 @@ const FloatingButton = () => {
                 >
                     <span className="floatingButton__closeIcon" aria-hidden>×</span>
                 </button>
-            </div>
+            )}
             {showForm && (
                 <ApplicationForm
                     studentName={studentName}

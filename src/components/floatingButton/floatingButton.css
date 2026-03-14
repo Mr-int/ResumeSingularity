@@ -24,8 +24,8 @@
 }
 
 .floatingButton__pill_expanded {
-    width: 252px;
-    border-radius: 100px;
+    width: 206px;
+    border-radius: 100px 0 0 100px;
 }
 
 /* Основная кнопка (иконка / текст + иконка). В свёрнутом виде справа (order 2), в развёрнутом слева (order 1) */
@@ -85,9 +85,8 @@
     }
 }
 
-/* Крестик — без фона. В свёрнутом виде слева (order 1), в развёрнутом справа (order 2) */
+/* Крестик — снаружи pill, без фона. При закрытии не рендерится, поэтому исчезает сразу */
 .floatingButton__close {
-    order: 1;
     width: 46px;
     height: 46px;
     flex-shrink: 0;
@@ -98,22 +97,22 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    opacity: 0;
-    transform: scale(0.5);
-    pointer-events: none;
-    transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s,
-                transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s;
-}
-
-.floatingButton__pill_expanded .floatingButton__close {
-    order: 2;
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
+    animation: floatingButton_closeIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
 }
 
 .floatingButton__close:hover {
     opacity: 0.85;
+}
+
+@keyframes floatingButton_closeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .floatingButton__closeIcon {
