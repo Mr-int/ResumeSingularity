@@ -99,7 +99,9 @@
     font-size: 20px;
     color: #fff;
     cursor: pointer;
-    transition: background 0.4s ease-in-out, border-color 0.4s ease-in-out;
+    background-origin: border-box;
+    background-clip: border-box;
+    transition: background 0.2s ease-in-out, border-color 0.12s ease-out;
     letter-spacing: 1px;
     margin-left: auto;
     position: relative;
@@ -114,6 +116,8 @@
 .studentsList__filter.has-filters {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border-color: transparent;
+    background-origin: border-box;
+    background-clip: border-box;
 }
 
 .filter-badge {
