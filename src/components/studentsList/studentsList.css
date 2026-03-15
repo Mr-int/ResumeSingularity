@@ -415,6 +415,17 @@
     flex-shrink: 0;
 }
 
+/* С экрана 1400px: сдвигаем блок влево, чтобы не уходил за правый край; треугольник — правее, на кнопку */
+@media (min-width: 1400px) {
+    .filters-dropdown {
+        transform: translateX(-800px);
+    }
+
+    .filters-dropdown__triangle {
+        margin-left: 800px;
+    }
+}
+
 .filters-container {
     background-color: #141414;
     border-radius: 20px 20px 0 0;
@@ -763,7 +774,7 @@
     right: 16px;
     color: #3E8EFF;
 }
-    
+
 .action-buttons {
     display: flex;
     gap: 16px;

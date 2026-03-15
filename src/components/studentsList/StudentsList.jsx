@@ -22,9 +22,13 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
         if (showFilters && !isMobile && filterRef?.current) {
             const rect = filterRef.current.getBoundingClientRect();
             const dropdownWidth = 474;
+            const marginFromEdge = 24;
+            let left = rect.left + rect.width / 2 - dropdownWidth / 2;
+            left = Math.max(marginFromEdge, left);
+            left = Math.min(window.innerWidth - dropdownWidth - marginFromEdge, left);
             setDropdownPosition({
                 top: rect.bottom + 12,
-                left: rect.left + rect.width / 2 - dropdownWidth / 2
+                left
             });
         }
     }, [showFilters, isMobile, filterRef]);
