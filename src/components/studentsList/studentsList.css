@@ -108,7 +108,8 @@
     font-family: StratosSemiLight;
 }
 
-.studentsList__filter:hover {
+.studentsList__filter:hover,
+.studentsList__filter.studentsList__filter--open {
     background-image: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     border-color: transparent;
 }
@@ -440,7 +441,7 @@
 }
 
 .filters-container--dropdown .section-title {
-    color: #141414;
+    color: #525252;
 }
 
 .filters-container--dropdown .course-btn {
@@ -475,7 +476,7 @@
 }
 
 .filters-container--dropdown .checkbox-label {
-    color: #141414;
+    color: #525252;
 }
 
 .filters-container--dropdown .custom-checkbox {
@@ -509,12 +510,13 @@
 }
 
 .filters-container--dropdown .reset-btn {
-    border-color: #141414;
-    color: #141414;
+    background: #ECECEC;
+    border: none;
+    color: #525252;
 }
 
 .filters-container--dropdown .reset-btn:hover {
-    background-color: rgba(0, 0, 0, 0.06);
+    opacity: 0.9;
 }
 
 @keyframes fadeIn {
@@ -546,11 +548,11 @@
 }
 
 .section-title {
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
+    color: #525252;
+    font-size: 24px;
+    font-weight: 400;
     margin-bottom: 16px;
-    font-family: StratosSemiLight;
+    font-family: 'StratosLight', sans-serif;
 }
 
 .course-buttons {
@@ -560,18 +562,22 @@
 }
 
 .course-btn {
-    flex: 1;
-    min-width: 60px;
-    padding: 12px;
+    width: 91px;
+    height: 40px;
+    padding: 0;
     border: 1px solid #D8D8D8;
     border-radius: 5px;
     background: none;
     color: #D8D8D8;
-    font-size: 16px;
+    font-size: 24px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    font-family: StratosSemiLight;
+    font-family: 'StratosBoldItalic', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
 }
 
 .course-btn:hover {
@@ -634,10 +640,10 @@
 }
 
 .checkbox-label {
-    color: white;
-    font-size: 16px;
+    color: #525252;
+    font-size: 24px;
     user-select: none;
-    font-family: StratosSemiLight;
+    font-family: 'StratosLight', sans-serif;
 }
 
 .specialty-select {
@@ -647,19 +653,38 @@
 
 .specialty-btn {
     width: 100%;
+    height: 40px;
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     color: white;
     border: none;
-    padding: 16px;
+    padding: 0 16px;
     border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 24px;
     cursor: pointer;
     text-align: left;
     position: relative;
     transition: transform 0.2s;
     outline: none;
-    font-family: StratosSemiLight;
+    font-family: 'StratosLight', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.specialty-btn__text {
+    flex: 1;
+}
+
+.specialty-btn__arrow {
+    width: 20px;
+    height: auto;
+    flex-shrink: 0;
+    transition: transform 0.3s;
+}
+
+.specialty-btn.active .specialty-btn__arrow {
+    transform: rotate(180deg);
 }
 
 .specialty-btn:focus {
@@ -668,20 +693,6 @@
 
 .specialty-btn:hover {
     transform: translateY(-1px);
-}
-
-.specialty-btn::after {
-    content: '▼';
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    transition: transform 0.3s;
-}
-
-.specialty-btn.active::after {
-    transform: translateY(-50%) rotate(180deg);
 }
 
 .specialty-dropdown {
@@ -769,17 +780,22 @@
     flex: 1;
     padding: 16px;
     border-radius: 50px;
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 24px;
     cursor: pointer;
-    border: none;
     transition: all 0.2s;
-    font-family: StratosSemiLight;
 }
 
 .apply-btn {
-    background-image: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    color: #fff;
+    background: linear-gradient(#fff, #fff) padding-box, linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%) border-box;
+    border: 1px solid transparent;
+    font-family: 'Sansation', sans-serif;
+}
+
+.apply-btn__text {
+    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .apply-btn:hover {
@@ -788,13 +804,14 @@
 }
 
 .reset-btn {
-    background-color: transparent;
-    color: white;
-    border: 2px solid #fff;
+    background: #ECECEC;
+    border: none;
+    color: #525252;
+    font-family: 'Sansation', sans-serif;
 }
 
 .reset-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.9;
     transform: translateY(-2px);
 }
 
@@ -820,9 +837,10 @@
     }
 
     .course-btn {
-        min-width: 50px;
-        padding: 10px;
-        font-size: 14px;
+        width: 91px;
+        height: 40px;
+        padding: 0;
+        font-size: 24px;
     }
 
     .section-title {

@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import "./studentsList.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
+import arrowIcon from "../../assets/icons/arrow.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudents } from "../../services/studentApi.js";
 
@@ -134,15 +135,15 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                 </div>
             </div>
 
-            <div className="filter-section">
-                <h3 className="section-title">Специальность</h3>
+            <div className="filter-section filter-section--specialty">
                 <div className="specialty-select">
                     <button
                         ref={specialtyBtnRef}
                         className={`specialty-btn ${specialtyDropdownOpen ? 'active' : ''}`}
                         onClick={handleSpecialtyClick}
                     >
-                        {selectedSpecialty ? selectedSpecialty.name : "Выберите специальность"}
+                        <span className="specialty-btn__text">{selectedSpecialty ? selectedSpecialty.name : "Специальность"}</span>
+                        <img src={arrowIcon} alt="" className="specialty-btn__arrow" />
                     </button>
                     <div
                         ref={specialtyDropdownRef}
@@ -163,10 +164,10 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
 
             <div className="action-buttons">
                 <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApply(); setShowFilters(false); }}>
-                    Применить
+                    <span className="apply-btn__text">Принять</span>
                 </button>
                 <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleReset(); setShowFilters(false); }}>
-                    Сбросить
+                    Отмена
                 </button>
             </div>
         </>
@@ -483,11 +484,11 @@ const StudentsList = () => {
                         <h2 className="studentsList__title">Студенты</h2>
                         <button
                             ref={filterRef}
-                            className={`studentsList__filter ${filterExpanded ? 'expanded' : ''} ${hasActiveFilters ? 'has-filters' : ''}`}
+                            className={`studentsList__filter ${filterExpanded ? 'expanded' : ''} ${hasActiveFilters ? 'has-filters' : ''} ${showFilters ? 'studentsList__filter--open' : ''}`}
                             onClick={handleFilterClick}
                         >
-                            <img src={filterIcon} alt="filter"/>
                             <span>Фильтр</span>
+                            <img src={filterIcon} alt="filter"/>
                             {hasActiveFilters && (
                                 <span className="filter-badge"></span>
                             )}
