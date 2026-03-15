@@ -6,15 +6,27 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudents } from "../../services/studentApi.js";
 
-const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters }) => {
+const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef }) => {
     const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || null);
     const [isAdult, setIsAdult] = useState(initialFilters.adult || false);
     const [selectedSpecialty, setSelectedSpecialty] = useState(initialFilters.specialty || null);
     const [specialtyDropdownOpen, setSpecialtyDropdownOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
     const filtersRef = useRef(null);
     const specialtyBtnRef = useRef(null);
     const specialtyDropdownRef = useRef(null);
+
+    useEffect(() => {
+        if (showFilters && !isMobile && filterRef?.current) {
+            const rect = filterRef.current.getBoundingClientRect();
+            const dropdownWidth = 474;
+            setDropdownPosition({
+                top: rect.bottom + 12,
+                left: rect.left + rect.width / 2 - dropdownWidth / 2
+            });
+        }
+    }, [showFilters, isMobile, filterRef]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -92,74 +104,102 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
 
     if (!showFilters) return null;
 
-    return ReactDOM.createPortal(
-        <div
-            className="filters-overlay"
-            onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); }}
-        >
-            <div className="filters-container" ref={filtersRef} onClick={(e) => e.stopPropagation()}>
-                <div className="filter-section">
-                    <h3 className="section-title">Курс</h3>
-                    <div className="course-buttons">
-                        {["1", "2", "3", "4"].map((course) => (
-                            <button
-                                key={course}
-                                className={`course-btn ${selectedCourse === course ? 'active' : ''}`}
-                                onClick={(e) => { e.stopPropagation(); handleCourseClick(course); }}
+    const filterContent = (
+        <>
+            <div className="filter-section">
+                <h3 className="section-title">Курс</h3>
+                <div className="course-buttons">
+                    {["1", "2", "3", "4"].map((course) => (
+                        <button
+                            key={course}
+                            className={`course-btn ${selectedCourse === course ? 'active' : ''}`}
+                            onClick={(e) => { e.stopPropagation(); handleCourseClick(course); }}
+                        >
+                            {course}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="filter-section">
+                <h3 className="section-title">Возраст</h3>
+                <div
+                    className="checkbox-container"
+                    onClick={(e) => { e.stopPropagation(); setIsAdult(!isAdult); }}
+                >
+                    <div className={`custom-checkbox ${isAdult ? 'checked' : ''}`}>
+                        <span className="checkbox-tick">✓</span>
+                    </div>
+                    <span className="checkbox-label">Старше 18 лет</span>
+                </div>
+            </div>
+
+            <div className="filter-section">
+                <h3 className="section-title">Специальность</h3>
+                <div className="specialty-select">
+                    <button
+                        ref={specialtyBtnRef}
+                        className={`specialty-btn ${specialtyDropdownOpen ? 'active' : ''}`}
+                        onClick={handleSpecialtyClick}
+                    >
+                        {selectedSpecialty ? selectedSpecialty.name : "Выберите специальность"}
+                    </button>
+                    <div
+                        ref={specialtyDropdownRef}
+                        className={`specialty-dropdown ${specialtyDropdownOpen ? 'open' : ''}`}
+                    >
+                        {specialties.map((specialty) => (
+                            <div
+                                key={specialty.id}
+                                className={`specialty-option ${selectedSpecialty && selectedSpecialty.id === specialty.id ? 'selected' : ''}`}
+                                onClick={(e) => { e.stopPropagation(); handleSpecialtySelect(specialty); }}
                             >
-                                {course}
-                            </button>
+                                {specialty.name}
+                            </div>
                         ))}
                     </div>
                 </div>
+            </div>
 
-                <div className="filter-section">
-                    <h3 className="section-title">Возраст</h3>
-                    <div
-                        className="checkbox-container"
-                        onClick={(e) => { e.stopPropagation(); setIsAdult(!isAdult); }}
-                    >
-                        <div className={`custom-checkbox ${isAdult ? 'checked' : ''}`}>
-                            <span className="checkbox-tick">✓</span>
-                        </div>
-                        <span className="checkbox-label">Старше 18 лет</span>
-                    </div>
+            <div className="action-buttons">
+                <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApply(); setShowFilters(false); }}>
+                    Применить
+                </button>
+                <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleReset(); setShowFilters(false); }}>
+                    Сбросить
+                </button>
+            </div>
+        </>
+    );
+
+    if (isMobile) {
+        return ReactDOM.createPortal(
+            <div
+                className="filters-overlay"
+                onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); }}
+            >
+                <div className="filters-container" ref={filtersRef} onClick={(e) => e.stopPropagation()}>
+                    {filterContent}
                 </div>
+            </div>,
+            document.body
+        );
+    }
 
-                <div className="filter-section">
-                    <h3 className="section-title">Специальность</h3>
-                    <div className="specialty-select">
-                        <button
-                            ref={specialtyBtnRef}
-                            className={`specialty-btn ${specialtyDropdownOpen ? 'active' : ''}`}
-                            onClick={handleSpecialtyClick}
-                        >
-                            {selectedSpecialty ? selectedSpecialty.name : "Выберите специальность"}
-                        </button>
-                        <div
-                            ref={specialtyDropdownRef}
-                            className={`specialty-dropdown ${specialtyDropdownOpen ? 'open' : ''}`}
-                        >
-                            {specialties.map((specialty) => (
-                                <div
-                                    key={specialty.id}
-                                    className={`specialty-option ${selectedSpecialty && selectedSpecialty.id === specialty.id ? 'selected' : ''}`}
-                                    onClick={(e) => { e.stopPropagation(); handleSpecialtySelect(specialty); }}
-                                >
-                                    {specialty.name}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                <div className="action-buttons">
-                    <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApply(); setShowFilters(false); }}>
-                        Применить
-                    </button>
-                    <button className="action-btn reset-btn" onClick={(e) => { e.stopPropagation(); handleReset(); setShowFilters(false); }}>
-                        Сбросить
-                    </button>
+    return ReactDOM.createPortal(
+        <div
+            className="filters-overlay filters-overlay--dropdown"
+            onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); }}
+        >
+            <div
+                className="filters-dropdown"
+                style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+                ref={filtersRef}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="filters-dropdown__triangle" />
+                <div className="filters-container filters-container--dropdown">
+                    {filterContent}
                 </div>
             </div>
         </div>,
@@ -526,6 +566,8 @@ const StudentsList = () => {
                 onApplyFilters={handleApplyFilters}
                 onResetFilters={handleResetFilters}
                 initialFilters={currentFilters}
+                isMobile={isMobile}
+                filterRef={filterRef}
             />
         </section>
     )
