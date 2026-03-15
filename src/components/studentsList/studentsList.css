@@ -820,10 +820,94 @@
     }
 }
 
+/* Адаптив блока фильтров: плавное уменьшение при сужении экрана */
+@media (max-width: 600px) {
+    .filters-container {
+        padding: 22px 20px;
+    }
+
+    .filters-container--dropdown {
+        width: 420px;
+        max-width: 92vw;
+        height: 420px;
+        max-height: 420px;
+        padding: 40px 24px;
+    }
+
+    .filter-section {
+        margin-bottom: 22px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        margin-bottom: 12px;
+    }
+
+    .checkbox-label {
+        font-size: 22px;
+    }
+
+    .course-buttons {
+        gap: 10px;
+    }
+
+    .course-btn {
+        width: 82px;
+        height: 38px;
+        font-size: 22px;
+    }
+
+    .specialty-btn {
+        height: 38px;
+        font-size: 22px;
+        padding-left: 28px;
+    }
+
+    .specialty-btn__arrow {
+        width: 16px;
+    }
+
+    .action-buttons {
+        height: 42px;
+        margin-top: 26px;
+        gap: 14px;
+    }
+
+    .action-btn {
+        font-size: 22px;
+    }
+
+    .specialty-option {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+}
+
 @media (max-width: 480px) {
     .filters-container {
-        padding: 20px;
+        padding: 20px 18px;
         max-height: 75vh;
+    }
+
+    .filters-container--dropdown {
+        width: 380px;
+        max-width: 94vw;
+        height: 400px;
+        max-height: 400px;
+        padding: 32px 20px;
+    }
+
+    .filter-section {
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .checkbox-label {
+        font-size: 20px;
     }
 
     .course-buttons {
@@ -831,23 +915,111 @@
     }
 
     .course-btn {
-        width: 91px;
-        height: 40px;
-        padding: 0;
-        font-size: 24px;
+        width: 78px;
+        height: 36px;
+        font-size: 20px;
     }
 
-    .section-title {
-        font-size: 16px;
+    .custom-checkbox {
+        width: 22px;
+        height: 22px;
+    }
+
+    .specialty-btn {
+        height: 36px;
+        font-size: 20px;
+        padding-left: 24px;
+        padding-right: 14px;
+    }
+
+    .specialty-btn__arrow {
+        width: 14px;
     }
 
     .action-buttons {
+        height: 40px;
+        margin-top: 24px;
         gap: 12px;
     }
 
     .action-btn {
-        padding: 14px;
+        font-size: 20px;
+        padding: 12px;
+    }
+
+    .specialty-option {
         font-size: 14px;
+        padding: 10px 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .filters-container {
+        padding: 18px 16px;
+    }
+
+    .filters-container--dropdown {
+        width: 100%;
+        max-width: 340px;
+        height: 380px;
+        max-height: 85vh;
+        padding: 28px 16px;
+    }
+
+    .filter-section {
+        margin-bottom: 18px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        margin-bottom: 8px;
+    }
+
+    .checkbox-label {
+        font-size: 18px;
+    }
+
+    .course-btn {
+        width: 72px;
+        height: 34px;
+        font-size: 18px;
+    }
+
+    .custom-checkbox {
+        width: 20px;
+        height: 20px;
+    }
+
+    .checkbox-tick {
+        font-size: 14px;
+    }
+
+    .specialty-btn {
+        height: 34px;
+        font-size: 18px;
+        padding-left: 20px;
+        padding-right: 12px;
+        gap: 6px;
+    }
+
+    .specialty-btn__arrow {
+        width: 12px;
+    }
+
+    .action-buttons {
+        height: 38px;
+        margin-top: 20px;
+        gap: 10px;
+    }
+
+    .action-btn {
+        font-size: 18px;
+        padding: 10px;
+    }
+
+    .specialty-option {
+        font-size: 13px;
+        padding: 8px 12px;
     }
 }
 
