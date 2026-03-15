@@ -430,8 +430,8 @@
 
 .filters-container--dropdown {
     width: 474px;
-    height: 503px;
-    max-height: 503px;
+    height: 463px;
+    max-height: 463px;
     background-color: #fff;
     border-radius: 12px;
     padding: 56px 32px 56px 32px;
@@ -656,7 +656,8 @@
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     color: white;
     border: none;
-    padding: 0 16px;
+    padding-left: 32px;
+    padding-right: 16px;
     border-radius: 8px;
     font-size: 24px;
     cursor: pointer;
@@ -667,19 +668,17 @@
     font-family: 'StratosLight', sans-serif;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 8px;
 }
 
-.specialty-btn__text {
-    flex: 1;
-}
 
 .specialty-btn__arrow {
-    width: 20px;
+    width: 18px;
     height: auto;
     flex-shrink: 0;
     transition: transform 0.3s;
+    padding-top: 6px;
 }
 
 .specialty-btn.active .specialty-btn__arrow {
@@ -773,6 +772,7 @@
     display: flex;
     gap: 16px;
     margin-top: 32px;
+    height: 45px;
 }
 
 .action-btn {
