@@ -418,11 +418,11 @@
 /* С экрана 1400px: сдвигаем блок влево, чтобы не уходил за правый край; треугольник — правее, на кнопку */
 @media (min-width: 1400px) {
     .filters-dropdown {
-        transform: translateX(-800px);
+        transform: translateX(-15px);
     }
 
     .filters-dropdown__triangle {
-        margin-left: 800px;
+        margin-left: 0px;
     }
 }
 
@@ -829,6 +829,47 @@
         max-height: 70vh;
         border-radius: 20px 20px 0 0;
     }
+
+    /* Мобильный блок фильтров: белый текст заголовков, кнопки на всю ширину, свои стили кнопок */
+    .filters-container .section-title,
+    .filters-container .checkbox-label {
+        color: #fff;
+    }
+
+    .filters-container .course-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .filters-container .course-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto;
+        box-sizing: border-box;
+    }
+
+    .filters-container .reset-btn {
+        background: none;
+        border: 1px solid #fff;
+        color: #fff;
+    }
+
+    .filters-container .reset-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .filters-container .apply-btn {
+        background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
+        border: none;
+    }
+
+    .filters-container .apply-btn__text {
+        background: none;
+        -webkit-background-clip: unset;
+        background-clip: unset;
+        color: #fff;
+    }
 }
 
 /* Адаптив блока фильтров: плавное уменьшение при сужении экрана */
@@ -955,7 +996,6 @@
 
     .action-btn {
         font-size: 20px;
-        padding: 12px;
     }
 
     .specialty-option {
@@ -1025,7 +1065,6 @@
 
     .action-btn {
         font-size: 18px;
-        padding: 10px;
     }
 
     .specialty-option {
