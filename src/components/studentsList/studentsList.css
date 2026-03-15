@@ -444,9 +444,9 @@
 }
 
 .filters-container--dropdown .course-btn {
-    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
-    border-color: rgba(0, 0, 0, 0.2);
-    color: #fff;
+    background: none;
+    border: 1px solid #D8D8D8;
+    color: #D8D8D8;
 }
 
 .filters-container--dropdown .course-btn:hover {
@@ -454,9 +454,24 @@
 }
 
 .filters-container--dropdown .course-btn.active {
-    background: #141414;
+    border: none;
     color: #fff;
-    border-color: #141414;
+}
+
+.filters-container--dropdown .course-btn--1.active {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.filters-container--dropdown .course-btn--2.active {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.filters-container--dropdown .course-btn--3.active {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.filters-container--dropdown .course-btn--4.active {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
 }
 
 .filters-container--dropdown .checkbox-label {
@@ -548,10 +563,10 @@
     flex: 1;
     min-width: 60px;
     padding: 12px;
-    border: 1px solid white;
+    border: 1px solid #D8D8D8;
     border-radius: 5px;
-    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
-    color: white;
+    background: none;
+    color: #D8D8D8;
     font-size: 16px;
     font-weight: 500;
     cursor: pointer;
@@ -564,8 +579,24 @@
 }
 
 .course-btn.active {
-    background: white;
-    color: black;
+    border: none;
+    color: #fff;
+}
+
+.course-btn--1.active {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.course-btn--2.active {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.course-btn--3.active {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.course-btn--4.active {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
 }
 
 .checkbox-container {

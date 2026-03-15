@@ -112,7 +112,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                     {["1", "2", "3", "4"].map((course) => (
                         <button
                             key={course}
-                            className={`course-btn ${selectedCourse === course ? 'active' : ''}`}
+                            className={`course-btn course-btn--${course} ${selectedCourse === course ? 'active' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handleCourseClick(course); }}
                         >
                             {course}
