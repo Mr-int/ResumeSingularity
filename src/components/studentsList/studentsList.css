@@ -505,6 +505,12 @@
 
 .filters-container--dropdown .specialty-dropdown {
     background-color: #f5f5f5;
+    max-height: none;
+    overflow: visible;
+}
+
+.filters-container--dropdown .specialty-dropdown.open {
+    overflow: visible;
 }
 
 .filters-container--dropdown .specialty-option {
