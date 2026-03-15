@@ -428,14 +428,13 @@
     -ms-overflow-style: none;
 }
 
-/* Десктоп: белый блок под кнопкой 474×503 */
 .filters-container--dropdown {
     width: 474px;
     height: 503px;
     max-height: 503px;
     background-color: #fff;
     border-radius: 12px;
-    padding: 24px;
+    padding: 56px 32px 56px 32px;
     box-sizing: border-box;
     animation: fadeIn 0.2s ease;
 }

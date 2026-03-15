@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import "./studentsList.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
-import arrowIcon from "../../assets/icons/arrow.svg";
+import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudents } from "../../services/studentApi.js";
 
