@@ -689,10 +689,6 @@
     outline: 2px solid rgba(62, 142, 255, 0.5);
 }
 
-.specialty-btn:hover {
-    transform: translateY(-1px);
-}
-
 .specialty-dropdown {
     display: none;
     position: absolute;
@@ -767,7 +763,7 @@
     right: 16px;
     color: #3E8EFF;
 }
-
+    
 .action-buttons {
     display: flex;
     gap: 16px;
@@ -777,7 +773,6 @@
 
 .action-btn {
     flex: 1;
-    padding: 16px;
     border-radius: 50px;
     font-size: 24px;
     cursor: pointer;
