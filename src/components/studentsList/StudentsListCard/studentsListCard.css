@@ -102,7 +102,7 @@
 .studentsCard__description p {
     font-size: 20px;
     line-height: 1.5;
-    margin: 0;
+    margin-bottom: 10px;
     color: white;
     font-family: 'StratosSemiLight';
 }
@@ -413,7 +413,7 @@
     }
 
     .studentsCard__header {
-        margin: 0;
+        margin-bottom: 10px;
     }
 
     .studentsCard__title {
