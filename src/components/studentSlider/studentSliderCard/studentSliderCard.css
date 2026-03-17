@@ -308,19 +308,6 @@
 }
 
 @media (max-width: 480px) {
-    .student-slider-card {
-        width: 118px;
-        height: 188px;
-        padding: 4px;
-        gap: 5px;
-    }
-
-    .student-slider-card--active {
-        width: 130px;
-        height: 208px;
-        padding: 5px;
-    }
-
     .student-slider-card__photo {
         width: 108px;
         height: 118px;

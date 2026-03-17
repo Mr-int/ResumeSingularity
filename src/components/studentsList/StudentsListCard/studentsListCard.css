@@ -411,7 +411,7 @@
 
     .studentsCard__title {
         font-size: 18px;
-        gap: 6px;
+        gap: 2px;
         white-space: nowrap;
         flex-wrap: nowrap;
         overflow: visible;
@@ -424,8 +424,8 @@
 
     .studentsCard__courseBadge {
         font-size: 14px;
-        width: 24px;
-        height: 24px;
+        width: 23px;
+        height: 23px;
     }
 
     .studentsCard__skills {
@@ -458,7 +458,7 @@
 
 @media (max-width: 435px) {
     .studentsCard  {
-        gap: 2px;
+        gap: 0;
     }
 }
 
