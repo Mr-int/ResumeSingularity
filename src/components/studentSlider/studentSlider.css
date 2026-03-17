@@ -682,10 +682,6 @@
         min-height: 260px;
     }
 
-    .studentSlider__cardContainer {
-        height: 240px;
-    }
-
     .studentSlider__content::before,
     .studentSlider__content::after {
         border-radius: 24px;

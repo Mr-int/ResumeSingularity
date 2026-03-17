@@ -235,21 +235,6 @@
 }
 
 @media (max-width: 576px) {
-    .student-slider-card {
-        width: 128px;
-        height: 204px;
-        padding: 4px;
-        gap: 6px;
-        border-radius: 10px;
-    }
-
-    .student-slider-card--active {
-        width: 142px;
-        height: 228px;
-        padding: 5px;
-        border-radius: 11px;
-    }
-
     .student-slider-card__photo {
         width: 118px;
         height: 128px;
