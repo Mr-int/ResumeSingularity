@@ -7,9 +7,6 @@ import designIcon from "../../../assets/other/design.png";
 import analyticsIcon from "../../../assets/other/analytics.png";
 import testingIcon from "../../../assets/other/testing.png";
 import managerIcon from "../../../assets/other/manager.png";
-import course4 from "../../../assets/other/course4.png";
-import course3 from "../../../assets/other/thirdCourse.png";
-import course2 from "../../../assets/other/secondCourse.png";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -37,22 +34,22 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         return `${baseUrl}/${studentId}.jpg`;
     };
 
-    const getCourseImage = (course) => {
+    const getCourseNumber = (course) => {
         switch (course) {
             case 'FIRST':
             case '1':
-                return course2;
+                return '1';
             case 'SECOND':
             case '2':
-                return course2;
+                return '2';
             case 'THIRD':
             case '3':
-                return course3;
+                return '3';
             case 'FOURTH':
             case '4':
-                return course4;
+                return '4';
             default:
-                return course4;
+                return '4';
         }
     };
 
@@ -110,7 +107,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     };
 
     const imageSrc = getStudentImageUrl(student);
-    const courseImage = getCourseImage(student.course);
+    const courseNumber = getCourseNumber(student.course);
     const skillIcon = getSkillIcon(student.speciality);
     const specialityName = student.speciality || 'Специальность не указана';
     const extraIcoModifier = getExtraIcoGradientModifier(student.speciality);
@@ -131,7 +128,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                 <img src={imageSrc} alt={`Фото ${fullName}`} className="student-slider-card__photo"/>
 
                 <div className="student-slider-card__course">
-                    <img src={courseImage} className="student-slider-card__courseIco" alt=""/>
+                    <span className={`student-slider-card__courseBadge student-slider-card__courseBadge--${courseNumber}`}>{courseNumber}</span>
                     {isActive && (
                         <span className="student-slider-card__courseText">
                             курс

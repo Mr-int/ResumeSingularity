@@ -173,9 +173,34 @@
     opacity: 1;
 }
 
-.course4 {
-    height: 32px;
+.studentsCard__courseBadge {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'StratosBoldItalic', sans-serif;
+}
+
+.studentsCard__courseBadge--1 {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.studentsCard__courseBadge--2 {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.studentsCard__courseBadge--3 {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.studentsCard__courseBadge--4 {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
 }
 
 @media (max-width: 1200px) {
@@ -222,9 +247,6 @@
         font-size: 17px;
     }
 
-    .course4 {
-        height: 28px;
-    }
 }
 
 @media (max-width: 992px) {
@@ -272,9 +294,6 @@
         font-size: 16px;
     }
 
-    .course4 {
-        height: 26px;
-    }
 }
 
 /* ИСПРАВЛЕННЫЙ АДАПТИВ 768px */
@@ -360,9 +379,6 @@
         font-size: 16px;
     }
 
-    .course4 {
-        height: 24px;
-    }
 }
 
 @media (max-width: 480px) {

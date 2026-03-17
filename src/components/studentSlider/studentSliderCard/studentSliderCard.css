@@ -81,10 +81,36 @@
     display: block;
 }
 
-.student-slider-card__courseIco {
+.student-slider-card__courseBadge {
     width: 30px;
-    height: 100%;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'StratosBoldItalic', sans-serif;
+}
+
+.student-slider-card__courseBadge--1 {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.student-slider-card__courseBadge--2 {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.student-slider-card__courseBadge--3 {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.student-slider-card__courseBadge--4 {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
 }
 
 .student-slider-card__extraIco {

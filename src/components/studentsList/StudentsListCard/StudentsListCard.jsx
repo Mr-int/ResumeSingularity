@@ -2,9 +2,6 @@ import React, { useState } from "react";
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import { Link } from "react-router-dom";
 import './studentsListCard.css';
-import course4 from "../../../assets/other/course4.png";
-import course3 from "../../../assets/other/thirdCourse.png";
-import course2 from "../../../assets/other/secondCourse.png";
 
 const StudentsListCard = ({ student }) => {
     const [showFullBio, setShowFullBio] = useState(false);
@@ -32,28 +29,28 @@ const StudentsListCard = ({ student }) => {
         return `${baseUrl}/${studentId}.jpg`;
     };
 
-    const getCourseImage = (course) => {
+    const getCourseNumber = (course) => {
         switch (course) {
             case 'FIRST':
             case '1':
-                return course2;
+                return '1';
             case 'SECOND':
             case '2':
-                return course2;
+                return '2';
             case 'THIRD':
             case '3':
-                return course3;
+                return '3';
             case 'FOURTH':
             case '4':
-                return course4;
+                return '4';
             default:
-                return course4;
+                return '4';
         }
     };
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
     const imageSrc = getStudentImageUrl(student);
-    const courseImage = getCourseImage(student.course);
+    const courseNumber = getCourseNumber(student.course);
 
     // ~3 строки в блоке описания (line-clamp: 3, ~70–80 символов на строку)
     const MAX_BIO_PREVIEW_LENGTH = 220;
@@ -92,7 +89,7 @@ const StudentsListCard = ({ student }) => {
                 <div className="studentsCard__header">
                     <h2 className="studentsCard__title">
                         {fullName}
-                        <img className="course4" src={courseImage} alt=""/>
+                        <span className={`studentsCard__courseBadge studentsCard__courseBadge--${courseNumber}`}>{courseNumber}</span>
                     </h2>
                     <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
                 </div>
