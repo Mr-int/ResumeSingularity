@@ -205,7 +205,22 @@
     }
 
     .student-slider-card--active .student-slider-card__course {
-        width: 64px;
+        width: 70px;
+        height: 26px;
+    }
+
+    .student-slider-card__courseBadge {
+        width: 26px;
+        height: 26px;
+        min-width: 26px;
+        min-height: 26px;
+        font-size: 12px;
+    }
+
+    .student-slider-card__courseText {
+        font-size: 11px;
+        padding-left: 4px;
+        min-width: 0;
     }
 
     .student-slider-card__name {
@@ -248,11 +263,22 @@
     }
 
     .student-slider-card--active .student-slider-card__course {
-        width: 54px;
+        width: 58px;
+        height: 22px;
+    }
+
+    .student-slider-card__courseBadge {
+        width: 22px;
+        height: 22px;
+        min-width: 22px;
+        min-height: 22px;
+        font-size: 11px;
     }
 
     .student-slider-card__courseText {
-        font-size: 11px;
+        font-size: 10px;
+        padding-left: 3px;
+        min-width: 0;
     }
 
     .student-slider-card__name {
@@ -306,7 +332,22 @@
     }
 
     .student-slider-card--active .student-slider-card__course {
-        width: 48px;
+        width: 52px;
+        height: 20px;
+    }
+
+    .student-slider-card__courseBadge {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        font-size: 10px;
+    }
+
+    .student-slider-card__courseText {
+        font-size: 9px;
+        padding-left: 2px;
+        min-width: 0;
     }
 
     .student-slider-card__name {
