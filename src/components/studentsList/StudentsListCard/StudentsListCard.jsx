@@ -49,6 +49,8 @@ const StudentsListCard = ({ student }) => {
     };
 
     const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Имя не указано';
+    const firstName = student.firstName || fullName.split(' ')[0] || fullName;
+    const lastName = student.lastName || fullName.slice(firstName.length).trim() || '';
     const imageSrc = getStudentImageUrl(student);
     const courseNumber = getCourseNumber(student.course);
 
@@ -88,9 +90,21 @@ const StudentsListCard = ({ student }) => {
             <div className="studentsCard__content">
                 <div className="studentsCard__side">
                     <div className="studentsCard__header">
-                        <h2 className="studentsCard__title">
-                            {fullName}
-                            <span className={`studentsCard__courseBadge studentsCard__courseBadge--${courseNumber}`}>{courseNumber}</span>
+                        <h2 className={`studentsCard__title ${!lastName ? 'studentsCard__title--singleLine' : ''}`}>
+                            {lastName ? (
+                                <>
+                                    <span className="studentsCard__titleLine1">{firstName}</span>
+                                    <span className="studentsCard__titleLine2">
+                                        <span className="studentsCard__titleLastName">{lastName}</span>
+                                        <span className={`studentsCard__courseBadge studentsCard__courseBadge--${courseNumber}`}>{courseNumber}</span>
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="studentsCard__titleLine1">{fullName}</span>
+                                    <span className={`studentsCard__courseBadge studentsCard__courseBadge--${courseNumber}`}>{courseNumber}</span>
+                                </>
+                            )}
                         </h2>
                         <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
                     </div>

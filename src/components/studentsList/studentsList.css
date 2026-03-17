@@ -329,11 +329,12 @@
 
 @media (max-width: 600px) {
     .studentsList-section {
-        padding: 30px 20px;
+        padding: 30px 0;
+        width: 100%;
     }
 
     .studentsList {
-        padding: 20px 25px;
+        padding: 20px 16px;
     }
 
     .studentsList__search-wrapper.expanded {
@@ -348,12 +349,12 @@
 
 @media (max-width: 480px) {
     .studentsList-section {
-        padding: 30px 20px;
+        padding: 20px 0;
     }
 
     .studentsList {
         max-width: 1200px;
-        padding: 20px;
+        padding: 16px 12px;
     }
 
     .studentsList__title {
