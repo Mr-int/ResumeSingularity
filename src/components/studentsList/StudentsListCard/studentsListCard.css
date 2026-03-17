@@ -34,6 +34,7 @@
 .studentsCard__header {
     margin: 0;
     flex-shrink: 0;
+    margin-bottom: 10px;
 }
 
 .studentsCard__title {
@@ -410,10 +411,6 @@
         padding: 10px 0 0 15px;
         gap: 20px;
         min-width: 0;
-    }
-
-    .studentsCard__header {
-        margin-bottom: 10px;
     }
 
     .studentsCard__title {
