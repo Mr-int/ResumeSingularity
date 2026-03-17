@@ -315,6 +315,12 @@
         font-size: 16px;
     }
 
+    .studentsList__filter.studentsList__filter--open,
+    .studentsList__filter.expanded.studentsList__filter--open {
+        background-image: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+        border-color: transparent;
+    }
+
     .studentsList__cardsWrapper {
         min-height: 500px;
         margin-top: 30px;

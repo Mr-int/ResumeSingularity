@@ -93,6 +93,7 @@
     color: #cfc9c9;
     padding: 4px;
     font-size: 16px;
+    white-space: nowrap;
 }
 
 .studentsCard__description {
@@ -297,7 +298,6 @@
 
 }
 
-/* ИСПРАВЛЕННЫЙ АДАПТИВ 768px */
 @media (max-width: 768px) {
     .studentsCard {
         height: auto;
@@ -363,6 +363,11 @@
         height: 24px;
     }
 
+    .skill-more {
+        font-size: 14px;
+        padding: 2px 4px;
+    }
+
     .studentsCard__bottom {
         grid-column: 1 / -1;
         grid-row: 2;
@@ -393,8 +398,8 @@
 
 @media (max-width: 480px) {
     .studentsCard {
-        height: auto;
-        min-height: 400px;
+        height: fit-content;
+        min-height: 420px;
         padding: 12px;
         gap: 16px;
     }
@@ -440,6 +445,11 @@
         height: 20px;
     }
 
+    .skill-more {
+        font-size: 12px;
+        padding: 2px 3px;
+    }
+
     .studentsCard__description p {
         font-size: 14px;
         line-height: 1.4;
@@ -464,8 +474,6 @@
 
 @media (max-width: 400px) {
     .studentsCard {
-        height: 340px;
-        padding: 12px;
         gap: 0;
     }
 
@@ -507,10 +515,6 @@
 }
 
 @media (max-width: 360px) {
-    .studentsCard {
-        height: 320px;
-    }
-
     .studentsCard__image {
         width: 110px !important;
     }
