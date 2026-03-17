@@ -787,10 +787,6 @@
         --visible-cards: 1;
     }
 
-    .studentSlider__cardContainer {
-        height: 220px;
-    }
-
     .studentSlider__title {
         font-size: 17px;
     }
