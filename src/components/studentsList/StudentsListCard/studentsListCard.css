@@ -368,7 +368,7 @@
         grid-row: 2;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 24px;
     }
 
     .studentsCard__description p {
@@ -392,34 +392,37 @@
 
 @media (max-width: 480px) {
     .studentsCard {
-        flex-direction: row !important;
-        height: 380px;
-        min-height: 360px;
-        padding: 15px;
-        gap: 15px;
-        align-items: stretch;
+        height: auto;
+        min-height: 400px;
+        padding: 12px;
+        gap: 16px;
     }
 
     .studentsCard__image {
-        width: 140px !important;
-        height: 100% !important;
+        width: 120px !important;
+        height: 190px !important;
         border-radius: 15px;
     }
 
     .studentsCard__content {
-        flex: 1;
-        padding: 10px 0 0 15px;
-        gap: 20px;
-        min-width: 0;
+        display: contents;
     }
 
     .studentsCard__title {
-        font-size: 18px;
+        font-size: 20px;
         gap: 6px;
+        white-space: nowrap;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .studentsCard__subtitle {
         font-size: 14px;
+    }
+
+    .studentsCard__courseBadge {
+        font-size: 18px;
     }
 
     .studentsCard__skills {
@@ -443,8 +446,7 @@
     .studentsCard__button {
         width: 100%;
         height: 38px;
-        font-size: 12px;
-        margin-top: auto;
+        font-size: 16px;
     }
 
     .read-more-link {
@@ -517,16 +519,9 @@
 
     .studentsCard__button {
         height: 34px;
-        font-size: 10px;
     }
 
     .read-more-link {
         font-size: 12px;
-    }
-}
-
-@media (max-width: 320px) {
-    .studentsCard__button {
-        font-size: 8px;
     }
 }
