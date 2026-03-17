@@ -556,13 +556,6 @@
         width: 40px;
         height: 40px;
     }
-
-    .studentSlider__button {
-        width: 320px;
-        height: 42px;
-        font-size: 20px;
-        letter-spacing: 1.5px;
-    }
 }
 
 @media (max-width: 768px) {
@@ -822,9 +815,14 @@
     .studentSlider__button {
         width: 220px;
         height: 36px;
-        font-size: 15px;
-        padding: 0 15px;
+        font-size: 14px;
+        padding: 0 5px;
         margin: 0 auto;
+    }
+
+    .button__icon {
+        width: 15px;
+        height: 15px;
     }
 }
 
