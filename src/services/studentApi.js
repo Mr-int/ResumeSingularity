@@ -2,23 +2,28 @@ import { apiClientJson } from '../utils/apiClient.js';
 
 export const getAllStudents = async () => {
     try {
-        const response = await apiClientJson('student/filter', {
-            method: 'POST',
-            body: JSON.stringify({
-                page: 0,
-                size: 100
-            })
-        });
+        const pageSize = 200;
+        const maxPages = 200;
+        const byId = new Map();
 
-        if (response && response.data) {
-            return response.data;
-        } else if (response && response.content) {
-            return response.content;
-        } else if (Array.isArray(response)) {
-            return response;
+        const first = await filterStudentCardsPage({}, { page: 0, size: pageSize });
+        const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
+        const pagesToFetch = Math.min(totalPages, maxPages);
+
+        for (const s of first.data) {
+            const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+            if (!byId.has(key)) byId.set(key, s);
         }
 
-        return [];
+        for (let page = 1; page < pagesToFetch; page += 1) {
+            const res = await filterStudentCardsPage({}, { page, size: pageSize });
+            for (const s of res.data) {
+                const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+                if (!byId.has(key)) byId.set(key, s);
+            }
+        }
+
+        return Array.from(byId.values());
     } catch (error) {
         if (error.requiresAuth) {
             throw error;
