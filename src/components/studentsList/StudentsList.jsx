@@ -5,7 +5,7 @@ import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
-import { filterStudents } from "../../services/studentApi.js";
+import { filterStudentsPage } from "../../services/studentApi.js";
 
 const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef }) => {
     const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || null);
@@ -244,22 +244,30 @@ const StudentsList = () => {
                 specialitiesIds: filters.specialty ? [filters.specialty.id] : []
             };
 
-            // student/filter is pageable. Без явной пагинации отображается только первая страница,
-            // из-за чего часть студентов "теряется" и находится только через фильтры.
+            // /student/filter is pageable. В API page/size должны быть в query (?page=&size=),
+            // а в ответе используем PageResponseStudentDTO { data, totalPages, totalElements }.
             const pageSize = 200;
-            const maxPages = 25; // safety cap
-            let page = 0;
-            const all = [];
+            const maxPages = 200; // safety cap
+            const byId = new Map();
+            const first = await filterStudentsPage(filterData, { page: 0, size: pageSize });
+            const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
+            const pagesToFetch = Math.min(totalPages, maxPages);
 
-            while (page < maxPages) {
-                const chunk = await filterStudents({ ...filterData, page, size: pageSize });
-                const list = Array.isArray(chunk) ? chunk : [];
-                all.push(...list);
-                if (list.length < pageSize) break;
-                page += 1;
+            for (const s of first.data) {
+                const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+                if (!byId.has(key)) byId.set(key, s);
             }
 
-            console.log('[API] Received filtered students (all pages):', all);
+            for (let page = 1; page < pagesToFetch; page += 1) {
+                const res = await filterStudentsPage(filterData, { page, size: pageSize });
+                for (const s of res.data) {
+                    const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+                    if (!byId.has(key)) byId.set(key, s);
+                }
+            }
+
+            const all = Array.from(byId.values());
+            console.log('[API] Received filtered students (all pages, deduped):', all);
             return all;
         } catch (err) {
             console.error('Failed to fetch filtered students:', err);

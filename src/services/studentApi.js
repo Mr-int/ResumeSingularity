@@ -309,34 +309,64 @@ export const createRecruiterRequest = async (recruiterData) => {
     }
 };
 
-export const filterStudents = async (filterData = {}) => {
+/**
+ * POST /student/filter
+ * В API pageable обязателен в query: ?page=0&size=200
+ * Ответ: PageResponseStudentDTO { data, page, size, totalElements, totalPages }
+ */
+export const filterStudentsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
     try {
-        const defaultFilter = {
-            page: 0,
-            size: 100,
-            ...filterData
-        };
+        const page = typeof pageable.page === 'number' ? pageable.page : 0;
+        const size = typeof pageable.size === 'number' ? pageable.size : 100;
 
-        const data = await apiClientJson('student/filter', {
+        const resp = await apiClientJson(`student/filter?page=${page}&size=${size}`, {
             method: 'POST',
-            body: JSON.stringify(defaultFilter)
+            body: JSON.stringify(filterReq)
         });
 
-        if (data && data.data) {
-            return data.data;
-        } else if (data && data.content) {
-            return data.content;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-
-        return [];
+        return {
+            data: Array.isArray(resp?.data) ? resp.data : [],
+            page: typeof resp?.page === 'number' ? resp.page : page,
+            size: typeof resp?.size === 'number' ? resp.size : size,
+            totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
+            totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
+        };
     } catch (error) {
         if (error.requiresAuth) {
             throw error;
         }
         throw error;
     }
+};
+
+/**
+ * Back-compat: раньше filterStudents() возвращал просто массив.
+ * Оставляем, но теперь использует правильный pageable в query.
+ */
+export const filterStudents = async (filterReq = {}) => {
+    const pageRes = await filterStudentsPage(filterReq, { page: 0, size: 100 });
+    return pageRes.data;
+};
+
+/**
+ * POST /student/cardsFilter
+ * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
+ */
+export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
+    const page = typeof pageable.page === 'number' ? pageable.page : 0;
+    const size = typeof pageable.size === 'number' ? pageable.size : 100;
+    const resp = await apiClientJson(`student/cardsFilter?page=${page}&size=${size}`, {
+        method: 'POST',
+        body: JSON.stringify(filterReq),
+    });
+
+    return {
+        data: Array.isArray(resp?.data) ? resp.data : [],
+        page: typeof resp?.page === 'number' ? resp.page : page,
+        size: typeof resp?.size === 'number' ? resp.size : size,
+        totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
+        totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
+    };
 };
 
 export const getPortfolioById = async (id) => {
