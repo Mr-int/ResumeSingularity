@@ -3,8 +3,6 @@ import './applicationForm.css';
 import exclamationIcon from "../../assets/icons/exclamationIcon.svg";
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import successIcon from "../../assets/icons/success.svg";
-import strictArrowIcon from "../../assets/icons/strict_arrow.svg";
-import telegramBorderIcon from "../../assets/icons/telegram_border.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { apiClientJson } from '../../utils/apiClient.js';
@@ -21,7 +19,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
-    const [telegramBotLink, setTelegramBotLink] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -64,7 +61,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         e.preventDefault();
         setError('');
         setSuccess(false);
-        setTelegramBotLink('');
 
         const emptyName = !formData.name.trim();
         const emptyCompany = !formData.company.trim();
@@ -101,10 +97,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                 body: JSON.stringify(requestData),
             });
 
-            const recruiterId = response?.recruiterId || response?.id;
-            if (recruiterId) {
-                setTelegramBotLink(`https://t.me/singularity_resume_robot?start=re_${recruiterId}`);
-            }
             setSuccess(true);
             if (onSubmit) {
                 await onSubmit(requestData);
@@ -141,25 +133,9 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                                     <img src={successIcon} alt="" className="applicationForm__successWindow-titleIcon" width={40} height={40} />
                                 </div>
                             <p className="applicationForm__successWindow-text">
-                                Мы свяжемся с вами в течение 24 часов. Перейдите в бота для отслеживания заявки.
+                                Мы свяжемся с вами в течении 24 часов.
                             </p>
                         </div>
-                        {telegramBotLink && (
-                            <div className="applicationForm__successWindow-tgBlock">
-                                <a
-                                    href={telegramBotLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="applicationForm__successWindow-tgLink"
-                                >
-                                    <span className="applicationForm__successWindow-tgLink-textBlock">
-                                        <span className="applicationForm__successWindow-tgLink-text">Перейти в телеграм бота для связи</span>
-                                        <img src={strictArrowIcon} alt="" className="applicationForm__successWindow-tgLink-arrow" />
-                                    </span>
-                                    <img src={telegramBorderIcon} alt="" className="applicationForm__successWindow-tgLink-telegramIcon" />
-                                </a>
-                            </div>
-                        )}
                     </div>
                 </div>
             ) : (
