@@ -7,6 +7,29 @@ import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudentsPage } from "../../services/studentApi.js";
 
+const mapCourseToApiEnum = (course) => {
+    const map = {
+        "1": "FIRST",
+        "2": "SECOND",
+        "3": "THIRD",
+        "4": "FOURTH",
+    };
+    return map[course] || null;
+};
+
+const buildStudentFilterReq = (filters) => {
+    const req = {};
+    const search = filters.searchQuery?.trim();
+    const course = mapCourseToApiEnum(filters.course);
+
+    if (search) req.findString = search;
+    if (course) req.course = [course];
+    if (filters.adult) req.bornAfter = "2006-01-01";
+    if (filters.specialty?.id) req.specialitiesIds = [Number(filters.specialty.id)];
+
+    return req;
+};
+
 const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef }) => {
     const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || null);
     const [isAdult, setIsAdult] = useState(initialFilters.adult || false);
@@ -237,12 +260,7 @@ const StudentsList = () => {
         try {
             setLoading(true);
 
-            const filterData = {
-                findString: filters.searchQuery?.trim() || null,
-                course: filters.course ? [filters.course] : [],
-                bornAfter: filters.adult ? "2006-01-01" : null,
-                specialitiesIds: filters.specialty ? [filters.specialty.id] : []
-            };
+            const filterData = buildStudentFilterReq(filters);
 
             // /student/filter is pageable. В API page/size должны быть в query (?page=&size=),
             // а в ответе используем PageResponseStudentDTO { data, totalPages, totalElements }.
