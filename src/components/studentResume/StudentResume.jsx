@@ -115,7 +115,17 @@ const StudentResume = () => {
 
                         const experience = exp.experience || {};
                         const company = exp.company || {};
-                        const companyName = (company.name || exp.companyName || exp.employer || '').toString().trim();
+                        const companyName = (
+                            company?.name ||
+                            exp?.company?.name ||
+                            exp?.companyName ||
+                            exp?.employer ||
+                            exp?.organization?.name ||
+                            experience?.company?.name ||
+                            experience?.companyName ||
+                            experience?.employer ||
+                            ''
+                        ).toString().trim();
 
                         return {
                             id: experience.id || exp.experienceId || `exp-${index}`,
