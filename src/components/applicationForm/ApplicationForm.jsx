@@ -78,32 +78,32 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
             return;
         }
 
-        if (!hasStudent) {
-            setError('Заявка возможна только при выборе студента. Откройте карточку студента и нажмите «Связаться».');
-            return;
-        }
-
         setLoading(true);
         try {
             const { firstName, lastName } = splitFullName(formData.name);
-
-            const requestData = {
+            const baseData = {
                 companyName: formData.company.trim(),
                 firstName: firstName || '',
                 lastName: lastName || '',
                 email: formData.email?.trim() || '',
                 phoneNumber: formData.phone?.trim() || '',
-                telegramUsername: formData.telegram?.trim() || '',
-                studentId
+                telegramUsername: formData.telegram?.trim() || ''
             };
 
-            const response = await apiClientJson('request', {
+            // Два режима:
+            // 1) со страницы студента -> создаем request со studentId
+            // 2) общая заявка без студента -> создаем/обновляем профиль recruiter
+            const endpoint = hasStudent ? 'request' : 'recruiter';
+            const requestData = hasStudent ? { ...baseData, studentId } : baseData;
+
+            const response = await apiClientJson(endpoint, {
                 method: 'POST',
-                body: JSON.stringify(requestData)
+                body: JSON.stringify(requestData),
             });
 
-            if (response?.recruiterId) {
-                setTelegramBotLink(`https://t.me/singularity_resume_robot?start=re_${response.recruiterId}`);
+            const recruiterId = response?.recruiterId || response?.id;
+            if (recruiterId) {
+                setTelegramBotLink(`https://t.me/singularity_resume_robot?start=re_${recruiterId}`);
             }
             setSuccess(true);
             if (onSubmit) {

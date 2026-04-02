@@ -88,7 +88,7 @@ const FloatingButton = () => {
         return Promise.resolve();
     };
 
-    if (!studentId || isHidden) {
+    if (isHidden) {
         return null;
     }
 
