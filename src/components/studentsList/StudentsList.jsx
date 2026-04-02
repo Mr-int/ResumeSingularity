@@ -244,11 +244,23 @@ const StudentsList = () => {
                 specialitiesIds: filters.specialty ? [filters.specialty.id] : []
             };
 
-            console.log('[API] Sending filter request:', filterData);
-            const data = await filterStudents(filterData);
-            console.log('[API] Received filtered students:', data);
+            // student/filter is pageable. Без явной пагинации отображается только первая страница,
+            // из-за чего часть студентов "теряется" и находится только через фильтры.
+            const pageSize = 200;
+            const maxPages = 25; // safety cap
+            let page = 0;
+            const all = [];
 
-            return data || [];
+            while (page < maxPages) {
+                const chunk = await filterStudents({ ...filterData, page, size: pageSize });
+                const list = Array.isArray(chunk) ? chunk : [];
+                all.push(...list);
+                if (list.length < pageSize) break;
+                page += 1;
+            }
+
+            console.log('[API] Received filtered students (all pages):', all);
+            return all;
         } catch (err) {
             console.error('Failed to fetch filtered students:', err);
             setError(err.message);
@@ -367,11 +379,13 @@ const StudentsList = () => {
 
     const handleFilterClick = () => {
         if (isMobile) {
-            setFilterExpanded(!filterExpanded);
-            if (!filterExpanded) {
-                setSearchExpanded(false);
-            }
+            // На телефоне фильтр открывает нижнюю панель и не превращает кнопку в "десктопный" вариант
+            setFilterExpanded(false);
+            setSearchExpanded(false);
+            setShowFilters(true);
+            return;
         }
+
         setShowFilters(!showFilters);
     };
 

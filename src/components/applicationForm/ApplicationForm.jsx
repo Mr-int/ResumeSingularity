@@ -133,6 +133,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                     className="applicationForm__successWindow"
                     onClick={(e) => e.stopPropagation()}
                 >
+                    <button className="applicationForm__close" onClick={onClose}>×</button>
                     <div className="applicationForm__successWindow-inner">
 <div className="applicationForm__successWindow-body">
                                 <div className="applicationForm__successWindow-titleRow">
@@ -140,7 +141,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                                     <img src={successIcon} alt="" className="applicationForm__successWindow-titleIcon" width={40} height={40} />
                                 </div>
                             <p className="applicationForm__successWindow-text">
-                                Студент ответит вам в течение 24 часов. Для связи перейдите в телеграм бота.
+                                Мы свяжемся с вами в течение 24 часов. Перейдите в бота для отслеживания заявки.
                             </p>
                         </div>
                         {telegramBotLink && (
@@ -157,7 +158,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                                     </span>
                                     <img src={telegramBorderIcon} alt="" className="applicationForm__successWindow-tgLink-telegramIcon" />
                                 </a>
-                                <p className="applicationForm__successWindow-waitText">Буду ждать письмо на почту</p>
                             </div>
                         )}
                     </div>

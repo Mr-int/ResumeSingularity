@@ -115,11 +115,12 @@ const StudentResume = () => {
 
                         const experience = exp.experience || {};
                         const company = exp.company || {};
+                        const companyName = (company.name || exp.companyName || exp.employer || '').toString().trim();
 
                         return {
                             id: experience.id || exp.experienceId || `exp-${index}`,
                             position: experience.position || exp.position || exp.jobTitle || '',
-                            company: company.name || exp.companyName || exp.employer || '',
+                            company: companyName,
                             description: experience.additionalInfo || exp.description ||
                                 experience.responsibilities || '',
                             startDate: experience.startDate || exp.startDate || '',
@@ -229,6 +230,10 @@ const StudentResume = () => {
     const ageText = age ? `${age} лет` : '';
 
     const displaySkills = skills.length > 0 ? skills : (student.skills || []);
+    const portfolioWithLinks = (portfolio || []).filter((project) => {
+        const link = project?.link || project?.url || project?.website;
+        return Boolean(link && String(link).trim());
+    });
 
     return (
         <section className="StudentResume">
@@ -298,14 +303,14 @@ const StudentResume = () => {
                                 </div>
                             </div>
 
-                            <div className="StudentResume__section">
-                                <h3 className="StudentResume__sectionTitle">Портфолио и ссылки</h3>
-                                <div className="StudentResume__portfolio">
-                                    {portfolio.length > 0 ? (
-                                        portfolio.map((project, index) => (
+                            {portfolioWithLinks.length > 0 && (
+                                <div className="StudentResume__section">
+                                    <h3 className="StudentResume__sectionTitle">Портфолио и ссылки</h3>
+                                    <div className="StudentResume__portfolio">
+                                        {portfolioWithLinks.map((project, index) => (
                                             <a
                                                 key={project.id || index}
-                                                href={project.link || project.url || project.website}
+                                                href={(project.link || project.url || project.website).toString().trim()}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="StudentResume__portfolioItem"
@@ -325,16 +330,10 @@ const StudentResume = () => {
                                                     ) : null}
                                                 </div>
                                             </a>
-                                        ))
-                                    ) : (
-                                        <div className="StudentResume__portfolioItem" style={{ backgroundImage: `url(${getRandomPortfolioBackground(0)})` }}>
-                                            <div className="StudentResume__portfolioContent">
-                                                <p className="StudentResume__portfolioTitle">Ссылки будут добавлены позже</p>
-                                            </div>
-                                        </div>
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             <button
                                 className="StudentResume__sendBid"
@@ -377,7 +376,7 @@ const StudentResume = () => {
                                                 </div>
                                                 <div className="StudentResume__experienceInfo">
                                                     <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
-                                                    {exp.company && (
+                                                    {exp.company?.trim() && (
                                                         <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
                                                     )}
                                                     {exp.description && (
