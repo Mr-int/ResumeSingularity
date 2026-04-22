@@ -6,6 +6,7 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudentsPage } from "../../services/studentApi.js";
+import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
 const mapCourseToApiEnum = (course) => {
     const map = {
@@ -467,6 +468,7 @@ const StudentsList = () => {
     }
 
     const hasActiveFilters = currentFilters.course || currentFilters.adult || currentFilters.specialty || currentFilters.searchQuery;
+    const visibleStudents = allStudents.filter(hasStudentProfilePhoto);
 
     return (
         <section className="studentsList-section">
@@ -572,8 +574,8 @@ const StudentsList = () => {
                 </header>
 
                 <div className="studentsList__cardsWrapper">
-                    {allStudents.length > 0 ? (
-                        allStudents.map((student) => (
+                    {visibleStudents.length > 0 ? (
+                        visibleStudents.map((student) => (
                             <StudentsListCard key={student.id} student={student} />
                         ))
                     ) : (

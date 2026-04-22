@@ -7,6 +7,7 @@ import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import { getAllStudents } from "../../services/studentApi.js";
 import { Link } from "react-router-dom";
+import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
@@ -26,9 +27,10 @@ const StudentSlider = () => {
             try {
                 setLoading(true);
                 const data = await getAllStudents();
-                setStudents(data);
-                if (data.length > 0) {
-                    const middleIndex = Math.floor(data.length / 2);
+                const visible = (Array.isArray(data) ? data : []).filter(hasStudentProfilePhoto);
+                setStudents(visible);
+                if (visible.length > 0) {
+                    const middleIndex = Math.floor(visible.length / 2);
                     setActiveCardIndex(middleIndex);
                 }
             } catch (error) {

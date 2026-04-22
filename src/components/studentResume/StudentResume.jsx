@@ -20,6 +20,7 @@ import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
+import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -51,6 +52,9 @@ const StudentResume = () => {
                 const studentData = await getStudentById(id);
 
                 if (!studentData || !studentData.id) {
+                    throw new Error('Студент не найден');
+                }
+                if (!hasStudentProfilePhoto(studentData)) {
                     throw new Error('Студент не найден');
                 }
 
@@ -146,6 +150,7 @@ const StudentResume = () => {
                 if (allStudentsResult.status === 'fulfilled') {
                     const allStudents = allStudentsResult.value;
                     const similar = allStudents
+                        .filter(hasStudentProfilePhoto)
                         .filter(s => {
                             const currentId = s.id ? s.id.toString() : s.id;
                             const targetId = id.toString();
