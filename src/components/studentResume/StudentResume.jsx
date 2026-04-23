@@ -196,29 +196,34 @@ const StudentResume = () => {
         const items = experienceItemRefs.current.filter(Boolean);
         if (items.length === 0) return;
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visibleEntries = entries
-                    .filter((entry) => entry.isIntersecting)
-                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        const updateActiveByViewportCenter = () => {
+            const viewportCenterY = window.innerHeight / 2;
+            let nearestIndex = 0;
+            let nearestDistance = Number.POSITIVE_INFINITY;
 
-                if (visibleEntries.length > 0) {
-                    const indexValue = Number(visibleEntries[0].target.dataset.expIndex);
-                    if (!Number.isNaN(indexValue)) {
-                        setActiveExperienceIndex(indexValue);
-                    }
+            items.forEach((item) => {
+                const rect = item.getBoundingClientRect();
+                const itemCenterY = rect.top + rect.height / 2;
+                const distance = Math.abs(itemCenterY - viewportCenterY);
+                const indexValue = Number(item.dataset.expIndex);
+
+                if (!Number.isNaN(indexValue) && distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestIndex = indexValue;
                 }
-            },
-            {
-                root: null,
-                rootMargin: '-35% 0px -35% 0px',
-                threshold: 0
-            }
-        );
+            });
 
-        items.forEach((item) => observer.observe(item));
+            setActiveExperienceIndex((prev) => (prev === nearestIndex ? prev : nearestIndex));
+        };
 
-        return () => observer.disconnect();
+        updateActiveByViewportCenter();
+        window.addEventListener('scroll', updateActiveByViewportCenter, { passive: true });
+        window.addEventListener('resize', updateActiveByViewportCenter);
+
+        return () => {
+            window.removeEventListener('scroll', updateActiveByViewportCenter);
+            window.removeEventListener('resize', updateActiveByViewportCenter);
+        };
     }, [expandedExperience, experienceDetails]);
 
     const calculateAge = (birthDate) => {
