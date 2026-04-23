@@ -22,14 +22,9 @@ const Footer = () => {
                 </div>
 
                 <div className='footer__contacts'>
-                    <div className="footer__number">
-                        <h2>Телефон</h2>
-                        <p>+7 (123) 456-78-90</p>
-                    </div>
-
                     <div className="footer__mail">
                         <h2>Почта</h2>
-                        <p>singularityresume@gmail.com</p>
+                        <p>resume@singularity.college</p>
                     </div>
 
                     <div className="footer__credit">

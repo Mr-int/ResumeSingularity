@@ -494,19 +494,19 @@ const StudentResume = () => {
                                                     <div className="StudentResume__educationYears">
                                                         {edu.startDate && edu.endDate ? (
                                                             <span>
-                                                                {`С ${formatYearLabel(edu.startDate)}`}
+                                                                {`с ${formatYearLabel(edu.startDate)}`}
                                                                 <br/>
                                                                 {edu.endDate === 'по настоящее время'
-                                                                    ? 'По настоящее время'
-                                                                    : `По ${formatYearLabel(edu.endDate)}`}
+                                                                    ? 'по настоящее время'
+                                                                    : `по ${formatYearLabel(edu.endDate)}`}
                                                             </span>
                                                         ) : edu.startDate ? (
-                                                            <span>{`С ${formatYearLabel(edu.startDate)}`}</span>
+                                                            <span>{`с ${formatYearLabel(edu.startDate)}`}</span>
                                                         ) : edu.endDate ? (
                                                             <span>
                                                                 {edu.endDate === 'по настоящее время'
-                                                                    ? 'По настоящее время'
-                                                                    : `По ${formatYearLabel(edu.endDate)}`}
+                                                                    ? 'по настоящее время'
+                                                                    : `по ${formatYearLabel(edu.endDate)}`}
                                                             </span>
                                                         ) : null}
                                                     </div>
