@@ -4,6 +4,7 @@ const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2
 import javaIcon from "../../../assets/specialities/java.png";
 import pythonIcon from "../../../assets/specialities/python.png";
 import designIcon from "../../../assets/specialities/design.png";
+import webIcon from "../../../assets/specialities/web.png";
 import analyticsIcon from "../../../assets/specialities/dataAnalyst.png";
 import managementIcon from "../../../assets/specialities/management.png";
 import projectManagerIcon from "../../../assets/specialities/projectManager.png";
@@ -84,8 +85,12 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
             return javaIcon;
         }
 
+        if (specLower.includes('веб-разработчик') || specLower.includes('web')) {
+            return webIcon;
+        }
+
         if (specLower.includes('дизайнер') || specLower.includes('design') ||
-            specLower.includes('веб-разработчик') || specLower.includes('web') ||
+            
             specLower.includes('таргетолог') || specLower.includes('target')) {
             return designIcon;
         }
