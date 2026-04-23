@@ -213,13 +213,9 @@ const StudentResume = () => {
 
     if (loading) {
         return (
-            <section className="StudentResume">
-                <div className="StudentResume__mainContent">
-                    <div className="StudentResume__loading">
-                        <p>Загрузка данных студента...</p>
-                    </div>
-                </div>
-            </section>
+            <div className="StudentResume__loadingScreen" aria-label="Загрузка страницы резюме">
+                <div className="StudentResume__loader"></div>
+            </div>
         );
     }
 

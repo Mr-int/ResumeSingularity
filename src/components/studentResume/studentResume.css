@@ -10,6 +10,48 @@
     box-sizing: border-box;
 }
 
+.StudentResume__loadingScreen {
+    position: fixed;
+    inset: 0;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.StudentResume__loader {
+    width: 80px;
+    height: 80px;
+    border: 4px solid transparent;
+    border-top: 4px solid #ffffff;
+    border-radius: 50%;
+    animation: StudentResumeSpin 1s linear infinite;
+    position: relative;
+}
+
+.StudentResume__loader::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 4px solid transparent;
+    border-top: 4px solid #ff0055;
+    border-radius: 50%;
+    animation: StudentResumeSpin 1.5s linear infinite;
+}
+
+@keyframes StudentResumeSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .StudentResume__mainContent {
     width: 100%;
     max-width: 1200px;
