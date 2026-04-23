@@ -877,7 +877,7 @@
     align-items: center;
     justify-content: center;
     justify-self: stretch;
-    gap: 20px;
+    gap: 15px;
     padding: 6px 0;
 }
 
@@ -887,43 +887,42 @@
     top: 0;
     bottom: 0;
     left: 50%;
-    width: 1px;
-    transform: translateX(-0.5px);
-    background: repeating-linear-gradient(
-        to bottom,
-        #4a4a4a 0 6px,
-        transparent 6px 12px
-    );
+    width: 3px;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 2px;
     z-index: 0;
 }
 
 .StudentResume__experienceTimelineDot {
-    width: 12px;
-    height: 12px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     display: block;
     box-sizing: border-box;
     border-radius: 50%;
-    border: 2px solid #fff;
+    border: none;
     background: #fff;
     cursor: pointer;
     z-index: 1;
     position: relative;
-    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
 }
 
 .StudentResume__experienceTimelineDot.active {
-    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
-    border-color: transparent;
-    transform: scale(1.25);
-    box-shadow: 0 0 14px rgba(233, 90, 87, 0.45);
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #ff3d77, #338aff);
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(255, 61, 119, 0.5);
 }
 
 .StudentResume__experienceTimelineDot.active::before {
     content: '';
     position: absolute;
-    width: 4px;
-    height: 4px;
+    width: 12px;
+    height: 12px;
     background: #fff;
     border-radius: 50%;
     top: 50%;
