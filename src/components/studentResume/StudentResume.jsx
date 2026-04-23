@@ -237,6 +237,14 @@ const StudentResume = () => {
         return portfolioBackgrounds[index % portfolioBackgrounds.length];
     };
 
+    const formatYearLabel = (value) => {
+        if (!value) return '';
+        const normalized = String(value).trim();
+        if (!normalized) return '';
+        if (normalized === 'по настоящее время') return normalized;
+        return `${normalized} г.`;
+    };
+
     const getStudentImageUrl = (studentData) => {
         if (!studentData) return PLACEHOLDER_AVATAR;
 
@@ -485,11 +493,15 @@ const StudentResume = () => {
                                                 <div className="StudentResume__educationTimeline">
                                                     <div className="StudentResume__educationYears">
                                                         {edu.startDate && edu.endDate ? (
-                                                            <span>{edu.startDate} - {edu.endDate}<br/></span>
+                                                            <span>
+                                                                {formatYearLabel(edu.startDate)}
+                                                                <br/>
+                                                                {formatYearLabel(edu.endDate)}
+                                                            </span>
                                                         ) : edu.startDate ? (
-                                                            <span>С {edu.startDate}</span>
+                                                            <span>{formatYearLabel(edu.startDate)}</span>
                                                         ) : edu.endDate ? (
-                                                            <span>До {edu.endDate}</span>
+                                                            <span>{formatYearLabel(edu.endDate)}</span>
                                                         ) : null}
                                                     </div>
                                                     <div className="StudentResume__educationVerticalLine"></div>
