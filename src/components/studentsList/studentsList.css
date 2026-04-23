@@ -144,6 +144,62 @@
     gap: 16px;
 }
 
+.studentsList__pagination {
+    margin-top: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.studentsList__paginationPages {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.studentsList__paginationBtn,
+.studentsList__pageNumber {
+    border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
+    border-radius: 999px;
+    font-family: StratosSemiLight, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.studentsList__paginationBtn {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.studentsList__pageNumber {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.studentsList__paginationBtn:hover:not(:disabled),
+.studentsList__pageNumber:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.studentsList__pageNumber.active {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border-color: transparent;
+}
+
+.studentsList__paginationBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 @media (max-width: 1200px) {
     .studentsList-section {
         padding: 50px 40px;
@@ -325,6 +381,22 @@
     .studentsList__cardsWrapper {
         min-height: 500px;
         margin-top: 30px;
+    }
+
+    .studentsList__pagination {
+        margin-top: 20px;
+        gap: 8px;
+    }
+
+    .studentsList__paginationBtn {
+        padding: 7px 14px;
+        font-size: 13px;
+    }
+
+    .studentsList__pageNumber {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
     }
 }
 

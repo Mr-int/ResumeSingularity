@@ -8,6 +8,8 @@ import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudentsPage, getAllSpecialities } from "../../services/studentApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
+const STUDENTS_PER_PAGE = 5;
+
 const mapCourseToApiEnum = (course) => {
     const map = {
         "1": "FIRST",
@@ -242,6 +244,7 @@ const StudentsList = () => {
         searchQuery: "" // Добавляем searchQuery в фильтры
     });
     const [tempSearchQuery, setTempSearchQuery] = useState(""); // Для временного хранения значения в поле ввода
+    const [currentPage, setCurrentPage] = useState(1);
 
     const searchRef = useRef(null);
     const filterRef = useRef(null);
@@ -340,6 +343,10 @@ const StudentsList = () => {
 
         applyFilters();
     }, [currentFilters, fetchFilteredStudents]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [currentFilters]);
 
     // Обработчик изменения размеров окна
     useEffect(() => {
@@ -481,6 +488,21 @@ const StudentsList = () => {
 
     const hasActiveFilters = currentFilters.course || currentFilters.adult || currentFilters.specialty || currentFilters.searchQuery;
     const visibleStudents = allStudents.filter(hasStudentProfilePhoto);
+    const totalPages = Math.max(1, Math.ceil(visibleStudents.length / STUDENTS_PER_PAGE));
+    const safeCurrentPage = Math.min(currentPage, totalPages);
+    const pageStartIndex = (safeCurrentPage - 1) * STUDENTS_PER_PAGE;
+    const paginatedStudents = visibleStudents.slice(pageStartIndex, pageStartIndex + STUDENTS_PER_PAGE);
+
+    useEffect(() => {
+        if (currentPage !== safeCurrentPage) {
+            setCurrentPage(safeCurrentPage);
+        }
+    }, [currentPage, safeCurrentPage]);
+
+    const goToPage = (page) => {
+        if (page < 1 || page > totalPages) return;
+        setCurrentPage(page);
+    };
 
     return (
         <section className="studentsList-section">
@@ -587,7 +609,7 @@ const StudentsList = () => {
 
                 <div className="studentsList__cardsWrapper">
                     {visibleStudents.length > 0 ? (
-                        visibleStudents.map((student) => (
+                        paginatedStudents.map((student) => (
                             <StudentsListCard key={student.id} student={student} />
                         ))
                     ) : (
@@ -617,6 +639,41 @@ const StudentsList = () => {
                         </div>
                     )}
                 </div>
+
+                {visibleStudents.length > 0 && totalPages > 1 && (
+                    <div className="studentsList__pagination" aria-label="Пагинация студентов">
+                        <button
+                            type="button"
+                            className="studentsList__paginationBtn"
+                            onClick={() => goToPage(safeCurrentPage - 1)}
+                            disabled={safeCurrentPage === 1}
+                        >
+                            Назад
+                        </button>
+
+                        <div className="studentsList__paginationPages">
+                            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    type="button"
+                                    className={`studentsList__pageNumber ${page === safeCurrentPage ? 'active' : ''}`}
+                                    onClick={() => goToPage(page)}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            type="button"
+                            className="studentsList__paginationBtn"
+                            onClick={() => goToPage(safeCurrentPage + 1)}
+                            disabled={safeCurrentPage === totalPages}
+                        >
+                            Вперед
+                        </button>
+                    </div>
+                )}
             </div>
 
             <FiltersModal
