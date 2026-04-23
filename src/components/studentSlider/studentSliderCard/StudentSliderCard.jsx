@@ -8,6 +8,7 @@ import webIcon from "../../../assets/specialities/web.png";
 import analyticsIcon from "../../../assets/specialities/dataAnalyst.png";
 import managementIcon from "../../../assets/specialities/management.png";
 import projectManagerIcon from "../../../assets/specialities/projectManager.png";
+import marketingIcon from "../../../assets/specialities/marketing.png";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -85,6 +86,10 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
             return javaIcon;
         }
 
+        if (specLower.includes('маркетолог') || specLower.includes('marketing')) {
+            return marketingIcon;
+        }
+
         if (specLower.includes('веб-разработчик') || specLower.includes('web')) {
             return webIcon;
         }
@@ -104,8 +109,16 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         if (specLower.includes('менеджер проектов') || specLower.includes('project manager') || specLower.includes('менеджер')) {
             return 'student-slider-card__extraIco--manager';
         }
+        if (specLower.includes('маркетолог') || specLower.includes('marketing')) {
+            return 'student-slider-card__extraIco--marketing';
+        }
+        if (specLower.includes('тестировщик') || specLower.includes('qa') || specLower.includes('testing')) {
+            return 'student-slider-card__extraIco--tester';
+        }
+        if (specLower.includes('веб-разработчик') || specLower.includes('web')) {
+            return 'student-slider-card__extraIco--web';
+        }
         if (specLower.includes('дизайнер') || specLower.includes('design') ||
-            specLower.includes('веб-разработчик') || specLower.includes('web') ||
             specLower.includes('графический')) {
             return 'student-slider-card__extraIco--designer';
         }
