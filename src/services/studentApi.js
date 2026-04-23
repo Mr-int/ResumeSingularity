@@ -374,6 +374,49 @@ export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 
     };
 };
 
+/**
+ * Получение всех специальностей с пагинацией.
+ * Пробуем стандартный pageable endpoint, затем fallback без пагинации.
+ */
+export const getAllSpecialities = async () => {
+    const pageSize = 200;
+    const maxPages = 200;
+
+    try {
+        const byId = new Map();
+        const first = await apiClientJson(`speciality/filter?page=0&size=${pageSize}`, {
+            method: 'POST',
+            body: JSON.stringify({})
+        });
+
+        const firstData = Array.isArray(first?.data) ? first.data : [];
+        const totalPages = typeof first?.totalPages === 'number' ? first.totalPages : 1;
+        const pagesToFetch = Math.min(totalPages, maxPages);
+
+        for (const s of firstData) {
+            if (s?.id != null) byId.set(String(s.id), s);
+        }
+
+        for (let page = 1; page < pagesToFetch; page += 1) {
+            const res = await apiClientJson(`speciality/filter?page=${page}&size=${pageSize}`, {
+                method: 'POST',
+                body: JSON.stringify({})
+            });
+            const pageData = Array.isArray(res?.data) ? res.data : [];
+            for (const s of pageData) {
+                if (s?.id != null) byId.set(String(s.id), s);
+            }
+        }
+
+        return Array.from(byId.values());
+    } catch (_) {
+        const fallback = await apiClientJson('speciality', { method: 'GET' });
+        if (Array.isArray(fallback)) return fallback;
+        if (Array.isArray(fallback?.data)) return fallback.data;
+        return [];
+    }
+};
+
 export const getPortfolioById = async (id) => {
     try {
         const data = await apiClientJson(`portfolio/${id}`, {

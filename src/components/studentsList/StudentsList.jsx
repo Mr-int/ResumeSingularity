@@ -5,7 +5,7 @@ import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
-import { filterStudentsPage } from "../../services/studentApi.js";
+import { filterStudentsPage, getAllSpecialities } from "../../services/studentApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
 const mapCourseToApiEnum = (course) => {
@@ -31,7 +31,7 @@ const buildStudentFilterReq = (filters) => {
     return req;
 };
 
-const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef }) => {
+const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef, specialties }) => {
     const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || null);
     const [isAdult, setIsAdult] = useState(initialFilters.adult || false);
     const [selectedSpecialty, setSelectedSpecialty] = useState(initialFilters.specialty || null);
@@ -120,16 +120,6 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
         setSpecialtyDropdownOpen(false);
         onResetFilters();
     };
-
-    const specialties = [
-        { id: "1", name: "Java-разработчик" },
-        { id: "2", name: "Менеджер проектов" },
-        { id: "3", name: "Графический дизайнер" },
-        { id: "4", name: "Веб-разработчик" },
-        { id: "7", name: "Python-разработчик" },
-        { id: "6", name: "Аналитик данных" },
-        { id: "9", name: "Тестировщик" }
-    ];
 
     if (!showFilters) return null;
 
@@ -244,6 +234,7 @@ const StudentsList = () => {
     const [filterExpanded, setFilterExpanded] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [showFilters, setShowFilters] = useState(false);
+    const [specialties, setSpecialties] = useState([]);
     const [currentFilters, setCurrentFilters] = useState({
         course: null,
         adult: false,
@@ -295,6 +286,27 @@ const StudentsList = () => {
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    useEffect(() => {
+        const loadSpecialities = async () => {
+            try {
+                const data = await getAllSpecialities();
+                const normalized = data
+                    .map((item) => ({
+                        id: String(item.id),
+                        name: item.name || item.specialityName || `Специальность ${item.id}`
+                    }))
+                    .filter((item) => item.id && item.name)
+                    .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+                setSpecialties(normalized);
+            } catch (err) {
+                console.error('Failed to load specialities:', err);
+                setSpecialties([]);
+            }
+        };
+
+        loadSpecialities();
     }, []);
 
     // Первоначальная загрузка данных
@@ -615,6 +627,7 @@ const StudentsList = () => {
                 initialFilters={currentFilters}
                 isMobile={isMobile}
                 filterRef={filterRef}
+                specialties={specialties}
             />
         </section>
     )

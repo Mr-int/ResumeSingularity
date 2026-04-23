@@ -1,12 +1,12 @@
 import React from "react";
 import './studentSliderCard.css';
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
-import javaIcon from "../../../assets/other/java.png";
-import pythonIcon from "../../../assets/other/python.png";
-import designIcon from "../../../assets/other/design.png";
-import analyticsIcon from "../../../assets/other/analytics.png";
-import testingIcon from "../../../assets/other/testing.png";
-import managerIcon from "../../../assets/other/manager.png";
+import javaIcon from "../../../assets/specialities/java.png";
+import pythonIcon from "../../../assets/specialities/python.png";
+import designIcon from "../../../assets/specialities/design.png";
+import analyticsIcon from "../../../assets/specialities/dataAnalyst.png";
+import managementIcon from "../../../assets/specialities/management.png";
+import projectManagerIcon from "../../../assets/specialities/projectManager.png";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -73,11 +73,15 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         }
 
         if (specLower.includes('тестировщик') || specLower.includes('qa') || specLower.includes('testing')) {
-            return testingIcon;
+            return managementIcon;
         }
 
         if (specLower.includes('менеджер проектов') || specLower.includes('project manager') || specLower.includes('менеджер')) {
-            return managerIcon;
+            return projectManagerIcon;
+        }
+
+        if (specLower.includes('backend') || specLower.includes('бекенд') || specLower.includes('бэкенд')) {
+            return javaIcon;
         }
 
         if (specLower.includes('дизайнер') || specLower.includes('design') ||
