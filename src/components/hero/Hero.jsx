@@ -62,8 +62,6 @@ const Hero = () => {
                                 alt=""
                                 loading="lazy"
                                 className="hero__right-block-img hero__right-block-img--default"
-                                onMouseEnter={() => setIsRightCardHovered(true)}
-                                onMouseLeave={() => setIsRightCardHovered(false)}
                             />
                             <img src={romanUnactive} alt="" loading="lazy" className="hero__right-block-img hero__right-block-img--hover" />
                         </div>

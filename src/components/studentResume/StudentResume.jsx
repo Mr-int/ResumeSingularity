@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import "./studentResume.css";
 // Плейсхолдер аватара, когда у студента нет фото
@@ -35,6 +35,8 @@ const StudentResume = () => {
     const [skills, setSkills] = useState([]);
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
+    const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
+    const experienceItemRefs = useRef([]);
 
     const portfolioBackgrounds = [BehindOrange, BehindPink, BehindBlue];
 
@@ -178,6 +180,46 @@ const StudentResume = () => {
     const toggleEducation = () => {
         setExpandedEducation(!expandedEducation);
     };
+
+    useEffect(() => {
+        experienceItemRefs.current = experienceItemRefs.current.slice(0, experienceDetails.length);
+        if (activeExperienceIndex >= experienceDetails.length) {
+            setActiveExperienceIndex(0);
+        }
+    }, [experienceDetails.length, activeExperienceIndex]);
+
+    useEffect(() => {
+        if (!expandedExperience || experienceDetails.length === 0) {
+            return;
+        }
+
+        const items = experienceItemRefs.current.filter(Boolean);
+        if (items.length === 0) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const visibleEntries = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+                if (visibleEntries.length > 0) {
+                    const indexValue = Number(visibleEntries[0].target.dataset.expIndex);
+                    if (!Number.isNaN(indexValue)) {
+                        setActiveExperienceIndex(indexValue);
+                    }
+                }
+            },
+            {
+                root: null,
+                rootMargin: '-35% 0px -35% 0px',
+                threshold: 0
+            }
+        );
+
+        items.forEach((item) => observer.observe(item));
+
+        return () => observer.disconnect();
+    }, [expandedExperience, experienceDetails]);
 
     const calculateAge = (birthDate) => {
         if (!birthDate) return null;
@@ -367,35 +409,59 @@ const StudentResume = () => {
                         {expandedExperience && (
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--bordered">
                                 {experienceDetails.length > 0 ? (
-                                    <div className="StudentResume__experienceList">
-                                        {experienceDetails.map((exp, index) => (
-                                            <div key={exp.id || index} className="StudentResume__experienceItem">
-                                                <div className="StudentResume__experienceTimeline">
-                                                    <div className="StudentResume__experienceYears">
-                                                        {exp.startDate && exp.endDate ? (
-                                                            exp.endDate === 'по настоящее время' ? (
+                                    <div className="StudentResume__experienceWithTimeline">
+                                        <div className="StudentResume__experienceList">
+                                            {experienceDetails.map((exp, index) => (
+                                                <article
+                                                    key={exp.id || index}
+                                                    ref={(el) => { experienceItemRefs.current[index] = el; }}
+                                                    data-exp-index={index}
+                                                    className={`StudentResume__experienceItem StudentResume__experienceItem--card ${activeExperienceIndex === index ? 'active' : ''}`}
+                                                    tabIndex={0}
+                                                    onFocus={() => setActiveExperienceIndex(index)}
+                                                >
+                                                    <div className="StudentResume__experienceTimeline">
+                                                        <div className="StudentResume__experienceYears">
+                                                            {exp.startDate && exp.endDate ? (
                                                                 <span>{exp.startDate} - {exp.endDate}</span>
-                                                            ) : (
-                                                                <span>{exp.startDate} - {exp.endDate}</span>
-                                                            )
-                                                        ) : exp.startDate ? (
-                                                            <span>С {exp.startDate}</span>
-                                                        ) : exp.endDate ? (
-                                                            <span>До {exp.endDate}</span>
-                                                        ) : null}
+                                                            ) : exp.startDate ? (
+                                                                <span>С {exp.startDate}</span>
+                                                            ) : exp.endDate ? (
+                                                                <span>До {exp.endDate}</span>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="StudentResume__experienceInfo">
-                                                    <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
-                                                    {exp.company?.trim() && (
-                                                        <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
-                                                    )}
-                                                    {exp.description && (
-                                                        <p className="StudentResume__experienceDescription">{exp.description}</p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
+
+                                                    <div className="StudentResume__experienceInfo">
+                                                        <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
+                                                        {exp.company?.trim() && (
+                                                            <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
+                                                        )}
+                                                        {exp.description && (
+                                                            <p className="StudentResume__experienceDescription">{exp.description}</p>
+                                                        )}
+                                                    </div>
+                                                </article>
+                                            ))}
+                                        </div>
+
+                                        <div className="StudentResume__experienceTimelineNav" aria-label="Навигация по опыту">
+                                            {experienceDetails.map((_, index) => (
+                                                <button
+                                                    key={`exp-dot-${index}`}
+                                                    type="button"
+                                                    className={`StudentResume__experienceTimelineDot ${activeExperienceIndex === index ? 'active' : ''}`}
+                                                    onClick={() => {
+                                                        const item = experienceItemRefs.current[index];
+                                                        if (item) {
+                                                            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                            item.focus({ preventScroll: true });
+                                                        }
+                                                    }}
+                                                    aria-label={`Опыт ${index + 1}`}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 ) : (
                                     <p>пока пусто :D</p>

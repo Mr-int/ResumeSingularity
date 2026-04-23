@@ -780,11 +780,40 @@
     margin-top: 20px;
 }
 
+.StudentResume__experienceWithTimeline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 24px;
+    align-items: start;
+}
+
 .StudentResume__experienceItem {
     display: flex;
     margin-bottom: 40px;
     position: relative;
     flex-direction: column;
+}
+
+.StudentResume__experienceItem--card {
+    margin-bottom: 0;
+    border: 1px solid #2f2f2f;
+    border-radius: 20px;
+    padding: 24px 26px;
+    background: rgba(255, 255, 255, 0.02);
+    opacity: 0.55;
+    transition: opacity 0.35s ease, border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.StudentResume__experienceItem--card.active,
+.StudentResume__experienceItem--card:focus {
+    opacity: 1;
+    border-color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+}
+
+.StudentResume__experienceItem--card:focus {
+    outline: none;
 }
 
 .StudentResume__experienceTimeline {
@@ -829,6 +858,63 @@
     color: #ccc;
     margin-bottom: 10px;
     line-height: 1.4;
+}
+
+.StudentResume__experienceTimelineNav {
+    position: sticky;
+    top: 50%;
+    transform: translateY(-50%);
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    justify-self: center;
+    padding: 6px 0;
+}
+
+.StudentResume__experienceTimelineNav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: #2f2f2f;
+    z-index: 0;
+}
+
+.StudentResume__experienceTimelineDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid #3a3a3a;
+    background: #1a1a1a;
+    cursor: pointer;
+    z-index: 1;
+    position: relative;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.StudentResume__experienceTimelineDot.active {
+    background: #fff;
+    border-color: #fff;
+    transform: scale(1.25);
+    box-shadow: 0 0 14px rgba(189, 247, 255, 0.65);
+}
+
+.StudentResume__experienceTimelineDot.active::after {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.9;
 }
 
 .StudentResume__numbersImg {
@@ -1158,6 +1244,14 @@
         margin-bottom: 15px;
         align-items: center;
         min-width: auto;
+    }
+
+    .StudentResume__experienceWithTimeline {
+        grid-template-columns: 1fr;
+    }
+
+    .StudentResume__experienceTimelineNav {
+        display: none;
     }
 }
 

@@ -474,11 +474,9 @@ const StudentsList = () => {
 
     if (loading) {
         return (
-            <section className="studentsList-section">
-                <div className="studentsList">
-                    <p style={{color: '#fff', textAlign: 'center', fontFamily: 'StratosSemiLight'}}>Загрузка студентов...</p>
-                </div>
-            </section>
+            <div className="appRouteLoader" aria-label="Загрузка страницы студентов">
+                <div className="appRouteLoader__spinner"></div>
+            </div>
         );
     }
 
