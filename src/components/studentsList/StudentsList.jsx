@@ -348,6 +348,12 @@ const StudentsList = () => {
         setCurrentPage(1);
     }, [currentFilters]);
 
+    useEffect(() => {
+        const visibleStudentsCount = allStudents.filter(hasStudentProfilePhoto).length;
+        const nextTotalPages = Math.max(1, Math.ceil(visibleStudentsCount / STUDENTS_PER_PAGE));
+        setCurrentPage((prev) => Math.min(prev, nextTotalPages));
+    }, [allStudents]);
+
     // Обработчик изменения размеров окна
     useEffect(() => {
         const handleResize = () => {
@@ -492,12 +498,6 @@ const StudentsList = () => {
     const safeCurrentPage = Math.min(currentPage, totalPages);
     const pageStartIndex = (safeCurrentPage - 1) * STUDENTS_PER_PAGE;
     const paginatedStudents = visibleStudents.slice(pageStartIndex, pageStartIndex + STUDENTS_PER_PAGE);
-
-    useEffect(() => {
-        if (currentPage !== safeCurrentPage) {
-            setCurrentPage(safeCurrentPage);
-        }
-    }, [currentPage, safeCurrentPage]);
 
     const goToPage = (page) => {
         if (page < 1 || page > totalPages) return;

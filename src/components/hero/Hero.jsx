@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
+    const [isRightCardHovered, setIsRightCardHovered] = useState(false);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -45,7 +46,7 @@ const Hero = () => {
                     </Link>
                 </div>
 
-                <div className="hero__right">
+                <div className={`hero__right ${isRightCardHovered ? 'hero__right--cards-hovered' : ''}`}>
                         <div className="hero__right-bg" aria-hidden>
                             <div className="hero__right-bg-item hero__right-bg-item--numbers">
                                 <img src={numbersBg} alt="" className="hero__right-bg-img" loading="lazy" />
@@ -56,11 +57,25 @@ const Hero = () => {
                         </div>
                         <div className="hero__right-glow" aria-hidden />
                         <div className="hero__right-block hero__right-block--1">
-                            <img src={romanActive} alt="" loading="lazy" className="hero__right-block-img hero__right-block-img--default" />
+                            <img
+                                src={romanActive}
+                                alt=""
+                                loading="lazy"
+                                className="hero__right-block-img hero__right-block-img--default"
+                                onMouseEnter={() => setIsRightCardHovered(true)}
+                                onMouseLeave={() => setIsRightCardHovered(false)}
+                            />
                             <img src={romanUnactive} alt="" loading="lazy" className="hero__right-block-img hero__right-block-img--hover" />
                         </div>
                         <div className="hero__right-block hero__right-block--2">
-                            <img src={leraUnactive} alt="" loading="lazy" className="hero__right-block-img hero__right-block-img--default" />
+                            <img
+                                src={leraUnactive}
+                                alt=""
+                                loading="lazy"
+                                className="hero__right-block-img hero__right-block-img--default"
+                                onMouseEnter={() => setIsRightCardHovered(true)}
+                                onMouseLeave={() => setIsRightCardHovered(false)}
+                            />
                             <img src={leraActive} alt="" loading="lazy" className="hero__right-block-img hero__right-block-img--hover" />
                         </div>
                     </div>

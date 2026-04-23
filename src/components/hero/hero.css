@@ -62,11 +62,11 @@
     opacity: 0;
 }
 
-.hero__right:hover .hero__right-bg-item--numbers {
+.hero__right--cards-hovered .hero__right-bg-item--numbers {
     opacity: 0;
 }
 
-.hero__right:hover .hero__right-bg-item--emoji {
+.hero__right--cards-hovered .hero__right-bg-item--emoji {
     opacity: 1;
 }
 
@@ -98,7 +98,7 @@
     background: radial-gradient(circle at 50% 50%, #4655FF50 0, #BDF7FF35 30%, #4655FF18 50%, #0000 75%);
 }
 
-.hero__right:hover .hero__right-glow {
+.hero__right--cards-hovered .hero__right-glow {
     left: 78%;
     background: radial-gradient(circle at 50% 50%, #FF46FF50 0, #FFBDFF35 30%, #FF46FF18 50%, #0000 75%);
 }
@@ -130,11 +130,11 @@
     pointer-events: none;
 }
 
-.hero__right:hover .hero__right-block-img--default {
+.hero__right--cards-hovered .hero__right-block-img--default {
     opacity: 0;
 }
 
-.hero__right:hover .hero__right-block-img--hover {
+.hero__right--cards-hovered .hero__right-block-img--hover {
     opacity: 1;
 }
 
@@ -158,11 +158,11 @@
     z-index: 2;
 }
 
-.hero__right:hover .hero__right-block--1 {
+.hero__right--cards-hovered .hero__right-block--1 {
     z-index: 2;
 }
 
-.hero__right:hover .hero__right-block--2 {
+.hero__right--cards-hovered .hero__right-block--2 {
     z-index: 4;
 }
 
@@ -366,7 +366,7 @@
         top: 34%;
     }
 
-    .hero__right:hover .hero__right-glow {
+    .hero__right--cards-hovered .hero__right-glow {
         left: 72%;
     }
 
@@ -435,7 +435,7 @@
         top: 34%;
     }
 
-    .hero__right:hover .hero__right-glow {
+    .hero__right--cards-hovered .hero__right-glow {
         left: 70%;
     }
 
@@ -527,8 +527,8 @@
         opacity: 1;
     }
 
-    .hero__right:hover .hero__right-bg-item--numbers,
-    .hero__right:hover .hero__right-bg-item--emoji {
+    .hero__right--cards-hovered .hero__right-bg-item--numbers,
+    .hero__right--cards-hovered .hero__right-bg-item--emoji {
         opacity: 1;
     }
 
@@ -541,7 +541,7 @@
         filter: blur(28px);
     }
 
-    .hero__right:hover .hero__right-glow {
+    .hero__right--cards-hovered .hero__right-glow {
         left: 32%;
         background: radial-gradient(circle at 50% 50%, #4655FF50 0, #BDF7FF35 30%, #4655FF18 50%, #0000 75%);
     }
@@ -584,8 +584,8 @@
         z-index: 1;
     }
 
-    .hero__right:hover .hero__right-block--1,
-    .hero__right:hover .hero__right-block--2 {
+    .hero__right--cards-hovered .hero__right-block--1,
+    .hero__right--cards-hovered .hero__right-block--2 {
         z-index: 0;
     }
 
@@ -593,11 +593,11 @@
         opacity: 0 !important;
     }
 
-    .hero__right:hover .hero__right-block-img--default {
+    .hero__right--cards-hovered .hero__right-block-img--default {
         opacity: 1;
     }
 
-    .hero__right:hover .hero__right-block-img--hover {
+    .hero__right--cards-hovered .hero__right-block-img--hover {
         opacity: 0;
     }
 
