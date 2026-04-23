@@ -494,14 +494,20 @@ const StudentResume = () => {
                                                     <div className="StudentResume__educationYears">
                                                         {edu.startDate && edu.endDate ? (
                                                             <span>
-                                                                {formatYearLabel(edu.startDate)}
+                                                                {`С ${formatYearLabel(edu.startDate)}`}
                                                                 <br/>
-                                                                {formatYearLabel(edu.endDate)}
+                                                                {edu.endDate === 'по настоящее время'
+                                                                    ? 'По настоящее время'
+                                                                    : `По ${formatYearLabel(edu.endDate)}`}
                                                             </span>
                                                         ) : edu.startDate ? (
-                                                            <span>{formatYearLabel(edu.startDate)}</span>
+                                                            <span>{`С ${formatYearLabel(edu.startDate)}`}</span>
                                                         ) : edu.endDate ? (
-                                                            <span>{formatYearLabel(edu.endDate)}</span>
+                                                            <span>
+                                                                {edu.endDate === 'по настоящее время'
+                                                                    ? 'По настоящее время'
+                                                                    : `По ${formatYearLabel(edu.endDate)}`}
+                                                            </span>
                                                         ) : null}
                                                     </div>
                                                     <div className="StudentResume__educationVerticalLine"></div>
