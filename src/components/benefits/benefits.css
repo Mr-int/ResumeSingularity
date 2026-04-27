@@ -94,6 +94,18 @@
     background-color: rgba(255, 255, 255, 0.15);
 }
 
+.benefits__arrowBtn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: none;
+}
+
+.benefits__arrowBtn:disabled .benefits__arrow {
+    opacity: 0.45;
+}
+
 .gradient-text {
     background: linear-gradient(90deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
     -webkit-background-clip: text;

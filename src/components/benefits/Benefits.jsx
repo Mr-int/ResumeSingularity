@@ -22,7 +22,7 @@ const Benefits = () => {
         const cards = getCards();
         if (!viewport || cards.length === 0) return;
 
-        const normalizedIndex = ((index % cards.length) + cards.length) % cards.length;
+        const normalizedIndex = Math.max(0, Math.min(index, cards.length - 1));
         const targetCard = cards[normalizedIndex];
         if (!targetCard) return;
 
@@ -93,12 +93,15 @@ const Benefits = () => {
     }, [activeCardIndex]);
 
     const goNext = () => {
-        setActiveCardIndex((prev) => (prev + 1) % totalCards);
+        setActiveCardIndex((prev) => Math.min(prev + 1, totalCards - 1));
     };
 
     const goPrev = () => {
-        setActiveCardIndex((prev) => (prev - 1 + totalCards) % totalCards);
+        setActiveCardIndex((prev) => Math.max(prev - 1, 0));
     };
+
+    const isPrevDisabled = activeCardIndex === 0;
+    const isNextDisabled = activeCardIndex === totalCards - 1;
 
     return (
         <div className="benefits">
@@ -116,6 +119,7 @@ const Benefits = () => {
                             type="button"
                             className="benefits__arrowBtn"
                             onClick={goPrev}
+                            disabled={isPrevDisabled}
                             aria-label="Прокрутить влево"
                         >
                             <i className="benefits__arrow benefits__arrow--left"></i>
@@ -124,6 +128,7 @@ const Benefits = () => {
                             type="button"
                             className="benefits__arrowBtn"
                             onClick={goNext}
+                            disabled={isNextDisabled}
                             aria-label="Прокрутить вправо"
                         >
                             <i className="benefits__arrow benefits__arrow--right"></i>
