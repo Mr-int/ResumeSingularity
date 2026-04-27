@@ -139,6 +139,7 @@
     width: 100%;
     overflow-x: auto;
     padding: 20px 0;
+    scroll-behavior: smooth;
     scroll-padding-left: 0;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
