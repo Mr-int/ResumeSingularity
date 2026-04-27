@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import "./benefits.css";
 import gradientArrow from "../../assets/other/gradientArrow.svg";
 import purpleSign from "../../assets/other/purpleSign.png";
@@ -8,33 +8,24 @@ import blueSwitch from "../../assets/other/blueSwitch.png";
 
 const Benefits = () => {
     const cardsRef = useRef(null);
+    const [activeCardIndex, setActiveCardIndex] = useState(0);
+    const totalCards = 4;
 
-    const scrollCards = (direction) => {
+    useEffect(() => {
         const container = cardsRef.current;
         if (!container) return;
-
         const cards = Array.from(container.querySelectorAll('.benefits__card'));
-        if (cards.length === 0) return;
-
-        const currentScrollLeft = container.scrollLeft;
-        let nearestIndex = 0;
-        let nearestDistance = Number.POSITIVE_INFINITY;
-
-        cards.forEach((card, index) => {
-            const distance = Math.abs(card.offsetLeft - currentScrollLeft);
-            if (distance < nearestDistance) {
-                nearestDistance = distance;
-                nearestIndex = index;
-            }
-        });
-
-        const nextIndex = (nearestIndex + direction + cards.length) % cards.length;
-        const targetCard = cards[nextIndex];
+        const targetCard = cards[activeCardIndex];
+        if (!targetCard) return;
 
         container.scrollTo({
             left: targetCard.offsetLeft,
             behavior: 'smooth'
         });
+    }, [activeCardIndex]);
+
+    const scrollCards = (direction) => {
+        setActiveCardIndex((prev) => (prev + direction + totalCards) % totalCards);
     };
 
     return (
