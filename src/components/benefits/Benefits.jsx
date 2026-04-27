@@ -12,9 +12,27 @@ const Benefits = () => {
     const scrollCards = (direction) => {
         const container = cardsRef.current;
         if (!container) return;
-        const scrollStep = Math.max(320, Math.floor(container.clientWidth * 0.82));
-        container.scrollBy({
-            left: direction * scrollStep,
+
+        const cards = Array.from(container.querySelectorAll('.benefits__card'));
+        if (cards.length === 0) return;
+
+        const currentScrollLeft = container.scrollLeft;
+        let nearestIndex = 0;
+        let nearestDistance = Number.POSITIVE_INFINITY;
+
+        cards.forEach((card, index) => {
+            const distance = Math.abs(card.offsetLeft - currentScrollLeft);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestIndex = index;
+            }
+        });
+
+        const nextIndex = (nearestIndex + direction + cards.length) % cards.length;
+        const targetCard = cards[nextIndex];
+
+        container.scrollTo({
+            left: targetCard.offsetLeft,
             behavior: 'smooth'
         });
     };

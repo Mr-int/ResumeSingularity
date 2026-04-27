@@ -141,6 +141,7 @@
     width: 100%;
     overflow-x: auto;
     padding: 20px 0;
+    scroll-padding-left: 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
