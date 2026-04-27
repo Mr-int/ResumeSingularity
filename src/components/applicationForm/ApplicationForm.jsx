@@ -410,40 +410,30 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                         <form onSubmit={handleSubmit} className="applicationForm__form">
                         <div className="applicationForm__field">
                             <label htmlFor="name">Имя Фамилия</label>
-                            <div className="applicationForm__nameWrapper">
-                                <input
-                                    ref={nameInputRef}
-                                    id="name"
-                                    name="name"
-                                    type="text"
-                                    value={formData.name}
-                                    onChange={handleNameInput}
-                                    onBlur={handleNameBlur}
-                                    disabled={loading}
-                                    placeholder="Александр Пушкин"
-                                    maxLength={FULL_NAME_LIMIT}
-                                    spellCheck={false}
-                                    autoComplete="name"
-                                    className={
-                                        nameInvalid
-                                            ? 'applicationForm__nameInput applicationForm__inputInvalid'
-                                            : 'applicationForm__nameInput'
-                                    }
-                                    aria-invalid={nameInvalid}
-                                />
-                                <div
-                                    className={
-                                        nameInvalid
-                                            ? 'applicationForm__nameFieldError applicationForm__nameFieldError--visible'
-                                            : 'applicationForm__nameFieldError'
-                                    }
-                                    role="alert"
-                                >
-                                    Введите имя и фамилию через пробел
-                                </div>
-                                <span className="applicationForm__nameCharLimit" aria-live="polite">
-                                    {formData.name.length}/{FULL_NAME_LIMIT}
-                                </span>
+                            <input
+                                ref={nameInputRef}
+                                id="name"
+                                name="name"
+                                type="text"
+                                value={formData.name}
+                                onChange={handleNameInput}
+                                onBlur={handleNameBlur}
+                                disabled={loading}
+                                placeholder="Иван Иванов"
+                                spellCheck={false}
+                                autoComplete="name"
+                                className={nameInvalid ? 'applicationForm__inputInvalid' : undefined}
+                                aria-invalid={nameInvalid}
+                            />
+                            <div
+                                className={
+                                    nameInvalid
+                                        ? 'applicationForm__phoneFieldError applicationForm__phoneFieldError--visible'
+                                        : 'applicationForm__phoneFieldError'
+                                }
+                                role="alert"
+                            >
+                                Введите имя и фамилию через пробел
                             </div>
                         </div>
 
