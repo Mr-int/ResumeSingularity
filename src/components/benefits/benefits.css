@@ -136,7 +136,7 @@
 
 .benefits__cards {
     display: block;
-    width: 100%;
+    width: 102%;
     overflow-x: auto;
     padding: 20px 0;
     scroll-behavior: smooth;
