@@ -213,6 +213,8 @@
     text-align: left;
     font-weight: 400;
     margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
 }
 
 .benefits__card span {
@@ -224,6 +226,7 @@
 .benefits__card__img {
     position: absolute;
     right: 0;
+    z-index: 0;
 }
 
 .benefits__card__purple img {
@@ -253,6 +256,28 @@
     height: 240px;
     right: -5%;
     transform: rotate(34deg);
+}
+
+@media (max-width: 1170px) {
+    .benefits__card__purple img {
+        width: 180px;
+        height: 243px;
+    }
+
+    .benefits__card__green img {
+        width: 220px;
+        height: 194px;
+    }
+
+    .benefits__card__blue img {
+        width: 205px;
+        height: 232px;
+    }
+
+    .benefits__card__orange img {
+        width: 215px;
+        height: 215px;
+    }
 }
 
 @media (max-width: 768px) {
