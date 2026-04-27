@@ -211,6 +211,23 @@ const Benefits = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const intervalId = window.setInterval(() => {
+            const cards = getCards();
+            if (cards.length === 0) return;
+
+            const currentIndex = getCurrentIndexFromViewport();
+            const maxIndex = Math.max(0, cards.length - 1);
+            const nextIndex = currentIndex >= maxIndex ? 0 : currentIndex + 1;
+
+            scrollToCard(nextIndex);
+        }, 30000);
+
+        return () => {
+            window.clearInterval(intervalId);
+        };
+    }, []);
+
     return (
         <div className="benefits">
             <div className="benefits__wrapper">
