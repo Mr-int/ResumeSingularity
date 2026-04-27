@@ -98,15 +98,21 @@ const Benefits = () => {
     const goNext = () => {
         const cards = getCards();
         const totalCards = cards.length;
+        const maxIndex = Math.max(0, totalCards - 1);
         let nextIdx = currentIndexRef.current + 1;
         if (nextIdx >= totalCards) {
-            nextIdx = totalCards - 1;
-            if (currentIndexRef.current === totalCards - 1) return;
+            nextIdx = maxIndex;
+            if (currentIndexRef.current === maxIndex) return;
         }
         scrollToCard(nextIdx);
     };
 
     const goPrev = () => {
+        const cards = getCards();
+        const maxIndex = Math.max(0, cards.length - 1);
+        if (currentIndexRef.current > maxIndex) {
+            currentIndexRef.current = maxIndex;
+        }
         let prevIdx = currentIndexRef.current - 1;
         if (prevIdx < 0) {
             prevIdx = 0;
