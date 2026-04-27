@@ -320,6 +320,136 @@
     color: #999999;
 }
 
+.applicationForm__emailWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.applicationForm__field input.applicationForm__inputValid {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.applicationForm__field input.applicationForm__inputInvalid {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+.applicationForm__emailHint {
+    display: none;
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 15px;
+    font-family: 'StratosSkyeng', sans-serif;
+    transition: opacity 0.2s ease;
+}
+
+.applicationForm__emailHint--error {
+    color: #dc3545;
+}
+
+.applicationForm__emailHint--success {
+    color: #28a745;
+}
+
+.applicationForm__emailHint--visible {
+    display: block;
+}
+
+.applicationForm__nameWrapper {
+    position: relative;
+    padding-bottom: 22px;
+}
+
+.applicationForm__field input.applicationForm__nameInput:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.applicationForm__field input.applicationForm__nameInput.applicationForm__inputInvalid {
+    border-color: #ef4444;
+    box-shadow: none;
+}
+
+.applicationForm__field input.applicationForm__nameInput.applicationForm__inputInvalid:focus {
+    border-color: #ef4444;
+    box-shadow: none;
+}
+
+.applicationForm__nameFieldError {
+    display: none;
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 6px;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__nameFieldError--visible {
+    display: block;
+}
+
+.applicationForm__nameCharLimit {
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    font-size: 10px;
+    color: #9ca3af;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__telegramWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.applicationForm__field input.applicationForm__telegramInput {
+    color: #0088cc;
+    font-weight: 500;
+}
+
+.applicationForm__field input.applicationForm__telegramInput:focus {
+    border-color: #0088cc;
+}
+
+.applicationForm__field input.applicationForm__telegramInput.applicationForm__inputInvalid {
+    border-color: #ff5252;
+}
+
+.applicationForm__telegramHint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: #bdbdbd;
+    font-family: 'StratosSkyeng', sans-serif;
+    line-height: 1.35;
+}
+
+.applicationForm__telegramFieldError {
+    display: none;
+    color: #ff5252;
+    font-size: 11px;
+    margin-top: 5px;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__telegramFieldError--visible {
+    display: block;
+}
+
+.applicationForm__phoneFieldError {
+    display: none;
+    margin-top: 4px;
+    color: #dc3545;
+    font-size: 12px;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__phoneFieldError--visible {
+    display: block;
+}
+
 .applicationForm__error {
     color: #E95A57;
     font-size: 14px;

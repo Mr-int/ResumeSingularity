@@ -150,6 +150,7 @@
     display: block;
     width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     padding: 20px 0;
     scroll-behavior: smooth;
     scroll-padding-left: 0;
@@ -166,12 +167,14 @@
     display: flex;
     flex-direction: row;
     gap: 20px;
-    width: 100%;
+    width: max-content;
 }
 
 .benefits__card {
-    flex: 0 0 calc((100% - 20px) / 2);
-    width: auto;
+    flex: 0 0 600px;
+    width: 600px;
+    min-width: 600px;
+    max-width: 600px;
     height: 300px;
     scroll-snap-align: start;
     background-color: #f5f5f5;
@@ -258,28 +261,6 @@
     transform: rotate(34deg);
 }
 
-@media (max-width: 1170px) {
-    .benefits__card__purple img {
-        width: 180px;
-        height: 243px;
-    }
-
-    .benefits__card__green img {
-        width: 220px;
-        height: 194px;
-    }
-
-    .benefits__card__blue img {
-        width: 205px;
-        height: 232px;
-    }
-
-    .benefits__card__orange img {
-        width: 215px;
-        height: 215px;
-    }
-}
-
 @media (max-width: 768px) {
     .benefits {
         padding: 60px 40px;
@@ -306,13 +287,13 @@
     }
 
     .benefits__card {
-        flex: 0 0 clamp(300px, calc(100vw - 96px), 436px);
-        width: clamp(300px, calc(100vw - 96px), 436px);
-        min-width: 300px;
-        height: 186px;
-        justify-content: space-between;
-        border-radius: 14.11px;
-        padding: clamp(12px, 2vw, 16px);
+        flex: 0 0 600px;
+        width: 600px;
+        min-width: 600px;
+        max-width: 600px;
+        height: 300px;
+        border-radius: 20px;
+        padding: 18px;
     }
 
     .benefits__card-title {
@@ -321,45 +302,6 @@
 
     .benefits__card span {
         font-size: 16px;
-    }
-
-    .benefits__card__purple img {
-        width: 200px;
-        height: 230px;
-    }
-
-    .benefits__card__green img {
-        width: 210px;
-        height: 210px;
-    }
-
-    .benefits__card__blue img {
-        width: 200px;
-        height: 230px;
-    }
-
-    .benefits__card__orange img {
-        width: 210px;
-        height: 210px;
-    }
-
-    .benefits__card__purple img {
-        right: -10%;
-    }
-
-    .benefits__card__green img {
-        top: 5%;
-        right: -15%;
-        transform: rotate(0deg);
-    }
-
-    .benefits__card__blue img {
-        right: -12%;
-    }
-
-    .benefits__card__orange img {
-        right: -10%;
-        transform: rotate(34deg);
     }
 }
 
@@ -377,24 +319,26 @@
     }
 
     .benefits__cards {
-        overflow-x: visible;
+        overflow-x: hidden;
     }
 
     .benefits__cardsTrack {
         flex-direction: column;
         gap: 16px;
-        width: 100%;
+        width: max-content;
+        max-width: 100%;
+        margin: 0 auto;
         align-items: center;
     }
 
     .benefits__card {
         flex: 0 0 auto;
-        width: clamp(300px, 100%, 436px);
-        min-width: 300px;
-        height: 186px;
-        justify-content: space-between;
-        border-radius: 14.11px;
-        padding: 12px;
+        width: 600px;
+        min-width: 600px;
+        max-width: 600px;
+        height: 300px;
+        border-radius: 20px;
+        padding: 18px;
     }
 }
 
@@ -412,11 +356,11 @@
     }
 
     .benefits__card {
-        width: 100%;
-        min-width: 300px;
-        max-width: 436px;
-        height: 186px;
-        padding: 12px;
+        width: 600px;
+        min-width: 600px;
+        max-width: 600px;
+        height: 300px;
+        padding: 18px;
     }
 
     .benefits__card-title {
@@ -424,32 +368,7 @@
     }
 
     .benefits__card span {
-        font-size: 12px;
-        width: 68%;
-    }
-
-    .benefits__card__purple img {
-        width: 120px;
-        height: 150px;
-        bottom: -2%;
-        right: -8%;
-    }
-
-    .benefits__card__green img {
-        width: 130px;
-        height: 130px;
-        right: -10%;
-    }
-
-    .benefits__card__blue img {
-        width: 125px;
-        height: 150px;
-        right: -9%;
-    }
-
-    .benefits__card__orange img {
-        width: 135px;
-        height: 135px;
-        right: -8%;
+        font-size: 16px;
+        width: 70%;
     }
 }
