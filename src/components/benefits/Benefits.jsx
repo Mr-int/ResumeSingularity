@@ -6,10 +6,40 @@ import greenCube from "../../assets/other/greenCube.png";
 import orangeCube from "../../assets/other/orangeCube.png";
 import blueSwitch from "../../assets/other/blueSwitch.png";
 
+const benefitsCardsData = [
+    {
+        key: 'purple',
+        className: 'benefits__card benefits__card__purple',
+        title: <>Погружение <br/> в профессиональную среду</>,
+        text: 'С первого дня студенты работают в реальных условиях, решают задачи, как на стажировке или работе в IT-компании.',
+        image: purpleSign
+    },
+    {
+        key: 'green',
+        className: 'benefits__card benefits__card__green',
+        title: <>Софт-скиллы <br/> — это основа обучения</>,
+        text: 'Обратная связь, саморефлексия, работа в команде и навыки презентации — софты у нас не дополнительно, а наравне с хардами.',
+        image: greenCube
+    },
+    {
+        key: 'blue',
+        className: 'benefits__card benefits__card__blue',
+        title: <>Самостоятельное <br/> обучение</>,
+        text: 'Никаких ежедневных напоминаний. Мы учим планировать, брать ответственность и доводить до результата — как в реальной жизни',
+        image: blueSwitch
+    },
+    {
+        key: 'orange',
+        className: 'benefits__card benefits__card__orange',
+        title: <>Hard-навыки <br/> через практику</>,
+        text: 'Студенты не просто читают теорию — они сразу делают. Подход «учусь через дело» даёт быстро наращивать реальные навыки.',
+        image: orangeCube
+    }
+];
+
 const Benefits = () => {
     const viewportRef = useRef(null);
     const [activeCardIndex, setActiveCardIndex] = useState(0);
-    const totalCards = 4;
 
     const getCards = () => {
         const viewport = viewportRef.current;
@@ -93,6 +123,8 @@ const Benefits = () => {
     }, [activeCardIndex]);
 
     const goNext = () => {
+        const totalCards = benefitsCardsData.length;
+        if (totalCards === 0) return;
         setActiveCardIndex((prev) => Math.min(prev + 1, totalCards - 1));
     };
 
@@ -100,6 +132,7 @@ const Benefits = () => {
         setActiveCardIndex((prev) => Math.max(prev - 1, 0));
     };
 
+    const totalCards = benefitsCardsData.length;
     const isPrevDisabled = activeCardIndex === 0;
     const isNextDisabled = activeCardIndex === totalCards - 1;
 
@@ -138,29 +171,13 @@ const Benefits = () => {
 
                 <div className="benefits__cards" ref={viewportRef}>
                     <div className="benefits__cardsTrack">
-                        <div className="benefits__card benefits__card__purple">
-                            <h2 className="benefits__card-title">Погружение <br/> в профессиональную среду</h2>
-                            <span>С первого дня студенты работают в реальных условиях, решают задачи, как на стажировке или работе в IT-компании.</span>
-                            <img src={purpleSign} alt="" className="benefits__card__img" width="300px" height="300px"/>
-                        </div>
-
-                        <div className="benefits__card benefits__card__green">
-                            <h2 className="benefits__card-title">Софт-скиллы <br/> — это основа обучения</h2>
-                            <span>Обратная связь, саморефлексия, работа в команде и навыки презентации — софты у нас не дополнительно, а наравне с хардами.</span>
-                            <img src={greenCube} alt="" className="benefits__card__img" width="300px" height="300px"/>
-                        </div>
-
-                        <div className="benefits__card benefits__card__blue">
-                            <h2 className="benefits__card-title">Самостоятельное <br/> обучение</h2>
-                            <span>Никаких ежедневных напоминаний. Мы учим планировать, брать ответственность и доводить до результата — как в реальной жизни</span>
-                            <img src={blueSwitch} alt="" className="benefits__card__img" width="300px" height="300px"/>
-                        </div>
-
-                        <div className="benefits__card benefits__card__orange">
-                            <h2 className="benefits__card-title">Hard-навыки <br/> через практику</h2>
-                            <span>Студенты не просто читают теорию — они сразу делают. Подход «учусь через дело» даёт быстро наращивать реальные навыки.</span>
-                            <img src={orangeCube} alt="" className="benefits__card__img" width="300px" height="300px"/>
-                        </div>
+                        {benefitsCardsData.map((card) => (
+                            <div key={card.key} className={card.className}>
+                                <h2 className="benefits__card-title">{card.title}</h2>
+                                <span>{card.text}</span>
+                                <img src={card.image} alt="" className="benefits__card__img" width="300px" height="300px"/>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
