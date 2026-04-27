@@ -39,9 +39,8 @@ const benefitsCardsData = [
 
 const Benefits = () => {
     const viewportRef = useRef(null);
-    const isProgrammaticScrollRef = useRef(false);
-    const programmaticScrollTimeoutRef = useRef(null);
-    const [activeCardIndex, setActiveCardIndex] = useState(0);
+    const currentIndexRef = useRef(0);
+    const scrollTimeoutRef = useRef(null);
 
     const getCards = () => {
         const viewport = viewportRef.current;
@@ -49,127 +48,138 @@ const Benefits = () => {
         return Array.from(viewport.querySelectorAll('.benefits__card'));
     };
 
-    const getSliderMetrics = () => {
-        const viewport = viewportRef.current;
-        const cards = getCards();
-        if (!viewport || cards.length === 0) {
-            return { visibleCount: 1, maxStartIndex: 0 };
-        }
-
-        const firstCard = cards[0];
-        const track = viewport.querySelector('.benefits__cardsTrack');
-        const trackStyles = track ? window.getComputedStyle(track) : null;
-        const gap = trackStyles ? (parseFloat(trackStyles.columnGap || trackStyles.gap || '0') || 0) : 0;
-        const cardWidth = firstCard.offsetWidth || 1;
-        const viewportWidth = viewport.clientWidth || 1;
-
-        const visibleCount = Math.max(1, Math.floor((viewportWidth + gap) / (cardWidth + gap)));
-        const maxStartIndex = Math.max(0, cards.length - visibleCount);
-
-        return { visibleCount, maxStartIndex };
-    };
-
     const scrollToCard = (index, behavior = 'smooth') => {
         const viewport = viewportRef.current;
         const cards = getCards();
         if (!viewport || cards.length === 0) return;
 
-        const normalizedIndex = Math.max(0, Math.min(index, cards.length - 1));
-        const targetCard = cards[normalizedIndex];
+        let nextIndex = index;
+        if (nextIndex < 0) nextIndex = 0;
+        if (nextIndex >= cards.length) nextIndex = cards.length - 1;
+
+        const targetCard = cards[nextIndex];
         if (!targetCard) return;
 
-        if (programmaticScrollTimeoutRef.current) {
-            window.clearTimeout(programmaticScrollTimeoutRef.current);
-        }
-        isProgrammaticScrollRef.current = true;
+        const viewportLeftEdge = viewport.getBoundingClientRect().left;
+        const cardLeftEdge = targetCard.getBoundingClientRect().left;
+        const currentScroll = viewport.scrollLeft;
+        const diffToViewport = cardLeftEdge - viewportLeftEdge;
+        const newScrollLeft = currentScroll + diffToViewport;
 
         viewport.scrollTo({
-            left: targetCard.offsetLeft,
+            left: newScrollLeft,
             behavior
         });
 
-        // Prevent scroll-handler from overwriting index during smooth animation.
-        programmaticScrollTimeoutRef.current = window.setTimeout(() => {
-            isProgrammaticScrollRef.current = false;
-        }, behavior === 'smooth' ? 420 : 0);
+        currentIndexRef.current = nextIndex;
+    };
+
+    const updateIndexFromScroll = () => {
+        const viewport = viewportRef.current;
+        const cards = getCards();
+        if (!viewport || cards.length === 0) return;
+
+        const viewportLeft = viewport.getBoundingClientRect().left;
+        let bestIndex = 0;
+        let minDistance = Infinity;
+
+        cards.forEach((card, idx) => {
+            const cardLeft = card.getBoundingClientRect().left;
+            const distance = Math.abs(cardLeft - viewportLeft);
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestIndex = idx;
+            }
+        });
+
+        currentIndexRef.current = bestIndex;
+    };
+
+    const goNext = () => {
+        const cards = getCards();
+        const totalCards = cards.length;
+        let nextIdx = currentIndexRef.current + 1;
+        if (nextIdx >= totalCards) {
+            nextIdx = totalCards - 1;
+            if (currentIndexRef.current === totalCards - 1) return;
+        }
+        scrollToCard(nextIdx);
+    };
+
+    const goPrev = () => {
+        let prevIdx = currentIndexRef.current - 1;
+        if (prevIdx < 0) {
+            prevIdx = 0;
+            if (currentIndexRef.current === 0) return;
+        }
+        scrollToCard(prevIdx);
     };
 
     useEffect(() => {
         const viewport = viewportRef.current;
         if (!viewport) return;
 
-        const updateIndexFromScroll = () => {
-            if (isProgrammaticScrollRef.current) return;
-
-            const cards = getCards();
-            if (cards.length === 0) return;
-
-            const scrollLeft = viewport.scrollLeft;
-            let nearestIndex = 0;
-            let minDistance = Number.POSITIVE_INFINITY;
-
-            cards.forEach((card, idx) => {
-                const distance = Math.abs(card.offsetLeft - scrollLeft);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    nearestIndex = idx;
-                }
-            });
-
-            setActiveCardIndex((prev) => (prev === nearestIndex ? prev : nearestIndex));
-        };
-
-        let scrollTimeout;
-        const onScroll = () => {
-            if (scrollTimeout) window.clearTimeout(scrollTimeout);
-            scrollTimeout = window.setTimeout(updateIndexFromScroll, 20);
+        const onScrollHandler = () => {
+            if (scrollTimeoutRef.current) {
+                window.clearTimeout(scrollTimeoutRef.current);
+            }
+            scrollTimeoutRef.current = window.setTimeout(() => {
+                updateIndexFromScroll();
+            }, 20);
         };
 
         const onResize = () => {
             window.setTimeout(() => {
-                const { maxStartIndex } = getSliderMetrics();
-                setActiveCardIndex((prev) => Math.min(prev, maxStartIndex));
                 updateIndexFromScroll();
-                scrollToCard(activeCardIndex, 'smooth');
+                const cards = getCards();
+                if (cards[currentIndexRef.current]) {
+                    const viewportLeft = viewport.getBoundingClientRect().left;
+                    const cardLeft = cards[currentIndexRef.current].getBoundingClientRect().left;
+                    if (Math.abs(cardLeft - viewportLeft) > 5) {
+                        scrollToCard(currentIndexRef.current);
+                    }
+                }
             }, 80);
         };
 
-        viewport.addEventListener('scroll', onScroll);
-        window.addEventListener('resize', onResize);
-
-        // Ensure first card starts from the viewport left edge.
-        window.setTimeout(() => scrollToCard(activeCardIndex, 'auto'), 10);
-
-        return () => {
-            viewport.removeEventListener('scroll', onScroll);
-            window.removeEventListener('resize', onResize);
-            if (scrollTimeout) window.clearTimeout(scrollTimeout);
-            if (programmaticScrollTimeoutRef.current) {
-                window.clearTimeout(programmaticScrollTimeoutRef.current);
+        const onKeyDown = (e) => {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goPrev();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                goNext();
             }
         };
-    }, [activeCardIndex]);
 
-    const goToIndex = (nextIndex) => {
-        const totalCards = benefitsCardsData.length;
-        const normalizedIndex = Math.max(0, Math.min(nextIndex, totalCards - 1));
-        setActiveCardIndex(normalizedIndex);
-        scrollToCard(normalizedIndex, 'smooth');
-    };
+        viewport.addEventListener('scroll', onScrollHandler);
+        window.addEventListener('resize', onResize);
+        window.addEventListener('keydown', onKeyDown);
 
-    const goNext = () => {
-        const { visibleCount, maxStartIndex } = getSliderMetrics();
-        goToIndex(Math.min(activeCardIndex + visibleCount, maxStartIndex));
-    };
+        viewport.scrollLeft = 0;
+        window.setTimeout(() => {
+            const cards = getCards();
+            if (cards.length > 0) {
+                const firstCard = cards[0];
+                const viewportRect = viewport.getBoundingClientRect();
+                const firstCardRect = firstCard.getBoundingClientRect();
+                if (Math.abs(firstCardRect.left - viewportRect.left) > 2) {
+                    scrollToCard(0, 'auto');
+                } else {
+                    currentIndexRef.current = 0;
+                }
+            }
+        }, 10);
 
-    const goPrev = () => {
-        const { visibleCount } = getSliderMetrics();
-        goToIndex(Math.max(activeCardIndex - visibleCount, 0));
-    };
-
-    const { maxStartIndex } = getSliderMetrics();
-    const isPrevDisabled = activeCardIndex === 0;
-    const isNextDisabled = activeCardIndex >= maxStartIndex;
+        return () => {
+            viewport.removeEventListener('scroll', onScrollHandler);
+            window.removeEventListener('resize', onResize);
+            window.removeEventListener('keydown', onKeyDown);
+            if (scrollTimeoutRef.current) {
+                window.clearTimeout(scrollTimeoutRef.current);
+            }
+        };
+    }, []);
 
     return (
         <div className="benefits">
@@ -187,7 +197,6 @@ const Benefits = () => {
                             type="button"
                             className="benefits__arrowBtn"
                             onClick={goPrev}
-                            disabled={isPrevDisabled}
                             aria-label="Прокрутить влево"
                         >
                             <i className="benefits__arrow benefits__arrow--left"></i>
@@ -196,7 +205,6 @@ const Benefits = () => {
                             type="button"
                             className="benefits__arrowBtn"
                             onClick={goNext}
-                            disabled={isNextDisabled}
                             aria-label="Прокрутить вправо"
                         >
                             <i className="benefits__arrow benefits__arrow--right"></i>
