@@ -260,8 +260,8 @@
 }
 
 .studentSlider__listInfo {
-    width: 100%;
-    max-width: 1200px;
+    width: calc(100% - 90px);
+    max-width: calc(1200px - 90px);
     border: 1px solid #fff;
     border-radius: 22px;
     margin: 0 auto;
@@ -350,6 +350,11 @@
 
     .studentSlider__mobileControls {
         display: flex;
+    }
+
+    .studentSlider__listInfo {
+        width: 100%;
+        max-width: 1200px;
     }
 }
 
