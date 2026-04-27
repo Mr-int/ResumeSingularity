@@ -135,9 +135,7 @@
 }
 
 .benefits__cards {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
+    display: block;
     width: 100%;
     overflow-x: auto;
     padding: 20px 0;
@@ -149,6 +147,13 @@
 
 .benefits__cards::-webkit-scrollbar {
     display: none;
+}
+
+.benefits__cardsTrack {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: max-content;
 }
 
 .benefits__card {
@@ -256,9 +261,13 @@
     }
 
     .benefits__cards {
+        overflow-x: visible;
+    }
+
+    .benefits__cardsTrack {
         flex-direction: column;
         gap: 16px;
-        overflow-x: visible;
+        width: 100%;
     }
 
     .benefits__card {

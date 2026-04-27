@@ -7,25 +7,97 @@ import orangeCube from "../../assets/other/orangeCube.png";
 import blueSwitch from "../../assets/other/blueSwitch.png";
 
 const Benefits = () => {
-    const cardsRef = useRef(null);
+    const viewportRef = useRef(null);
     const [activeCardIndex, setActiveCardIndex] = useState(0);
     const totalCards = 4;
 
-    useEffect(() => {
-        const container = cardsRef.current;
-        if (!container) return;
-        const cards = Array.from(container.querySelectorAll('.benefits__card'));
-        const targetCard = cards[activeCardIndex];
+    const getCards = () => {
+        const viewport = viewportRef.current;
+        if (!viewport) return [];
+        return Array.from(viewport.querySelectorAll('.benefits__card'));
+    };
+
+    const scrollToCard = (index, behavior = 'smooth') => {
+        const viewport = viewportRef.current;
+        const cards = getCards();
+        if (!viewport || cards.length === 0) return;
+
+        const normalizedIndex = ((index % cards.length) + cards.length) % cards.length;
+        const targetCard = cards[normalizedIndex];
         if (!targetCard) return;
 
-        container.scrollTo({
-            left: targetCard.offsetLeft,
-            behavior: 'smooth'
+        const viewportLeftEdge = viewport.getBoundingClientRect().left;
+        const cardLeftEdge = targetCard.getBoundingClientRect().left;
+        const currentScroll = viewport.scrollLeft;
+        const diffToViewport = cardLeftEdge - viewportLeftEdge;
+        const newScrollLeft = currentScroll + diffToViewport;
+
+        viewport.scrollTo({
+            left: newScrollLeft,
+            behavior
         });
+    };
+
+    useEffect(() => {
+        scrollToCard(activeCardIndex, 'smooth');
     }, [activeCardIndex]);
 
-    const scrollCards = (direction) => {
-        setActiveCardIndex((prev) => (prev + direction + totalCards) % totalCards);
+    useEffect(() => {
+        const viewport = viewportRef.current;
+        if (!viewport) return;
+
+        const updateIndexFromScroll = () => {
+            const cards = getCards();
+            if (cards.length === 0) return;
+
+            const viewportLeft = viewport.getBoundingClientRect().left;
+            let nearestIndex = 0;
+            let minDistance = Number.POSITIVE_INFINITY;
+
+            cards.forEach((card, idx) => {
+                const cardLeft = card.getBoundingClientRect().left;
+                const distance = Math.abs(cardLeft - viewportLeft);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestIndex = idx;
+                }
+            });
+
+            setActiveCardIndex((prev) => (prev === nearestIndex ? prev : nearestIndex));
+        };
+
+        let scrollTimeout;
+        const onScroll = () => {
+            if (scrollTimeout) window.clearTimeout(scrollTimeout);
+            scrollTimeout = window.setTimeout(updateIndexFromScroll, 20);
+        };
+
+        const onResize = () => {
+            window.setTimeout(() => {
+                updateIndexFromScroll();
+                scrollToCard(activeCardIndex, 'smooth');
+            }, 80);
+        };
+
+        viewport.addEventListener('scroll', onScroll);
+        window.addEventListener('resize', onResize);
+
+        // Ensure first card starts from the viewport left edge.
+        window.setTimeout(() => scrollToCard(activeCardIndex, 'auto'), 10);
+
+        return () => {
+            viewport.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onResize);
+            if (scrollTimeout) window.clearTimeout(scrollTimeout);
+        };
+    }, [activeCardIndex]);
+
+    const goNext = () => {
+        setActiveCardIndex((prev) => (prev + 1) % totalCards);
+    };
+
+    const goPrev = () => {
+        setActiveCardIndex((prev) => (prev - 1 + totalCards) % totalCards);
     };
 
     return (
@@ -43,7 +115,7 @@ const Benefits = () => {
                         <button
                             type="button"
                             className="benefits__arrowBtn"
-                            onClick={() => scrollCards(-1)}
+                            onClick={goPrev}
                             aria-label="Прокрутить влево"
                         >
                             <i className="benefits__arrow benefits__arrow--left"></i>
@@ -51,7 +123,7 @@ const Benefits = () => {
                         <button
                             type="button"
                             className="benefits__arrowBtn"
-                            onClick={() => scrollCards(1)}
+                            onClick={goNext}
                             aria-label="Прокрутить вправо"
                         >
                             <i className="benefits__arrow benefits__arrow--right"></i>
@@ -59,29 +131,31 @@ const Benefits = () => {
                     </div>
                 </div>
 
-                <div className="benefits__cards" ref={cardsRef}>
-                    <div className="benefits__card benefits__card__purple">
-                        <h2 className="benefits__card-title">Погружение <br/> в профессиональную среду</h2>
-                        <span>С первого дня студенты работают в реальных условиях, решают задачи, как на стажировке или работе в IT-компании.</span>
-                        <img src={purpleSign} alt="" className="benefits__card__img" width="300px" height="300px"/>
-                    </div>
+                <div className="benefits__cards" ref={viewportRef}>
+                    <div className="benefits__cardsTrack">
+                        <div className="benefits__card benefits__card__purple">
+                            <h2 className="benefits__card-title">Погружение <br/> в профессиональную среду</h2>
+                            <span>С первого дня студенты работают в реальных условиях, решают задачи, как на стажировке или работе в IT-компании.</span>
+                            <img src={purpleSign} alt="" className="benefits__card__img" width="300px" height="300px"/>
+                        </div>
 
-                    <div className="benefits__card benefits__card__green">
-                        <h2 className="benefits__card-title">Софт-скиллы <br/> — это основа обучения</h2>
-                        <span>Обратная связь, саморефлексия, работа в команде и навыки презентации — софты у нас не дополнительно, а наравне с хардами.</span>
-                        <img src={greenCube} alt="" className="benefits__card__img" width="300px" height="300px"/>
-                    </div>
+                        <div className="benefits__card benefits__card__green">
+                            <h2 className="benefits__card-title">Софт-скиллы <br/> — это основа обучения</h2>
+                            <span>Обратная связь, саморефлексия, работа в команде и навыки презентации — софты у нас не дополнительно, а наравне с хардами.</span>
+                            <img src={greenCube} alt="" className="benefits__card__img" width="300px" height="300px"/>
+                        </div>
 
-                    <div className="benefits__card benefits__card__blue">
-                        <h2 className="benefits__card-title">Самостоятельное <br/> обучение</h2>
-                        <span>Никаких ежедневных напоминаний. Мы учим планировать, брать ответственность и доводить до результата — как в реальной жизни</span>
-                        <img src={blueSwitch} alt="" className="benefits__card__img" width="300px" height="300px"/>
-                    </div>
+                        <div className="benefits__card benefits__card__blue">
+                            <h2 className="benefits__card-title">Самостоятельное <br/> обучение</h2>
+                            <span>Никаких ежедневных напоминаний. Мы учим планировать, брать ответственность и доводить до результата — как в реальной жизни</span>
+                            <img src={blueSwitch} alt="" className="benefits__card__img" width="300px" height="300px"/>
+                        </div>
 
-                    <div className="benefits__card benefits__card__orange">
-                        <h2 className="benefits__card-title">Hard-навыки <br/> через практику</h2>
-                        <span>Студенты не просто читают теорию — они сразу делают. Подход «учусь через дело» даёт быстро наращивать реальные навыки.</span>
-                        <img src={orangeCube} alt="" className="benefits__card__img" width="300px" height="300px"/>
+                        <div className="benefits__card benefits__card__orange">
+                            <h2 className="benefits__card-title">Hard-навыки <br/> через практику</h2>
+                            <span>Студенты не просто читают теорию — они сразу делают. Подход «учусь через дело» даёт быстро наращивать реальные навыки.</span>
+                            <img src={orangeCube} alt="" className="benefits__card__img" width="300px" height="300px"/>
+                        </div>
                     </div>
                 </div>
             </div>
