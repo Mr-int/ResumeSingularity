@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import "./benefits.css";
 import gradientArrow from "../../assets/other/gradientArrow.svg";
 import purpleSign from "../../assets/other/purpleSign.png";
@@ -7,17 +7,50 @@ import orangeCube from "../../assets/other/orangeCube.png";
 import blueSwitch from "../../assets/other/blueSwitch.png";
 
 const Benefits = () => {
+    const cardsRef = useRef(null);
+
+    const scrollCards = (direction) => {
+        const container = cardsRef.current;
+        if (!container) return;
+        const scrollStep = Math.max(320, Math.floor(container.clientWidth * 0.82));
+        container.scrollBy({
+            left: direction * scrollStep,
+            behavior: 'smooth'
+        });
+    };
+
     return (
         <div className="benefits">
             <div className="benefits__wrapper">
-                <h2 className="benefits__title">Обучение в
-                    <a href="https://singularity.academy/college" target="_blank" rel="noopener noreferrer" className="gradient-text benefits__singularity-link">Singularity</a>
-                    <span className="gradient-circle">
-                        <img src={gradientArrow} alt=""/>
-                    </span>
-                </h2>
+                <div className="benefits__titleRow">
+                    <h2 className="benefits__title">Обучение в
+                        <a href="https://singularity.academy/college" target="_blank" rel="noopener noreferrer" className="gradient-text benefits__singularity-link">Singularity</a>
+                        <span className="gradient-circle">
+                            <img src={gradientArrow} alt=""/>
+                        </span>
+                    </h2>
 
-                <div className="benefits__cards">
+                    <div className="benefits__navButtons" aria-label="Навигация по карточкам преимуществ">
+                        <button
+                            type="button"
+                            className="benefits__arrowBtn"
+                            onClick={() => scrollCards(-1)}
+                            aria-label="Прокрутить влево"
+                        >
+                            <i className="benefits__arrow benefits__arrow--left"></i>
+                        </button>
+                        <button
+                            type="button"
+                            className="benefits__arrowBtn"
+                            onClick={() => scrollCards(1)}
+                            aria-label="Прокрутить вправо"
+                        >
+                            <i className="benefits__arrow benefits__arrow--right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="benefits__cards" ref={cardsRef}>
                     <div className="benefits__card benefits__card__purple">
                         <h2 className="benefits__card-title">Погружение <br/> в профессиональную среду</h2>
                         <span>С первого дня студенты работают в реальных условиях, решают задачи, как на стажировке или работе в IT-компании.</span>
