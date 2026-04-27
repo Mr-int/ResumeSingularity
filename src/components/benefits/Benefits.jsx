@@ -49,6 +49,26 @@ const Benefits = () => {
         return Array.from(viewport.querySelectorAll('.benefits__card'));
     };
 
+    const getSliderMetrics = () => {
+        const viewport = viewportRef.current;
+        const cards = getCards();
+        if (!viewport || cards.length === 0) {
+            return { visibleCount: 1, maxStartIndex: 0 };
+        }
+
+        const firstCard = cards[0];
+        const track = viewport.querySelector('.benefits__cardsTrack');
+        const trackStyles = track ? window.getComputedStyle(track) : null;
+        const gap = trackStyles ? (parseFloat(trackStyles.columnGap || trackStyles.gap || '0') || 0) : 0;
+        const cardWidth = firstCard.offsetWidth || 1;
+        const viewportWidth = viewport.clientWidth || 1;
+
+        const visibleCount = Math.max(1, Math.floor((viewportWidth + gap) / (cardWidth + gap)));
+        const maxStartIndex = Math.max(0, cards.length - visibleCount);
+
+        return { visibleCount, maxStartIndex };
+    };
+
     const scrollToCard = (index, behavior = 'smooth') => {
         const viewport = viewportRef.current;
         const cards = getCards();
@@ -107,6 +127,8 @@ const Benefits = () => {
 
         const onResize = () => {
             window.setTimeout(() => {
+                const { maxStartIndex } = getSliderMetrics();
+                setActiveCardIndex((prev) => Math.min(prev, maxStartIndex));
                 updateIndexFromScroll();
                 scrollToCard(activeCardIndex, 'smooth');
             }, 80);
@@ -136,18 +158,18 @@ const Benefits = () => {
     };
 
     const goNext = () => {
-        const totalCards = benefitsCardsData.length;
-        if (totalCards === 0) return;
-        goToIndex(activeCardIndex + 1);
+        const { visibleCount, maxStartIndex } = getSliderMetrics();
+        goToIndex(Math.min(activeCardIndex + visibleCount, maxStartIndex));
     };
 
     const goPrev = () => {
-        goToIndex(activeCardIndex - 1);
+        const { visibleCount } = getSliderMetrics();
+        goToIndex(Math.max(activeCardIndex - visibleCount, 0));
     };
 
-    const totalCards = benefitsCardsData.length;
+    const { maxStartIndex } = getSliderMetrics();
     const isPrevDisabled = activeCardIndex === 0;
-    const isNextDisabled = activeCardIndex === totalCards - 1;
+    const isNextDisabled = activeCardIndex >= maxStartIndex;
 
     return (
         <div className="benefits">
