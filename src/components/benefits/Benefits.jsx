@@ -95,14 +95,37 @@ const Benefits = () => {
         currentIndexRef.current = bestIndex;
     };
 
+    const getCurrentIndexFromViewport = () => {
+        const viewport = viewportRef.current;
+        const cards = getCards();
+        if (!viewport || cards.length === 0) return 0;
+
+        const viewportLeft = viewport.getBoundingClientRect().left;
+        let bestIndex = 0;
+        let minDistance = Infinity;
+
+        cards.forEach((card, idx) => {
+            const cardLeft = card.getBoundingClientRect().left;
+            const distance = Math.abs(cardLeft - viewportLeft);
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestIndex = idx;
+            }
+        });
+
+        currentIndexRef.current = bestIndex;
+        return bestIndex;
+    };
+
     const goNext = () => {
         const cards = getCards();
         const totalCards = cards.length;
         const maxIndex = Math.max(0, totalCards - 1);
-        let nextIdx = currentIndexRef.current + 1;
+        const currentIndex = getCurrentIndexFromViewport();
+        let nextIdx = currentIndex + 1;
         if (nextIdx >= totalCards) {
             nextIdx = maxIndex;
-            if (currentIndexRef.current === maxIndex) return;
+            if (currentIndex === maxIndex) return;
         }
         scrollToCard(nextIdx);
     };
@@ -110,7 +133,8 @@ const Benefits = () => {
     const goPrev = () => {
         const cards = getCards();
         const maxIndex = Math.max(0, cards.length - 1);
-        if (currentIndexRef.current > maxIndex) {
+        const currentIndex = getCurrentIndexFromViewport();
+        if (currentIndex > maxIndex) {
             currentIndexRef.current = maxIndex;
         }
         let prevIdx = currentIndexRef.current - 1;
