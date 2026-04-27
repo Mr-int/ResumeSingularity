@@ -141,7 +141,6 @@
 .studentSlider__container {
     width: 100%;
     position: relative;
-    min-height: 360px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -260,8 +259,8 @@
 }
 
 .studentSlider__listInfo {
-    width: calc(100% - 90px);
-    max-width: calc(1200px - 90px);
+    width: calc(100% - 160px);
+    max-width: 940px;
     border: 1px solid #fff;
     border-radius: 22px;
     margin: 0 auto;
@@ -354,7 +353,7 @@
 
     .studentSlider__listInfo {
         width: 100%;
-        max-width: 1200px;
+        max-width: 940px;
     }
 }
 
