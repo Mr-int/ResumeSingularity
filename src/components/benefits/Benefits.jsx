@@ -39,6 +39,8 @@ const benefitsCardsData = [
 
 const Benefits = () => {
     const viewportRef = useRef(null);
+    const isProgrammaticScrollRef = useRef(false);
+    const programmaticScrollTimeoutRef = useRef(null);
     const [activeCardIndex, setActiveCardIndex] = useState(0);
 
     const getCards = () => {
@@ -56,37 +58,38 @@ const Benefits = () => {
         const targetCard = cards[normalizedIndex];
         if (!targetCard) return;
 
-        const viewportLeftEdge = viewport.getBoundingClientRect().left;
-        const cardLeftEdge = targetCard.getBoundingClientRect().left;
-        const currentScroll = viewport.scrollLeft;
-        const diffToViewport = cardLeftEdge - viewportLeftEdge;
-        const newScrollLeft = currentScroll + diffToViewport;
+        if (programmaticScrollTimeoutRef.current) {
+            window.clearTimeout(programmaticScrollTimeoutRef.current);
+        }
+        isProgrammaticScrollRef.current = true;
 
         viewport.scrollTo({
-            left: newScrollLeft,
+            left: targetCard.offsetLeft,
             behavior
         });
-    };
 
-    useEffect(() => {
-        scrollToCard(activeCardIndex, 'smooth');
-    }, [activeCardIndex]);
+        // Prevent scroll-handler from overwriting index during smooth animation.
+        programmaticScrollTimeoutRef.current = window.setTimeout(() => {
+            isProgrammaticScrollRef.current = false;
+        }, behavior === 'smooth' ? 420 : 0);
+    };
 
     useEffect(() => {
         const viewport = viewportRef.current;
         if (!viewport) return;
 
         const updateIndexFromScroll = () => {
+            if (isProgrammaticScrollRef.current) return;
+
             const cards = getCards();
             if (cards.length === 0) return;
 
-            const viewportLeft = viewport.getBoundingClientRect().left;
+            const scrollLeft = viewport.scrollLeft;
             let nearestIndex = 0;
             let minDistance = Number.POSITIVE_INFINITY;
 
             cards.forEach((card, idx) => {
-                const cardLeft = card.getBoundingClientRect().left;
-                const distance = Math.abs(cardLeft - viewportLeft);
+                const distance = Math.abs(card.offsetLeft - scrollLeft);
                 if (distance < minDistance) {
                     minDistance = distance;
                     nearestIndex = idx;
@@ -119,17 +122,27 @@ const Benefits = () => {
             viewport.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', onResize);
             if (scrollTimeout) window.clearTimeout(scrollTimeout);
+            if (programmaticScrollTimeoutRef.current) {
+                window.clearTimeout(programmaticScrollTimeoutRef.current);
+            }
         };
     }, [activeCardIndex]);
+
+    const goToIndex = (nextIndex) => {
+        const totalCards = benefitsCardsData.length;
+        const normalizedIndex = Math.max(0, Math.min(nextIndex, totalCards - 1));
+        setActiveCardIndex(normalizedIndex);
+        scrollToCard(normalizedIndex, 'smooth');
+    };
 
     const goNext = () => {
         const totalCards = benefitsCardsData.length;
         if (totalCards === 0) return;
-        setActiveCardIndex((prev) => Math.min(prev + 1, totalCards - 1));
+        goToIndex(activeCardIndex + 1);
     };
 
     const goPrev = () => {
-        setActiveCardIndex((prev) => Math.max(prev - 1, 0));
+        goToIndex(activeCardIndex - 1);
     };
 
     const totalCards = benefitsCardsData.length;
