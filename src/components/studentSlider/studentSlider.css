@@ -141,7 +141,6 @@
 .studentSlider__container {
     width: 100%;
     position: relative;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -155,7 +154,6 @@
     gap: 34px;
     width: 100%;
     max-width: 100%;
-    overflow: hidden;
     position: relative;
 }
 
