@@ -291,7 +291,7 @@
         border: 2px solid transparent;
         box-sizing: border-box;
         box-shadow: none;
-        margin: 0 auto;
+        margin: 0;
     }
 
     .card--gamecheb:not(.card__expanded) {
@@ -380,6 +380,10 @@
     .card:not(.card__expanded) .card__content {
         padding: 0 20px;
         justify-content: center;
+    }
+
+    .card:not(.card__expanded) .card__overlay {
+        display: none;
     }
 
     .card:not(.card__expanded) .card__open-hint {
@@ -528,6 +532,7 @@
         max-width: 436px;
         height: 47px;
         min-height: 47px;
+        margin: 0;
     }
 
     .card__header {
