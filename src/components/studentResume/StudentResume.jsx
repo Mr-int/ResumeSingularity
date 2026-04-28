@@ -21,6 +21,7 @@ import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
+import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -316,13 +317,15 @@ const StudentResume = () => {
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
                                     <p>{student.speciality || student.profession || 'Специальность не указана'}</p>
-                                    <button
+                                    <GradientButton
+                                        as="button"
+                                        type="button"
                                         className="StudentResume__sendBid"
+                                        icon={<img src={mailIcon} alt="Иконка почты" />}
                                         onClick={() => setShowApplicationForm(true)}
                                     >
                                         Оставить заявку
-                                        <img src={mailIcon} alt="Иконка почты"/>
-                                    </button>
+                                    </GradientButton>
                                 </div>
                             </div>
 
@@ -401,13 +404,15 @@ const StudentResume = () => {
                                 </div>
                             )}
 
-                            <button
+                            <GradientButton
+                                as="button"
+                                type="button"
                                 className="StudentResume__sendBid"
+                                icon={<img src={mailIcon} alt="Иконка почты" />}
                                 onClick={() => setShowApplicationForm(true)}
                             >
                                 Оставить заявку
-                                <img src={mailIcon} alt="Иконка почты"/>
-                            </button>
+                            </GradientButton>
                         </div>
                     </div>
                 </div>

@@ -291,68 +291,9 @@
     max-width: 90%;
     height: 52px;
     margin: 0 auto;
-    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%) border-box;
-    border: 2px solid transparent;
-    border-radius: 100px;
-    color: #fff;
     font-family: "Sansation", sans-serif;
     font-size: 24px;
-    cursor: pointer;
     letter-spacing: 2px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-decoration: none;
-    box-sizing: border-box;
-    transition: background 0.4s ease, border-color 0.4s ease;
-    text-align: center;
-    position: relative;
-    z-index: 3;
-    white-space: nowrap;
-}
-
-.studentSlider__button > * {
-    position: relative;
-    z-index: 1;
-}
-
-.studentSlider__button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
-    filter: blur(12px);
-    opacity: 0.32;
-    border-radius: 100px;
-    z-index: -1;
-    transition: opacity 0.4s ease;
-}
-
-.studentSlider__button:hover {
-    background: transparent;
-    border-color: #fff;
-}
-
-.studentSlider__button:hover::before {
-    opacity: 0;
-}
-
-.btn-text {
-    margin-right: 18px;
-}
-
-.button__icon {
-    width: 26px;
-    height: 26px;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    flex-shrink: 0;
 }
 
 @media (max-width: 1275px) {
@@ -662,7 +603,7 @@
         letter-spacing: 0.5px;
     }
 
-    .btn-text {
+    .studentSlider__button .gradientButton__text {
         margin-right: 12px;
     }
 }
@@ -780,7 +721,7 @@
         align-items: center;
     }
 
-    .btn-text {
+    .studentSlider__button .gradientButton__text {
         margin-right: 8px;
     }
 }
@@ -927,7 +868,7 @@
         margin: 0 auto;
     }
 
-    .button__icon {
+    .studentSlider__button .button__icon {
         width: 18px;
         height: 18px;
     }

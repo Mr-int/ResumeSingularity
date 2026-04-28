@@ -8,7 +8,7 @@ import romanUnactive from '../../assets/heroAnimation/roman_unactive.png';
 import leraActive from '../../assets/heroAnimation/lera_active.png';
 import leraUnactive from '../../assets/heroAnimation/lera_unactive.png';
 import { useEffect, useState } from 'react';
-import { Link } from "react-router-dom";
+import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
@@ -40,10 +40,14 @@ const Hero = () => {
                         <span>под задачи вашей компании</span>
                     </div>
 
-                    <Link to="/students" className="hero__button">
+                    <GradientButton
+                        as="link"
+                        to="/students"
+                        className="hero__button"
+                        icon={<img src={searchIcon} alt="search" className="button__icon" />}
+                    >
                         Найти стажёра
-                        <img src={searchIcon} alt="search" className="button__icon" />
-                    </Link>
+                    </GradientButton>
                 </div>
 
                 <div className={`hero__right ${isRightCardHovered ? 'hero__right--cards-hovered' : ''}`}>

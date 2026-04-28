@@ -5,8 +5,8 @@ import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
 import { getAllStudents } from "../../services/studentApi.js";
-import { Link } from "react-router-dom";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
+import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
@@ -187,13 +187,19 @@ const StudentSlider = () => {
                             {activeStudent && <StudentsListCard student={activeStudent} />}
                         </div>
 
-                        <Link to="/students" className="studentSlider__button">
-                            <span className="btn-text">Смотреть всех студентов</span>
-                            <svg className="button__icon" viewBox="0 0 24 24" aria-hidden="true">
-                                <circle cx="11" cy="11" r="7"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                            </svg>
-                        </Link>
+                        <GradientButton
+                            as="link"
+                            to="/students"
+                            className="studentSlider__button"
+                            icon={(
+                                <svg className="button__icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="11" cy="11" r="7"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            )}
+                        >
+                            Смотреть всех студентов
+                        </GradientButton>
                     </>
                 ) : (
                     <p style={{ color: '#fff' }}>Для показа студентов ты должен быть авторизован :(</p>

@@ -1,0 +1,71 @@
+.gradientButton {
+    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%) border-box;
+    border: 1.36px solid transparent;
+    border-radius: 100px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    position: relative;
+    white-space: nowrap;
+    z-index: 3;
+    transition: background 0.4s ease, border-color 0.4s ease;
+}
+
+.gradientButton::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
+    filter: blur(12px);
+    opacity: 0.32;
+    border-radius: 100px;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+}
+
+.gradientButton:hover {
+    background: transparent;
+    border-color: #fff;
+}
+
+.gradientButton:hover::before {
+    opacity: 0;
+}
+
+.gradientButton__text,
+.gradientButton__icon {
+    position: relative;
+    z-index: 1;
+}
+
+.gradientButton__text {
+    margin-right: 18px;
+}
+
+.gradientButton__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gradientButton__icon img,
+.gradientButton__icon svg {
+    width: 26px;
+    height: 26px;
+}
+
+.gradientButton__icon svg {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+}

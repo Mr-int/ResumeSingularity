@@ -152,59 +152,10 @@
 .StudentResume__sendBid {
     width: 320px;
     height: 52px;
-    background: transparent;
-    outline: none;
-    border: 2px solid transparent;
-    border-radius: 100px;
-    color: #fff;
     font-family: "Sansation", sans-serif;
     font-size: 26px;
-    cursor: pointer;
     letter-spacing: 2px;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
     gap: 12px;
-    transition: border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    text-decoration: none;
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-    box-sizing: border-box;
-}
-
-.StudentResume__sendBid::before {
-    content: '';
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    right: 2px;
-    bottom: 2px;
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    border-radius: 98px;
-    z-index: -1;
-    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.StudentResume__sendBid::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: transparent;
-    border-radius: 100px;
-    z-index: -2;
-}
-
-.StudentResume__sendBid:hover {
-    border-color: #fff;
-}
-
-.StudentResume__sendBid:hover::before {
-    opacity: 0;
 }
 
 .StudentResume__about {

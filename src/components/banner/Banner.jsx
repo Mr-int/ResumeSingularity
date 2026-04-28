@@ -2,7 +2,7 @@ import React from "react";
 import "./banner.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import bannerImg from "../../assets/other/bannerImg.png";
-import { Link } from "react-router-dom";
+import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const Banner = () => {
     return (
@@ -16,12 +16,14 @@ const Banner = () => {
                         <p className="banner__text">
                             Отберите кандидатов по стеку и проектному опыту — удобно и быстро за счёт поиска и фильтрации.
                         </p>
-                        <Link to="/students" className="banner__link">
-                            <button className="banner__button">
-                                <span>Найти стажёра</span>
-                                <img src={searchIcon} alt="Поиск"/>
-                            </button>
-                        </Link>
+                        <GradientButton
+                            as="link"
+                            to="/students"
+                            className="banner__button"
+                            icon={<img src={searchIcon} alt="Поиск" />}
+                        >
+                            Найти стажёра
+                        </GradientButton>
                     </div>
 
                     <div className="banner__imageWrapper">
