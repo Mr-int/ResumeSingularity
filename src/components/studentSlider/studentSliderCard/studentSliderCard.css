@@ -123,9 +123,7 @@
 
 /* Менеджер проектов: белый центр + синий ореол */
 .student-slider-card__extraIco--manager {
-    background:
-        radial-gradient(46.88% 46.88% at 50% 50%, #FFFFFF 29.33%, #008BFF 100%),
-        linear-gradient(0deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8));
+    background: radial-gradient(circle at center, rgba(0, 139, 255, 0.04) 0%, rgba(0, 139, 255, 0.11) 45%, rgba(0, 139, 255, 0.2) 85%), #fff;
 }
 
 /* Маркетинг: белый центр + красный ореол */
@@ -135,24 +133,22 @@
 
 /* Web: белый центр + синий ореол */
 .student-slider-card__extraIco--web {
-    background: radial-gradient(circle at center, rgba(0, 139, 255, 0.06) 0%, rgba(0, 139, 255, 0.18) 50%, rgba(0, 139, 255, 0.35) 100%), #fff;
+    background: radial-gradient(circle at center, rgba(0, 139, 255, 0.04) 0%, rgba(0, 139, 255, 0.11) 45%, rgba(0, 139, 255, 0.2) 85%), #fff;
 }
 
 /* Тестировщик: белый центр + оранжевый ореол */
 .student-slider-card__extraIco--tester {
-    background:
-        radial-gradient(46.88% 46.88% at 50% 50%, #FFFFFF 29.33%, #FF8000 100%),
-        linear-gradient(0deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8));
+    background: radial-gradient(circle at center, rgba(255, 128, 0, 0.04) 0%, rgba(255, 128, 0, 0.11) 45%, rgba(255, 128, 0, 0.2) 85%), #fff;
 }
 
 /* Графический дизайнер: белый фон + мягкая тень #C300FF сверху */
 .student-slider-card__extraIco--designer {
-    background: radial-gradient(circle at center, rgba(195, 0, 255, 0.06) 0%, rgba(195, 0, 255, 0.18) 50%, rgba(195, 0, 255, 0.35) 100%), #fff;
+    background: radial-gradient(circle at center, rgba(195, 0, 255, 0.04) 0%, rgba(195, 0, 255, 0.11) 45%, rgba(195, 0, 255, 0.2) 85%), #fff;
 }
 
 /* Аналитик данных: белый фон + мягкая тень #0077FF сверху */
 .student-slider-card__extraIco--analyst {
-    background: radial-gradient(circle at center, rgba(0, 119, 255, 0.06) 0%, rgba(0, 119, 255, 0.18) 50%, rgba(0, 119, 255, 0.35) 100%), #fff;
+    background: radial-gradient(circle at center, rgba(0, 119, 255, 0.04) 0%, rgba(0, 119, 255, 0.11) 45%, rgba(0, 119, 255, 0.2) 85%), #fff;
 }
 
 .student-slider-card__extraIco img {
