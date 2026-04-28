@@ -286,13 +286,34 @@
     display: block;
 }
 
+.studentSlider__buttonContainer {
+    position: relative;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+.studentSlider__buttonContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
+    filter: blur(15px);
+    opacity: 0.35;
+    border-radius: 100px;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+}
+
 .studentSlider__button {
     width: 430px;
     max-width: 90%;
     height: 52px;
-    margin: 0 auto;
+    margin: 0;
     background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
-    border: none;
+    border: 1.36px solid transparent;
     border-radius: 100px;
     color: #fff;
     font-family: "Sansation", sans-serif;
@@ -309,7 +330,6 @@
     position: relative;
     z-index: 3;
     white-space: nowrap;
-    box-shadow: 0 0 10px rgba(233, 90, 87, 0.18), 0 0 14px rgba(229, 59, 207, 0.18), 0 0 18px rgba(62, 142, 255, 0.18);
 }
 
 .studentSlider__button > * {
@@ -317,39 +337,12 @@
     z-index: 1;
 }
 
-.studentSlider__button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
-    filter: blur(15px);
-    opacity: 0.45;
-    border-radius: 100px;
-    z-index: -1;
-    transition: opacity 0.4s ease;
-}
-
-.studentSlider__button::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: transparent;
-    border-radius: 100px;
-    z-index: -2;
-}
-
 .studentSlider__button:hover {
     background: transparent;
     border-color: #fff;
 }
 
-.studentSlider__button:hover::before {
+.studentSlider__buttonContainer:hover::before {
     opacity: 0;
 }
 
