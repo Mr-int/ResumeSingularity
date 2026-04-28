@@ -344,7 +344,7 @@
 
     .studentSlider__content {
         max-width: 1200px;
-        padding: 30px 35px;
+        padding: 30px 0;
         gap: 28px;
         align-items: center;
     }
@@ -534,12 +534,6 @@
     }
 }
 
-@media (max-width: 1020px) {
-    .studentSlider__listInfo {
-        width: 100%;
-    }
-}
-
 @media (max-width: 900px) {
     .studentSlider {
         padding: 0;
@@ -549,12 +543,19 @@
         width: 100%;
         max-width: 100%;
         border-radius: 0;
-        background: linear-gradient(48deg, #e271d6, #80acff) padding-box;
+        background: transparent;
     }
 
-    .studentSlider__content::before,
+    .studentSlider__content::before {
+        display: block;
+        background: linear-gradient(48deg, #e271d6, #80acff) padding-box;
+        border: none;
+        border-radius: 0;
+    }
+
     .studentSlider__content::after {
-        display: none;
+        display: block;
+        border-radius: 0;
     }
 }
 
