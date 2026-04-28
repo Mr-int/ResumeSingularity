@@ -14,7 +14,7 @@ const GradientButton = ({
     const classes = `gradientButton ${className}`.trim();
     const content = (
         <>
-            <span className="gradientButton__text">{children}</span>
+            <span>{children}</span>
             {icon ? <span className="gradientButton__icon">{icon}</span> : null}
         </>
     );
