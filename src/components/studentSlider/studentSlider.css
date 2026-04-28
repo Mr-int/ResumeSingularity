@@ -394,7 +394,7 @@
     }
 
     .studentSlider__list {
-        gap: 20px;
+        gap: 10px;
     }
 
     .studentSlider__listButton {
@@ -408,6 +408,9 @@
         font-size: 22px;
     }
 
+}
+
+@media (max-width: 1080px) {
     .studentSlider__listButton.desktop-only {
         display: none;
     }
