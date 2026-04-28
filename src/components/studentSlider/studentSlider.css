@@ -152,7 +152,7 @@
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    gap: clamp(0px, 2.5vw, 34px);
+    gap: 34px;
     width: 100%;
     max-width: 100%;
     overflow: hidden;
@@ -333,20 +333,9 @@
     opacity: 0;
 }
 
-@media (max-width: 1440px) {
-    .studentSlider {
-        padding: 0 40px;
-    }
-
-    .studentSlider__content {
-        max-width: 1200px;
-        padding: 35px 40px;
-        align-items: center;
-    }
-
-    .studentSlider__listInfo {
-        width: 100%;
-        max-width: 940px;
+@media (max-width: 1275px) {
+    .studentSlider__list {
+        gap: 4px;
     }
 }
 
