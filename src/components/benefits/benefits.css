@@ -306,16 +306,16 @@
 }
 
 @media (max-width: 680px) {
-    .benefits__card {
-        flex: 0 0 auto;
-        width: 600px;
-        min-width: 600px;
-        max-width: 600px;
-        height: 300px;
-        border-radius: 20px;
-        padding: 18px;
+    .benefits__cardsTrack {
+        flex-direction: column;
+        gap: 16px;
+        width: max-content;
+        max-width: 100%;
+        margin: 0 auto;
+        align-items: center;
     }
 }
+
 @media (max-width: 600px) {
     .benefits {
         padding: 60px 20px;
@@ -333,13 +333,14 @@
         overflow-x: hidden;
     }
 
-    .benefits__cardsTrack {
-        flex-direction: column;
-        gap: 16px;
-        width: max-content;
-        max-width: 100%;
-        margin: 0 auto;
-        align-items: center;
+    .benefits__card {
+        flex: 0 0 auto;
+        width: 600px;
+        min-width: 600px;
+        max-width: 600px;
+        height: 300px;
+        border-radius: 20px;
+        padding: 18px;
     }
 }
 
