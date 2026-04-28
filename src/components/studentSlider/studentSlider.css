@@ -287,14 +287,13 @@
 }
 
 .studentSlider__button {
-    --student-button-radius: 100px;
     width: 430px;
     max-width: 90%;
     height: 52px;
-    margin: 0;
+    margin: 0 auto;
     background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
     border: 1.36px solid transparent;
-    border-radius: var(--student-button-radius);
+    border-radius: 100px;
     color: #fff;
     font-family: "Sansation", sans-serif;
     font-size: 24px;
@@ -317,33 +316,27 @@
     z-index: 1;
 }
 
+.studentSlider__button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
+    filter: blur(15px);
+    opacity: 0.45;
+    border-radius: 100px;
+    z-index: -1;
+    transition: opacity 0.4s ease;
+}
+
 .studentSlider__button:hover {
     background: transparent;
     border-color: #fff;
 }
 
-.studentSlider__buttonWrap {
-    --student-button-radius: 100px;
-    position: relative;
-    display: block;
-    width: fit-content;
-    margin: 0 auto;
-}
-
-.studentSlider__buttonWrap::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
-    filter: blur(15px);
-    opacity: 0.35;
-    border-radius: var(--student-button-radius);
-    z-index: 0;
-    transition: opacity 0.4s ease;
-    pointer-events: none;
-}
-
-.studentSlider__buttonWrap:hover::before {
+.studentSlider__button:hover::before {
     opacity: 0;
 }
 
