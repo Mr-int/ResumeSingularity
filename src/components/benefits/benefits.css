@@ -148,7 +148,7 @@
 
 .benefits__cards {
     display: block;
-    width: 100%;
+    width: 102%;
     overflow-x: auto;
     overflow-y: hidden;
     padding: 20px 0;
@@ -305,6 +305,17 @@
     }
 }
 
+@media (max-width: 680px) {
+    .benefits__card {
+        flex: 0 0 auto;
+        width: 600px;
+        min-width: 600px;
+        max-width: 600px;
+        height: 300px;
+        border-radius: 20px;
+        padding: 18px;
+    }
+}
 @media (max-width: 600px) {
     .benefits {
         padding: 60px 20px;
@@ -329,16 +340,6 @@
         max-width: 100%;
         margin: 0 auto;
         align-items: center;
-    }
-
-    .benefits__card {
-        flex: 0 0 auto;
-        width: 600px;
-        min-width: 600px;
-        max-width: 600px;
-        height: 300px;
-        border-radius: 20px;
-        padding: 18px;
     }
 }
 
