@@ -344,14 +344,6 @@
         align-items: center;
     }
 
-    .studentSlider__listButton.desktop-only {
-        display: none;
-    }
-
-    .studentSlider__mobileControls {
-        display: flex;
-    }
-
     .studentSlider__listInfo {
         width: 100%;
         max-width: 940px;
@@ -414,6 +406,14 @@
         width: 380px;
         height: 44px;
         font-size: 22px;
+    }
+
+    .studentSlider__listButton.desktop-only {
+        display: none;
+    }
+
+    .studentSlider__mobileControls {
+        display: flex;
     }
 }
 
@@ -615,10 +615,6 @@
 
     .studentSlider__list::-webkit-scrollbar {
         display: none;
-    }
-
-    .studentSlider__cardContainer {
-        height: 280px;
     }
 
     .studentSlider__button {
