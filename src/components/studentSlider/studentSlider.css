@@ -568,6 +568,7 @@
     .studentSlider__content::after {
         display: block;
         border-radius: 0;
+        inset: 0;
     }
 }
 
