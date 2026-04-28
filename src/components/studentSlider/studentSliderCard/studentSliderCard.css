@@ -136,6 +136,16 @@
     background: radial-gradient(circle at center, rgba(0, 139, 255, 0.04) 0%, rgba(0, 139, 255, 0.11) 45%, rgba(0, 139, 255, 0.2) 85%), #fff;
 }
 
+/* Java: белый центр + синий ореол rgb(0, 116, 189) */
+.student-slider-card__extraIco--java {
+    background: radial-gradient(circle at center, rgba(0, 116, 189, 0.04) 0%, rgba(0, 116, 189, 0.11) 45%, rgba(0, 116, 189, 0.2) 85%), #fff;
+}
+
+/* Python: белый центр + желтый ореол rgb(255, 196, 0) */
+.student-slider-card__extraIco--python {
+    background: radial-gradient(circle at center, rgba(255, 196, 0, 0.04) 0%, rgba(255, 196, 0, 0.11) 45%, rgba(255, 196, 0, 0.2) 85%), #fff;
+}
+
 /* Тестировщик: белый центр + оранжевый ореол */
 .student-slider-card__extraIco--tester {
     background: radial-gradient(circle at center, rgba(255, 128, 0, 0.04) 0%, rgba(255, 128, 0, 0.11) 45%, rgba(255, 128, 0, 0.2) 85%), #fff;

@@ -118,6 +118,12 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         if (specLower.includes('веб-разработчик') || specLower.includes('web')) {
             return 'student-slider-card__extraIco--web';
         }
+        if (specLower.includes('java') || specLower.includes('джава')) {
+            return 'student-slider-card__extraIco--java';
+        }
+        if (specLower.includes('python') || specLower.includes('питон') || specLower.includes('pyhton')) {
+            return 'student-slider-card__extraIco--python';
+        }
         if (specLower.includes('дизайнер') || specLower.includes('design') ||
             specLower.includes('графический')) {
             return 'student-slider-card__extraIco--designer';
