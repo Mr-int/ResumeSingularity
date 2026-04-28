@@ -213,8 +213,16 @@ const Benefits = () => {
 
     useEffect(() => {
         const intervalId = window.setInterval(() => {
+            const viewport = viewportRef.current;
             const cards = getCards();
-            if (cards.length === 0) return;
+            if (!viewport || cards.length === 0) return;
+
+            const maxScrollableLeft = viewport.scrollWidth - viewport.clientWidth;
+            const isAtEnd = viewport.scrollLeft >= maxScrollableLeft - 2;
+            if (isAtEnd) {
+                scrollToCard(0);
+                return;
+            }
 
             const currentIndex = getCurrentIndexFromViewport();
             const maxIndex = Math.max(0, cards.length - 1);
