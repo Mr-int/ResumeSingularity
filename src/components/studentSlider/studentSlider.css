@@ -403,6 +403,12 @@
     }
 }
 
+@media (max-width: 1050px) {
+    .studentSlider__listInfo {
+        width: 100%;
+    }
+}
+
 @media (max-width: 992px) {
     .studentSlider {
         padding: 0 40px;
