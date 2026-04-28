@@ -171,7 +171,6 @@
 }
 
 .benefits__card {
-    flex: 0 0 600px;
     width: 600px;
     min-width: 600px;
     max-width: 600px;
