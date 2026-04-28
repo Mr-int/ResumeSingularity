@@ -187,15 +187,13 @@ const StudentSlider = () => {
                             {activeStudent && <StudentsListCard student={activeStudent} />}
                         </div>
 
-                        <div className="studentSlider__buttonContainer">
-                            <Link to="/students" className="studentSlider__button">
-                                <span className="btn-text">Смотреть всех студентов</span>
-                                <svg className="button__icon" viewBox="0 0 24 24" aria-hidden="true">
-                                    <circle cx="11" cy="11" r="7"></circle>
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                </svg>
-                            </Link>
-                        </div>
+                        <Link to="/students" className="studentSlider__button">
+                            <span className="btn-text">Смотреть всех студентов</span>
+                            <svg className="button__icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </Link>
                     </>
                 ) : (
                     <p style={{ color: '#fff' }}>Для показа студентов ты должен быть авторизован :(</p>
