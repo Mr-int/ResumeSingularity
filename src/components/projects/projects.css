@@ -283,7 +283,8 @@
 
     /* Закрытое мобильное состояние карточек (по эталонным макетам) */
     .card:not(.card__expanded) {
-        width: min(436px, 100%);
+        width: 436px;
+        max-width: 436px;
         height: 47px;
         min-height: 47px;
         border-radius: 16px;
@@ -518,8 +519,15 @@
     }
 
     .card {
-        height: 80px;
-        min-height: 80px;
+        height: auto;
+        min-height: auto;
+    }
+
+    .card:not(.card__expanded) {
+        width: 436px;
+        max-width: 436px;
+        height: 47px;
+        min-height: 47px;
     }
 
     .card__header {

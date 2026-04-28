@@ -128,8 +128,8 @@ const Projects = () => {
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(1),
                             ...(isMobile && {
-                                height: isCardExpanded(1) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(1) ? '700px' : '90px'
+                                height: isCardExpanded(1) ? 'auto' : '47px',
+                                minHeight: isCardExpanded(1) ? '700px' : '47px'
                             })
                         }}
                     >
@@ -192,8 +192,8 @@ const Projects = () => {
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(2),
                             ...(isMobile && {
-                                height: isCardExpanded(2) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(2) ? '700px' : '90px'
+                                height: isCardExpanded(2) ? 'auto' : '47px',
+                                minHeight: isCardExpanded(2) ? '700px' : '47px'
                             })
                         }}
                     >
@@ -258,8 +258,8 @@ const Projects = () => {
                             cursor: isAnimating ? 'default' : 'pointer',
                             ...getCardPosition(3),
                             ...(isMobile && {
-                                height: isCardExpanded(3) ? 'auto' : '90px',
-                                minHeight: isCardExpanded(3) ? '700px' : '90px'
+                                height: isCardExpanded(3) ? 'auto' : '47px',
+                                minHeight: isCardExpanded(3) ? '700px' : '47px'
                             })
                         }}
                     >
