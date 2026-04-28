@@ -364,7 +364,7 @@
 
     .studentSlider__content {
         max-width: 1200px;
-        padding: 30px 0;
+        padding: 30px 30px;
         gap: 28px;
         align-items: center;
     }
@@ -582,7 +582,6 @@
         display: block;
         background: linear-gradient(48deg, #e271d6, #80acff) padding-box;
         border: none;
-        border-radius: 0;
     }
 
     .studentSlider__content::after {
@@ -668,7 +667,6 @@
         border-radius: 24px;
     }
 
-    .studentSlider__content::before,
     .studentSlider__content::after {
         border-radius: 24px;
     }
@@ -691,7 +689,6 @@
         min-height: 260px;
     }
 
-    .studentSlider__content::before,
     .studentSlider__content::after {
         border-radius: 24px;
     }
@@ -997,4 +994,26 @@
     stroke-linecap: round !important;
     flex-shrink: 0 !important;
     display: block !important;
+}
+
+/* Центр заголовка фиксируем независимо от ширины боковых блоков */
+.studentSlider__header {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+
+.studentSlider__inputWrapper {
+    justify-self: start !important;
+}
+
+.studentSlider__title {
+    justify-self: center !important;
+    text-align: center !important;
+    margin: 0 !important;
+}
+
+.studentSlider__filter {
+    justify-self: end !important;
 }
