@@ -258,7 +258,7 @@
 }
 
 .studentSlider__listInfo {
-    width: calc(100% - 160px);
+    width: 940px;
     max-width: 940px;
     border: 1px solid #fff;
     border-radius: 22px;
@@ -393,7 +393,7 @@
 
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1170px) {
     .studentSlider__listButton.desktop-only {
         display: none;
     }
@@ -531,6 +531,30 @@
     .studentSlider__listButton {
         width: 40px;
         height: 40px;
+    }
+}
+
+@media (max-width: 1020px) {
+    .studentSlider__listInfo {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .studentSlider {
+        padding: 0;
+    }
+
+    .studentSlider__content {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+        background: linear-gradient(48deg, #e271d6, #80acff) padding-box;
+    }
+
+    .studentSlider__content::before,
+    .studentSlider__content::after {
+        display: none;
     }
 }
 
