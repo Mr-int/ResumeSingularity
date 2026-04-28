@@ -1,6 +1,6 @@
 .gradientButton {
     background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%) border-box;
-    border: 1.36px solid transparent;
+    border: 2px solid transparent;
     border-radius: 100px;
     color: #fff;
     cursor: pointer;
