@@ -161,10 +161,10 @@
 
 .studentSlider__viewport {
     flex: 1;
-    width: 100%;
+    width: 962px;
+    min-width: 962px;
     max-width: 962px;
     overflow: hidden;
-    min-width: 0;
 }
 
 .studentSlider__track {
@@ -430,10 +430,6 @@
         align-items: center;
     }
 
-    .studentSlider__track {
-        --visible-cards: 3;
-    }
-
     .studentSlider__container {
         min-height: 320px;
     }
@@ -568,10 +564,6 @@
         align-items: center;
     }
 
-    .studentSlider__track {
-        --visible-cards: 3;
-    }
-
     .studentSlider__container {
         min-height: 290px;
     }
@@ -670,10 +662,6 @@
         gap: 20px;
         border-radius: 24px;
         align-items: center;
-    }
-
-    .studentSlider__track {
-        --visible-cards: 1;
     }
 
     .studentSlider__container {
@@ -777,10 +765,6 @@
         align-items: center;
     }
 
-    .studentSlider__track {
-        --visible-cards: 1;
-    }
-
     .studentSlider__title {
         font-size: 17px;
     }
@@ -826,10 +810,6 @@
         padding: 15px 12px;
         gap: 16px;
         align-items: center;
-    }
-
-    .studentSlider__track {
-        --visible-cards: 1;
     }
 
     .studentSlider__title {
@@ -909,10 +889,6 @@
     .studentSlider__content {
         max-width: 1200px;
         align-items: center;
-    }
-
-    .studentSlider__track {
-        --visible-cards: 1;
     }
 
     .studentSlider__title {
