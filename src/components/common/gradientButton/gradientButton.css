@@ -45,10 +45,6 @@
     z-index: 1;
 }
 
-.gradientButton__text {
-    margin-right: 18px;
-}
-
 .gradientButton__icon {
     display: inline-flex;
     align-items: center;
