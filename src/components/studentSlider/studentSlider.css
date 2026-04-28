@@ -309,6 +309,7 @@
     position: relative;
     z-index: 1;
     white-space: nowrap;
+    box-shadow: 0 0 18px rgba(233, 90, 87, 0.25), 0 0 24px rgba(229, 59, 207, 0.25), 0 0 30px rgba(62, 142, 255, 0.25);
 }
 
 .studentSlider__button > * {
@@ -327,7 +328,7 @@
     filter: blur(15px);
     opacity: 0.6;
     border-radius: 100px;
-    z-index: -2;
+    z-index: -1;
     transition: opacity 0.3s ease;
 }
 
@@ -338,13 +339,14 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%);
+    background: transparent;
     border-radius: 100px;
-    z-index: -1;
+    z-index: -2;
 }
 
 .studentSlider__button:hover {
     transform: translateY(-1px);
+    box-shadow: 0 0 22px rgba(233, 90, 87, 0.35), 0 0 28px rgba(229, 59, 207, 0.35), 0 0 34px rgba(62, 142, 255, 0.35);
 }
 
 .studentSlider__button:hover::before {
