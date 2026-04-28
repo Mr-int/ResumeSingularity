@@ -162,6 +162,15 @@
     }
 }
 
+@media (max-width: 898px) {
+    .banner__img {
+        height: 276px;
+    }
+
+    .banner__img {
+        max-width: 98%;
+    }
+}
 @media (max-width: 800px) {
     .banner__content {
         flex-direction: column;
