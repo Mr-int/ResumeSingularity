@@ -951,30 +951,37 @@
 .studentSlider__search,
 .studentSlider__search:focus,
 .studentSlider__search.search-expanded {
-    width: 100% !important;
-    height: 100% !important;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
     min-width: 0 !important;
     border: none !important;
     border-radius: 0 !important;
     background: transparent !important;
-    color: #ffffff !important;
     padding: 0 !important;
-    text-align: center !important;
-    font-size: 24px !important;
-    line-height: 1 !important;
+    margin: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
     cursor: default !important;
 }
 
 .studentSlider__search::placeholder,
 .studentSlider__search:focus::placeholder,
 .studentSlider__search.search-expanded::placeholder {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.studentSlider__searchText {
     color: #ffffff !important;
+    font-family: Arial, sans-serif !important;
     font-size: 24px !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    display: block !important;
-    position: static !important;
-    transform: none !important;
+    line-height: 1 !important;
+    user-select: none !important;
+    white-space: nowrap !important;
 }
 
 .studentSlider__searchIcon {

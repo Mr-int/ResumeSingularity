@@ -92,6 +92,7 @@ const StudentSlider = () => {
                             onBlur={handleSearchBlur}
                             disabled
                         />
+                        <span className="studentSlider__searchText">Поиск</span>
                         <svg
                             className="studentSlider__searchIcon"
                             viewBox="0 0 24 24"
