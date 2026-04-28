@@ -4,7 +4,6 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import searchIcon from "../../assets/icons/searchIcon.svg";
 import { getAllStudents } from "../../services/studentApi.js";
 import { Link } from "react-router-dom";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
@@ -189,14 +188,11 @@ const StudentSlider = () => {
                         </div>
 
                         <Link to="/students" className="studentSlider__button">
-                            Смотреть всех студентов
-                            <img
-                                src={searchIcon}
-                                alt="Иконка поиска"
-                                className="button__icon"
-                                width="20px"
-                                height="20px"
-                            />
+                            <span className="btn-text">Смотреть всех студентов</span>
+                            <svg className="button__icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
                         </Link>
                     </>
                 ) : (
