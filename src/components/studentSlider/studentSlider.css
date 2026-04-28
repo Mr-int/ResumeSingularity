@@ -603,7 +603,7 @@
         letter-spacing: 0.5px;
     }
 
-    .studentSlider__button .gradientButton__text {
+    .studentSlider__button {
         margin-right: 12px;
     }
 }
@@ -721,7 +721,7 @@
         align-items: center;
     }
 
-    .studentSlider__button .gradientButton__text {
+    .studentSlider__button {
         margin-right: 8px;
     }
 }
