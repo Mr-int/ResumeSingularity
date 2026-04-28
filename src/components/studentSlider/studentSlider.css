@@ -573,10 +573,6 @@
 }
 
 @media (max-width: 768px) {
-    .studentSlider {
-        padding: 0 40px;
-    }
-
     .studentSlider__content {
         max-width: 1200px;
         padding: 22px 25px;
@@ -645,10 +641,6 @@
 }
 
 @media (max-width: 600px) {
-    .studentSlider {
-        padding: 0 20px;
-    }
-
     .studentSlider__content {
         max-width: 1200px;
         padding: 20px;
@@ -667,10 +659,6 @@
 }
 
 @media (max-width: 576px) {
-    .studentSlider {
-        padding: 0 20px;
-    }
-
     .studentSlider__content {
         max-width: 1200px;
         padding: 20px;
@@ -768,10 +756,6 @@
 }
 
 @media (max-width: 480px) {
-    .studentSlider {
-        padding: 0 20px;
-    }
-
     .studentSlider__content {
         max-width: 1200px;
         padding: 18px 15px;
@@ -815,10 +799,6 @@
 }
 
 @media (max-width: 400px) {
-    .studentSlider {
-        padding: 0 20px;
-    }
-
     .studentSlider__content {
         max-width: 1200px;
         padding: 15px 12px;
@@ -896,10 +876,6 @@
 }
 
 @media (max-width: 360px) {
-    .studentSlider {
-        padding: 0 20px;
-    }
-
     .studentSlider__content {
         max-width: 1200px;
         align-items: center;
