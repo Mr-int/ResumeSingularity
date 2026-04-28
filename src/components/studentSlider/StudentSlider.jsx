@@ -92,7 +92,15 @@ const StudentSlider = () => {
                             onBlur={handleSearchBlur}
                             disabled
                         />
-                        <img src={searchIcon} alt="Поиск" className="studentSlider__searchIcon" />
+                        <svg
+                            className="studentSlider__searchIcon"
+                            viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                        >
+                            <circle cx="10" cy="10" r="7"></circle>
+                            <line x1="15" y1="15" x2="21" y2="21"></line>
+                        </svg>
                     </div>
                     <h2 className="studentSlider__title">Студенты</h2>
                     <button className="studentSlider__filter">
