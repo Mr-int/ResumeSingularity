@@ -89,7 +89,10 @@
     padding-left: 14px;
     padding-right: 45px;
     font-size: 20px;
-    width: 100%;
+    width: 193px;
+    height: 45px;
+    border-radius: 90px;
+    border: 2px solid #fff;
     transition: all 0.3s ease;
     font-family: 'StratosSemiLight';
 }
@@ -106,12 +109,13 @@
 
 .studentSlider__inputWrapper {
     position: relative;
-    width: 200px;
+    width: 193px;
+    height: 45px;
 }
 
 .studentSlider__searchIcon {
     position: absolute;
-    right: 22%;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;

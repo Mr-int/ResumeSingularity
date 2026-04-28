@@ -92,6 +92,7 @@ const StudentSlider = () => {
                             onBlur={handleSearchBlur}
                             disabled
                         />
+                        <img src={searchIcon} alt="Поиск" className="studentSlider__searchIcon" />
                     </div>
                     <h2 className="studentSlider__title">Студенты</h2>
                     <button className="studentSlider__filter">
