@@ -199,6 +199,10 @@
     display: flex;
 }
 
+.header__mobileMenu.active .header__mobileBtn--about {
+    display: none;
+}
+
 .header__mobileBtn {
     background: none;
     border: none;

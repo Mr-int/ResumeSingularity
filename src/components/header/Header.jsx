@@ -77,7 +77,7 @@ const Header = () => {
                 </Link>
                 <Link
                     to="/about"
-                    className="header__mobileBtn"
+                    className="header__mobileBtn header__mobileBtn--about"
                     onClick={handleMobileLinkClick}
                 >
                     о студентах
