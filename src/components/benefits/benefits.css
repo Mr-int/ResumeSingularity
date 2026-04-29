@@ -378,18 +378,22 @@
         width: 100%;
         min-width: 100%;
         max-width: 600px;
-        height: 300px;
+        height: 275px;
         padding: 18px;
     }
 
     .benefits__card__purple img {
         width: 145px;
         height: 200px;
+        right: -10px;
+        top: 20px;
+        transform: rotate(309deg);
     }
 
     .benefits__card__green img {
         width: 180px;
         height: 160px;
+        top: 80px;
     }
 
     .benefits__card__blue img {
