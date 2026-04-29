@@ -243,6 +243,16 @@ const StudentResume = () => {
         return portfolioBackgrounds[index % portfolioBackgrounds.length];
     };
 
+    const getPortfolioTextSizeClass = (project) => {
+        const title = (project?.name || '').toString().trim();
+        const description = (project?.description || project?.additionalInfo || '').toString().trim();
+        const totalLength = title.length + description.length;
+
+        if (totalLength > 220 || title.length > 48) return 'StudentResume__portfolioContent--dense';
+        if (totalLength > 140 || title.length > 32) return 'StudentResume__portfolioContent--compact';
+        return '';
+    };
+
     const formatYearLabel = (value) => {
         if (!value) return '';
         const normalized = String(value).trim();
@@ -387,7 +397,7 @@ const StudentResume = () => {
                                                     backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
                                                 }}
                                             >
-                                                <div className="StudentResume__portfolioContent">
+                                                <div className={`StudentResume__portfolioContent ${getPortfolioTextSizeClass(project)}`.trim()}>
                                                     {project.name && (
                                                         <p className="StudentResume__portfolioTitle">{project.name}</p>
                                                     )}

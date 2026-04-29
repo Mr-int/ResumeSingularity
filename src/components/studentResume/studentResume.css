@@ -266,6 +266,9 @@
     font-size: 30px;
     margin: 0;
     font-family: 'StratosSemiLight';
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.15;
 }
 
 .StudentResume__portfolioDescription {
@@ -280,6 +283,25 @@
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.2;
+}
+
+.StudentResume__portfolioContent--compact .StudentResume__portfolioTitle {
+    font-size: 24px;
+}
+
+.StudentResume__portfolioContent--compact .StudentResume__portfolioDescription {
+    font-size: 18px;
+}
+
+.StudentResume__portfolioContent--dense .StudentResume__portfolioTitle {
+    font-size: 20px;
+}
+
+.StudentResume__portfolioContent--dense .StudentResume__portfolioDescription {
+    font-size: 16px;
 }
 
 .StudentResume__additionalSections {
