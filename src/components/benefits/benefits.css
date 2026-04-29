@@ -330,11 +330,7 @@
     .benefits__navButtons {
         display: none;
     }
-
-    .benefits__cards {
-        overflow-x: hidden;
-    }
-
+    
     .benefits__card {
         width: 600px;
         min-width: 600px;
