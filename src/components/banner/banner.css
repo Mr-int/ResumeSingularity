@@ -70,6 +70,18 @@
     height: 10px;
     background-color: #00AD20;
     border-radius: 50%;
+    animation: bannerTitleDotPulse 1.4s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes bannerTitleDotPulse {
+    0%,
+    100% {
+        transform: scale(0.9);
+    }
+    50% {
+        transform: scale(1.15);
+    }
 }
 
 .banner__imageWrapper {
