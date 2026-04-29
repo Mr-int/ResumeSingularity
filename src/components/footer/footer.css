@@ -70,6 +70,14 @@
     cursor: pointer;
     font-family: "StratosSemiLight";
     text-decoration: none;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.footer__siteMap a:hover,
+.footer__siteMap a:focus-visible {
+    color: #cfcfcf;
+    text-decoration: underline;
+    text-decoration-color: #cfcfcf;
 }
 
 .footer__mail h2, .footer__number h2, .footer__siteMap h2, .footer__credit p {
