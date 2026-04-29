@@ -191,8 +191,8 @@
 }
 
 .studentsList__pageNumber.active {
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    border-color: transparent;
+    background-color: #fff;
+    color: #000 ;
 }
 
 .studentsList__paginationBtn:disabled {
