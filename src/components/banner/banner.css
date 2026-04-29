@@ -285,6 +285,16 @@
     }
 }
 
+@media (max-width: 440px) {
+    .banner__img {
+        max-width: 90%;
+    }
+
+    .banner__img {
+        height: 214px;
+    }
+}
+
 @media (max-width: 400px) {
     .banner__wrapper {
         margin: 0 15px;
