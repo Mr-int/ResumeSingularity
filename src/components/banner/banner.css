@@ -52,6 +52,26 @@
     margin: 0;
 }
 
+.banner__titleDot {
+    width: 24px;
+    height: 24px;
+    margin-left: 10px;
+    background-color: #90EE90;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+.banner__titleDot::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background-color: #00AD20;
+    border-radius: 50%;
+}
+
 .banner__imageWrapper {
     display: flex;
     justify-content: center;

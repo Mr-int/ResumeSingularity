@@ -12,6 +12,7 @@ const Banner = () => {
                     <div className="banner__left">
                         <h2 className="banner__title">
                             Свободные стажёры<br className="banner__br" /> готовы начать
+                            <span className="banner__titleDot" aria-hidden="true"></span>
                         </h2>
                         <p className="banner__text">
                             Отберите кандидатов по стеку и проектному опыту — удобно и быстро за счёт поиска и фильтрации.
