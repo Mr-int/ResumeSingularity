@@ -9,6 +9,7 @@ import { filterStudentsPage, getAllSpecialities } from "../../services/studentAp
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
 const STUDENTS_PER_PAGE = 5;
+const MAX_VISIBLE_PAGES = 5;
 
 const mapCourseToApiEnum = (course) => {
     const map = {
@@ -497,6 +498,32 @@ const StudentsList = () => {
     const pageStartIndex = (safeCurrentPage - 1) * STUDENTS_PER_PAGE;
     const paginatedStudents = visibleStudents.slice(pageStartIndex, pageStartIndex + STUDENTS_PER_PAGE);
 
+    const getVisiblePages = () => {
+        if (totalPages <= MAX_VISIBLE_PAGES) {
+            return Array.from({ length: totalPages }, (_, index) => index + 1);
+        }
+
+        const halfWindow = Math.floor(MAX_VISIBLE_PAGES / 2);
+        let startPage = safeCurrentPage - halfWindow;
+        let endPage = safeCurrentPage + halfWindow;
+
+        if (startPage < 1) {
+            startPage = 1;
+            endPage = MAX_VISIBLE_PAGES;
+        }
+
+        if (endPage > totalPages) {
+            endPage = totalPages;
+            startPage = totalPages - MAX_VISIBLE_PAGES + 1;
+        }
+
+        return Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+    };
+
+    const visiblePages = getVisiblePages();
+    const showLeftEllipsis = visiblePages[0] > 1;
+    const showRightEllipsis = visiblePages[visiblePages.length - 1] < totalPages;
+
     const goToPage = (page) => {
         if (page < 1 || page > totalPages) return;
         setCurrentPage(page);
@@ -650,7 +677,20 @@ const StudentsList = () => {
                         </button>
 
                         <div className="studentsList__paginationPages">
-                            {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                            {showLeftEllipsis && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className={`studentsList__pageNumber ${safeCurrentPage === 1 ? 'active' : ''}`}
+                                        onClick={() => goToPage(1)}
+                                    >
+                                        1
+                                    </button>
+                                    <span className="studentsList__paginationEllipsis" aria-hidden="true">...</span>
+                                </>
+                            )}
+
+                            {visiblePages.map((page) => (
                                 <button
                                     key={page}
                                     type="button"
@@ -660,6 +700,19 @@ const StudentsList = () => {
                                     {page}
                                 </button>
                             ))}
+
+                            {showRightEllipsis && (
+                                <>
+                                    <span className="studentsList__paginationEllipsis" aria-hidden="true">...</span>
+                                    <button
+                                        type="button"
+                                        className={`studentsList__pageNumber ${safeCurrentPage === totalPages ? 'active' : ''}`}
+                                        onClick={() => goToPage(totalPages)}
+                                    >
+                                        {totalPages}
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                         <button

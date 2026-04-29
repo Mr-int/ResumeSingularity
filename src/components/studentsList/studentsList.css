@@ -158,6 +158,15 @@
     gap: 8px;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
+}
+
+.studentsList__paginationEllipsis {
+    color: #fff;
+    font-family: StratosSemiLight, sans-serif;
+    font-size: 18px;
+    line-height: 1;
+    user-select: none;
 }
 
 .studentsList__paginationBtn,
