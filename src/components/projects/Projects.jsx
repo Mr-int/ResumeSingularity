@@ -116,7 +116,7 @@ const Projects = () => {
     }, []);
 
     return (
-        <section className="projects" style={{ minHeight: containerHeight }}>
+        <section id="projects" className="projects" style={{ minHeight: containerHeight }}>
             <div className="projects__wrapper">
                 <h2 className="projects__title">Лучшие проекты наших студентов</h2>
 

@@ -62,13 +62,14 @@
     gap: 16px;
 }
 
-.footer__siteMap button {
+.footer__siteMap a {
     background: none;
     color: #fff;
     border: none;
     font-size: 20px;
     cursor: pointer;
     font-family: "StratosSemiLight";
+    text-decoration: none;
 }
 
 .footer__mail h2, .footer__number h2, .footer__siteMap h2, .footer__credit p {
@@ -176,7 +177,7 @@
 
     .footer__mail p,
     .footer__number p,
-    .footer__siteMap button {
+.footer__siteMap a {
         font-size: 16px;
     }
 }

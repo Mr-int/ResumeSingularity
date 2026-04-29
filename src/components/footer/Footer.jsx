@@ -1,4 +1,5 @@
 import './footer.css';
+import { Link } from "react-router-dom";
 
 import resumeFooter from "../../assets/logos/resume.png";
 import resumeLogo from '../../assets/logos/Logo.png';
@@ -15,10 +16,10 @@ const Footer = () => {
             <div className="footer__nav">
                 <div className='footer__siteMap'>
                     <h2>Навигация</h2>
-                    <button>Главная</button>
-                    <button>Студенты</button>
-                    <button>Обучение</button>
-                    <button>Проекты</button>
+                    <Link to="/">Главная</Link>
+                    <Link to="/students">Студенты</Link>
+                    <a href="https://singularity.academy/college" target="_blank" rel="noreferrer">Обучение</a>
+                    <a href="/#projects">Проекты</a>
                 </div>
 
                 <div className='footer__contacts'>
