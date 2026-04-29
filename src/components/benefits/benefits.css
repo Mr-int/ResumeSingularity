@@ -312,6 +312,10 @@
         margin: 0 auto;
         align-items: center;
     }
+
+    .benefits__cards {
+        overflow: visible;
+    }
 }
 
 @media (max-width: 600px) {
