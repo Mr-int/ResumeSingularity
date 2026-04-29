@@ -286,8 +286,8 @@
     }
 
     .benefits__card {
-        width: 600px;
-        min-width: 600px;
+        width: min(600px, 100%);
+        min-width: min(600px, 100%);
         max-width: 600px;
         height: 300px;
         border-radius: 20px;
@@ -332,8 +332,8 @@
     }
     
     .benefits__card {
-        width: 600px;
-        min-width: 600px;
+        width: 100%;
+        min-width: 100%;
         max-width: 600px;
         height: 300px;
         border-radius: 20px;
@@ -355,8 +355,8 @@
     }
 
     .benefits__card {
-        width: 600px;
-        min-width: 600px;
+        width: 100%;
+        min-width: 100%;
         max-width: 600px;
         height: 300px;
         padding: 18px;
