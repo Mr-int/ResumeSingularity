@@ -21,6 +21,7 @@ const Header = () => {
             <div className="header__inner">
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
+                    <Link to="/chats" className="header__homeBtn">чаты</Link>
                 </div>
 
                 <Link to="/" className="header__logoLink">
@@ -88,6 +89,13 @@ const Header = () => {
                     onClick={handleMobileLinkClick}
                 >
                     найти стажера
+                </Link>
+                <Link
+                    to="/chats"
+                    className="header__mobileBtn"
+                    onClick={handleMobileLinkClick}
+                >
+                    чаты
                 </Link>
             </div>
         </header>
