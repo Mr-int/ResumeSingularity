@@ -29,14 +29,6 @@ export const getCompanyById = (id) => apiClientJson(`company/${id}`, { method: '
 // ---- Requests ----
 export const getRequestById = (id) => apiClientJson(`request/${id}`, { method: 'GET' });
 
-// ---- Chat ----
-export const getChatMessages = (chatId, pageable) =>
-    apiClientJson(withPageParams(`chat/${chatId}/messages`, pageable), { method: 'GET' });
-
-export const getChatSummary = (chatId) => apiClientJson(`chat/${chatId}/summary`, { method: 'GET' });
-
-export const getChats = (pageable) => apiClientJson(withPageParams('chat', pageable), { method: 'GET' });
-
 // ---- Main ----
 export const getMainStatus = () => apiClientJson('main/status', { method: 'GET' });
 

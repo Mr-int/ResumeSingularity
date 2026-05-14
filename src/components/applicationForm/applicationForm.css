@@ -188,25 +188,6 @@
     text-align: left;
 }
 
-.applicationForm__successChatsBtn {
-    margin-top: 8px;
-    padding: 14px 28px;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    font-family: 'Sansation', sans-serif;
-    font-size: 20px;
-    letter-spacing: 1px;
-    color: #fff;
-    background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
-    transition: opacity 0.2s, transform 0.2s;
-}
-
-.applicationForm__successChatsBtn:hover {
-    opacity: 0.92;
-    transform: translateY(-1px);
-}
-
 .applicationForm__successWindow-tgBlock {
     display: flex;
     flex-direction: column;

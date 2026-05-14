@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './applicationForm.css';
 import exclamationIcon from '../../assets/icons/exclamationIcon.svg';
 import mailIcon from '../../assets/icons/mailIcon.svg';
@@ -86,8 +85,7 @@ const isFullNameValid = (value) => {
 const isFullNameInvalidHint = (value) =>
     value.trim().length > 0 && !isFullNameValid(value);
 
-const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNavigateTo }) => {
-    const navigate = useNavigate();
+const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
     const hasStudent = Boolean(studentId);
     const [formData, setFormData] = useState({
         name: '',
@@ -330,10 +328,18 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
                 companyName: formData.company.trim(),
                 firstName: firstName || '',
                 lastName: lastName || '',
-                email: formData.email?.trim() || '',
-                phoneNumber: formData.phone?.trim() || '',
-                telegramUsername: tgPure.length > 0 ? formData.telegram.trim() : '',
             };
+            const emailTrim = normalizeEmailValue(formData.email);
+            if (emailTrim) {
+                baseData.email = emailTrim;
+            }
+            const phoneTrim = (formData.phone ?? '').trim();
+            if (phoneTrim) {
+                baseData.phoneNumber = phoneTrim;
+            }
+            if (tgPure.length > 0) {
+                baseData.telegramUsername = formData.telegram.trim();
+            }
 
             // Два режима:
             // 1) со страницы студента -> создаем request со studentId
@@ -384,18 +390,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
                             <p className="applicationForm__successWindow-text">
                                 Мы свяжемся с вами в течении 24 часов.
                             </p>
-                            {successNavigateTo ? (
-                                <button
-                                    type="button"
-                                    className="applicationForm__successChatsBtn"
-                                    onClick={() => {
-                                        onClose();
-                                        navigate(successNavigateTo);
-                                    }}
-                                >
-                                    Перейти в чаты
-                                </button>
-                            ) : null}
                         </div>
                     </div>
                 </div>

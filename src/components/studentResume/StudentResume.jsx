@@ -609,7 +609,6 @@ const StudentResume = () => {
                 <ApplicationForm
                     studentName={fullName}
                     studentId={id}
-                    successNavigateTo="/chats"
                     onClose={() => setShowApplicationForm(false)}
                     onSubmit={async (formData) => {
                         console.log('Application for student:', fullName, formData);
