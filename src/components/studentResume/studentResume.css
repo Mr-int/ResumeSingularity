@@ -69,7 +69,7 @@
     justify-content: flex-end;
     padding-top: 200px;
     margin-bottom: 30px;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
 }
 
@@ -84,6 +84,7 @@
     z-index: 2;
     padding: 40px;
     overflow: visible;
+    position: relative;
 }
 
 .StudentResume__header {
@@ -114,6 +115,7 @@
     flex-shrink: 0;
     align-self: flex-start;
     position: relative;
+    z-index: 3;
     overflow: visible;
     box-sizing: border-box;
     padding-top: var(--resumeFaceOverhang);
@@ -121,6 +123,7 @@
     flex-direction: column;
     align-items: center;
     min-height: var(--resumeFaceImg);
+    margin-top: -32px;
 }
 
 .StudentResume__personFace img {
@@ -150,16 +153,16 @@
 .StudentResume__personName h2 {
     font-size: 40px;
     font-family: "StratosSemiLight";
-    margin: 0 0 8px 0;
+    margin: 0 0 15px 0;
 }
 
 .StudentResume__personName p {
     font-size: 28px;
-    margin: 0 0 12px 0;
+    margin: 0 0 24px 0;
 }
 
 .StudentResume__personName .StudentResume__sendBid {
-    margin-top: auto;
+    margin: 0;
 }
 
 .StudentResume__flexInfo {
@@ -184,6 +187,7 @@
     height: 45px;
     max-width: 100%;
     box-sizing: border-box;
+    margin: 0;
     font-family: "Sansation", sans-serif;
     font-size: 22px;
     letter-spacing: 1.5px;
@@ -1157,7 +1161,7 @@
     }
 
     .StudentResume__personName .StudentResume__sendBid {
-        margin-top: 16px;
+        margin: 0;
     }
 
     .StudentResume__personName h2 {
@@ -1234,7 +1238,7 @@
     }
 
     .StudentResume__personName .StudentResume__sendBid {
-        margin-top: 0;
+        margin: 0;
     }
 
     .StudentResume__personName p {
@@ -1248,6 +1252,7 @@
         height: 141px;
         min-height: 0;
         padding-top: 0;
+        margin-top: 0;
         justify-content: center;
     }
 
@@ -1265,6 +1270,7 @@
 
     .StudentResume__personName h2 {
         font-size: 30px;
+        margin: 0 0 15px 0;
     }
 
     .StudentResume__personName p {
@@ -1280,6 +1286,7 @@
         max-width: 280px;
         height: 48px;
         font-size: 18px;
+        margin: 0;
     }
 
     .StudentResume__sendBid img {
