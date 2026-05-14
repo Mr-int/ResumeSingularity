@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Home from './pages/Home.jsx';
 import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
+import Chats from "./pages/Chats.jsx";
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 
@@ -39,6 +40,11 @@ const AppRoutes = () => {
           <Route path='/studentsResume/:id' element={
             <ProtectedRoute>
               <Resume />
+            </ProtectedRoute>
+          } />
+          <Route path='/chats' element={
+            <ProtectedRoute>
+              <Chats />
             </ProtectedRoute>
           } />
         </Routes>

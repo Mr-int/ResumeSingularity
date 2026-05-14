@@ -125,6 +125,7 @@ const FloatingButton = () => {
                 <ApplicationForm
                     studentName={studentName}
                     studentId={studentId}
+                    successNavigateTo="/chats"
                     onClose={handleCloseForm}
                     onSubmit={handleSubmit}
                 />

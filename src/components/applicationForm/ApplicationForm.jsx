@@ -1,4 +1,5 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './applicationForm.css';
 import exclamationIcon from '../../assets/icons/exclamationIcon.svg';
 import mailIcon from '../../assets/icons/mailIcon.svg';
@@ -87,7 +88,8 @@ const isFullNameValid = (value) => {
 const isFullNameInvalidHint = (value) =>
     value.trim().length > 0 && !isFullNameValid(value);
 
-const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
+const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNavigateTo }) => {
+    const navigate = useNavigate();
     const hasStudent = Boolean(studentId);
     const [formData, setFormData] = useState({
         name: '',
@@ -391,6 +393,18 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                             <p className="applicationForm__successWindow-text">
                                 Мы свяжемся с вами в течении 24 часов.
                             </p>
+                            {successNavigateTo ? (
+                                <button
+                                    type="button"
+                                    className="applicationForm__successChatsBtn"
+                                    onClick={() => {
+                                        onClose();
+                                        navigate(successNavigateTo);
+                                    }}
+                                >
+                                    Перейти в чаты
+                                </button>
+                            ) : null}
                         </div>
                     </div>
                 </div>
