@@ -15,8 +15,7 @@
 
 .applicationForm__content {
     width: min(920px, 100%);
-    min-height: 560px;
-    height: auto;
+    min-height: min(800px, calc(100vh - 40px));
     max-height: calc(100vh - 40px);
     background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat center center;
     background-size: cover;
@@ -575,8 +574,7 @@
     .applicationForm__content {
         width: 100%;
         max-width: 100%;
-        min-height: 0;
-        height: auto;
+        min-height: min(480px, calc(100vh - 24px));
         max-height: calc(100vh - 16px);
         padding: 14px 14px 22px;
         justify-content: flex-start;
