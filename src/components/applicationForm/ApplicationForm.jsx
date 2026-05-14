@@ -9,6 +9,28 @@ import { apiClientJson } from '../../utils/apiClient.js';
 
 const getInputNumbersValue = (value) => String(value ?? '').replace(/\D/g, '');
 
+/**
+ * Формат бэкенда: «1–15 цифр и опциональный + в начале» (без пробелов/скобок из маски).
+ */
+const normalizePhoneForApi = (raw) => {
+    let digits = getInputNumbersValue(raw);
+    if (!digits) return '';
+    if (digits.length === 11 && digits[0] === '8') {
+        digits = `7${digits.slice(1)}`;
+    }
+    if (digits.length === 10 && digits[0] === '9') {
+        digits = `7${digits}`;
+    }
+    if (digits.length > 15) {
+        digits = digits.slice(0, 15);
+    }
+    const trimmed = String(raw ?? '').trim();
+    if (trimmed.startsWith('+')) {
+        return `+${digits}`;
+    }
+    return digits;
+};
+
 /** Маска как в демо: РФ 7/8/9 → +7/8 (___) ___-__-__, иначе до +16 цифр. */
 const formatPhoneDisplay = (inputNumbersValue) => {
     if (!inputNumbersValue) return '';
@@ -282,7 +304,9 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
         if (msg.includes('last name') || msg.includes('255') || msg.includes('characters')) return 'Вы должны вписать имя и фамилию через пробел.';
         if (msg.includes('null') || msg.includes('не должно равняться') || msg.includes('обязательн')) return 'Некоторые поля пустые. Заполните все обязательные поля.';
         if (msg.includes('email') || msg.includes('почт')) return 'Укажите корректный адрес почты.';
-        if (msg.includes('телефон') || msg.includes('phone') || msg.includes('номер') || msg.includes('букв') || msg.includes('letter')) return 'Укажите номер телефона в верном формате (только цифры, плюс, скобки или дефис).';
+        if (msg.includes('телефон') || msg.includes('phone') || msg.includes('номер') || msg.includes('digits') || msg.includes('букв') || msg.includes('letter')) {
+            return 'Номер телефона: только цифры (1–15), можно с + в начале — проверьте ввод или оставьте поле пустым, если указали почту/Telegram.';
+        }
         if (body?.message) return body.message;
         return 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.';
     };
@@ -335,7 +359,10 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
             }
             const phoneTrim = (formData.phone ?? '').trim();
             if (phoneTrim) {
-                baseData.phoneNumber = phoneTrim;
+                const phoneForApi = normalizePhoneForApi(formData.phone);
+                if (phoneForApi) {
+                    baseData.phoneNumber = phoneForApi;
+                }
             }
             if (tgPure.length > 0) {
                 baseData.telegramUsername = formData.telegram.trim();
