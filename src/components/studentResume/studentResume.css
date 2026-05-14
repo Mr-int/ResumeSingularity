@@ -460,9 +460,51 @@
     border-radius: 12px;
 }
 
-.StudentResume__contactSlider .student-slider-card--active .student-slider-card__photo {
-    width: 100%;
-    height: 100%;
+/* Макет резюме (≥769px): точные размеры активной карточки */
+@media (min-width: 769px) {
+    .StudentResume__contactSlider .student-slider-card--active .student-slider-card__photoWrapper {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 321.73px;
+    }
+
+    .StudentResume__contactSlider .student-slider-card--active .student-slider-card__photo {
+        width: 295.78px;
+        height: 321.73px;
+        max-width: 100%;
+        border-radius: 12.11px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .StudentResume__contactSlider .student-slider-card__extraIco {
+        width: 51.89px;
+        height: 51.89px;
+        left: 0.75px;
+        right: auto;
+        bottom: calc(51.89px + 16.22px);
+        top: auto;
+        border-radius: 11.35px;
+    }
+
+    .StudentResume__contactSlider .student-slider-card__extraIco img {
+        width: 26px;
+        height: 26px;
+        object-fit: contain;
+    }
+
+    .StudentResume__contactSlider .student-slider-card--active .student-slider-card__course {
+        width: 126.49px;
+        height: 51.89px;
+        left: 0.75px;
+        right: auto;
+        bottom: 0;
+        top: auto;
+        border-radius: 10.38px;
+    }
 }
 
 .StudentResume__contactSlider .student-slider-card__name {
@@ -554,8 +596,25 @@
     z-index: 1;
 }
 
-/* Уже не помещается 320+848: один градиентный «виджет», слева карточка (до 320px), справа текст на оставшуюся ширину */
+/* Между десктопом и мобильным: общий ряд, правый блок сужается (flex), без объединения в один градиент */
 @media (max-width: 1279px) {
+    .StudentResume__contactContent {
+        max-width: 100%;
+        width: 100%;
+        margin: 0 auto;
+        min-height: 512px;
+    }
+
+    .StudentResume__contactInfo {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        max-width: 848px;
+    }
+}
+
+/* С мобильного брейкпоинта — один градиентный виджет, как раньше на 1279px */
+@media (max-width: 768px) {
     .StudentResume__contactContent {
         max-width: 100%;
         min-height: 0;
