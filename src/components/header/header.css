@@ -44,6 +44,26 @@
     display: flex;
     gap: 90px;
     justify-self: start;
+    align-items: center;
+}
+
+.header__cabinetLink {
+    background: none;
+    border: none;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 18px;
+    font-family: "Sansation", sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header__cabinetLink:hover {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .header__logo {

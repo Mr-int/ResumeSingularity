@@ -238,7 +238,7 @@ const ChatsModal = ({ open, onClose }) => {
 
     return (
         <div className="chatsModal__overlay" role="dialog" aria-modal="true" aria-label="Чаты">
-            <div className="chatsModal__backdrop" onClick={onClose} aria-hidden />
+            <div className="chatsModal__backdrop" aria-hidden />
             <div className="chatsModal__panel" onClick={(e) => e.stopPropagation()}>
                 <button type="button" className="chatsModal__close" onClick={onClose} aria-label="Закрыть">
                     ×
