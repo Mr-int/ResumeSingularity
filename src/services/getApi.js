@@ -11,10 +11,13 @@ const withPageParams = (endpoint, pageable) => {
 
 // ---- Students / Recruiters ----
 export const getStudentById = (id) => apiClientJson(`student/${id}`, { method: 'GET' });
-export const getStudentMe = () => apiClientJson('student/me', { method: 'GET' });
+/** 403 не сбрасывает сессию — иначе рекрутёр теряет вход при проверке «не студент». */
+export const getStudentMe = () =>
+    apiClientJson('student/me', { method: 'GET', skipSessionClearOn403: true });
 
 export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { method: 'GET' });
-export const getRecruiterMe = () => apiClientJson('recruiter/me', { method: 'GET' });
+export const getRecruiterMe = () =>
+    apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true });
 
 // ---- Dictionaries / entities ----
 export const getSpecialityById = (id) => apiClientJson(`speciality/${id}`, { method: 'GET' });

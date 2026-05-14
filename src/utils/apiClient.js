@@ -5,21 +5,25 @@ export const apiClientJson = async (endpoint, options = {}) => {
         'Content-Type': 'application/json',
     };
 
+    const skipSessionClearOn403 = options.skipSessionClearOn403 === true;
+    const method = options.method || 'GET';
+    const headers = { ...defaultHeaders, ...options.headers };
+    const body = options.body;
+
     console.log('[API Client] Base URL:', API_BASE_URL);
     console.log('[API Client] Endpoint:', endpoint);
 
     const url = `${API_BASE_URL}${endpoint}`;
     console.log('[API Client] Full URL:', url);
-    console.log('[API Client] Request Body:', options.body);
+    console.log('[API Client] Request Body:', body);
 
     try {
         const response = await fetch(url, {
-            ...options,
-            headers: {
-                ...defaultHeaders,
-                ...options.headers,
-            },
+            method,
+            headers,
+            body,
             credentials: 'include',
+            signal: options.signal,
         });
 
         if (response.status === 401) {
@@ -31,13 +35,25 @@ export const apiClientJson = async (endpoint, options = {}) => {
         }
 
         if (response.status === 403) {
-            console.log('[API] 403 Forbidden - access denied, clearing client auth and requesting login');
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('isAuthenticated_time');
-            sessionStorage.setItem('showLoginAfter403', 'true');
-            window.dispatchEvent(new CustomEvent('resume:auth-required'));
-            const error = new Error('HTTP error! status: 403 - Forbidden');
+            const errorText = await response.text();
+            let responseBody = null;
+            try {
+                responseBody = errorText ? JSON.parse(errorText) : null;
+            } catch (_) {
+                responseBody = { message: errorText };
+            }
+            if (!skipSessionClearOn403) {
+                console.log('[API] 403 Forbidden - access denied, clearing client auth and requesting login');
+                localStorage.removeItem('isAuthenticated');
+                localStorage.removeItem('isAuthenticated_time');
+                sessionStorage.setItem('showLoginAfter403', 'true');
+                window.dispatchEvent(new CustomEvent('resume:auth-required'));
+            } else {
+                console.log('[API] 403 Forbidden (session not cleared — soft probe)');
+            }
+            const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
             error.status = 403;
+            error.responseBody = responseBody;
             throw error;
         }
 

@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ApplicationForm from '../applicationForm/ApplicationForm.jsx';
-import ChatsModal from '../chats/ChatsModal.jsx';
 import { getStudentById } from '../../services/studentApi.js';
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import './floatingButton.css';
 
 const FloatingButton = () => {
+    const navigate = useNavigate();
     const [showForm, setShowForm] = useState(false);
-    const [showChats, setShowChats] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [isHidden, setIsHidden] = useState(false);
@@ -61,7 +60,6 @@ const FloatingButton = () => {
             if (!wrapperRef.current) return;
             if (wrapperRef.current.contains(e.target)) return;
             if (e.target.closest('.applicationForm__overlay')) return;
-            if (e.target.closest('.chatsModal__overlay')) return;
             startClosing();
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -91,7 +89,7 @@ const FloatingButton = () => {
         return Promise.resolve();
     };
 
-    if (isHidden) {
+    if (isHidden || location.pathname === '/chats' || location.pathname === '/settings') {
         return null;
     }
 
@@ -132,11 +130,10 @@ const FloatingButton = () => {
                     onSubmit={handleSubmit}
                     onGoToChats={() => {
                         setShowForm(false);
-                        setShowChats(true);
+                        navigate('/chats');
                     }}
                 />
             )}
-            <ChatsModal open={showChats} onClose={() => setShowChats(false)} />
         </div>
     );
 };

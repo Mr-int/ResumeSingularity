@@ -30,16 +30,17 @@ const ProtectedRoute = ({ children }) => {
             
             setAuthenticated(authStatus);
             setLoading(false);
-            
-            // Показываем форму входа если не авторизован или был 403
-            if (!authStatus || showLoginFlag === 'true') {
-                setShowLogin(true);
-                // Очищаем флаг после использования
+
+            if (authStatus) {
+                setShowLogin(false);
                 if (showLoginFlag === 'true') {
                     sessionStorage.removeItem('showLoginAfter403');
                 }
-            } else {
-                setShowLogin(false);
+                return;
+            }
+            
+            if (!authStatus) {
+                setShowLogin(true);
             }
         };
 

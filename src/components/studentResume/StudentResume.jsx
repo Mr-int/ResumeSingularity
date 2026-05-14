@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import "./studentResume.css";
 // Плейсхолдер аватара, когда у студента нет фото
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
@@ -17,7 +17,6 @@ import {
 } from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
-import ChatsModal from "../chats/ChatsModal.jsx";
 import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
@@ -26,6 +25,7 @@ import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const StudentResume = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -37,7 +37,6 @@ const StudentResume = () => {
     const [skills, setSkills] = useState([]);
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
-    const [showChats, setShowChats] = useState(false);
     const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
     const experienceItemRefs = useRef([]);
 
@@ -617,11 +616,10 @@ const StudentResume = () => {
                     }}
                     onGoToChats={() => {
                         setShowApplicationForm(false);
-                        setShowChats(true);
+                        navigate('/chats');
                     }}
                 />
             )}
-            <ChatsModal open={showChats} onClose={() => setShowChats(false)} />
         </section>
     );
 };

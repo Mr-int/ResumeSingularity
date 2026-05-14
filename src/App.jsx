@@ -1,9 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import Home from './pages/Home.jsx';
 import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
-import Account from "./pages/Account.jsx";
+import Settings from "./pages/Settings.jsx";
+import Chats from "./pages/Chats.jsx";
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 
@@ -42,11 +43,17 @@ const AppRoutes = () => {
               <Resume />
             </ProtectedRoute>
           } />
-          <Route path='/account' element={
+          <Route path='/settings' element={
             <ProtectedRoute>
-              <Account />
+              <Settings />
             </ProtectedRoute>
           } />
+          <Route path='/chats' element={
+            <ProtectedRoute>
+              <Chats />
+            </ProtectedRoute>
+          } />
+          <Route path='/account' element={<Navigate to="/settings" replace />} />
         </Routes>
         <FloatingButton />
 

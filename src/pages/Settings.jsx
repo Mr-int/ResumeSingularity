@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
@@ -73,7 +74,7 @@ const recruiterToForm = (r) => ({
     telegramUsername: r.telegramUsername || '',
 });
 
-const AccountPage = () => {
+const SettingsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [role, setRole] = useState(null);
@@ -234,11 +235,16 @@ const AccountPage = () => {
             <Header />
             <main className="accountPage">
                 <div className="accountPage__inner">
-                    <h1 className="accountPage__title">Личный кабинет</h1>
+                    <h1 className="accountPage__title">Настройки</h1>
                     <p className="accountPage__lead">
-                        Профиль и шаблон редактирования резюме. Данные подгружаются с API{' '}
+                        Профиль, резюме и связь с сервисом. Данные:{' '}
                         <code className="accountPage__code">GET /student/me</code> или{' '}
                         <code className="accountPage__code">GET /recruiter/me</code>.
+                    </p>
+                    <p className="accountPage__settingsNav">
+                        <Link to="/chats" className="accountPage__settingsNavLink">
+                            Перейти к чатам (полный экран)
+                        </Link>
                     </p>
 
                     {loading && <div className="accountPage__muted">Загрузка…</div>}
@@ -466,4 +472,4 @@ const AccountPage = () => {
     );
 };
 
-export default AccountPage;
+export default SettingsPage;
