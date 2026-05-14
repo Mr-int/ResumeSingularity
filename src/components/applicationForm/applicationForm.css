@@ -188,6 +188,30 @@
     text-align: left;
 }
 
+.applicationForm__successActions {
+    margin-top: 8px;
+}
+
+.applicationForm__successChatsBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    border-radius: 100px;
+    border: 2px solid transparent;
+    font-size: 18px;
+    font-family: 'StratosSkyeng', 'StratosLight', sans-serif;
+    color: #fff;
+    cursor: pointer;
+    background: linear-gradient(90deg, #e95a57 0%, #e53bcf 49.5%, #3e8eff 100%) border-box;
+    transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.applicationForm__successChatsBtn:hover {
+    background: transparent;
+    border-color: #fff;
+}
+
 .applicationForm__successWindow-tgBlock {
     display: flex;
     flex-direction: column;

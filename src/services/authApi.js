@@ -1,6 +1,8 @@
 import { API_BASE_URL } from '../config/api.js';
 
 const AUTH_FLAG_KEY = 'isAuthenticated';
+/** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
+export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
 
 /**
  * Авторизация пользователя
@@ -68,6 +70,9 @@ export const login = async (username, password) => {
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
 
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+        if (username != null && String(username).trim()) {
+            localStorage.setItem(AUTH_USERNAME_KEY, String(username).trim());
+        }
         
         return data || { success: true };
     } catch (error) {
@@ -130,6 +135,7 @@ export const isAuthenticated = () => {
 export const logout = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+    localStorage.removeItem(AUTH_USERNAME_KEY);
     document.cookie.split(";").forEach((c) => {
         document.cookie = c
             .replace(/^ +/, "")

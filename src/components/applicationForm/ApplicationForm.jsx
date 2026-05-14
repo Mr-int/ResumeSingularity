@@ -107,7 +107,7 @@ const isFullNameValid = (value) => {
 const isFullNameInvalidHint = (value) =>
     value.trim().length > 0 && !isFullNameValid(value);
 
-const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
+const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChats }) => {
     const hasStudent = Boolean(studentId);
     const [formData, setFormData] = useState({
         name: '',
@@ -417,6 +417,17 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit }) => {
                             <p className="applicationForm__successWindow-text">
                                 Мы свяжемся с вами в течении 24 часов.
                             </p>
+                            {typeof onGoToChats === 'function' ? (
+                                <div className="applicationForm__successActions">
+                                    <button
+                                        type="button"
+                                        className="applicationForm__successChatsBtn"
+                                        onClick={() => onGoToChats()}
+                                    >
+                                        Перейти в чаты
+                                    </button>
+                                </div>
+                            ) : null}
                         </div>
                     </div>
                 </div>

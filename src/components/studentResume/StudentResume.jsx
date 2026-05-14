@@ -17,6 +17,7 @@ import {
 } from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
+import ChatsModal from "../chats/ChatsModal.jsx";
 import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
@@ -36,6 +37,7 @@ const StudentResume = () => {
     const [skills, setSkills] = useState([]);
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
+    const [showChats, setShowChats] = useState(false);
     const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
     const experienceItemRefs = useRef([]);
 
@@ -613,8 +615,13 @@ const StudentResume = () => {
                     onSubmit={async (formData) => {
                         console.log('Application for student:', fullName, formData);
                     }}
+                    onGoToChats={() => {
+                        setShowApplicationForm(false);
+                        setShowChats(true);
+                    }}
                 />
             )}
+            <ChatsModal open={showChats} onClose={() => setShowChats(false)} />
         </section>
     );
 };
