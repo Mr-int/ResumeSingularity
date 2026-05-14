@@ -36,9 +36,7 @@ const formatPhoneDisplay = (inputNumbersValue) => {
     return `+${inputNumbersValue.substring(0, 16)}`;
 };
 
-/** Временно: любой непустой номер (после trim). TODO: вернуть строгую проверку под бэкенд. */
-const isPhoneValid = (raw) => String(raw ?? '').trim().length > 0;
-
+/** Временно: без строгой проверки телефона на клиенте. TODO: под бэкенд. */
 const shouldShowPhoneInvalid = () => false;
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
@@ -316,11 +314,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
         if (isTelegramUsernameTooLong(formData.telegram)) {
             setError(`Имя в Telegram не длиннее ${TG_USERNAME_MAX} символов (a-z, 0-9, _)`);
             setTelegramInvalid(true);
-            return;
-        }
-        if (!isPhoneValid(formData.phone)) {
-            setError('Укажите номер телефона');
-            setPhoneInvalid(true);
             return;
         }
         const emailNorm = normalizeEmailValue(formData.email);
