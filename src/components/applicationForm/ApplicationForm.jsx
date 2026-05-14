@@ -36,33 +36,10 @@ const formatPhoneDisplay = (inputNumbersValue) => {
     return `+${inputNumbersValue.substring(0, 16)}`;
 };
 
-/** Нормализация цифр для РФ: 8… → 7…, 9XXXXXXXXX (10) → 7… */
-const normalizeRussianPhoneDigits = (digits) => {
-    let d = String(digits ?? '').replace(/\D/g, '');
-    if (!d) return '';
-    if (d.length === 11 && d[0] === '8') d = `7${d.slice(1)}`;
-    if (d.length === 10 && d[0] === '9') d = `7${d}`;
-    return d;
-};
+/** Временно: любой непустой номер (после trim). TODO: вернуть строгую проверку под бэкенд. */
+const isPhoneValid = (raw) => String(raw ?? '').trim().length > 0;
 
-const looksLikeRussianPhone = (digits) => {
-    const d = String(digits ?? '').replace(/\D/g, '');
-    if (!d) return false;
-    return d[0] === '7' || d[0] === '8' || d[0] === '9';
-};
-
-/** РФ: 11 цифр после нормализации, с 7. Иначе международный: 10–15 цифр, не с 0. */
-const isPhoneValid = (digitsRaw) => {
-    const d = String(digitsRaw ?? '').replace(/\D/g, '');
-    if (!d) return false;
-    if (looksLikeRussianPhone(d)) {
-        const ru = normalizeRussianPhoneDigits(d);
-        return ru.length === 11 && /^7\d{10}$/.test(ru);
-    }
-    return d.length >= 10 && d.length <= 15 && d[0] !== '0';
-};
-
-/** Как в демо: близко к RFC, без пробелов внутри строки. */
+const shouldShowPhoneInvalid = () => false;
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const TG_USERNAME_MAX = 20;
@@ -87,13 +64,6 @@ const getTelegramPureName = (formatted) =>
 const isTelegramUsernameTooLong = (formatted) => {
     const pure = getTelegramPureName(formatted);
     return pure.length > TG_USERNAME_MAX;
-};
-
-/** Подсветка ошибки телефона: не раньше 10 цифр, чтобы не мешать набору. */
-const shouldShowPhoneInvalid = (phoneValue) => {
-    const digits = getInputNumbersValue(phoneValue);
-    if (!digits) return false;
-    return digits.length >= 10 && !isPhoneValid(digits);
 };
 
 const FULL_NAME_LIMIT = 50;
