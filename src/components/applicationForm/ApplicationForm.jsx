@@ -318,9 +318,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
             setTelegramInvalid(true);
             return;
         }
-        const phoneDigits = getInputNumbersValue(formData.phone);
-        if (!isPhoneValid(phoneDigits)) {
-            setError('Введите корректный номер: РФ — 11 цифр (например +7 или 8 и код), без кода страны — 10 цифр с 9…; другие страны — 10–15 цифр.');
+        if (!isPhoneValid(formData.phone)) {
+            setError('Укажите номер телефона');
             setPhoneInvalid(true);
             return;
         }
