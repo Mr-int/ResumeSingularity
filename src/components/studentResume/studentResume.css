@@ -105,19 +105,19 @@
 }
 
 .StudentResume__personFace {
-    width: 340px;
+    width: 268px;
     position: relative;
     flex-shrink: 0;
     align-self: flex-start;
 }
 
 .StudentResume__personFace img {
-    width: 300px;
-    height: 300px;
+    width: 236px;
+    height: 236px;
     border-radius: 22px;
     border: 2px solid #fff;
     position: absolute;
-    top: -133px;
+    top: -105px;
     object-fit: cover;
 }
 
@@ -983,9 +983,9 @@
     }
 
     .StudentResume__personFace img {
-        width: 280px;
-        height: 280px;
-        top: -124px;
+        width: 220px;
+        height: 220px;
+        top: -97px;
     }
 
     .StudentResume__personName {
@@ -1070,13 +1070,13 @@
     .StudentResume__personFace {
         display: flex;
         align-self: center;
-        height: 141px;
+        height: 111px;
         justify-content: center;
     }
 
     .StudentResume__personFace img {
-        width: 250px;
-        height: 250px;
+        width: 197px;
+        height: 197px;
     }
 
     .StudentResume__personName {
@@ -1332,8 +1332,8 @@
     }
 
     .StudentResume__personFace img {
-        width: 220px;
-        height: 220px;
+        width: 173px;
+        height: 173px;
     }
 
     .StudentResume__personName h2 {
