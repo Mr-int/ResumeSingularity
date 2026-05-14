@@ -36,15 +36,38 @@ const formatPhoneDisplay = (inputNumbersValue) => {
     return `+${inputNumbersValue.substring(0, 16)}`;
 };
 
-const isPhoneIncomplete = (digits) => digits.length > 0 && digits.length < 11;
+/** Нормализация цифр для РФ: 8… → 7…, 9XXXXXXXXX (10) → 7… */
+const normalizeRussianPhoneDigits = (digits) => {
+    let d = String(digits ?? '').replace(/\D/g, '');
+    if (!d) return '';
+    if (d.length === 11 && d[0] === '8') d = `7${d.slice(1)}`;
+    if (d.length === 10 && d[0] === '9') d = `7${d}`;
+    return d;
+};
+
+const looksLikeRussianPhone = (digits) => {
+    const d = String(digits ?? '').replace(/\D/g, '');
+    if (!d) return false;
+    return d[0] === '7' || d[0] === '8' || d[0] === '9';
+};
+
+/** РФ: 11 цифр после нормализации, с 7. Иначе международный: 10–15 цифр, не с 0. */
+const isPhoneValid = (digitsRaw) => {
+    const d = String(digitsRaw ?? '').replace(/\D/g, '');
+    if (!d) return false;
+    if (looksLikeRussianPhone(d)) {
+        const ru = normalizeRussianPhoneDigits(d);
+        return ru.length === 11 && /^7\d{10}$/.test(ru);
+    }
+    return d.length >= 10 && d.length <= 15 && d[0] !== '0';
+};
 
 /** Как в демо: близко к RFC, без пробелов внутри строки. */
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-const TG_USERNAME_MAX = 32;
-const TG_USERNAME_MIN = 5;
+const TG_USERNAME_MAX = 20;
 
-/** Всегда «@» + только a-zA-Z0-9_, длина имени ≤ 32. */
+/** Всегда «@» + только a-zA-Z0-9_, длина имени 1–20. */
 const formatTelegramValue = (raw) => {
     let v = String(raw ?? '');
     if (!v.startsWith('@')) {
@@ -61,9 +84,16 @@ const formatTelegramValue = (raw) => {
 const getTelegramPureName = (formatted) =>
     formatted.length > 1 ? formatted.slice(1) : '';
 
-const isTelegramUsernameTooShort = (formatted) => {
+const isTelegramUsernameTooLong = (formatted) => {
     const pure = getTelegramPureName(formatted);
-    return pure.length > 0 && pure.length < TG_USERNAME_MIN;
+    return pure.length > TG_USERNAME_MAX;
+};
+
+/** Подсветка ошибки телефона: не раньше 10 цифр, чтобы не мешать набору. */
+const shouldShowPhoneInvalid = (phoneValue) => {
+    const digits = getInputNumbersValue(phoneValue);
+    if (!digits) return false;
+    return digits.length >= 10 && !isPhoneValid(digits);
 };
 
 const FULL_NAME_LIMIT = 50;
@@ -150,7 +180,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
     const handleTelegramInput = (e) => {
         const v = formatTelegramValue(e.target.value);
         setFormData(prev => ({ ...prev, telegram: v }));
-        setTelegramInvalid(isTelegramUsernameTooShort(v));
+        setTelegramInvalid(isTelegramUsernameTooLong(v));
         setError('');
     };
 
@@ -170,7 +200,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
         paste = paste.replace(/[^a-zA-Z0-9_]/g, '');
         const next = `@${paste.substring(0, TG_USERNAME_MAX)}`;
         setFormData(prev => ({ ...prev, telegram: next }));
-        setTelegramInvalid(isTelegramUsernameTooShort(next));
+        setTelegramInvalid(isTelegramUsernameTooLong(next));
         setError('');
     };
 
@@ -230,7 +260,9 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
             if (data && /\D/.test(data)) {
                 const formatted = formatPhoneDisplay(inputNumbersValue);
                 setFormData(prev => ({ ...prev, phone: formatted }));
-                setPhoneInvalid(isPhoneIncomplete(getInputNumbersValue(formatted)));
+                setPhoneInvalid(shouldShowPhoneInvalid(formatted));
+            } else {
+                setPhoneInvalid(shouldShowPhoneInvalid(input.value));
             }
             setError('');
             return;
@@ -238,7 +270,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
 
         const formattedInputValue = formatPhoneDisplay(inputNumbersValue);
         setFormData(prev => ({ ...prev, phone: formattedInputValue }));
-        setPhoneInvalid(isPhoneIncomplete(getInputNumbersValue(formattedInputValue)));
+        setPhoneInvalid(shouldShowPhoneInvalid(formattedInputValue));
         setError('');
     };
 
@@ -262,7 +294,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
             pastedDigits.length >= 10 ? pastedDigits : currentDigits + pastedDigits;
         const formatted = formatPhoneDisplay(mergedDigits);
         setFormData(prev => ({ ...prev, phone: formatted }));
-        setPhoneInvalid(isPhoneIncomplete(getInputNumbersValue(formatted)));
+        setPhoneInvalid(shouldShowPhoneInvalid(formatted));
         setError('');
     };
 
@@ -311,14 +343,14 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
             setNameInvalid(true);
             return;
         }
-        if (isTelegramUsernameTooShort(formData.telegram)) {
-            setError('Минимум 5 символов (A-Z, 0-9, _)');
+        if (isTelegramUsernameTooLong(formData.telegram)) {
+            setError(`Имя в Telegram не длиннее ${TG_USERNAME_MAX} символов (a-z, 0-9, _)`);
             setTelegramInvalid(true);
             return;
         }
         const phoneDigits = getInputNumbersValue(formData.phone);
-        if (isPhoneIncomplete(phoneDigits)) {
-            setError('Номер введен не полностью');
+        if (!isPhoneValid(phoneDigits)) {
+            setError('Введите корректный номер: РФ — 11 цифр (например +7 или 8 и код), без кода страны — 10 цифр с 9…; другие страны — 10–15 цифр.');
             setPhoneInvalid(true);
             return;
         }
@@ -338,10 +370,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
                 lastName: lastName || '',
                 email: formData.email?.trim() || '',
                 phoneNumber: formData.phone?.trim() || '',
-                telegramUsername:
-                    getTelegramPureName(formData.telegram).length >= TG_USERNAME_MIN
-                        ? formData.telegram.trim()
-                        : ''
+                telegramUsername: tgPure.length > 0 ? formData.telegram.trim() : '',
             };
 
             // Два режима:
@@ -493,10 +522,10 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
                                     }
                                     role="alert"
                                 >
-                                    Минимум 5 символов (A-Z, 0-9, _)
+                                    Максимум {TG_USERNAME_MAX} символов (a-z, 0-9, _)
                                 </div>
                                 <p className="applicationForm__telegramHint">
-                                    Например: @durov или @username
+                                    {`Имя пользователя 1–${TG_USERNAME_MAX} символов: латиница, цифры, _`}
                                 </p>
                             </div>
                         </div>
@@ -572,7 +601,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, successNav
                                 }
                                 role="alert"
                             >
-                                Номер введен не полностью
+                                Проверьте номер: РФ 11 цифр (7/8/9…) или международный 10–15 цифр
                             </div>
                         </div>
 
