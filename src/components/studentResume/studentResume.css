@@ -105,19 +105,19 @@
 }
 
 .StudentResume__personFace {
-    width: 340px;
+    width: 276px;
     position: relative;
     flex-shrink: 0;
     align-self: flex-start;
 }
 
 .StudentResume__personFace img {
-    width: 300px;
-    height: 300px;
+    width: 236px;
+    height: 236px;
     border-radius: 22px;
     border: 2px solid #fff;
     position: absolute;
-    top: -133px;
+    top: -105px;
     object-fit: cover;
 }
 
@@ -413,28 +413,39 @@
 
 .StudentResume__contactContent {
     display: flex;
-    gap: 30px;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: 24px;
     width: 100%;
-    min-height: 400px;
+    max-width: 1192px;
+    margin: 0 auto;
+    min-height: 512px;
     position: relative;
+    box-sizing: border-box;
 }
 
 .StudentResume__contactSlider {
     display: flex;
-    align-items: stretch;
-    min-height: 380px;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 320px;
+    height: 512px;
+    box-sizing: border-box;
 }
 
-.StudentResume__contactSlider .student-slider-card {
-    height: 380px;
-    min-height: 380px;
-    width: 240px;
-}
-
+.StudentResume__contactSlider .student-slider-card,
 .StudentResume__contactSlider .student-slider-card--active {
-    height: 380px;
-    min-height: 380px;
-    width: 240px;
+    width: 320px;
+    min-width: 320px;
+    height: 512px;
+    min-height: 512px;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 24.22px;
+    gap: 8px;
+    padding: 12px;
 }
 
 .StudentResume__contactSlider .student-slider-card__photoWrapper {
@@ -446,18 +457,39 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 12px;
+}
+
+.StudentResume__contactSlider .student-slider-card--active .student-slider-card__photo {
+    width: 100%;
+    height: 100%;
+}
+
+.StudentResume__contactSlider .student-slider-card__name {
+    width: 100%;
+}
+
+.StudentResume__contactSlider .student-slider-card--active .student-slider-card__name {
+    font-size: 24px;
+}
+
+.StudentResume__contactSlider .student-slider-card--active .student-slider-card__job {
+    font-size: 14px;
 }
 
 .StudentResume__contactInfo {
-    flex: 1;
+    flex: 0 0 auto;
+    width: 848px;
+    height: 512px;
+    box-sizing: border-box;
     background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat;
-    border-radius: 15px;
-    padding: 30px;
+    border-radius: 24px;
+    padding: 28px 36px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 380px;
+    gap: 16px;
     background-position: center center;
     background-size: 100% 100%;
     position: relative;
@@ -469,9 +501,13 @@
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    gap: 32px;
+    gap: 16px;
     z-index: 2;
     position: relative;
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
 }
 
 .StudentResume__contactWrapper button {
@@ -484,7 +520,7 @@
     padding: 8px 20px 8px 24px;
     cursor: pointer;
     transition: all .3s;
-    margin-top: 10px;
+    margin-top: 0;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -493,7 +529,8 @@
 }
 
 .StudentResume__contactWrapper p {
-    width: 400px;
+    width: 100%;
+    max-width: 100%;
     color: #fff;
     font-size: 40px;
     text-align: left;
@@ -515,6 +552,125 @@
     left: -90px;
     top: -90px;
     z-index: 1;
+}
+
+/* Уже не помещается 320+848: один градиентный «виджет», слева карточка (до 320px), справа текст на оставшуюся ширину */
+@media (max-width: 1279px) {
+    .StudentResume__contactContent {
+        max-width: 100%;
+        min-height: 0;
+        padding: 28px 32px;
+        background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat center center;
+        background-size: cover;
+        border-radius: 24px;
+        gap: 24px;
+        align-items: stretch;
+    }
+
+    .StudentResume__contactSlider {
+        flex: 0 1 auto;
+        width: auto;
+        max-width: min(320px, 100%);
+        min-width: 0;
+        height: auto;
+        min-height: 280px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .StudentResume__contactSlider .student-slider-card,
+    .StudentResume__contactSlider .student-slider-card--active {
+        width: 100%;
+        min-width: 0;
+        max-width: 320px;
+        height: auto;
+        min-height: 0;
+        aspect-ratio: 320 / 512;
+    }
+
+    .StudentResume__contactInfo {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+        height: auto;
+        min-height: 260px;
+        background: transparent;
+        border-radius: 0;
+        padding: 8px 0 8px 12px;
+        justify-content: space-between;
+    }
+
+    .StudentResume__contactWrapper {
+        justify-content: space-between;
+        height: 100%;
+        min-height: 220px;
+    }
+
+    .StudentResume__contactWrapper p {
+        font-size: clamp(18px, 2.8vw, 32px);
+    }
+
+    .StudentResume__contactWrapper button {
+        font-size: clamp(16px, 2vw, 22px);
+    }
+
+    .StudentResume__sunIcon {
+        width: 140px;
+        height: 140px;
+        left: -50px;
+        top: -50px;
+    }
+
+    .StudentResume__cloudMailIcon {
+        width: 110px;
+        right: -24px;
+        bottom: -18px;
+    }
+}
+
+@media (max-width: 640px) {
+    .StudentResume__contactContent {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 24px 20px;
+    }
+
+    .StudentResume__contactSlider {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        min-height: 0;
+    }
+
+    .StudentResume__contactSlider .student-slider-card,
+    .StudentResume__contactSlider .student-slider-card--active {
+        max-width: 320px;
+        margin: 0 auto;
+    }
+
+    .StudentResume__contactInfo {
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 0;
+        padding: 12px 0 0;
+        align-items: center;
+    }
+
+    .StudentResume__contactWrapper {
+        align-items: center;
+        text-align: center;
+        min-height: 0;
+    }
+
+    .StudentResume__contactWrapper p {
+        text-align: center;
+    }
+
+    .StudentResume__contactWrapper button {
+        align-self: center;
+    }
 }
 
 .StudentResume__contactDetails {
@@ -929,32 +1085,8 @@
         font-size: 32px;
     }
 
-    .StudentResume__contactInfo {
-        height: 350px;
-        min-height: 350px;
-    }
-
-    .StudentResume__contactSlider {
-        min-height: 350px;
-    }
-    
-    .StudentResume__contactSlider {
-        display: none;
-    }
-
-    .StudentResume__contactSlider .student-slider-card,
-    .StudentResume__contactSlider .student-slider-card--active {
-        height: 350px;
-        min-height: 350px;
-    }
-
     .StudentResume__mainContent {
         max-width: 1200px;
-    }
-
-    .StudentResume__contactWrapper p {
-        width: 350px;
-        font-size: 36px;
     }
 }
 
@@ -980,12 +1112,6 @@
         width: 100%;
         justify-content: center;
         align-self: flex-start;
-    }
-
-    .StudentResume__personFace img {
-        width: 280px;
-        height: 280px;
-        top: -124px;
     }
 
     .StudentResume__personName {
@@ -1020,11 +1146,6 @@
         font-size: 28px;
     }
 
-    .StudentResume__contactContent {
-        flex-direction: column;
-        gap: 40px;
-    }
-
     .StudentResume__contactTitle,
     .StudentResume__similarTitle {
         font-size: 36px;
@@ -1036,10 +1157,6 @@
 }
 
 @media (max-width: 768px) {
-    .StudentResume__contactSlider {
-        display: none;
-    }
-
     .StudentResume__experienceYears {
         font-size: 22px;
     }
@@ -1070,13 +1187,16 @@
     .StudentResume__personFace {
         display: flex;
         align-self: center;
+        width: 141px;
         height: 141px;
         justify-content: center;
     }
 
     .StudentResume__personFace img {
-        width: 250px;
-        height: 250px;
+        width: 141px;
+        height: 141px;
+        position: relative;
+        top: 0;
     }
 
     .StudentResume__personName {
@@ -1166,34 +1286,8 @@
         margin-bottom: 30px;
     }
 
-    .StudentResume__contactContent {
-        flex-direction: column;
-        gap: 40px;
-    }
-
-    .StudentResume__contactInfo {
-        padding: 20px;
-        min-height: 350px;
-    }
-
-    .StudentResume__contactWrapper {
-        align-items: center;
-        text-align: center;
-        gap: 25px;
-    }
-
-    .StudentResume__contactWrapper p {
-        width: 100%;
-        font-size: 28px;
-        text-align: center;
-    }
-
     .StudentResume__similarList {
         gap: 10px;
-    }
-
-    .StudentResume__contactWrapper button {
-        align-self: center;
     }
 
     .StudentResume__cloudMailIcon {
@@ -1254,48 +1348,6 @@
         max-width: 1200px;
     }
 
-    .StudentResume__contactContent {
-        flex-direction: column;
-    }
-
-
-    .StudentResume__contactInfo .student-slider-card {
-        width: 120px;
-        height: 120px;
-        flex-shrink: 0;
-    }
-
-    .StudentResume__contactInfo .student-slider-card__photoWrapper {
-        width: 100%;
-        height: 100%;
-    }
-
-    .StudentResume__contactInfo .student-slider-card__photo {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .StudentResume__contactInfo .student-slider-card__text {
-        display: none;
-    }
-
-    .StudentResume__contactWrapper {
-        flex: 1;
-        gap: 15px;
-    }
-
-    .StudentResume__contactWrapper p {
-        font-size: 18px;
-        width: 100%;
-    }
-
-    .StudentResume__contactWrapper button {
-        min-width: 150px;
-        font-size: 18px;
-        padding: 5px 15px;
-    }
-
     .StudentResume__sunIcon img {
         width: 100px;
         height: 100px;
@@ -1329,11 +1381,6 @@
 
     .StudentResume__mainContent {
         max-width: 1200px;
-    }
-
-    .StudentResume__personFace img {
-        width: 220px;
-        height: 220px;
     }
 
     .StudentResume__personName h2 {
@@ -1376,7 +1423,6 @@
     }
 
     .StudentResume__contactInfo {
-        min-height: 300px;
         padding: 15px;
     }
 
@@ -1422,27 +1468,4 @@
         max-width: 1200px;
     }
 
-    .StudentResume__contactInfo {
-        flex-direction: column;
-        text-align: center;
-        gap: 15px;
-    }
-
-    .StudentResume__contactInfo .student-slider-card {
-        width: 150px;
-        height: 150px;
-    }
-
-    .StudentResume__contactWrapper {
-        align-items: center;
-        text-align: center;
-    }
-
-    .StudentResume__contactWrapper p {
-        font-size: 16px;
-    }
-
-    .StudentResume__contactWrapper button {
-        align-self: center;
-    }
 }

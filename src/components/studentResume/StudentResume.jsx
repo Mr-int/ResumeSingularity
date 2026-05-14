@@ -321,7 +321,7 @@ const StudentResume = () => {
                         <div className="StudentResume__header">
                             <div className="StudentResume__person">
                                 <div className="StudentResume__personFace">
-                                    <img src={imageSrc} alt={`Фото ${fullName}`} width="300" height="300"/>
+                                    <img src={imageSrc} alt={`Фото ${fullName}`} width="236" height="236"/>
                                 </div>
 
                                 <div className="StudentResume__personName">
