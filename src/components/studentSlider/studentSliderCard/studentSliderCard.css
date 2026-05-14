@@ -174,7 +174,7 @@
 }
 
 .student-slider-card__name {
-    font-family: 'StratosLight', sans-serif;
+    font-family: 'StratosRegular';
     letter-spacing: 1px;
     font-size: 20px;
     width: 50%;
@@ -188,7 +188,6 @@
 }
 
 .student-slider-card--active .student-slider-card__name {
-    font-family: 'StratosSemiLight', sans-serif;
     font-size: 22px;
 }
 
