@@ -51,8 +51,8 @@ const LoginModal = ({ onClose, onSuccess }) => {
     };
 
     return (
-        <div className="loginModal__overlay" onClick={onClose}>
-            <div className="loginModal__card" onClick={(e) => e.stopPropagation()}>
+        <div className="loginModal__overlay">
+            <div className="loginModal__card">
                 <button type="button" className="loginModal__backBtn" onClick={onClose} aria-label="Назад">
                     <ChevronLeftIcon />
                 </button>
