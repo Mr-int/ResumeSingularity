@@ -165,7 +165,9 @@ const StudentResume = () => {
 
             } catch (err) {
                 console.error('Fetch error:', err);
-                setError(err.message || 'Ошибка загрузки данных студента');
+                if (err?.status !== 403) {
+                    setError(err.message || 'Ошибка загрузки данных студента');
+                }
             } finally {
                 setLoading(false);
             }

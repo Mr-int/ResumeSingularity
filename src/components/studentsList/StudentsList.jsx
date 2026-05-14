@@ -285,7 +285,9 @@ const StudentsList = () => {
             return all;
         } catch (err) {
             console.error('Failed to fetch filtered students:', err);
-            setError(err.message);
+            if (err?.status !== 403) {
+                setError(err.message);
+            }
             return [];
         } finally {
             setLoading(false);
@@ -326,7 +328,9 @@ const StudentsList = () => {
                 });
                 setAllStudents(data);
             } catch (err) {
-                setError(err.message);
+                if (err?.status !== 403) {
+                    setError(err.message);
+                }
             } finally {
                 setLoading(false);
             }

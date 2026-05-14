@@ -11,6 +11,16 @@ const ProtectedRoute = ({ children }) => {
     const location = useLocation();
 
     useEffect(() => {
+        const onAuthRequired = () => {
+            setAuthenticated(false);
+            setShowLogin(true);
+            setLoading(false);
+        };
+        window.addEventListener('resume:auth-required', onAuthRequired);
+        return () => window.removeEventListener('resume:auth-required', onAuthRequired);
+    }, []);
+
+    useEffect(() => {
         // Проверяем авторизацию при монтировании компонента и при изменении location
         const checkAuth = () => {
             const authStatus = isAuthenticated();

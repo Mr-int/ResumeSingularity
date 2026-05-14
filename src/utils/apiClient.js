@@ -31,7 +31,11 @@ export const apiClientJson = async (endpoint, options = {}) => {
         }
 
         if (response.status === 403) {
-            console.log('[API] 403 Forbidden - access denied');
+            console.log('[API] 403 Forbidden - access denied, clearing client auth and requesting login');
+            localStorage.removeItem('isAuthenticated');
+            localStorage.removeItem('isAuthenticated_time');
+            sessionStorage.setItem('showLoginAfter403', 'true');
+            window.dispatchEvent(new CustomEvent('resume:auth-required'));
             const error = new Error('HTTP error! status: 403 - Forbidden');
             error.status = 403;
             throw error;
