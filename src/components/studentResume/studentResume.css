@@ -83,32 +83,36 @@
     align-items: center;
     z-index: 2;
     padding: 40px;
+    overflow: visible;
 }
 
 .StudentResume__header {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     width: 90%;
-    padding-top: 35px;
-    padding-bottom: 48px;
-    min-height: 200px;
+    padding-top: 20px;
+    padding-bottom: 28px;
+    min-height: 220px;
 }
 
 .StudentResume__person {
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
     gap: 35px;
     flex: 1;
+    min-width: 0;
 }
 
 .StudentResume__personFace {
     width: 276px;
+    min-height: 236px;
     position: relative;
     flex-shrink: 0;
-    align-self: flex-start;
+    align-self: center;
+    overflow: visible;
 }
 
 .StudentResume__personFace img {
@@ -117,45 +121,71 @@
     border-radius: 22px;
     border: 2px solid #fff;
     position: absolute;
-    top: -105px;
+    left: 50%;
+    transform: translateX(-50%);
+    top: -125px;
     object-fit: cover;
 }
 
 .StudentResume__personName {
     color: #fff;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-self: center;
+    min-height: 236px;
+    min-width: 0;
 }
 
 .StudentResume__personName h2 {
     font-size: 40px;
     font-family: "StratosSemiLight";
-    margin-bottom: 10px;
+    margin: 0 0 8px 0;
 }
 
 .StudentResume__personName p {
     font-size: 28px;
-    margin-bottom: 24px;
+    margin: 0 0 12px 0;
+}
+
+.StudentResume__personName .StudentResume__sendBid {
+    margin-top: auto;
 }
 
 .StudentResume__flexInfo {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    justify-content: space-between;
     color: gray;
     font-size: 24px;
-    gap: 22px;
-    margin-top: 20px;
+    gap: 16px;
+    margin-top: 0;
+    min-height: 236px;
+    align-self: center;
     font-family: 'StratosSemiLight';
     flex-shrink: 0;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .StudentResume__sendBid {
-    width: 320px;
-    height: 52px;
+    width: 302px;
+    height: 45px;
+    max-width: 100%;
+    box-sizing: border-box;
     font-family: "Sansation", sans-serif;
-    font-size: 26px;
-    letter-spacing: 2px;
-    gap: 12px;
+    font-size: 22px;
+    letter-spacing: 1.5px;
+    gap: 10px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.StudentResume__sendBid img {
+    width: 22px;
+    height: 22px;
 }
 
 .StudentResume__about {
@@ -478,7 +508,7 @@
     .StudentResume__contactSlider .student-slider-card__extraIco {
         left: 12px;
         right: auto;
-        bottom: 56px;
+        bottom: 71.89px;
         top: auto;
         width: 48px;
         height: 48px;
@@ -497,19 +527,19 @@
         right: auto;
         bottom: 12px;
         top: auto;
-        width: auto;
+        width: 128px;
         max-width: calc(100% - 24px);
         min-width: 0;
-        height: 36px;
+        height: 51.89px;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .StudentResume__contactSlider .student-slider-card--active .student-slider-card__courseBadge {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        min-height: 36px;
+        width: 51.89px;
+        height: 51.89px;
+        min-width: 51.89px;
+        min-height: 51.89px;
         border-radius: 10px 0 0 10px;
         font-size: 18px;
     }
@@ -535,14 +565,14 @@
 }
 
 .StudentResume__contactSlider .student-slider-card--active .student-slider-card__name {
-    font-size: 28px;
+    font-size: 41px;
     line-height: 1.15;
     margin-bottom: 0;
     font-weight: 700;
 }
 
 .StudentResume__contactSlider .student-slider-card--active .student-slider-card__job {
-    font-size: 16px;
+    font-size: 24px;
     font-weight: 400;
     color: #4b5563;
     padding-bottom: 0;
@@ -1192,6 +1222,7 @@
         gap: 24px;
         padding: 25px 0;
         align-items: center;
+        min-height: 0;
     }
 
     .StudentResume__person {
@@ -1200,10 +1231,16 @@
         width: 100%;
         justify-content: center;
         align-self: flex-start;
+        align-items: center;
     }
 
     .StudentResume__personName {
         margin-top: 0;
+        min-height: 0;
+    }
+
+    .StudentResume__personName .StudentResume__sendBid {
+        margin-top: 16px;
     }
 
     .StudentResume__personName h2 {
@@ -1214,12 +1251,17 @@
         font-size: 24px;
     }
 
+    .StudentResume__personFace {
+        min-height: 236px;
+    }
+
     .StudentResume__flexInfo {
         align-items: center;
         flex-direction: row;
         justify-content: space-between;
         gap: 20px;
-        margin-top: 10px;
+        margin-top: 0;
+        min-height: 0;
         width: 100%;
     }
 
@@ -1268,6 +1310,14 @@
         gap: 20px;
     }
 
+    .StudentResume__personName {
+        min-height: 0;
+    }
+
+    .StudentResume__personName .StudentResume__sendBid {
+        margin-top: 0;
+    }
+
     .StudentResume__personName p {
         margin: 0;
     }
@@ -1277,6 +1327,7 @@
         align-self: center;
         width: 141px;
         height: 141px;
+        min-height: 0;
         justify-content: center;
     }
 
@@ -1285,6 +1336,8 @@
         height: 141px;
         position: relative;
         top: 0;
+        left: auto;
+        transform: none;
     }
 
     .StudentResume__personName {
@@ -1420,6 +1473,14 @@
 
     .StudentResume__experienceTimelineNav {
         display: none;
+    }
+
+    .StudentResume__header {
+        min-height: 0;
+    }
+
+    .StudentResume__flexInfo {
+        min-height: 0;
     }
 }
 
