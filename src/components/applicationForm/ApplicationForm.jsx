@@ -309,7 +309,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
         }
         if (body?.message) return body.message;
         return 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.';
-    };в
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
