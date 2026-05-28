@@ -34,9 +34,6 @@ const Header = () => {
                 </Link>
 
                 <div className="header__rightCluster">
-                    <Link to="/settings" className="header__settingsBtn" aria-label="Настройки" title="Настройки">
-                        настройки
-                    </Link>
                     <Link to="/students" className="header__search">
                     <span className="header__searchBtn">
                         <span className="header__searchBtnWhite">найти стажера</span>

@@ -309,7 +309,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
         }
         if (body?.message) return body.message;
         return 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.';
-    };
+    };в
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -418,14 +418,30 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
                                 Мы свяжемся с вами в течении 24 часов.
                             </p>
                             {typeof onGoToChats === 'function' ? (
-                                <div className="applicationForm__successActions">
-                                    <button
-                                        type="button"
-                                        className="applicationForm__successChatsBtn"
-                                        onClick={() => onGoToChats()}
+                                <div className="applicationForm__successWindow-tgBlock">
+                                    <a
+                                        href="#chats"
+                                        className="applicationForm__successWindow-tgLink"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            onGoToChats();
+                                        }}
                                     >
-                                        Перейти в чаты
-                                    </button>
+                                        <div className="applicationForm__successWindow-tgLink-textBlock">
+                                            <span className="applicationForm__successWindow-tgLink-text">
+                                                Перейти в чаты
+                                            </span>
+                                            <span className="applicationForm__successWindow-tgLink-arrow">Открыть →</span>
+                                        </div>
+                                        <span className="applicationForm__successWindow-tgLink-telegramIcon" aria-hidden>
+                                            <svg width="72" height="72" viewBox="0 0 24 24">
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M9.8 15.2 9.4 20c.5 0 .7-.2 1-.4l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6v-.1c.3-1.2-.4-1.7-1.2-1.4L2.9 10.1c-1.2.5-1.2 1.1-.2 1.4l4.7 1.5L18.4 6c.5-.3 1-.1.6.2"
+                                                />
+                                            </svg>
+                                        </span>
+                                    </a>
                                 </div>
                             ) : null}
                         </div>

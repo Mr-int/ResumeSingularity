@@ -54,21 +54,6 @@
     gap: 20px;
 }
 
-.header__settingsBtn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    opacity: 0.88;
-    transition: opacity 0.25s ease, color 0.25s ease, transform 0.2s ease;
-}
-
-.header__settingsBtn:hover {
-    opacity: 1;
-    color: #c4b5fd;
-    transform: rotate(45deg);
-}
-
 .header__logo {
     justify-self: center;
     user-select: none;
