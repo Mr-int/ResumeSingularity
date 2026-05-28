@@ -24,20 +24,29 @@ const mapCourseToApiEnum = (course) => {
 const buildStudentFilterReq = (filters) => {
     const req = {};
     const search = filters.searchQuery?.trim();
-    const course = mapCourseToApiEnum(filters.course);
+    const selectedCourses = Array.isArray(filters.course) ? filters.course : [];
+    const apiCourses = selectedCourses.map(mapCourseToApiEnum).filter(Boolean);
 
     if (search) req.findString = search;
-    if (course) req.course = [course];
+    if (apiCourses.length > 0) req.course = apiCourses;
     if (filters.adult) req.bornAfter = "2006-01-01";
-    if (filters.specialty?.id) req.specialitiesIds = [Number(filters.specialty.id)];
+    const selectedSpecialties = Array.isArray(filters.specialty) ? filters.specialty : [];
+    const specialtyIds = selectedSpecialties
+        .map((specialty) => Number(specialty?.id))
+        .filter((id) => Number.isFinite(id));
+    if (specialtyIds.length > 0) req.specialitiesIds = specialtyIds;
 
     return req;
 };
 
 const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef, specialties }) => {
-    const [selectedCourse, setSelectedCourse] = useState(initialFilters.course || null);
+    const [selectedCourse, setSelectedCourse] = useState(
+        Array.isArray(initialFilters.course) ? initialFilters.course : []
+    );
     const [isAdult, setIsAdult] = useState(initialFilters.adult || false);
-    const [selectedSpecialty, setSelectedSpecialty] = useState(initialFilters.specialty || null);
+    const [selectedSpecialty, setSelectedSpecialty] = useState(
+        Array.isArray(initialFilters.specialty) ? initialFilters.specialty : []
+    );
     const [specialtyDropdownOpen, setSpecialtyDropdownOpen] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
@@ -91,8 +100,11 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     }, [showFilters, specialtyDropdownOpen, setShowFilters]);
 
     const handleSpecialtySelect = (specialty) => {
-        setSelectedSpecialty(specialty);
-        setSpecialtyDropdownOpen(false);
+        setSelectedSpecialty((prev) => {
+            const exists = prev.some((item) => item.id === specialty.id);
+            if (exists) return prev.filter((item) => item.id !== specialty.id);
+            return [...prev, specialty];
+        });
     };
 
     const handleSpecialtyClick = (e) => {
@@ -101,11 +113,9 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     };
 
     const handleCourseClick = (course) => {
-        if (selectedCourse === course) {
-            setSelectedCourse(null);
-        } else {
-            setSelectedCourse(course);
-        }
+        setSelectedCourse((prev) =>
+            prev.includes(course) ? prev.filter((c) => c !== course) : [...prev, course]
+        );
     };
 
     const handleApply = () => {
@@ -117,9 +127,9 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     };
 
     const handleReset = () => {
-        setSelectedCourse(null);
+        setSelectedCourse([]);
         setIsAdult(false);
-        setSelectedSpecialty(null);
+        setSelectedSpecialty([]);
         setSpecialtyDropdownOpen(false);
         onResetFilters();
     };
@@ -134,7 +144,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                     {["1", "2", "3", "4"].map((course) => (
                         <button
                             key={course}
-                            className={`course-btn course-btn--${course} ${selectedCourse === course ? 'active' : ''}`}
+                            className={`course-btn course-btn--${course} ${selectedCourse.includes(course) ? 'active' : ''}`}
                             onClick={(e) => { e.stopPropagation(); handleCourseClick(course); }}
                         >
                             {course}
@@ -163,7 +173,11 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                         className={`specialty-btn ${specialtyDropdownOpen ? 'active' : ''}`}
                         onClick={handleSpecialtyClick}
                     >
-                        <span className="specialty-btn__text">{selectedSpecialty ? selectedSpecialty.name : "Специальность"}</span>
+                        <span className="specialty-btn__text">
+                            {selectedSpecialty.length > 0
+                                ? `Специальности: ${selectedSpecialty.length}`
+                                : "Специальность"}
+                        </span>
                         <img src={arrowIcon} alt="" className="specialty-btn__arrow" />
                     </button>
                     <div
@@ -173,7 +187,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                         {specialties.map((specialty) => (
                             <div
                                 key={specialty.id}
-                                className={`specialty-option ${selectedSpecialty && selectedSpecialty.id === specialty.id ? 'selected' : ''}`}
+                                className={`specialty-option ${selectedSpecialty.some((item) => item.id === specialty.id) ? 'selected' : ''}`}
                                 onClick={(e) => { e.stopPropagation(); handleSpecialtySelect(specialty); }}
                             >
                                 {specialty.name}
@@ -239,9 +253,9 @@ const StudentsList = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [specialties, setSpecialties] = useState([]);
     const [currentFilters, setCurrentFilters] = useState({
-        course: null,
+        course: [],
         adult: false,
-        specialty: null,
+        specialty: [],
         searchQuery: "" // Добавляем searchQuery в фильтры
     });
     const [tempSearchQuery, setTempSearchQuery] = useState(""); // Для временного хранения значения в поле ввода
@@ -321,9 +335,9 @@ const StudentsList = () => {
             try {
                 setLoading(true);
                 const data = await fetchFilteredStudents({
-                    course: null,
+                    course: [],
                     adult: false,
-                    specialty: null,
+                    specialty: [],
                     searchQuery: ""
                 });
                 setAllStudents(data);
@@ -458,9 +472,9 @@ const StudentsList = () => {
     const handleResetFilters = () => {
         console.log('[ACTION] Resetting filters');
         setCurrentFilters({
-            course: null,
+            course: [],
             adult: false,
-            specialty: null,
+            specialty: [],
             searchQuery: ""
         });
         setTempSearchQuery("");
@@ -495,7 +509,11 @@ const StudentsList = () => {
         );
     }
 
-    const hasActiveFilters = currentFilters.course || currentFilters.adult || currentFilters.specialty || currentFilters.searchQuery;
+    const hasActiveFilters =
+        (Array.isArray(currentFilters.course) && currentFilters.course.length > 0) ||
+        currentFilters.adult ||
+        (Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0) ||
+        currentFilters.searchQuery;
     const visibleStudents = allStudents.filter(hasStudentProfilePhoto);
     const totalPages = Math.max(1, Math.ceil(visibleStudents.length / STUDENTS_PER_PAGE));
     const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -606,9 +624,9 @@ const StudentsList = () => {
 
                     {hasActiveFilters && (
                         <div className="active-filters">
-                            {currentFilters.course && (
+                            {Array.isArray(currentFilters.course) && currentFilters.course.length > 0 && (
                                 <div className="active-filter-tag">
-                                    Курс: {currentFilters.course}
+                                    Курс: {currentFilters.course.join(", ")}
                                 </div>
                             )}
                             {currentFilters.adult && (
@@ -616,9 +634,9 @@ const StudentsList = () => {
                                     Старше 18 лет
                                 </div>
                             )}
-                            {currentFilters.specialty && (
+                            {Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0 && (
                                 <div className="active-filter-tag">
-                                    {currentFilters.specialty.name}
+                                    Спец.: {currentFilters.specialty.map((item) => item.name).join(", ")}
                                 </div>
                             )}
                             {currentFilters.searchQuery && (

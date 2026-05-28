@@ -69,10 +69,6 @@
     transform: rotate(45deg);
 }
 
-.header__settingsIcon {
-    display: block;
-}
-
 .header__logo {
     justify-self: center;
     user-select: none;
