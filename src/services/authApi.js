@@ -3,6 +3,8 @@ import { API_BASE_URL } from '../config/api.js';
 const AUTH_FLAG_KEY = 'isAuthenticated';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
+/** Роль с последнего входа (STUDENT, RECRUITER, ADMIN). */
+export const AUTH_ROLE_KEY = 'resumeAuthRole';
 
 /**
  * Авторизация пользователя
@@ -73,6 +75,8 @@ export const login = async (username, password) => {
         if (username != null && String(username).trim()) {
             localStorage.setItem(AUTH_USERNAME_KEY, String(username).trim());
         }
+
+        await syncAuthSession();
         
         return data || { success: true };
     } catch (error) {
@@ -136,6 +140,7 @@ const clearLocalAuth = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
+    localStorage.removeItem(AUTH_ROLE_KEY);
     document.cookie.split(';').forEach((c) => {
         document.cookie = c
             .replace(/^ +/, '')
@@ -145,6 +150,7 @@ const clearLocalAuth = () => {
 
 /**
  * POST /auth/register-student
+ * @param {{ username: string, password: string, passwordConfirm: string, name?: string, phoneNumber: string, phoneVerificationId: string }} body
  */
 export const registerStudent = async (body) => {
     const url = `${API_BASE_URL}auth/register-student`;
@@ -165,6 +171,11 @@ export const registerStudent = async (body) => {
         const err = new Error(msg || `Ошибка ${response.status}`);
         err.status = response.status;
         throw err;
+    }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    if (body.username != null && String(body.username).trim()) {
+        localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
     }
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
@@ -246,4 +257,45 @@ export const logout = () => {
     clearLocalAuth();
     console.log('[AUTH] Logged out, cleared all auth data');
 };
+
+/**
+ * GET /auth/me — синхронизирует флаг входа, логин и роль на клиенте.
+ * @returns {Promise<{ username: string, role: string } | null>}
+ */
+export async function syncAuthSession() {
+    try {
+        const response = await fetch(`${API_BASE_URL}auth/me`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            if (response.status === 401) {
+                clearLocalAuth();
+                return null;
+            }
+            throw new Error(`auth/me failed: ${response.status}`);
+        }
+        const data = await response.json();
+        localStorage.setItem(AUTH_FLAG_KEY, 'true');
+        localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+        if (data?.username) {
+            localStorage.setItem(AUTH_USERNAME_KEY, String(data.username).trim());
+        }
+        if (data?.role) {
+            localStorage.setItem(AUTH_ROLE_KEY, String(data.role).trim());
+        }
+        return data;
+    } catch (e) {
+        console.warn('[AUTH] syncAuthSession failed', e);
+        return null;
+    }
+}
+
+export function getAuthRole() {
+    return localStorage.getItem(AUTH_ROLE_KEY);
+}
+
+export function isAdmin() {
+    return getAuthRole() === 'ADMIN';
+}
 

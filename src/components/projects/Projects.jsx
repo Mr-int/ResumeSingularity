@@ -1,16 +1,91 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { useProjectModal } from "../../context/ProjectModalContext.jsx";
 import "./projects.css";
+import { getProjectsForViewer } from "../../services/projectsApi.js";
+import { getProjectCoverUrl, getProjectTheme } from "../../utils/projectUtils.js";
+import { ProjectBodyText } from "./ProjectBodyText.jsx";
 import GameChebImg from "../../assets/other/GameCheb.png";
 import VrImg from "../../assets/other/vrProject.png";
 import resumeProjectImg from "../../assets/logos/singularityLogo.svg";
 
+const CARD_THEMES = ['gamecheb', 'resume', 'vr'];
+const FALLBACK_IMAGES = [GameChebImg, resumeProjectImg, VrImg];
+
+const STATIC_PROJECTS = [
+    {
+        id: 'static-1',
+        title: 'GameCheb',
+        section: 'Игры',
+        summary:
+            'Это туристический сервис нового поколения для регионов России, где прогулки по городам превращаются в увлекательное приключение.',
+        body: 'Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.\n\nНаша миссия — сохранить чувашскую культуру в настоящем через современный бизнес и туризм.',
+        tags: ['Культура', 'Бизнес', 'IT'],
+        imageSrc: GameChebImg,
+        theme: 'gamecheb',
+    },
+    {
+        id: 'static-2',
+        title: 'Singularity Resume',
+        section: 'Веб-разработка',
+        summary:
+            'Этот сайт создавали студенты нашего колледжа. Начиная с идеи, продолжая дизайном, и заканчивая разработкой.',
+        body: 'Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.\n\nЗадача проекта — минимизировать время поиска кандидата и упростить коммуникацию между работодателем, куратором и студентом.',
+        tags: ['Python', 'JavaScript', 'React', 'Figma', 'PostgreSQL'],
+        imageSrc: resumeProjectImg,
+        theme: 'resume',
+    },
+    {
+        id: 'static-3',
+        title: 'VR-музей',
+        section: 'VR / AR',
+        summary:
+            'Иммерсивный образовательный опыт: искусство и история в виртуальной реальности.',
+        body: 'VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.\n\nВиртуальная реальность позволяет рассматривать эпохи и культуру, а также проживать события внутри картин. Такой формат сочетает обучение, интерактив и практику, усиливает интерес и понимание материала.',
+        tags: ['Unreal Engine 5', 'VR', 'C++'],
+        imageSrc: VrImg,
+        theme: 'vr',
+    },
+];
+
+const mapApiProject = (p, index) => ({
+    id: p.id,
+    title: p.title,
+    section: p.section || null,
+    summary: p.summary || '',
+    body: p.body || p.summary || '',
+    tags: (p.skills ?? []).map((s) => s.name).slice(0, 6),
+    imageSrc: getProjectCoverUrl(p) || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
+    theme: getProjectTheme(index),
+});
+
 const Projects = () => {
+    const { openProject } = useProjectModal();
+    const [projects, setProjects] = useState(STATIC_PROJECTS);
     const [activeCard, setActiveCard] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
     const [expandedCards, setExpandedCards] = useState([1]);
     const [isMobile, setIsMobile] = useState(false);
     const [containerHeight, setContainerHeight] = useState("800px");
     const cardsWrapperRef = useRef(null);
+
+    const cardCount = projects.length;
+
+    useEffect(() => {
+        (async () => {
+            try {
+                const rows = await getProjectsForViewer();
+                if (Array.isArray(rows) && rows.length > 0) {
+                    const mapped = rows.slice(0, 3).map((p, i) => mapApiProject(p, i));
+                    setProjects(mapped);
+                    setExpandedCards([1]);
+                    setActiveCard(1);
+                }
+            } catch (e) {
+                console.warn('[Projects] public API fallback to static', e);
+            }
+        })();
+    }, []);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -50,10 +125,9 @@ const Projects = () => {
             setTimeout(updateHeight, 100);
 
             return () => observer.disconnect();
-        } else {
-            setContainerHeight("auto");
         }
-    }, [activeCard, isMobile]);
+        setContainerHeight("auto");
+    }, [activeCard, isMobile, cardCount]);
 
     const handleCardClick = useCallback((cardNumber) => {
         if (isMobile) {
@@ -94,226 +168,129 @@ const Projects = () => {
 
         if (cardNumber === activeCard) return positions.first;
 
-        const allCards = [1, 2, 3];
+        const allCards = projects.map((_, i) => i + 1);
         const otherCards = allCards.filter(num => num !== activeCard).sort((a, b) => a - b);
         const finalOrder = [activeCard, ...otherCards];
         const cardIndex = finalOrder.indexOf(cardNumber);
 
         return cardIndex === 1 ? positions.second : positions.third;
-    }, [activeCard, isMobile]);
+    }, [activeCard, isMobile, projects]);
 
     const isCardExpanded = useCallback((cardNumber) => {
         return expandedCards.includes(cardNumber);
     }, [expandedCards]);
 
-    const getProjectTitle = useCallback((cardNumber) => {
-        const titles = {
-            1: "GameCheb",
-            2: "Singularity Resume",
-            3: "VR-музей"
-        };
-        return titles[cardNumber];
-    }, []);
+    const cards = useMemo(
+        () =>
+            projects.map((project, index) => {
+                const cardNumber = index + 1;
+                const theme = project.theme || CARD_THEMES[index % CARD_THEMES.length];
+                return (
+                    <div
+                        key={project.id}
+                        className={`card card--${theme} ${activeCard === cardNumber ? 'card__active' : ''} ${isMobile && isCardExpanded(cardNumber) ? 'card__expanded' : ''}`}
+                        onClick={() => handleCardClick(cardNumber)}
+                        style={{
+                            cursor: isAnimating ? 'default' : 'pointer',
+                            ...getCardPosition(cardNumber),
+                            ...(isMobile && {
+                                height: isCardExpanded(cardNumber) ? 'auto' : '47px',
+                                minHeight: isCardExpanded(cardNumber) ? '700px' : '47px'
+                            })
+                        }}
+                    >
+                        <div className={`card__overlay ${activeCard === cardNumber ? 'card__overlay--active' : ''}`}></div>
+                        <div className="card__content">
+                            <div className="card__header">
+                                {isMobile && !isCardExpanded(cardNumber) && (
+                                    <div className="card__dots">
+                                        <span className="card__dot"></span>
+                                        <span className="card__dot"></span>
+                                        <span className="card__dot"></span>
+                                    </div>
+                                )}
+
+                                {(!isMobile || isCardExpanded(cardNumber)) && (
+                                    <div className="card__headerMain">
+                                        {project.section ? (
+                                            <span className="card__section">{project.section}</span>
+                                        ) : null}
+                                        <h3 className="card__title">{project.title}</h3>
+                                    </div>
+                                )}
+                            </div>
+
+                            {isMobile && !isCardExpanded(cardNumber) && (
+                                <div className="card__mobileTitle">{project.title}</div>
+                            )}
+
+                            {isMobile && !isCardExpanded(cardNumber) && (
+                                <div className="card__open-hint">
+                                    <span className="card__open-text">открыть</span>
+                                    <span className="card__open-arrow" aria-hidden>▼</span>
+                                </div>
+                            )}
+
+                            {(!isMobile || isCardExpanded(cardNumber)) && (
+                                <>
+                                    {project.summary ? (
+                                        <p className="card__description">{project.summary}</p>
+                                    ) : null}
+
+                                    {project.tags?.length > 0 && (
+                                        <div className="card__tags">
+                                            {project.tags.map((tag) => (
+                                                <span key={tag} className="card__tag">{tag}</span>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <div className="card__details">
+                                        <div className="card__text">
+                                            <div className="card__text-content">
+                                                <ProjectBodyText text={project.body} />
+                                            </div>
+                                        </div>
+                                        {project.imageSrc ? (
+                                            <div className="card__image">
+                                                <img src={project.imageSrc} alt="" loading="lazy" />
+                                            </div>
+                                        ) : null}
+                                    </div>
+
+                                    {!String(project.id).startsWith('static') ? (
+                                        <button
+                                            type="button"
+                                            className="card__moreLink"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                openProject(project.id);
+                                            }}
+                                        >
+                                            Подробнее →
+                                        </button>
+                                    ) : null}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            }),
+        [projects, activeCard, isMobile, isAnimating, expandedCards, getCardPosition, isCardExpanded, handleCardClick, openProject],
+    );
 
     return (
         <section id="projects" className="projects" style={{ minHeight: containerHeight }}>
             <div className="projects__wrapper">
-                <h2 className="projects__title">Лучшие проекты наших студентов</h2>
+                <div className="projects__head">
+                    <h2 className="projects__title">Лучшие проекты наших студентов</h2>
+                    <p className="projects__more">
+                        <Link to="/projects">Все проекты →</Link>
+                    </p>
+                </div>
 
                 <div className="projects__cardsWrapper" ref={cardsWrapperRef}>
-                    <div
-                        className={`card card--gamecheb ${activeCard === 1 ? 'card__active' : ''} ${isMobile && isCardExpanded(1) ? 'card__expanded' : ''}`}
-                        onClick={() => handleCardClick(1)}
-                        style={{
-                            cursor: isAnimating ? 'default' : 'pointer',
-                            ...getCardPosition(1),
-                            ...(isMobile && {
-                                height: isCardExpanded(1) ? 'auto' : '47px',
-                                minHeight: isCardExpanded(1) ? '700px' : '47px'
-                            })
-                        }}
-                    >
-                        <div className={`card__overlay ${activeCard === 1 ? 'card__overlay--active' : ''}`}></div>
-                        <div className="card__content">
-                            <div className="card__header">
-                                {isMobile && !isCardExpanded(1) && (
-                                    <div className="card__dots">
-                                        <span className="card__dot"></span>
-                                        <span className="card__dot"></span>
-                                        <span className="card__dot"></span>
-                                    </div>
-                                )}
-
-                                {(!isMobile || isCardExpanded(1)) && (
-                                    <h3 className="card__title">{getProjectTitle(1)}</h3>
-                                )}
-                            </div>
-
-                            {isMobile && !isCardExpanded(1) && (
-                                <div className="card__open-hint">
-                                    <span className="card__open-text">открыть</span>
-                                    <span className="card__open-arrow" aria-hidden>▼</span>
-                                </div>
-                            )}
-
-                            {(!isMobile || isCardExpanded(1)) && (
-                                <>
-                                    <p className="card__description">
-                                        Это туристический сервис нового поколения для регионов России, где прогулки по городам превращаются в увлекательное приключение.
-                                    </p>
-
-                                    <div className="card__tags">
-                                        <span className="card__tag">Культура</span>
-                                        <span className="card__tag">Бизнес</span>
-                                        <span className="card__tag">IT</span>
-                                    </div>
-
-                                    <div className="card__details">
-                                        <div className="card__text">
-                                            <div className="card__text-content">
-                                                Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.
-                                                <br /><br />
-                                                Наша миссия — сохранить чувашскую культуру в настоящем через современный бизнес и туризм.
-                                            </div>
-                                        </div>
-                                        <div className="card__image">
-                                            <img src={GameChebImg} alt="GameCheb проект" />
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    <div
-                        className={`card card--resume ${activeCard === 2 ? 'card__active' : ''} ${isMobile && isCardExpanded(2) ? 'card__expanded' : ''}`}
-                        onClick={() => handleCardClick(2)}
-                        style={{
-                            cursor: isAnimating ? 'default' : 'pointer',
-                            ...getCardPosition(2),
-                            ...(isMobile && {
-                                height: isCardExpanded(2) ? 'auto' : '47px',
-                                minHeight: isCardExpanded(2) ? '700px' : '47px'
-                            })
-                        }}
-                    >
-                        <div className={`card__overlay ${activeCard === 2 ? 'card__overlay--active' : ''}`}></div>
-                        <div className="card__content">
-                            <div className="card__header">
-                                {isMobile && !isCardExpanded(2) && (
-                                    <div className="card__dots">
-                                        <span className="card__dot"></span>
-                                        <span className="card__dot"></span>
-                                        <span className="card__dot"></span>
-                                    </div>
-                                )}
-
-                                {(!isMobile || isCardExpanded(2)) && (
-                                    <h3 className="card__title">{getProjectTitle(2)}</h3>
-                                )}
-                            </div>
-
-                            {isMobile && !isCardExpanded(2) && (
-                                <div className="card__open-hint">
-                                    <span className="card__open-text">открыть</span>
-                                    <span className="card__open-arrow" aria-hidden>▼</span>
-                                </div>
-                            )}
-
-                            {(!isMobile || isCardExpanded(2)) && (
-                                <>
-                                    <p className="card__description">
-                                        Этот сайт создавали студенты нашего колледжа. Начиная с идеи, продолжая дизайном, и заканчивая разработкой.
-                                    </p>
-
-                                    <div className="card__tags">
-                                        <span className="card__tag">Python</span>
-                                        <span className="card__tag">JavaScript</span>
-                                        <span className="card__tag">React</span>
-                                        <span className="card__tag">Figma</span>
-                                        <span className="card__tag">PSQL</span>
-                                    </div>
-
-                                    <div className="card__details">
-                                        <div className="card__text">
-                                            <div className="card__text-content">
-                                                Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.
-                                                <br/><br/>
-                                                Задача проекта — минимизировать время поиска кандидата и упростить коммуникацию между работодателем, куратором и студентом.
-                                            </div>
-                                        </div>
-                                        <div className="card__image">
-                                            <img src={resumeProjectImg} alt="Singularity Resume проект" />
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    <div
-                        className={`card card--vr ${activeCard === 3 ? 'card__active' : ''} ${isMobile && isCardExpanded(3) ? 'card__expanded' : ''}`}
-                        onClick={() => handleCardClick(3)}
-                        style={{
-                            cursor: isAnimating ? 'default' : 'pointer',
-                            ...getCardPosition(3),
-                            ...(isMobile && {
-                                height: isCardExpanded(3) ? 'auto' : '47px',
-                                minHeight: isCardExpanded(3) ? '700px' : '47px'
-                            })
-                        }}
-                    >
-                        <div className={`card__overlay ${activeCard === 3 ? 'card__overlay--active' : ''}`}></div>
-                        <div className="card__content">
-                            <div className="card__header">
-                                {isMobile && !isCardExpanded(3) && (
-                                    <div className="card__dots">
-                                        <span className="card__dot"></span>
-                                        <span className="card__dot"></span>
-                                        <span className="card__dot"></span>
-                                    </div>
-                                )}
-
-                                {(!isMobile || isCardExpanded(3)) && (
-                                    <h3 className="card__title">{getProjectTitle(3)}</h3>
-                                )}
-                            </div>
-
-                            {isMobile && !isCardExpanded(3) && (
-                                <div className="card__open-hint">
-                                    <span className="card__open-text">открыть</span>
-                                    <span className="card__open-arrow" aria-hidden>▼</span>
-                                </div>
-                            )}
-
-                            {(!isMobile || isCardExpanded(3)) && (
-                                <>
-                                    <p className="card__description">
-                                        Этот сайт создавали студенты нашего колледжа. Начиная с идеи, продолжая дизайном, и заканчивая разработкой.
-                                    </p>
-
-                                    <div className="card__tags">
-                                        <span className="card__tag">Unreal Engine 5</span>
-                                        <span className="card__tag">Виртуальная реальность</span>
-                                        <span className="card__tag">C++</span>
-                                    </div>
-
-                                    <div className="card__details">
-                                        <div className="card__text">
-                                            <div className="card__text-content">
-                                                VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.
-                                                <br/><br/>
-                                                Виртуальная реальность позволяет рассматривать эпохи и культуру, а также проживать события внутри картин. Такой формат сочетает обучение, интерактив и практику, усиливает интерес и понимание материала.
-                                            </div>
-                                        </div>
-                                        <div className="card__image">
-                                            <img src={VrImg} alt="VR-музей проект" />
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                    {cards}
                 </div>
             </div>
         </section>

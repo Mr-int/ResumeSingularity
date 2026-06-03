@@ -1,0 +1,389 @@
+.vacanciesPage {
+    min-height: calc(100vh - 120px);
+    background: #050508;
+    color: #e4e4e7;
+    padding: 40px 20px 80px;
+}
+
+.vacanciesPage__inner {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.vacanciesPage__title {
+    font-family: 'StratosSkyeng', 'StratosLight', sans-serif;
+    font-size: clamp(28px, 4vw, 36px);
+    font-weight: 600;
+    margin: 0 0 12px;
+    color: #fff;
+}
+
+.vacanciesPage__lead {
+    margin: 0 0 24px;
+    font-size: 15px;
+    color: #a1a1aa;
+    line-height: 1.55;
+}
+
+.vacanciesPage__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.vacanciesPage__toolbar input {
+    flex: 1 1 200px;
+    min-width: 160px;
+    background: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 12px;
+    padding: 11px 14px;
+    color: #fff;
+    font-size: 15px;
+}
+
+.vacanciesPage__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.vacanciesPage__card {
+    display: block;
+    background: #111118;
+    border: 1px solid #232335;
+    border-radius: 16px;
+    padding: 18px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s;
+}
+
+.vacanciesPage__card:hover {
+    border-color: #6366f1;
+}
+
+.vacanciesPage__cardTitle {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: #fff;
+}
+
+.vacanciesPage__cardMeta {
+    margin: 0;
+    font-size: 14px;
+    color: #a1a1aa;
+}
+
+.vacanciesPage__badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    background: rgba(99, 102, 241, 0.15);
+    color: #c4b5fd;
+}
+
+.vacanciesPage__nav {
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.vacanciesPage__nav a {
+    color: #c4b5fd;
+    text-decoration: none;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(196, 181, 253, 0.45);
+}
+
+.vacanciesPage__detailBody {
+    background: #111118;
+    border: 1px solid #232335;
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.vacanciesPage__detailBody h2 {
+    margin: 0 0 12px;
+    color: #fff;
+    font-size: 22px;
+}
+
+.vacanciesPage__detailBody p {
+    margin: 0 0 12px;
+    line-height: 1.55;
+    color: #d4d4d8;
+    white-space: pre-wrap;
+}
+
+.projectsPage__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+}
+
+.projectsPage__hero {
+    margin-bottom: 8px;
+}
+
+.projectsPage__toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 20px 0 8px;
+}
+
+.projectsPage__search {
+    position: relative;
+    display: block;
+}
+
+.projectsPage__search input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 44px 14px 42px;
+    border-radius: 14px;
+    border: 1px solid #2a2a3d;
+    background: linear-gradient(180deg, #14141f 0%, #0f0f16 100%);
+    color: #f4f4f5;
+    font: inherit;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.projectsPage__search input:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+
+.projectsPage__search input::placeholder {
+    color: #71717a;
+}
+
+.projectsPage__searchIcon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a1a1aa;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.projectsPage__searchClear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 999px;
+    background: #27272f;
+    color: #e4e4e7;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.projectsPage__sections {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.projectsPage__sectionChip {
+    border: 1px solid #333348;
+    background: #15151f;
+    color: #d4d4d8;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.projectsPage__sectionChip:hover {
+    border-color: #6d28d9;
+    color: #fff;
+}
+
+.projectsPage__sectionChip--active {
+    background: linear-gradient(90deg, rgba(236, 72, 153, 0.18), rgba(124, 58, 237, 0.22));
+    border-color: #8b5cf6;
+    color: #fff;
+}
+
+.projectsPage__count {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #71717a;
+}
+
+.projectsPage__sectionBadge {
+    display: inline-block;
+    align-self: flex-start;
+    margin-bottom: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #ddd6fe;
+    background: rgba(124, 58, 237, 0.18);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.projectsPage__card {
+    display: flex;
+    flex-direction: column;
+    background: #111118;
+    border: 1px solid #232335;
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    text-align: left;
+    width: 100%;
+    padding: 0;
+    cursor: pointer;
+    font: inherit;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.35s ease,
+        border-color 0.35s ease;
+    will-change: transform;
+}
+
+.projectsPage__card:hover {
+    transform: translateY(-6px);
+    border-color: #4c1d95;
+    box-shadow: 0 20px 40px rgba(76, 29, 149, 0.22);
+}
+
+.projectsPage__cardMedia {
+    position: relative;
+    overflow: hidden;
+}
+
+.projectsPage__photoCount {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.projectsPage__card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.projectsPage__card:hover img {
+    transform: scale(1.06);
+}
+
+.projectsPage__cardPlaceholder {
+    height: 180px;
+    background: linear-gradient(135deg, #1e1b4b, #312e81);
+}
+
+.projectsPage__cardShine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        120deg,
+        transparent 30%,
+        rgba(255, 255, 255, 0.12) 50%,
+        transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.6s ease;
+    pointer-events: none;
+}
+
+.projectsPage__card:hover .projectsPage__cardShine {
+    transform: translateX(120%);
+}
+
+.projectsPage__card--gamecheb:hover {
+    border-color: rgba(113, 226, 160, 0.55);
+}
+
+.projectsPage__card--resume:hover {
+    border-color: rgba(128, 172, 255, 0.55);
+}
+
+.projectsPage__card--vr:hover {
+    border-color: rgba(157, 187, 255, 0.55);
+}
+
+.projectsPage__cardBody {
+    padding: 16px 18px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.projectsPage__cardBody h3 {
+    margin: 0 0 8px;
+    color: #fff;
+    font-size: 18px;
+}
+
+.projectsPage__cardSummary {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: #a1a1aa;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+.projectsPage__skillTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.projectsPage__skillTag {
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    color: #e9d5ff;
+    background: rgba(99, 102, 241, 0.16);
+    border: 1px solid rgba(129, 140, 248, 0.28);
+}
+
+.projectsPage__skillTag--more {
+    color: #c4b5fd;
+    background: rgba(76, 29, 149, 0.2);
+}
+
+.projectsPage__cardCta {
+    font-size: 13px;
+    color: #c4b5fd;
+    letter-spacing: 0.02em;
+}

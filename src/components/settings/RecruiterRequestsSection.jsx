@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { filterRequests } from '../../services/requestApi.js';
+import { filterMyRequests } from '../../services/requestApi.js';
 import { getStudentById } from '../../services/studentApi.js';
 
 const RESULT_LABELS = {
@@ -14,18 +14,17 @@ const RESULT_LABELS = {
     REFUSAL: 'Отклонена',
 };
 
-const RecruiterRequestsSection = ({ recruiterId }) => {
+const RecruiterRequestsSection = () => {
     const [requests, setRequests] = useState([]);
     const [students, setStudents] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
     const load = useCallback(async () => {
-        if (!recruiterId) return;
         setLoading(true);
         setError('');
         try {
-            const res = await filterRequests({ recruiterId }, 0, 50);
+            const res = await filterMyRequests({}, 0, 50);
             const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
             setRequests(rows);
             const map = {};
@@ -45,7 +44,7 @@ const RecruiterRequestsSection = ({ recruiterId }) => {
         } finally {
             setLoading(false);
         }
-    }, [recruiterId]);
+    }, []);
 
     useEffect(() => {
         load();

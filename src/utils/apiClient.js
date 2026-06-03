@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config/api.js';
-import { refreshSession } from '../services/authApi.js';
+import { refreshSession, isAdmin } from '../services/authApi.js';
 
 const clearAuthAndRedirect = () => {
     localStorage.removeItem('isAuthenticated');
@@ -59,14 +59,17 @@ export const apiClientJson = async (endpoint, options = {}) => {
             } catch (_) {
                 responseBody = { message: errorText };
             }
-            if (!skipSessionClearOn403) {
+            if (!skipSessionClearOn403 && !isAdmin()) {
                 console.log('[API] 403 Forbidden - access denied, clearing client auth and requesting login');
                 localStorage.removeItem('isAuthenticated');
                 localStorage.removeItem('isAuthenticated_time');
+                localStorage.removeItem('resumeAuthRole');
                 sessionStorage.setItem('showLoginAfter403', 'true');
                 window.dispatchEvent(new CustomEvent('resume:auth-required'));
-            } else {
+            } else if (skipSessionClearOn403) {
                 console.log('[API] 403 Forbidden (session not cleared — soft probe)');
+            } else {
+                console.log('[API] 403 Forbidden (admin session preserved)');
             }
             const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
             error.status = 403;

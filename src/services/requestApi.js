@@ -23,10 +23,19 @@ export const getRequestById = (id) =>
     apiClientJson(`request/${id}`, { method: 'GET' });
 
 /**
- * POST /request/filter
+ * POST /request/filter (ADMIN)
  */
 export const filterRequests = (filter = {}, page = 0, size = 50) =>
     apiClientJson(`request/filter?${pageQuery(page, size)}`, {
+        method: 'POST',
+        body: JSON.stringify(filter),
+    });
+
+/**
+ * POST /request/mine/filter — заявки текущего студента или рекрутера
+ */
+export const filterMyRequests = (filter = {}, page = 0, size = 50) =>
+    apiClientJson(`request/mine/filter?${pageQuery(page, size)}`, {
         method: 'POST',
         body: JSON.stringify(filter),
     });

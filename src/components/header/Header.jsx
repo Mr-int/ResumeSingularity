@@ -24,6 +24,14 @@ const Header = () => {
             <div className="header__inner">
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
+                    <Link to="/projects" className="header__navLink header__navLink--desktop">
+                        проекты
+                    </Link>
+                    {authed ? (
+                        <Link to="/vacancies" className="header__navLink header__navLink--desktop">
+                            вакансии
+                        </Link>
+                    ) : null}
                 </div>
 
                 <Link to="/" className="header__logoLink">
@@ -98,12 +106,21 @@ const Header = () => {
                     главная
                 </Link>
                 <Link
-                    to="/about"
-                    className="header__mobileBtn header__mobileBtn--about"
+                    to="/projects"
+                    className="header__mobileBtn"
                     onClick={handleMobileLinkClick}
                 >
-                    о студентах
+                    проекты
                 </Link>
+                {authed ? (
+                    <Link
+                        to="/vacancies"
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
+                    >
+                        вакансии
+                    </Link>
+                ) : null}
                 <Link
                     to="/students"
                     className="header__mobileBtn"

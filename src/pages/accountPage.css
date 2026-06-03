@@ -313,3 +313,27 @@
     gap: 10px;
     margin-top: 10px;
 }
+
+.accountPage__skillsChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.accountPage__skillChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    background: #171721;
+    border: 1px solid #2d2d3d;
+    font-size: 13px;
+    color: #d4d4d8;
+    cursor: pointer;
+}
+
+.accountPage__skillChip input {
+    accent-color: #6366f1;
+}

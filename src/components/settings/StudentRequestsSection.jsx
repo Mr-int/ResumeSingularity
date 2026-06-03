@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { filterRequests, postStudentDecision } from '../../services/requestApi.js';
+import { filterMyRequests, postStudentDecision } from '../../services/requestApi.js';
 import { getRecruiterById } from '../../services/getApi.js';
 
 const RESULT_LABELS = {
@@ -17,7 +17,7 @@ const RESULT_LABELS = {
 const canDecide = (result) =>
     result === 'WAITING' || result === 'EXPECTATION' || result === 'CREATION';
 
-const StudentRequestsSection = ({ studentId }) => {
+const StudentRequestsSection = () => {
     const [requests, setRequests] = useState([]);
     const [recruiters, setRecruiters] = useState({});
     const [loading, setLoading] = useState(true);
@@ -26,11 +26,10 @@ const StudentRequestsSection = ({ studentId }) => {
     const [comments, setComments] = useState({});
 
     const load = useCallback(async () => {
-        if (!studentId) return;
         setLoading(true);
         setError('');
         try {
-            const res = await filterRequests({ studentId }, 0, 50);
+            const res = await filterMyRequests({}, 0, 50);
             const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
             setRequests(rows);
             const recruiterMap = {};
@@ -50,7 +49,7 @@ const StudentRequestsSection = ({ studentId }) => {
         } finally {
             setLoading(false);
         }
-    }, [studentId]);
+    }, []);
 
     useEffect(() => {
         load();

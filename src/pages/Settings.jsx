@@ -220,7 +220,7 @@ const SettingsPage = () => {
                                 </div>
                             </section>
 
-                            <StudentRequestsSection studentId={profile.id} />
+                            <StudentRequestsSection />
                         </>
                     )}
 
@@ -257,7 +257,7 @@ const SettingsPage = () => {
                                     </label>
                                 </div>
                             </section>
-                            <RecruiterRequestsSection recruiterId={profile.id} />
+                            <RecruiterRequestsSection />
                         </>
                     )}
                 </div>

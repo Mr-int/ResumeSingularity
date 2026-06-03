@@ -69,6 +69,13 @@
     padding: 0;
 }
 
+.header__navLink--desktop:hover {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .header__logo {
     justify-self: center;
     user-select: none;
