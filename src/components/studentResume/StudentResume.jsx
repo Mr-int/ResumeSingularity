@@ -4,6 +4,7 @@ import "./studentResume.css";
 // Плейсхолдер аватара, когда у студента нет фото
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import mailIcon from "../../assets/icons/mailIcon.svg";
+import arrowSmallIcon from "../../assets/icons/arrow_small.svg";
 import BehindOrange from "../../assets/other/BehindOrange.png";
 import BehindPink from "../../assets/other/BehindPink.png";
 import BehindBlue from "../../assets/other/BehindBlue.png";
@@ -21,6 +22,7 @@ import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
+import { getExperiencePeriodLines } from "../../utils/formatExperiencePeriod.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const StudentResume = () => {
@@ -434,7 +436,12 @@ const StudentResume = () => {
                     <div className="StudentResume__expandableSection">
                         <div className="StudentResume__expandableHeader" onClick={toggleExperience}>
                             <h3 className="StudentResume__expandableTitle">Опыт работы</h3>
-                            <span className={`StudentResume__expandableArrow ${expandedExperience ? 'expanded' : ''}`}></span>
+                            <img
+                                src={arrowSmallIcon}
+                                alt=""
+                                aria-hidden="true"
+                                className={`StudentResume__expandableArrow ${expandedExperience ? 'expanded' : ''}`}
+                            />
                         </div>
 
                         {expandedExperience && (
@@ -453,13 +460,9 @@ const StudentResume = () => {
                                                 >
                                                     <div className="StudentResume__experienceTimeline">
                                                         <div className="StudentResume__experienceYears">
-                                                            {exp.startDate && exp.endDate ? (
-                                                                <span>{exp.startDate} - {exp.endDate}</span>
-                                                            ) : exp.startDate ? (
-                                                                <span>С {exp.startDate}</span>
-                                                            ) : exp.endDate ? (
-                                                                <span>До {exp.endDate}</span>
-                                                            ) : null}
+                                                            {getExperiencePeriodLines(exp.startDate, exp.endDate, exp.current).map((line, lineIndex) => (
+                                                                <span key={lineIndex}>{line}</span>
+                                                            ))}
                                                         </div>
                                                     </div>
 
@@ -504,7 +507,12 @@ const StudentResume = () => {
                     <div className="StudentResume__expandableSection">
                         <div className="StudentResume__expandableHeader" onClick={toggleEducation}>
                             <h3 className="StudentResume__expandableTitle">Образование</h3>
-                            <span className={`StudentResume__expandableArrow ${expandedEducation ? 'expanded' : ''}`}></span>
+                            <img
+                                src={arrowSmallIcon}
+                                alt=""
+                                aria-hidden="true"
+                                className={`StudentResume__expandableArrow ${expandedEducation ? 'expanded' : ''}`}
+                            />
                         </div>
 
                         {expandedEducation && (
