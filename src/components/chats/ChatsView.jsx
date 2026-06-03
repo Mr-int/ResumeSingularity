@@ -113,6 +113,9 @@ const ChatsView = () => {
     const titleCache = useRef(new Map());
     const subtitleCache = useRef(new Map());
     const deepLinkApplied = useRef(false);
+    const messagesLoadGen = useRef(0);
+    const peerLoadKeyRef = useRef('');
+    const [profilePhotoFailed, setProfilePhotoFailed] = useState(false);
 
     const myUsername = useMemo(() => {
         try {
@@ -165,8 +168,15 @@ const ChatsView = () => {
             setChats((prev) => {
                 const i = prev.findIndex((c) => String(c.id) === String(chatId));
                 if (i < 0) return prev;
+                const prevRow = prev[i];
+                const merged = { ...prevRow, ...summary };
+                const same =
+                    prevRow.unreadCount === merged.unreadCount &&
+                    prevRow.lastMessagePreview === merged.lastMessagePreview &&
+                    prevRow.lastActivityAt === merged.lastActivityAt;
+                if (same) return prev;
                 const copy = [...prev];
-                copy[i] = { ...copy[i], ...summary };
+                copy[i] = merged;
                 return copy;
             });
         } catch {
@@ -263,7 +273,7 @@ const ChatsView = () => {
             setLoadingMessages(true);
             setSendError('');
             try {
-                const res = await getChatMessages(chatId, 0, 200);
+                const res = await getChatMessages(chatId, 0, 50);
                 const rows = extractChatPageItems(res);
                 setMessages(rows);
                 const last = rows.filter((m) => !isMessageDeleted(m)).pop();
@@ -305,14 +315,36 @@ const ChatsView = () => {
 
     useEffect(() => {
         if (!selectedId) {
-            setPeerProfile(null);
+            setMessages([]);
             return;
         }
-        loadMessages(selectedId);
-        refreshSummary(selectedId);
+        const gen = ++messagesLoadGen.current;
+        loadMessages(selectedId).then(() => {
+            if (messagesLoadGen.current !== gen) return;
+            refreshSummary(selectedId);
+        });
+    }, [selectedId, loadMessages, refreshSummary]);
+
+    useEffect(() => {
+        if (!selectedId) {
+            setPeerProfile(null);
+            peerLoadKeyRef.current = '';
+            return;
+        }
+        if (!me) return;
+
         const chat = chats.find((c) => String(c.id) === String(selectedId));
-        if (chat) loadPeerProfile(chat);
-    }, [selectedId, loadMessages, refreshSummary, chats, loadPeerProfile]);
+        if (!chat) return;
+
+        const peerKey = `${selectedId}:${chat.studentId || ''}:${chat.recruiterId || ''}`;
+        if (peerLoadKeyRef.current === peerKey) return;
+        peerLoadKeyRef.current = peerKey;
+        loadPeerProfile(chat);
+    }, [selectedId, me, chats, loadPeerProfile]);
+
+    useEffect(() => {
+        setProfilePhotoFailed(false);
+    }, [selectedId, peerProfile?.data?.imagePath]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -394,8 +426,13 @@ const ChatsView = () => {
             const photoUrl = s.imagePath ? getImageUrl(s.imagePath) : null;
             return (
                 <>
-                    {photoUrl ? (
-                        <img src={photoUrl} alt="" className="chatsView__profilePhoto" />
+                    {photoUrl && !profilePhotoFailed ? (
+                        <img
+                            src={photoUrl}
+                            alt=""
+                            className="chatsView__profilePhoto"
+                            onError={() => setProfilePhotoFailed(true)}
+                        />
                     ) : (
                         <div className={`chatsView__avatar chatsView__avatar--profile`} aria-hidden>
                             {initials(name)}
@@ -450,7 +487,7 @@ const ChatsView = () => {
                 ) : null}
             </>
         );
-    }, [peerProfile, loadingPeer, selectedId, me?.role]);
+    }, [peerProfile, loadingPeer, selectedId, me?.role, profilePhotoFailed]);
 
     const showResumeBtn = me?.role === 'recruiter' && peerProfile?.type === 'student' && peerProfile?.data?.id;
 

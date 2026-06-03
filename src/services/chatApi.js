@@ -27,11 +27,20 @@ export const getMyChats = (page = 0, size = 50) =>
 
 /**
  * GET /chat/{chatId}/messages
+ * При 500 на бэкенде пробуем без sort (известная несовместимость pageable).
  */
-export const getChatMessages = (chatId, page = 0, size = 100) =>
-    apiClientJson(`chat/${chatId}/messages?${pageQuery(page, size, ['createdAt,asc'])}`, {
-        method: 'GET',
-    });
+export const getChatMessages = async (chatId, page = 0, size = 50) => {
+    const withSort = `chat/${chatId}/messages?${pageQuery(page, size, ['createdAt,asc'])}`;
+    const noSort = `chat/${chatId}/messages?${pageQuery(page, size, [])}`;
+    try {
+        return await apiClientJson(withSort, { method: 'GET' });
+    } catch (e) {
+        if (e.status === 500 || e.status === 400) {
+            return await apiClientJson(noSort, { method: 'GET' });
+        }
+        throw e;
+    }
+};
 
 /**
  * POST /chat/{chatId}/messages — текстовое сообщение.
