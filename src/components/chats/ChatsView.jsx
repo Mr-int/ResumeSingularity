@@ -9,6 +9,7 @@ import {
     postChatAttachment,
     markChatRead,
     extractChatPageItems,
+    dedupeChatsByPeer,
 } from '../../services/chatApi.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
@@ -115,6 +116,9 @@ const ChatsView = () => {
     const deepLinkApplied = useRef(false);
     const messagesLoadGen = useRef(0);
     const peerLoadKeyRef = useRef('');
+    const chatAliasRef = useRef({});
+    const studentCacheRef = useRef(new Map());
+    const recruiterCacheRef = useRef(new Map());
     const [profilePhotoFailed, setProfilePhotoFailed] = useState(false);
 
     const myUsername = useMemo(() => {
@@ -196,11 +200,19 @@ const ChatsView = () => {
         let subtitle = '';
         try {
             if (party?.role === 'recruiter' && chat.studentId) {
-                const s = await getStudentById(chat.studentId);
+                let s = studentCacheRef.current.get(chat.studentId);
+                if (!s) {
+                    s = await getStudentById(chat.studentId);
+                    studentCacheRef.current.set(chat.studentId, s);
+                }
                 title = `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Студент';
                 subtitle = s.speciality || s.profession || '';
             } else if (party?.role === 'student' && chat.recruiterId) {
-                const r = await getRecruiterById(chat.recruiterId);
+                let r = recruiterCacheRef.current.get(chat.recruiterId);
+                if (!r) {
+                    r = await getRecruiterById(chat.recruiterId);
+                    recruiterCacheRef.current.set(chat.recruiterId, r);
+                }
                 const person = `${r.firstName || ''} ${r.lastName || ''}`.trim();
                 title = r.companyName || person || 'Рекрутер';
                 subtitle = person && r.companyName ? person : '';
@@ -222,10 +234,18 @@ const ChatsView = () => {
             setLoadingPeer(true);
             try {
                 if (me.role === 'recruiter' && chat.studentId) {
-                    const s = await getStudentById(chat.studentId);
+                    let s = studentCacheRef.current.get(chat.studentId);
+                    if (!s) {
+                        s = await getStudentById(chat.studentId);
+                        studentCacheRef.current.set(chat.studentId, s);
+                    }
                     setPeerProfile({ type: 'student', data: s });
                 } else if (me.role === 'student' && chat.recruiterId) {
-                    const r = await getRecruiterById(chat.recruiterId);
+                    let r = recruiterCacheRef.current.get(chat.recruiterId);
+                    if (!r) {
+                        r = await getRecruiterById(chat.recruiterId);
+                        recruiterCacheRef.current.set(chat.recruiterId, r);
+                    }
                     setPeerProfile({ type: 'recruiter', data: r });
                 } else {
                     setPeerProfile(null);
@@ -242,16 +262,23 @@ const ChatsView = () => {
     const loadChats = useCallback(async () => {
         setLoadingList(true);
         setListError('');
+        titleCache.current.clear();
+        subtitleCache.current.clear();
+        studentCacheRef.current.clear();
+        recruiterCacheRef.current.clear();
         try {
             const party = await resolveMe();
             setMe(party);
             const res = await getMyChats(0, 50);
             const rows = extractChatPageItems(res);
-            setChats(rows);
+            const role = party?.role || null;
+            const { chats: deduped, aliasToCanonical } = dedupeChatsByPeer(rows, role);
+            chatAliasRef.current = aliasToCanonical;
+            setChats(deduped);
             const nextTitles = {};
             const nextSubtitles = {};
             await Promise.all(
-                rows.map(async (c) => {
+                deduped.map(async (c) => {
                     const { title, subtitle } = await enrichChatMeta(c, party);
                     nextTitles[c.id] = title;
                     nextSubtitles[c.id] = subtitle;
@@ -305,8 +332,9 @@ const ChatsView = () => {
     }, [loadChats]);
 
     useEffect(() => {
-        const chatId = searchParams.get('chatId');
-        if (!chatId || deepLinkApplied.current || chats.length === 0) return;
+        const rawChatId = searchParams.get('chatId');
+        if (!rawChatId || deepLinkApplied.current || chats.length === 0) return;
+        const chatId = chatAliasRef.current[rawChatId] || rawChatId;
         if (chats.some((c) => String(c.id) === String(chatId))) {
             setSelectedId(chatId);
             deepLinkApplied.current = true;
@@ -460,11 +488,6 @@ const ChatsView = () => {
                             </div>
                         </>
                     ) : null}
-                    {s.id && me?.role === 'recruiter' ? (
-                        <Link to={`/studentsResume/${s.id}`} className="chatsView__offerBtn">
-                            Отправить оффер
-                        </Link>
-                    ) : null}
                 </>
             );
         }
@@ -495,6 +518,15 @@ const ChatsView = () => {
         <div className="chatsView__container" role="application" aria-label="Чаты">
             <aside className="chatsView__dialogs">
                 <div className="chatsView__dialogsHeader">
+                    <nav className="chatsView__pageNav" aria-label="Навигация">
+                        <Link to="/students" className="chatsView__pageNavLink">
+                            ← Каталог
+                        </Link>
+                        <span className="chatsView__pageNavTitle">Чаты</span>
+                        <Link to="/settings" className="chatsView__pageNavLink">
+                            Настройки
+                        </Link>
+                    </nav>
                     <div className="chatsView__searchRow">
                         <input
                             type="search"
@@ -518,7 +550,11 @@ const ChatsView = () => {
                     {filteredChats.map((c, index) => {
                         const active = String(c.id) === String(selectedId);
                         const title = titles[c.id] || '…';
-                        const meta = subtitles[c.id] || c.lastMessagePreview || '';
+                        let meta = subtitles[c.id] || c.lastMessagePreview || '';
+                        if (c._mergedCount > 1) {
+                            const suffix = ` · ${c._mergedCount} заявки`;
+                            meta = meta ? `${meta}${suffix}` : suffix.trim();
+                        }
                         return (
                             <button
                                 key={c.id}

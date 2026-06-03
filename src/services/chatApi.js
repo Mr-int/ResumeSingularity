@@ -9,6 +9,61 @@ export const extractChatPageItems = (res) => {
     return [];
 };
 
+const activityTime = (chat) => Date.parse(chat?.lastActivityAt || 0) || 0;
+
+const pickNewerChat = (a, b) => (activityTime(b) > activityTime(a) ? b : a);
+
+const mergeChatRow = (primary, secondary, mergedIds) => ({
+    ...primary,
+    unreadCount: (Number(primary.unreadCount) || 0) + (Number(secondary.unreadCount) || 0),
+    _mergedCount: mergedIds.length,
+    _mergedIds: mergedIds,
+});
+
+/**
+ * Бэкенд создаёт отдельный chat на каждую заявку (request) — в списке один собеседник
+ * может появиться несколько раз. Оставляем один диалог на пару рекрутер↔студент.
+ *
+ * @returns {{ chats: object[], aliasToCanonical: Record<string, string> }}
+ */
+export const dedupeChatsByPeer = (chats, role) => {
+    const rows = Array.isArray(chats) ? chats : [];
+    const groups = new Map();
+
+    for (const chat of rows) {
+        let key;
+        if (role === 'recruiter' && chat.studentId) {
+            key = `student:${chat.studentId}`;
+        } else if (role === 'student' && chat.recruiterId) {
+            key = `recruiter:${chat.recruiterId}`;
+        } else {
+            key = `chat:${chat.id}`;
+        }
+
+        const existing = groups.get(key);
+        if (!existing) {
+            groups.set(key, { ...chat, _mergedCount: 1, _mergedIds: [chat.id] });
+            continue;
+        }
+
+        const primary = pickNewerChat(existing, chat);
+        const secondary = primary.id === existing.id ? chat : existing;
+        const mergedIds = [...new Set([...(existing._mergedIds || [existing.id]), chat.id])];
+        groups.set(key, mergeChatRow(primary, secondary, mergedIds));
+    }
+
+    const deduped = [...groups.values()].sort((a, b) => activityTime(b) - activityTime(a));
+    const aliasToCanonical = {};
+    for (const row of deduped) {
+        const canonicalId = row.id;
+        for (const id of row._mergedIds || [canonicalId]) {
+            aliasToCanonical[String(id)] = String(canonicalId);
+        }
+    }
+
+    return { chats: deduped, aliasToCanonical };
+};
+
 const pageQuery = (page, size, sortFields = []) => {
     const p = new URLSearchParams();
     p.set('page', String(page));
