@@ -93,7 +93,7 @@
     align-items: flex-end;
     width: 90%;
     padding-top: 35px;
-    padding-bottom: 24px;
+    padding-bottom: 10px;
     min-height: 200px;
     position: relative;
     box-sizing: border-box;
@@ -186,13 +186,14 @@
 }
 
 .StudentResume__sectionTitle {
-    font-family: "StratosSemiLight", serif;
+    font-family: StratosExtraLight, sans-serif;
     color: #fff;
     font-size: 32px;
     margin: 0;
 }
 
 .StudentResume__sectionText {
+    font-family: 'StratosLight', sans-serif;
     color: #fff;
     font-size: 24px;
     line-height: 1.7;
