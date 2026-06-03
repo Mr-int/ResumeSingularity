@@ -584,9 +584,13 @@ const StudentResume = () => {
                     onSubmit={async (formData) => {
                         console.log('Application for student:', fullName, formData);
                     }}
-                    onGoToChats={() => {
+                    onGoToChats={(chatId) => {
                         setShowApplicationForm(false);
-                        navigate('/chats');
+                        navigate(
+                            chatId
+                                ? `/chats?chatId=${encodeURIComponent(chatId)}`
+                                : '/chats',
+                        );
                     }}
                 />
             )}

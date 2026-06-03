@@ -1,4 +1,13 @@
+import { API_BASE_URL } from '../config/api.js';
 import { apiClientJson } from '../utils/apiClient.js';
+
+/** Spring Page: data или content, иногда массив напрямую */
+export const extractChatPageItems = (res) => {
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
+    if (Array.isArray(res?.content)) return res.content;
+    return [];
+};
 
 const pageQuery = (page, size, sortFields = []) => {
     const p = new URLSearchParams();
@@ -40,4 +49,58 @@ export const markChatRead = (chatId, messageId) =>
     apiClientJson(`chat/${chatId}/read`, {
         method: 'POST',
         body: JSON.stringify({ messageId }),
+    });
+
+/**
+ * GET /chat/{chatId}/summary
+ */
+export const getChatSummary = (chatId) =>
+    apiClientJson(`chat/${chatId}/summary`, { method: 'GET' });
+
+/**
+ * POST /chat/{chatId}/messages/attachment — multipart
+ */
+export const postChatAttachment = async (chatId, file, body = '') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (body != null && String(body).trim()) {
+        formData.append('body', String(body).trim());
+    }
+
+    const url = `${API_BASE_URL}chat/${chatId}/messages/attachment`;
+    const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        let msg = errorText;
+        try {
+            const j = JSON.parse(errorText);
+            msg = j.message || errorText;
+        } catch {
+            /* empty */
+        }
+        const err = new Error(msg || `Ошибка ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        return response.json();
+    }
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
+};
+
+/**
+ * PATCH /chat/{chatId}/messages/{messageId}
+ */
+export const patchChatMessage = (chatId, messageId, body) =>
+    apiClientJson(`chat/${chatId}/messages/${messageId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ body: body ?? '' }),
     });

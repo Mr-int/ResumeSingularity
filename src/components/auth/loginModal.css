@@ -278,6 +278,22 @@
     }
 }
 
+.loginModal__infoBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #3f3f46;
+}
+
+.loginModal__infoText {
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: #52525b;
+    text-align: center;
+}
+
 @media (max-width: 480px) {
     .loginModal__card {
         padding: 36px 22px;

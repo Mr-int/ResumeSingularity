@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ChatsView from '../components/chats/ChatsView.jsx';
+import '../components/chats/chatsView.css';
 import '../components/chats/chatsModal.css';
 
 const ChatsPage = () => (

@@ -2,43 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
+import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
+import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
-import { patchStudent, patchRecruiter, uploadStudentPhoto } from '../services/accountApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
-
-const COURSE_OPTIONS = ['NEW', 'FIRST', 'SECOND', 'THIRD', 'FOURTH'];
-const BUSYNESS_OPTIONS = ['FREE', 'FREELANCE', 'EMPLOYED'];
-
-const parseSkillsIds = (raw) =>
-    String(raw ?? '')
-        .split(/[\s,;]+/)
-        .map((s) => Number(s.trim()))
-        .filter((n) => Number.isFinite(n) && n > 0);
-
-const normalizePhone = (raw) => {
-    const digits = String(raw ?? '').replace(/\D/g, '');
-    if (!digits) return '';
-    const trimmed = String(raw ?? '').trim();
-    if (trimmed.startsWith('+')) return `+${digits}`;
-    return digits;
-};
-
-const emptyStudentForm = () => ({
-    firstName: '',
-    lastName: '',
-    city: '',
-    bio: '',
-    hhLink: '',
-    birthDate: '',
-    course: 'FIRST',
-    busyness: 'FREE',
-    email: '',
-    phoneNumber: '',
-    telegramUsername: '',
-    specialityId: '',
-    skillsIds: '',
-});
 
 const studentToForm = (s) => ({
     firstName: s.firstName || '',
@@ -53,16 +21,9 @@ const studentToForm = (s) => ({
     phoneNumber: s.phoneNumber || '',
     telegramUsername: s.telegramUsername || '',
     specialityId: s.specialityId != null ? String(s.specialityId) : '',
-    skillsIds: Array.isArray(s.skills) ? s.skills.map((sk) => sk.id).filter(Boolean).join(', ') : '',
-});
-
-const emptyRecruiterForm = () => ({
-    companyName: '',
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    telegramUsername: '',
+    skillsLabel: Array.isArray(s.skills)
+        ? s.skills.map((sk) => sk.name || sk.title || sk.id).filter(Boolean).join(', ')
+        : '',
 });
 
 const recruiterToForm = (r) => ({
@@ -74,21 +35,21 @@ const recruiterToForm = (r) => ({
     telegramUsername: r.telegramUsername || '',
 });
 
+const ReadOnlyInput = ({ value, ...rest }) => (
+    <input {...rest} value={value ?? ''} readOnly className="accountPage__inputReadonly" />
+);
+
 const SettingsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [role, setRole] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [studentForm, setStudentForm] = useState(emptyStudentForm());
-    const [recruiterForm, setRecruiterForm] = useState(emptyRecruiterForm());
-    const [saveOk, setSaveOk] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [photoBusy, setPhotoBusy] = useState(false);
+    const [studentForm, setStudentForm] = useState(studentToForm({}));
+    const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
 
     const loadProfile = useCallback(async () => {
         setLoading(true);
         setError('');
-        setSaveOk('');
         try {
             try {
                 const s = await getStudentMe();
@@ -126,108 +87,6 @@ const SettingsPage = () => {
         loadProfile();
     }, [loadProfile]);
 
-    const handleStudentChange = (e) => {
-        const { name, value } = e.target;
-        setStudentForm((prev) => ({ ...prev, [name]: value }));
-        setSaveOk('');
-    };
-
-    const handleRecruiterChange = (e) => {
-        const { name, value } = e.target;
-        setRecruiterForm((prev) => ({ ...prev, [name]: value }));
-        setSaveOk('');
-    };
-
-    const buildStudentPatch = () => {
-        const body = {};
-        const f = studentForm;
-        if (f.firstName.trim()) body.firstName = f.firstName.trim();
-        if (f.lastName.trim()) body.lastName = f.lastName.trim();
-        if (f.city.trim()) body.city = f.city.trim();
-        if (f.bio.trim()) body.bio = f.bio.trim();
-        if (f.hhLink.trim()) body.hhLink = f.hhLink.trim();
-        if (f.birthDate.trim()) body.birthDate = f.birthDate.trim();
-        if (f.course) body.course = f.course;
-        if (f.busyness) body.busyness = f.busyness;
-        if (f.email.trim()) body.email = f.email.trim();
-        const phone = normalizePhone(f.phoneNumber);
-        if (phone) body.phoneNumber = phone;
-        if (f.telegramUsername.trim()) body.telegramUsername = f.telegramUsername.trim().replace(/^@/, '');
-        if (f.specialityId.trim()) {
-            const n = Number(f.specialityId.trim());
-            if (Number.isFinite(n) && n > 0) body.specialityId = n;
-        }
-        const ids = parseSkillsIds(f.skillsIds);
-        if (ids.length) body.skillsIds = ids;
-        return body;
-    };
-
-    const saveStudent = async (e) => {
-        e.preventDefault();
-        if (!profile?.id) return;
-        setSaving(true);
-        setSaveOk('');
-        setError('');
-        try {
-            const body = buildStudentPatch();
-            const updated = await patchStudent(profile.id, body);
-            setProfile(updated);
-            setStudentForm(studentToForm(updated));
-            setSaveOk('Изменения сохранены');
-        } catch (err) {
-            setError(err.message || 'Ошибка сохранения');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const saveRecruiter = async (e) => {
-        e.preventDefault();
-        if (!profile?.id) return;
-        setSaving(true);
-        setSaveOk('');
-        setError('');
-        try {
-            const f = recruiterForm;
-            const body = {};
-            if (f.companyName.trim()) body.companyName = f.companyName.trim();
-            if (f.firstName.trim()) body.firstName = f.firstName.trim();
-            if (f.lastName.trim()) body.lastName = f.lastName.trim();
-            if (f.email.trim()) body.email = f.email.trim();
-            const phone = normalizePhone(f.phoneNumber);
-            if (phone) body.phoneNumber = phone;
-            if (f.telegramUsername.trim()) body.telegramUsername = f.telegramUsername.trim().replace(/^@/, '');
-            const updated = await patchRecruiter(profile.id, body);
-            setProfile(updated);
-            setRecruiterForm(recruiterToForm(updated));
-            setSaveOk('Изменения сохранены');
-        } catch (err) {
-            setError(err.message || 'Ошибка сохранения');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const onPhoto = async (e) => {
-        const file = e.target.files?.[0];
-        e.target.value = '';
-        if (!file || !profile?.id) return;
-        setPhotoBusy(true);
-        setError('');
-        setSaveOk('');
-        try {
-            await uploadStudentPhoto(profile.id, file);
-            const fresh = await getStudentMe();
-            setProfile(fresh);
-            setStudentForm(studentToForm(fresh));
-            setSaveOk('Фото обновлено');
-        } catch (err) {
-            setError(err.message || 'Не удалось загрузить фото');
-        } finally {
-            setPhotoBusy(false);
-        }
-    };
-
     const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
 
     return (
@@ -237,13 +96,11 @@ const SettingsPage = () => {
                 <div className="accountPage__inner">
                     <h1 className="accountPage__title">Настройки</h1>
                     <p className="accountPage__lead">
-                        Профиль, резюме и связь с сервисом. Данные:{' '}
-                        <code className="accountPage__code">GET /student/me</code> или{' '}
-                        <code className="accountPage__code">GET /recruiter/me</code>.
+                        Просмотр профиля. Изменения в анкете вносит администратор после модерации.
                     </p>
                     <p className="accountPage__settingsNav">
                         <Link to="/chats" className="accountPage__settingsNavLink">
-                            Перейти к чатам (полный экран)
+                            Перейти к чатам
                         </Link>
                     </p>
 
@@ -253,9 +110,8 @@ const SettingsPage = () => {
                         <section className="accountPage__card">
                             <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
                             <p className="accountPage__text">
-                                Профиль ещё не привязан (ответ <code className="accountPage__code">404</code> на{' '}
-                                <code className="accountPage__code">/recruiter/me</code>). Оставьте заявку на сайте —
-                                после этого данные появятся здесь.
+                                Профиль ещё не привязан. Оставьте заявку на сайте — после одобрения администратором
+                                данные появятся здесь.
                             </p>
                         </section>
                     )}
@@ -268,6 +124,11 @@ const SettingsPage = () => {
 
                     {!loading && role === 'student' && profile && (
                         <>
+                            {studentForm.course === 'NEW' && (
+                                <div className="accountPage__banner" role="status">
+                                    Профиль с курсом NEW не показывается рекрутерам до модерации и заполнения.
+                                </div>
+                            )}
                             <section className="accountPage__card">
                                 <h2 className="accountPage__cardTitle">Профиль студента</h2>
                                 <div className="accountPage__avatarRow">
@@ -278,192 +139,126 @@ const SettingsPage = () => {
                                             ?
                                         </div>
                                     )}
-                                    <div>
-                                        <label className="accountPage__fileLabel">
-                                            <input
-                                                type="file"
-                                                accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff,.heic,.heif,.avif"
-                                                className="accountPage__fileInput"
-                                                onChange={onPhoto}
-                                                disabled={photoBusy}
-                                                aria-label="Загрузить фото профиля"
-                                            />
-                                            <span className="accountPage__fileLabelText">
-                                                {photoBusy ? 'Загрузка…' : 'Загрузить фото'}
-                                            </span>
-                                        </label>
-                                        <p className="accountPage__hint">
-                                            <code className="accountPage__code">POST /student/photo/&#123;id&#125;</code>, поле{' '}
-                                            <code className="accountPage__code">avatarFile</code>
-                                        </p>
-                                    </div>
                                 </div>
 
-                                <form className="accountPage__form" onSubmit={saveStudent}>
+                                <div className="accountPage__readonlyMeta">
+                                    {profile.profileTextScore != null && (
+                                        <p>
+                                            Заполненность профиля: <strong>{profile.profileTextScore}</strong>
+                                        </p>
+                                    )}
+                                    <p>
+                                        Публичная витрина:{' '}
+                                        <strong>{profile.publicProfileConsent ? 'да' : 'нет'}</strong>
+                                    </p>
+                                </div>
+
+                                <div className="accountPage__form accountPage__form--readonly">
                                     <div className="accountPage__grid2">
                                         <label className="accountPage__field">
                                             <span>Имя</span>
-                                            <input name="firstName" value={studentForm.firstName} onChange={handleStudentChange} />
+                                            <ReadOnlyInput value={studentForm.firstName} />
                                         </label>
                                         <label className="accountPage__field">
                                             <span>Фамилия</span>
-                                            <input name="lastName" value={studentForm.lastName} onChange={handleStudentChange} />
+                                            <ReadOnlyInput value={studentForm.lastName} />
                                         </label>
                                     </div>
                                     <div className="accountPage__grid2">
                                         <label className="accountPage__field">
                                             <span>Город</span>
-                                            <input name="city" value={studentForm.city} onChange={handleStudentChange} />
+                                            <ReadOnlyInput value={studentForm.city} />
                                         </label>
                                         <label className="accountPage__field">
                                             <span>Дата рождения</span>
-                                            <input type="date" name="birthDate" value={studentForm.birthDate} onChange={handleStudentChange} />
+                                            <ReadOnlyInput type="date" value={studentForm.birthDate} />
                                         </label>
                                     </div>
                                     <label className="accountPage__field">
                                         <span>Ссылка на HH</span>
-                                        <input name="hhLink" value={studentForm.hhLink} onChange={handleStudentChange} placeholder="https://…" />
+                                        <ReadOnlyInput value={studentForm.hhLink} />
                                     </label>
                                     <label className="accountPage__field">
-                                        <span>О себе (bio)</span>
-                                        <textarea name="bio" value={studentForm.bio} onChange={handleStudentChange} rows={4} />
+                                        <span>О себе</span>
+                                        <textarea
+                                            className="accountPage__inputReadonly"
+                                            value={studentForm.bio}
+                                            readOnly
+                                            rows={4}
+                                        />
                                     </label>
                                     <div className="accountPage__grid2">
                                         <label className="accountPage__field">
                                             <span>Курс</span>
-                                            <select name="course" value={studentForm.course} onChange={handleStudentChange}>
-                                                {COURSE_OPTIONS.map((c) => (
-                                                    <option key={c} value={c}>
-                                                        {c}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <ReadOnlyInput value={studentForm.course} />
                                         </label>
                                         <label className="accountPage__field">
                                             <span>Занятость</span>
-                                            <select name="busyness" value={studentForm.busyness} onChange={handleStudentChange}>
-                                                {BUSYNESS_OPTIONS.map((c) => (
-                                                    <option key={c} value={c}>
-                                                        {c}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <ReadOnlyInput value={studentForm.busyness} />
                                         </label>
                                     </div>
                                     <div className="accountPage__grid2">
                                         <label className="accountPage__field">
                                             <span>Email</span>
-                                            <input type="email" name="email" value={studentForm.email} onChange={handleStudentChange} />
+                                            <ReadOnlyInput value={studentForm.email} />
                                         </label>
                                         <label className="accountPage__field">
                                             <span>Телефон</span>
-                                            <input name="phoneNumber" value={studentForm.phoneNumber} onChange={handleStudentChange} placeholder="+7…" />
+                                            <ReadOnlyInput value={studentForm.phoneNumber} />
                                         </label>
                                     </div>
                                     <label className="accountPage__field">
-                                        <span>Telegram (без @)</span>
-                                        <input name="telegramUsername" value={studentForm.telegramUsername} onChange={handleStudentChange} />
+                                        <span>Telegram</span>
+                                        <ReadOnlyInput value={studentForm.telegramUsername} />
                                     </label>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>ID специальности</span>
-                                            <input name="specialityId" value={studentForm.specialityId} onChange={handleStudentChange} placeholder="например 1" />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>ID навыков через запятую</span>
-                                            <input name="skillsIds" value={studentForm.skillsIds} onChange={handleStudentChange} placeholder="1, 2, 3" />
-                                        </label>
-                                    </div>
                                     {profile.speciality ? (
-                                        <p className="accountPage__hint">Специальность в карточке: {profile.speciality}</p>
+                                        <p className="accountPage__hint">Специальность: {profile.speciality}</p>
                                     ) : null}
-
-                                    {error ? (
-                                        <div className="accountPage__error" role="alert">
-                                            {error}
-                                        </div>
+                                    {studentForm.skillsLabel ? (
+                                        <p className="accountPage__hint">Навыки: {studentForm.skillsLabel}</p>
                                     ) : null}
-                                    {saveOk ? <div className="accountPage__ok">{saveOk}</div> : null}
-
-                                    <button type="submit" className="accountPage__submit" disabled={saving}>
-                                        {saving ? 'Сохранение…' : 'Сохранить профиль'}
-                                    </button>
-                                    <p className="accountPage__hint">
-                                        Запрос: <code className="accountPage__code">PATCH /student/&#123;id&#125;</code> с телом{' '}
-                                        <code className="accountPage__code">PatchStudentReq</code> (только заполненные поля).
-                                    </p>
-                                </form>
+                                </div>
                             </section>
 
-                            <section className="accountPage__card accountPage__card--muted">
-                                <h2 className="accountPage__cardTitle">Резюме — шаблон расширения</h2>
-                                <p className="accountPage__text">
-                                    Здесь позже можно собрать полноценный редактор резюме: опыт работы, образование, портфолио и
-                                    предпросмотр карточки. Сейчас это заготовка под те же API, что и в каталоге студентов.
-                                </p>
-                                <ul className="accountPage__list">
-                                    <li>
-                                        Опыт: типичные эндпоинты вида <code className="accountPage__code">GET/POST …/experience</code> (по
-                                        документации бэкенда)
-                                    </li>
-                                    <li>Образование: institution / education</li>
-                                    <li>Портфолио: привязка проектов к студенту</li>
-                                    <li>Публикация: статусы модерации и курс <code className="accountPage__code">NEW</code></li>
-                                </ul>
-                                <p className="accountPage__hint">
-                                    Минимально достаточно обновлять профиль и фото выше; остальное можно наращивать отдельными формами.
-                                </p>
-                            </section>
+                            <StudentRequestsSection studentId={profile.id} />
                         </>
                     )}
 
                     {!loading && role === 'recruiter' && profile && (
-                        <section className="accountPage__card">
-                            <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
-                            <form className="accountPage__form" onSubmit={saveRecruiter}>
-                                <label className="accountPage__field">
-                                    <span>Компания</span>
-                                    <input name="companyName" value={recruiterForm.companyName} onChange={handleRecruiterChange} required />
-                                </label>
-                                <div className="accountPage__grid2">
+                        <>
+                            <section className="accountPage__card">
+                                <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
+                                <div className="accountPage__form accountPage__form--readonly">
                                     <label className="accountPage__field">
-                                        <span>Имя</span>
-                                        <input name="firstName" value={recruiterForm.firstName} onChange={handleRecruiterChange} />
+                                        <span>Компания</span>
+                                        <ReadOnlyInput value={recruiterForm.companyName} />
+                                    </label>
+                                    <div className="accountPage__grid2">
+                                        <label className="accountPage__field">
+                                            <span>Имя</span>
+                                            <ReadOnlyInput value={recruiterForm.firstName} />
+                                        </label>
+                                        <label className="accountPage__field">
+                                            <span>Фамилия</span>
+                                            <ReadOnlyInput value={recruiterForm.lastName} />
+                                        </label>
+                                    </div>
+                                    <label className="accountPage__field">
+                                        <span>Email</span>
+                                        <ReadOnlyInput value={recruiterForm.email} />
                                     </label>
                                     <label className="accountPage__field">
-                                        <span>Фамилия</span>
-                                        <input name="lastName" value={recruiterForm.lastName} onChange={handleRecruiterChange} />
+                                        <span>Телефон</span>
+                                        <ReadOnlyInput value={recruiterForm.phoneNumber} />
+                                    </label>
+                                    <label className="accountPage__field">
+                                        <span>Telegram</span>
+                                        <ReadOnlyInput value={recruiterForm.telegramUsername} />
                                     </label>
                                 </div>
-                                <label className="accountPage__field">
-                                    <span>Email</span>
-                                    <input type="email" name="email" value={recruiterForm.email} onChange={handleRecruiterChange} />
-                                </label>
-                                <label className="accountPage__field">
-                                    <span>Телефон</span>
-                                    <input name="phoneNumber" value={recruiterForm.phoneNumber} onChange={handleRecruiterChange} placeholder="+7…" />
-                                </label>
-                                <label className="accountPage__field">
-                                    <span>Telegram (без @)</span>
-                                    <input name="telegramUsername" value={recruiterForm.telegramUsername} onChange={handleRecruiterChange} />
-                                </label>
-
-                                {error ? (
-                                    <div className="accountPage__error" role="alert">
-                                        {error}
-                                    </div>
-                                ) : null}
-                                {saveOk ? <div className="accountPage__ok">{saveOk}</div> : null}
-
-                                <button type="submit" className="accountPage__submit" disabled={saving}>
-                                    {saving ? 'Сохранение…' : 'Сохранить'}
-                                </button>
-                                <p className="accountPage__hint">
-                                    Запрос: <code className="accountPage__code">PATCH /recruiter/&#123;id&#125;</code>, тело{' '}
-                                    <code className="accountPage__code">PatchRecruiterReq</code>.
-                                </p>
-                            </form>
-                        </section>
+                            </section>
+                            <RecruiterRequestsSection recruiterId={profile.id} />
+                        </>
                     )}
                 </div>
             </main>

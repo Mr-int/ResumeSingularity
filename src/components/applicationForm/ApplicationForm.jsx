@@ -6,6 +6,7 @@ import successIcon from '../../assets/icons/success.svg';
 import sunIcon from '../../assets/other/sun.png';
 import cloudMailIcon from '../../assets/other/cloudMail.png';
 import { apiClientJson } from '../../utils/apiClient.js';
+import { createRequest } from '../../services/requestApi.js';
 
 const getInputNumbersValue = (value) => String(value ?? '').replace(/\D/g, '');
 
@@ -119,6 +120,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [createdChatId, setCreatedChatId] = useState(null);
     const [phoneInvalid, setPhoneInvalid] = useState(false);
     /** none — без подсветки; valid / invalid — как в демо email. */
     const [emailValidation, setEmailValidation] = useState('none');
@@ -371,14 +373,16 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
             // Два режима:
             // 1) со страницы студента -> создаем request со studentId
             // 2) общая заявка без студента -> создаем/обновляем профиль recruiter
-            const endpoint = hasStudent ? 'request' : 'recruiter';
             const requestData = hasStudent ? { ...baseData, studentId } : baseData;
 
-            const response = await apiClientJson(endpoint, {
-                method: 'POST',
-                body: JSON.stringify(requestData),
-            });
+            const response = hasStudent
+                ? await createRequest(requestData)
+                : await apiClientJson('recruiter', {
+                      method: 'POST',
+                      body: JSON.stringify(requestData),
+                  });
 
+            setCreatedChatId(response?.appChatId || null);
             setSuccess(true);
             if (onSubmit) {
                 await onSubmit(requestData);
@@ -424,7 +428,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
                                         className="applicationForm__successWindow-tgLink"
                                         onClick={(e) => {
                                             e.preventDefault();
-                                            onGoToChats();
+                                            onGoToChats(createdChatId);
                                         }}
                                     >
                                         <div className="applicationForm__successWindow-tgLink-textBlock">

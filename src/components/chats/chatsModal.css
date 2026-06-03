@@ -472,6 +472,91 @@
     cursor: not-allowed;
 }
 
+.chatsModal__attachBtn {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border: 1px solid #2a2a3d;
+    border-radius: 12px;
+    background: #1a1a28;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.chatsModal__attachBtn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.chatsModal__msgBody--deleted {
+    font-style: italic;
+    opacity: 0.65;
+}
+
+.chatsModal__msgAttachment {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #c4b5fd;
+    word-break: break-all;
+}
+
+.chatsModal__msgMeta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.chatsModal__msgEdited {
+    font-size: 11px;
+    opacity: 0.65;
+}
+
+.chatsModal__msgEditBtn {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 11px;
+    opacity: 0.75;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.chatsModal__editBox {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chatsModal__editInput {
+    width: 100%;
+    resize: vertical;
+    border-radius: 8px;
+    border: 1px solid #3f3f50;
+    background: #0f0f18;
+    color: inherit;
+    padding: 8px;
+    font-family: inherit;
+}
+
+.chatsModal__editActions {
+    display: flex;
+    gap: 8px;
+}
+
+.chatsModal__editActions button {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid #3f3f50;
+    background: #1a1a28;
+    color: #fff;
+    cursor: pointer;
+}
+
 @media (max-width: 768px) {
     .chatsModal__messenger {
         flex-direction: column;
@@ -490,7 +575,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #050508;
+    background: #06060c;
     font-family: 'StratosSkyeng', 'StratosLight', system-ui, sans-serif;
 }
 
@@ -530,14 +615,11 @@
     box-sizing: border-box;
 }
 
-.chatsPage__fill .chatsModal__messenger.chatsView {
+.chatsPage__fill > * {
     flex: 1;
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
     min-height: 0;
-    background: #111118;
-    border: 1px solid #232335;
-    border-radius: 16px;
-    overflow: hidden;
+    height: 100%;
 }

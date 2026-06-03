@@ -1,4 +1,15 @@
 import { API_BASE_URL } from '../config/api.js';
+import { refreshSession } from '../services/authApi.js';
+
+const clearAuthAndRedirect = () => {
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('isAuthenticated_time');
+    sessionStorage.setItem('showLoginAfter403', 'true');
+    window.dispatchEvent(new CustomEvent('resume:auth-required'));
+    if (!window.location.pathname.startsWith('/students')) {
+        window.location.href = '/students';
+    }
+};
 
 export const apiClientJson = async (endpoint, options = {}) => {
     const defaultHeaders = {
@@ -27,10 +38,16 @@ export const apiClientJson = async (endpoint, options = {}) => {
         });
 
         if (response.status === 401) {
+            if (!options._retriedAfterRefresh && !endpoint.startsWith('auth/')) {
+                try {
+                    await refreshSession();
+                    return apiClientJson(endpoint, { ...options, _retriedAfterRefresh: true });
+                } catch {
+                    /* fall through */
+                }
+            }
             console.log('[API] 401 Unauthorized - redirecting to login');
-            localStorage.removeItem('isAuthenticated');
-            localStorage.removeItem('isAuthenticated_time');
-            window.location.href = '/login';
+            clearAuthAndRedirect();
             throw new Error('HTTP error! status: 401 - Unauthorized');
         }
 

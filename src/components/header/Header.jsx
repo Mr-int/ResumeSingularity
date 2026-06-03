@@ -1,12 +1,15 @@
 import './header.css';
 import { useState } from 'react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
+import { isAuthenticated, logoutServer } from '../../services/authApi.js';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
 const Header = () => {
+    const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const authed = isAuthenticated();
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -34,6 +37,23 @@ const Header = () => {
                 </Link>
 
                 <div className="header__rightCluster">
+                    {authed ? (
+                        <>
+                            <Link to="/chats" className="header__navLink">
+                                чаты
+                            </Link>
+                            <button
+                                type="button"
+                                className="header__navLink header__navLink--btn"
+                                onClick={async () => {
+                                    await logoutServer();
+                                    navigate('/');
+                                }}
+                            >
+                                выйти
+                            </button>
+                        </>
+                    ) : null}
                     <Link to="/students" className="header__search">
                     <span className="header__searchBtn">
                         <span className="header__searchBtnWhite">найти стажера</span>
@@ -98,6 +118,28 @@ const Header = () => {
                 >
                     настройки
                 </Link>
+                {authed ? (
+                    <>
+                        <Link
+                            to="/chats"
+                            className="header__mobileBtn"
+                            onClick={handleMobileLinkClick}
+                        >
+                            чаты
+                        </Link>
+                        <button
+                            type="button"
+                            className="header__mobileBtn"
+                            onClick={async () => {
+                                handleMobileLinkClick();
+                                await logoutServer();
+                                navigate('/');
+                            }}
+                        >
+                            выйти
+                        </button>
+                    </>
+                ) : null}
             </div>
         </header>
     )

@@ -45,9 +45,16 @@ export const parseExperienceDate = (value) => {
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
+const capitalizeMonthLabel = (value) => {
+    const trimmed = value.trim();
+    if (!trimmed) return trimmed;
+    return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+};
+
 export const formatExperienceMonthYear = (date) => {
     const formatted = date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-    return formatted.replace(/\s*г\.?\s*$/i, '').trim().toLowerCase();
+    const withoutYearSuffix = formatted.replace(/\s*г\.?\s*$/i, '').trim().toLowerCase();
+    return capitalizeMonthLabel(withoutYearSuffix);
 };
 
 const formatDurationLabel = (startDate, endDate) => {

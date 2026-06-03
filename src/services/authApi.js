@@ -132,15 +132,118 @@ export const isAuthenticated = () => {
     return false;
 };
 
-export const logout = () => {
+const clearLocalAuth = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
-    document.cookie.split(";").forEach((c) => {
+    document.cookie.split(';').forEach((c) => {
         document.cookie = c
-            .replace(/^ +/, "")
-            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            .replace(/^ +/, '')
+            .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
     });
+};
+
+/**
+ * POST /auth/register-student
+ */
+export const registerStudent = async (body) => {
+    const url = `${API_BASE_URL}auth/register-student`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        const text = await response.text();
+        let msg = text;
+        try {
+            msg = JSON.parse(text).message || text;
+        } catch {
+            /* empty */
+        }
+        const err = new Error(msg || `Ошибка ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        return response.json();
+    }
+    return {};
+};
+
+/**
+ * POST /auth/register-recruiter
+ */
+export const registerRecruiter = async (body) => {
+    const url = `${API_BASE_URL}auth/register-recruiter`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        const text = await response.text();
+        let msg = text;
+        try {
+            msg = JSON.parse(text).message || text;
+        } catch {
+            /* empty */
+        }
+        const err = new Error(msg || `Ошибка ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        return response.json();
+    }
+    return {};
+};
+
+/**
+ * POST /auth/refresh
+ */
+export const refreshSession = async () => {
+    const url = `${API_BASE_URL}auth/refresh`;
+    const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const err = new Error(`Refresh failed: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        return response.json();
+    }
+    return {};
+};
+
+/**
+ * POST /auth/logout + очистка клиента
+ */
+export const logoutServer = async () => {
+    try {
+        await fetch(`${API_BASE_URL}auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (e) {
+        console.warn('[AUTH] logout request failed', e);
+    } finally {
+        clearLocalAuth();
+    }
+};
+
+export const logout = () => {
+    clearLocalAuth();
     console.log('[AUTH] Logged out, cleared all auth data');
 };
 

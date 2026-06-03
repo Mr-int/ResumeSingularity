@@ -54,6 +54,21 @@
     gap: 20px;
 }
 
+.header__navLink {
+    background: none;
+    border: none;
+    color: #fff;
+    text-transform: uppercase;
+    font-size: 16px;
+    font-family: "Sansation", sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.header__navLink--btn {
+    padding: 0;
+}
+
 .header__logo {
     justify-self: center;
     user-select: none;
