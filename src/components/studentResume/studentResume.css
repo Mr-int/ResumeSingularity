@@ -86,14 +86,14 @@
 }
 
 .StudentResume__header {
+    --StudentResume-header-text-offset: -50px;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-end;
     width: 90%;
     padding-top: 35px;
-    padding-bottom: 48px;
-    padding-right: 240px;
+    padding-bottom: 24px;
     min-height: 200px;
     position: relative;
     box-sizing: border-box;
@@ -103,7 +103,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-end;
-    gap: 35px;
+    gap: 20px;
     flex: 1;
 }
 
@@ -126,7 +126,7 @@
 
 .StudentResume__personName {
     position: relative;
-    top: -50px;
+    top: var(--StudentResume-header-text-offset);
     color: #fff;
     flex: 1;
 }
@@ -143,10 +143,9 @@
 }
 
 .StudentResume__flexInfo {
-    position: absolute;
-    right: 0;
-    bottom: 48px;
-    transform: translateY(-50px);
+    position: relative;
+    top: var(--StudentResume-header-text-offset);
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -1004,6 +1003,7 @@
 
     .StudentResume__personName {
         margin-top: 0;
+        top: 0;
     }
 
     .StudentResume__personName h2 {
@@ -1016,9 +1016,7 @@
 
     .StudentResume__flexInfo {
         position: static;
-        transform: none;
-        right: auto;
-        bottom: auto;
+        top: 0;
         align-items: center;
         flex-direction: row;
         justify-content: space-between;
