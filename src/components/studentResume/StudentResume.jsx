@@ -460,9 +460,7 @@ const StudentResume = () => {
                                                 >
                                                     <div className="StudentResume__experienceTimeline">
                                                         <div className="StudentResume__experienceYears">
-                                                            {getExperiencePeriodLines(exp.startDate, exp.endDate, exp.current).map((line, lineIndex) => (
-                                                                <span key={lineIndex}>{line}</span>
-                                                            ))}
+                                                            {getExperiencePeriodLines(exp.startDate, exp.endDate, exp.current).join(' — ')}
                                                         </div>
                                                     </div>
 
