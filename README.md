@@ -43,6 +43,10 @@ docker-compose logs -f
 docker-compose down
 ```
 
+## 📘 Передача проекта
+
+Подробная инструкция для разработчика (архитектура, API, чаты, заявки, известные проблемы): **[DEVELOPER_HANDOFF.md](./DEVELOPER_HANDOFF.md)**
+
 ## 📁 Структура проекта
 
 ```
