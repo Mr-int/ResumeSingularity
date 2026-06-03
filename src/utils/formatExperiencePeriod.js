@@ -106,3 +106,18 @@ export const getExperiencePeriodLines = (startRaw, endRaw, isCurrent = false) =>
 
     return [];
 };
+
+export const formatExperiencePeriodText = (startRaw, endRaw, isCurrent = false) => {
+    const lines = getExperiencePeriodLines(startRaw, endRaw, isCurrent);
+    if (!lines.length) return '';
+
+    const durationLine = lines.find((line) => line.startsWith('('));
+    const dateLines = lines.filter((line) => !line.startsWith('('));
+    const datesPart = dateLines.join(' — ');
+
+    if (durationLine) {
+        return datesPart ? `${datesPart} ${durationLine}` : durationLine;
+    }
+
+    return datesPart;
+};

@@ -11,7 +11,7 @@ import BehindBlue from "../../assets/other/BehindBlue.png";
 import {
     getStudentById,
     getPortfolioByStudentId,
-    getExperienceByStudentId,
+    getExperienceDetailsByStudentId,
     getAllStudents,
     getSkillsByStudentId,
     getEducationDetailsByStudentId
@@ -22,7 +22,7 @@ import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
-import { getExperiencePeriodLines } from "../../utils/formatExperiencePeriod.js";
+import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const StudentResume = () => {
@@ -78,7 +78,7 @@ const StudentResume = () => {
                 ] = await Promise.allSettled([
                     getPortfolioByStudentId(id),
                     getEducationDetailsByStudentId(id),
-                    getExperienceByStudentId(id),
+                    getExperienceDetailsByStudentId(id),
                     getAllStudents()
                 ]);
 
@@ -112,45 +112,7 @@ const StudentResume = () => {
 
                 if (experienceResult.status === 'fulfilled') {
                     const experienceData = experienceResult.value;
-
-                    let experienceArray = [];
-                    if (Array.isArray(experienceData)) {
-                        experienceArray = experienceData;
-                    }
-
-                    const formattedExperience = experienceArray.map((exp, index) => {
-                        if (!exp || typeof exp !== 'object') {
-                            return null;
-                        }
-
-                        const experience = exp.experience || {};
-                        const company = exp.company || {};
-                        const companyName = (
-                            company?.name ||
-                            exp?.company?.name ||
-                            exp?.companyName ||
-                            exp?.employer ||
-                            exp?.organization?.name ||
-                            experience?.company?.name ||
-                            experience?.companyName ||
-                            experience?.employer ||
-                            ''
-                        ).toString().trim();
-
-                        return {
-                            id: experience.id || exp.experienceId || `exp-${index}`,
-                            position: experience.position || exp.position || exp.jobTitle || '',
-                            company: companyName,
-                            description: experience.additionalInfo || exp.description ||
-                                experience.responsibilities || '',
-                            startDate: experience.startDate || exp.startDate || '',
-                            endDate: experience.endDate || exp.endDate ||
-                                (experience.current ? 'по настоящее время' : ''),
-                            current: experience.current || exp.current || false
-                        };
-                    }).filter(item => item !== null);
-
-                    setExperienceDetails(formattedExperience);
+                    setExperienceDetails(Array.isArray(experienceData) ? experienceData : []);
                 }
 
                 if (allStudentsResult.status === 'fulfilled') {
@@ -460,7 +422,7 @@ const StudentResume = () => {
                                                 >
                                                     <div className="StudentResume__experienceTimeline">
                                                         <div className="StudentResume__experienceYears">
-                                                            {getExperiencePeriodLines(exp.startDate, exp.endDate, exp.current).join(' — ')}
+                                                            {formatExperiencePeriodText(exp.startDate, exp.endDate, exp.current)}
                                                         </div>
                                                     </div>
 

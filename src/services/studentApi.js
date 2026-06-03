@@ -1,4 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
+import { getCompanyById } from './getApi.js';
 
 export const getAllStudents = async () => {
     try {
@@ -132,6 +133,73 @@ export const getExperienceByStudentId = async (studentId) => {
         }
         return [];
     } catch (error) {
+        return [];
+    }
+};
+
+const resolveCompanyNames = async (experienceList) => {
+    const companyIds = [
+        ...new Set(
+            experienceList
+                .map((item) => item?.companyId)
+                .filter((id) => id != null && id !== 0)
+        ),
+    ];
+
+    const companyNameById = new Map();
+
+    await Promise.all(
+        companyIds.map(async (companyId) => {
+            try {
+                const company = await getCompanyById(companyId);
+                companyNameById.set(companyId, (company?.name || '').toString().trim());
+            } catch {
+                companyNameById.set(companyId, '');
+            }
+        })
+    );
+
+    return companyNameById;
+};
+
+export const getExperienceDetailsByStudentId = async (studentId) => {
+    try {
+        const experienceList = await getExperienceByStudentId(studentId);
+        if (!Array.isArray(experienceList) || experienceList.length === 0) {
+            return [];
+        }
+
+        const companyNameById = await resolveCompanyNames(experienceList);
+
+        return experienceList
+            .map((item, index) => {
+                if (!item || typeof item !== 'object') {
+                    return null;
+                }
+
+                const experience = item.experience || {};
+                const companyId = item.companyId;
+                const endDateRaw = experience.endDate ?? item.endDate ?? '';
+                const endDate = endDateRaw
+                    ? String(endDateRaw)
+                    : (experience.current || item.current ? 'по настоящее время' : '');
+                const companyFromMap = companyId != null && companyId !== 0
+                    ? (companyNameById.get(companyId) || '')
+                    : '';
+
+                return {
+                    id: experience.id || item.experienceId || `exp-${index}`,
+                    companyId,
+                    position: (experience.position || item.position || '').toString().trim(),
+                    company: companyFromMap,
+                    description: (experience.additionalInfo || item.additionalInfo || '').toString().trim(),
+                    startDate: experience.startDate || item.startDate || '',
+                    endDate,
+                    current: Boolean(experience.current || item.current || !endDateRaw),
+                };
+            })
+            .filter((item) => item !== null);
+    } catch {
         return [];
     }
 };
