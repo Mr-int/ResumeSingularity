@@ -427,9 +427,11 @@ const StudentResume = () => {
                                                     </div>
 
                                                     <div className="StudentResume__experienceInfo">
-                                                        <h3 className="StudentResume__experiencePosition">{exp.position}</h3>
                                                         {exp.company?.trim() && (
-                                                            <h4 className="StudentResume__experienceCompany">{exp.company}</h4>
+                                                            <h3 className="StudentResume__experienceCompany">{exp.company}</h3>
+                                                        )}
+                                                        {exp.position?.trim() && (
+                                                            <h4 className="StudentResume__experiencePosition">{exp.position}</h4>
                                                         )}
                                                         {exp.description && (
                                                             <p className="StudentResume__experienceDescription">{exp.description}</p>

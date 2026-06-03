@@ -414,7 +414,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
                                     <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
                                     <img src={successIcon} alt="" className="applicationForm__successWindow-titleIcon" width={40} height={40} />
                                 </div>
-                            <p className="applicationForm__successWindow-text">
+                            <p className="appвlicationForm__successWindow-text">
                                 Мы свяжемся с вами в течении 24 часов.
                             </p>
                             {typeof onGoToChats === 'function' ? (
