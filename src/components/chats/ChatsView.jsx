@@ -51,17 +51,6 @@ const formatDayLabel = (iso) => {
     return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
-const calculateAge = (birthDate) => {
-    if (!birthDate) return null;
-    const today = new Date();
-    const birth = new Date(birthDate);
-    if (Number.isNaN(birth.getTime())) return null;
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
-};
-
 const initials = (name) => {
     const parts = String(name || '')
         .trim()
@@ -107,19 +96,15 @@ const ChatsView = () => {
     const [sendError, setSendError] = useState('');
     const [draft, setDraft] = useState('');
     const [sending, setSending] = useState(false);
-    const [peerProfile, setPeerProfile] = useState(null);
-    const [loadingPeer, setLoadingPeer] = useState(false);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const titleCache = useRef(new Map());
     const subtitleCache = useRef(new Map());
     const deepLinkApplied = useRef(false);
     const messagesLoadGen = useRef(0);
-    const peerLoadKeyRef = useRef('');
     const chatAliasRef = useRef({});
     const studentCacheRef = useRef(new Map());
     const recruiterCacheRef = useRef(new Map());
-    const [profilePhotoFailed, setProfilePhotoFailed] = useState(false);
 
     const myUsername = useMemo(() => {
         try {
@@ -225,40 +210,6 @@ const ChatsView = () => {
         return { title, subtitle };
     }, []);
 
-    const loadPeerProfile = useCallback(
-        async (chat) => {
-            if (!chat || !me) {
-                setPeerProfile(null);
-                return;
-            }
-            setLoadingPeer(true);
-            try {
-                if (me.role === 'recruiter' && chat.studentId) {
-                    let s = studentCacheRef.current.get(chat.studentId);
-                    if (!s) {
-                        s = await getStudentById(chat.studentId);
-                        studentCacheRef.current.set(chat.studentId, s);
-                    }
-                    setPeerProfile({ type: 'student', data: s });
-                } else if (me.role === 'student' && chat.recruiterId) {
-                    let r = recruiterCacheRef.current.get(chat.recruiterId);
-                    if (!r) {
-                        r = await getRecruiterById(chat.recruiterId);
-                        recruiterCacheRef.current.set(chat.recruiterId, r);
-                    }
-                    setPeerProfile({ type: 'recruiter', data: r });
-                } else {
-                    setPeerProfile(null);
-                }
-            } catch {
-                setPeerProfile(null);
-            } finally {
-                setLoadingPeer(false);
-            }
-        },
-        [me],
-    );
-
     const loadChats = useCallback(async () => {
         setLoadingList(true);
         setListError('');
@@ -354,27 +305,6 @@ const ChatsView = () => {
     }, [selectedId, loadMessages, refreshSummary]);
 
     useEffect(() => {
-        if (!selectedId) {
-            setPeerProfile(null);
-            peerLoadKeyRef.current = '';
-            return;
-        }
-        if (!me) return;
-
-        const chat = chats.find((c) => String(c.id) === String(selectedId));
-        if (!chat) return;
-
-        const peerKey = `${selectedId}:${chat.studentId || ''}:${chat.recruiterId || ''}`;
-        if (peerLoadKeyRef.current === peerKey) return;
-        peerLoadKeyRef.current = peerKey;
-        loadPeerProfile(chat);
-    }, [selectedId, me, chats, loadPeerProfile]);
-
-    useEffect(() => {
-        setProfilePhotoFailed(false);
-    }, [selectedId, peerProfile?.data?.imagePath]);
-
-    useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
@@ -433,86 +363,8 @@ const ChatsView = () => {
     const activeTitle = selectedId ? titles[selectedId] || '…' : 'Выберите чат';
     const activeSubtitle = selectedId ? subtitles[selectedId] : '';
 
-    const profilePanel = useMemo(() => {
-        if (loadingPeer) {
-            return <p className="chatsView__profileEmpty">Загрузка профиля…</p>;
-        }
-        if (!peerProfile) {
-            return (
-                <p className="chatsView__profileEmpty">
-                    {selectedId ? 'Нет данных профиля' : 'Выберите диалог'}
-                </p>
-            );
-        }
-        if (peerProfile.type === 'student') {
-            const s = peerProfile.data;
-            const name = `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Студент';
-            const age = calculateAge(s.birthDate);
-            const spec = s.speciality || s.profession || 'Специальность не указана';
-            const titleLine = age ? `${spec} • ${age} лет` : spec;
-            const skills = Array.isArray(s.skills) ? s.skills : [];
-            const photoUrl = s.imagePath ? getImageUrl(s.imagePath) : null;
-            return (
-                <>
-                    {photoUrl && !profilePhotoFailed ? (
-                        <img
-                            src={photoUrl}
-                            alt=""
-                            className="chatsView__profilePhoto"
-                            onError={() => setProfilePhotoFailed(true)}
-                        />
-                    ) : (
-                        <div className={`chatsView__avatar chatsView__avatar--profile`} aria-hidden>
-                            {initials(name)}
-                        </div>
-                    )}
-                    <div className="chatsView__profileName">{name}</div>
-                    <div className="chatsView__profileTitle">{titleLine}</div>
-                    {skills.length > 0 && (
-                        <>
-                            <div className="chatsView__sectionTitle">Стек технологий</div>
-                            <div className="chatsView__skills">
-                                {skills.map((sk, i) => (
-                                    <span key={sk.id || i} className="chatsView__skillBadge">
-                                        {sk.name || sk.title || 'Навык'}
-                                    </span>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                    {s.city ? (
-                        <>
-                            <div className="chatsView__sectionTitle">Город</div>
-                            <div className="chatsView__profileCity">
-                                {String(s.city).startsWith('г.') ? s.city : `г. ${s.city}`}
-                            </div>
-                        </>
-                    ) : null}
-                </>
-            );
-        }
-        const r = peerProfile.data;
-        const name = `${r.firstName || ''} ${r.lastName || ''}`.trim();
-        return (
-            <>
-                <div className={`chatsView__avatar chatsView__avatar--profile`} aria-hidden>
-                    {initials(r.companyName || name)}
-                </div>
-                <div className="chatsView__profileName">{r.companyName || name || 'Рекрутер'}</div>
-                {name && r.companyName ? (
-                    <div className="chatsView__profileTitle">{name}</div>
-                ) : null}
-                {r.email ? (
-                    <>
-                        <div className="chatsView__sectionTitle">Контакты</div>
-                        <div className="chatsView__profileCity">{r.email}</div>
-                    </>
-                ) : null}
-            </>
-        );
-    }, [peerProfile, loadingPeer, selectedId, me?.role, profilePhotoFailed]);
-
-    const showResumeBtn = me?.role === 'recruiter' && peerProfile?.type === 'student' && peerProfile?.data?.id;
+    const showResumeBtn =
+        me?.role === 'recruiter' && selectedChat?.studentId != null && selectedChat.studentId !== '';
 
     return (
         <div className="chatsView__container" role="application" aria-label="Чаты">
@@ -527,19 +379,14 @@ const ChatsView = () => {
                             Настройки
                         </Link>
                     </nav>
-                    <div className="chatsView__searchRow">
-                        <input
-                            type="search"
-                            className="chatsView__searchInput"
-                            placeholder="Поиск диалогов..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            autoComplete="off"
-                        />
-                        <button type="button" className="chatsView__filterBtn" aria-label="Фильтр" title="Скоро">
-                            📋
-                        </button>
-                    </div>
+                    <input
+                        type="search"
+                        className="chatsView__searchInput"
+                        placeholder="Поиск диалогов..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        autoComplete="off"
+                    />
                 </div>
                 <div className="chatsView__dialogsList">
                     {loadingList && <div className="chatsView__muted">Загрузка…</div>}
@@ -595,7 +442,7 @@ const ChatsView = () => {
                     </div>
                     {showResumeBtn ? (
                         <Link
-                            to={`/studentsResume/${peerProfile.data.id}`}
+                            to={`/studentsResume/${selectedChat.studentId}`}
                             className="chatsView__resumeBtn"
                         >
                             Смотреть резюме
@@ -707,8 +554,6 @@ const ChatsView = () => {
                     </form>
                 </footer>
             </main>
-
-            <aside className="chatsView__profile">{profilePanel}</aside>
         </div>
     );
 };

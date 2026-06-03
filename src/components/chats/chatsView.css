@@ -1,4 +1,4 @@
-/* Макет чатов: 3 колонки (диалоги | переписка | профиль) */
+/* Макет чатов: диалоги | переписка */
 
 .chatsPage {
     height: 100vh;
@@ -66,13 +66,9 @@
     text-decoration: underline;
 }
 
-.chatsView__searchRow {
-    display: flex;
-    gap: 10px;
-}
-
 .chatsView__searchInput {
-    flex: 1;
+    width: 100%;
+    box-sizing: border-box;
     background: #171926;
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: 12px 15px;
@@ -84,16 +80,6 @@
 
 .chatsView__searchInput::placeholder {
     color: #5c5f73;
-}
-
-.chatsView__filterBtn {
-    background: #171926;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #8a8d9f;
-    padding: 0 15px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 14px;
 }
 
 .chatsView__dialogsList {
@@ -164,16 +150,6 @@
     background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
 }
 
-.chatsView__avatar--profile {
-    background: linear-gradient(135deg, #2b3080 0%, #b5127b 100%);
-    color: #fff;
-    font-size: 32px;
-    width: 100px;
-    height: 100px;
-    border-radius: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
 .chatsView__onlineDot {
     position: absolute;
     bottom: -2px;
@@ -230,7 +206,6 @@
 }
 
 .chatsView__main {
-    width: 45%;
     flex: 1;
     min-width: 0;
     display: flex;
@@ -444,65 +419,6 @@
     cursor: not-allowed;
 }
 
-.chatsView__profile {
-    width: 25%;
-    min-width: 220px;
-    background: rgba(15, 17, 26, 0.85);
-    border-left: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 30px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-}
-
-.chatsView__profileName {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 5px;
-    text-align: center;
-}
-
-.chatsView__profileTitle {
-    color: #8a8d9f;
-    font-size: 14px;
-    margin-bottom: 25px;
-    text-align: center;
-}
-
-.chatsView__sectionTitle {
-    align-self: flex-start;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #5c5f73;
-    margin-bottom: 12px;
-    font-weight: 700;
-}
-
-.chatsView__skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 30px;
-    width: 100%;
-}
-
-.chatsView__skillBadge {
-    background: #fff;
-    color: #000;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.chatsView__profileCity {
-    margin-bottom: 30px;
-    font-size: 14px;
-    align-self: flex-start;
-}
-
 .chatsView__empty,
 .chatsView__muted,
 .chatsView__error {
@@ -515,27 +431,7 @@
     color: #f87171;
 }
 
-.chatsView__profileEmpty {
-    color: #5c5f73;
-    font-size: 14px;
-    text-align: center;
-    margin-top: 40px;
-}
-
-.chatsView__profilePhoto {
-    width: 100px;
-    height: 100px;
-    border-radius: 20px;
-    object-fit: cover;
-    margin-bottom: 15px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
 @media (max-width: 1100px) {
-    .chatsView__profile {
-        display: none;
-    }
-
     .chatsView__dialogs {
         width: 32%;
     }
