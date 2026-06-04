@@ -15,7 +15,7 @@ RUN npm ci --only=production=false
 # Копируем весь код
 COPY . .
 
-ARG VITE_API_URL=
+ARG VITE_API_URL=https://test-api.singularity-resume.ru
 ENV VITE_API_URL=$VITE_API_URL
 
 # Собираем приложение для production

@@ -1,5 +1,14 @@
 import { API_BASE_URL } from '../config/api.js';
 
+export const AUTH_CHANGED_EVENT = 'resume:auth-changed';
+
+export function notifyAuthChanged() {
+    window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
+}
+
+// Re-export for hooks
+export { AUTH_CHANGED_EVENT as RESUME_AUTH_CHANGED_EVENT };
+
 const AUTH_FLAG_KEY = 'isAuthenticated';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
@@ -79,7 +88,8 @@ export const login = async (username, password) => {
         }
 
         await syncAuthSession();
-        
+        notifyAuthChanged();
+
         return data || { success: true };
     } catch (error) {
         console.error('[AUTH] Error during login:', error);
@@ -181,6 +191,8 @@ export const registerStudent = async (body) => {
     if (body.username != null && String(body.username).trim()) {
         localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
     }
+    await syncAuthSession();
+    notifyAuthChanged();
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
@@ -211,6 +223,13 @@ export const registerRecruiter = async (body) => {
         err.status = response.status;
         throw err;
     }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    if (body.username != null && String(body.username).trim()) {
+        localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
+    }
+    await syncAuthSession();
+    notifyAuthChanged();
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
@@ -254,11 +273,13 @@ export const logoutServer = async () => {
         console.warn('[AUTH] logout request failed', e);
     } finally {
         clearLocalAuth();
+        notifyAuthChanged();
     }
 };
 
 export const logout = () => {
     clearLocalAuth();
+    notifyAuthChanged();
     console.log('[AUTH] Logged out, cleared all auth data');
 };
 
@@ -275,6 +296,7 @@ export async function syncAuthSession() {
         if (!response.ok) {
             if (response.status === 401) {
                 clearLocalAuth();
+                notifyAuthChanged();
                 return null;
             }
             throw new Error(`auth/me failed: ${response.status}`);
@@ -296,6 +318,7 @@ export async function syncAuthSession() {
         if (data?.hintsDisabled != null) {
             localStorage.setItem(AUTH_HINTS_DISABLED_KEY, data.hintsDisabled ? '1' : '0');
         }
+        notifyAuthChanged();
         return data;
     } catch (e) {
         console.warn('[AUTH] syncAuthSession failed', e);

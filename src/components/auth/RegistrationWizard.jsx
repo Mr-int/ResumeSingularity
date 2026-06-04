@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { registerStudent, registerRecruiter } from '../../services/authApi.js';
+import { useNavigate } from 'react-router-dom';
+import { registerStudent, registerRecruiter, notifyAuthChanged } from '../../services/authApi.js';
 import { completeStudentResumeOnboarding } from '../../services/onboardingApi.js';
 import { getRegistrationSpecialities, catalogRows } from '../../services/registrationCatalogApi.js';
 import { startPhoneVerification, getPhoneVerificationStatus } from '../../services/verificationApi.js';
@@ -78,6 +79,7 @@ const LegalFooter = () => (
 );
 
 const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
+    const navigate = useNavigate();
     const [view, setView] = useState('choice');
     const [role, setRole] = useState(null);
     const [error, setError] = useState('');
@@ -811,8 +813,16 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                                 который вы задали при регистрации.
                             </p>
                             <p>После модерации карточка появится у работодателей.</p>
-                            <button type="button" className="loginModal__primaryBtn" onClick={onSuccess}>
-                                Продолжить
+                            <button
+                                type="button"
+                                className="loginModal__primaryBtn"
+                                onClick={() => {
+                                    notifyAuthChanged();
+                                    onSuccess?.();
+                                    navigate('/settings');
+                                }}
+                            >
+                                Перейти в профиль
                             </button>
                         </div>
                     </Shell>

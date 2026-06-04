@@ -1,7 +1,8 @@
 import './header.css';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { isAuthenticated, logoutServer } from '../../services/authApi.js';
+import { logoutServer } from '../../services/authApi.js';
+import { useAuthState } from '../../hooks/useAuthState.js';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
@@ -9,7 +10,8 @@ import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 const Header = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const authed = isAuthenticated();
+    const { authed, role } = useAuthState();
+    const isStudent = role === 'STUDENT';
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -45,6 +47,11 @@ const Header = () => {
                 <div className="header__rightCluster">
                     {authed ? (
                         <>
+                            {isStudent ? (
+                                <Link to="/settings" className="header__navLink header__navLink--desktop">
+                                    мой профиль
+                                </Link>
+                            ) : null}
                             <Link to="/chats" className="header__navLink">
                                 чаты
                             </Link>
@@ -111,13 +118,24 @@ const Header = () => {
                     проекты
                 </Link>
                 {authed ? (
-                    <Link
-                        to="/vacancies"
+                    <>
+                        {isStudent ? (
+                            <Link
+                                to="/settings"
+                                className="header__mobileBtn"
+                                onClick={handleMobileLinkClick}
+                            >
+                                мой профиль
+                            </Link>
+                        ) : null}
+                        <Link
+                            to="/vacancies"
                         className="header__mobileBtn"
                         onClick={handleMobileLinkClick}
                     >
                         вакансии
                     </Link>
+                    </>
                 ) : null}
                 <Link
                     to="/students"

@@ -1,25 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { syncAuthSession, getAccountStatus, isAuthenticated } from '../../services/authApi.js';
+import { syncAuthSession, getAccountStatus, isAuthenticated, AUTH_CHANGED_EVENT } from '../../services/authApi.js';
 import './pendingApprovalBanner.css';
 
 const PendingApprovalBanner = () => {
     const [status, setStatus] = useState(null);
 
     useEffect(() => {
-        if (!isAuthenticated()) {
-            setStatus(null);
-            return;
-        }
-        let cancelled = false;
-        (async () => {
-            const me = await syncAuthSession();
-            if (!cancelled) {
-                setStatus(me?.accountStatus ?? getAccountStatus());
+        const load = async () => {
+            if (!isAuthenticated()) {
+                setStatus(null);
+                return;
             }
-        })();
-        return () => {
-            cancelled = true;
+            const me = await syncAuthSession();
+            setStatus(me?.accountStatus ?? getAccountStatus());
         };
+        load();
+        const onAuthChanged = () => load();
+        window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
+        return () => window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
     }, []);
 
     if (status !== 'PENDING_APPROVAL') {

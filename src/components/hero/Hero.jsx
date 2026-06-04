@@ -9,10 +9,13 @@ import leraActive from '../../assets/heroAnimation/lera_active.png';
 import leraUnactive from '../../assets/heroAnimation/lera_unactive.png';
 import { useEffect, useState } from 'react';
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import { useAuthState } from '../../hooks/useAuthState.js';
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [isRightCardHovered, setIsRightCardHovered] = useState(false);
+    const { authed, role } = useAuthState();
+    const isStudent = authed && role === 'STUDENT';
 
     useEffect(() => {
         const checkMobile = () => {
@@ -40,14 +43,24 @@ const Hero = () => {
                         <span>под задачи вашей компании</span>
                     </div>
 
-                    <GradientButton
-                        as="link"
-                        to="/students"
-                        className="hero__button"
-                        icon={<img src={searchIcon} alt="search" className="button__icon" />}
-                    >
-                        Найти стажёра
-                    </GradientButton>
+                    {isStudent ? (
+                        <GradientButton
+                            as="link"
+                            to="/settings"
+                            className="hero__button"
+                        >
+                            Мой профиль
+                        </GradientButton>
+                    ) : (
+                        <GradientButton
+                            as="link"
+                            to="/students"
+                            className="hero__button"
+                            icon={<img src={searchIcon} alt="search" className="button__icon" />}
+                        >
+                            Найти стажёра
+                        </GradientButton>
+                    )}
                 </div>
 
                 <div className={`hero__right ${isRightCardHovered ? 'hero__right--cards-hovered' : ''}`}>
