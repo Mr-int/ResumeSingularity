@@ -4,6 +4,8 @@ import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { getVacancyById, applyToVacancy } from '../services/vacancyApi.js';
 import { getStudentMe } from '../services/getApi.js';
+import { isAuthenticated, isStudentRole, isRecruiterRole } from '../services/authApi.js';
+import AnonymousApplyCTA from '../components/common/AnonymousApplyCTA.jsx';
 import './vacanciesPage.css';
 
 const STATUS_LABELS = {
@@ -18,7 +20,7 @@ const STATUS_LABELS = {
 const VacancyDetail = () => {
     const { id } = useParams();
     const [vacancy, setVacancy] = useState(null);
-    const [isStudent, setIsStudent] = useState(false);
+    const [canApply, setCanApply] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [coverLetter, setCoverLetter] = useState('');
@@ -31,11 +33,15 @@ const VacancyDetail = () => {
         try {
             const v = await getVacancyById(id);
             setVacancy(v);
-            try {
-                await getStudentMe();
-                setIsStudent(true);
-            } catch {
-                setIsStudent(false);
+            if (isAuthenticated() && isStudentRole()) {
+                try {
+                    await getStudentMe();
+                    setCanApply(true);
+                } catch {
+                    setCanApply(false);
+                }
+            } else {
+                setCanApply(false);
             }
         } catch (e) {
             setError(e.message || 'Не удалось загрузить вакансию');
@@ -99,31 +105,44 @@ const VacancyDetail = () => {
                                 ) : null}
                             </div>
 
-                            {isStudent && vacancy.status === 'PUBLISHED' && !vacancy.hasApplied && (
+                            {vacancy.status === 'PUBLISHED' && !vacancy.hasApplied && (
                                 <section className="accountPage__card">
                                     <h3 className="accountPage__cardTitle">Отклик</h3>
-                                    <label className="accountPage__field">
-                                        <span>Сопроводительное письмо</span>
-                                        <textarea
-                                            rows={4}
-                                            value={coverLetter}
-                                            onChange={(e) => setCoverLetter(e.target.value)}
+                                    {canApply ? (
+                                        <>
+                                            <label className="accountPage__field">
+                                                <span>Сопроводительное письмо</span>
+                                                <textarea
+                                                    rows={4}
+                                                    value={coverLetter}
+                                                    onChange={(e) => setCoverLetter(e.target.value)}
+                                                />
+                                            </label>
+                                            {error ? (
+                                                <div className="accountPage__error" role="alert">
+                                                    {error}
+                                                </div>
+                                            ) : null}
+                                            {ok ? <div className="accountPage__ok">{ok}</div> : null}
+                                            <button
+                                                type="button"
+                                                className="accountPage__submit"
+                                                disabled={applying}
+                                                onClick={handleApply}
+                                            >
+                                                {applying ? 'Отправка…' : 'Откликнуться'}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <AnonymousApplyCTA
+                                            target="vacancy"
+                                            message={
+                                                isRecruiterRole()
+                                                    ? 'Рекрутеры не откликаются на вакансии'
+                                                    : 'Зарегистрируйтесь, чтобы откликнуться'
+                                            }
                                         />
-                                    </label>
-                                    {error ? (
-                                        <div className="accountPage__error" role="alert">
-                                            {error}
-                                        </div>
-                                    ) : null}
-                                    {ok ? <div className="accountPage__ok">{ok}</div> : null}
-                                    <button
-                                        type="button"
-                                        className="accountPage__submit"
-                                        disabled={applying}
-                                        onClick={handleApply}
-                                    >
-                                        {applying ? 'Отправка…' : 'Откликнуться'}
-                                    </button>
+                                    )}
                                 </section>
                             )}
 

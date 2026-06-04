@@ -1,6 +1,13 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { API_BASE_URL } from '../config/api.js';
 
+/** PATCH /student/me — согласие на витрину, hints */
+export const patchStudentMe = (body) =>
+    apiClientJson('student/me', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+
 /** PATCH /student/{id} — частичное обновление профиля студента */
 export const patchStudent = (studentId, body) =>
     apiClientJson(`student/${studentId}`, {

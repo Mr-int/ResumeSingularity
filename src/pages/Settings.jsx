@@ -5,6 +5,7 @@ import Footer from '../components/footer/Footer.jsx';
 import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
+import { patchStudentMe } from '../services/accountApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
 
@@ -46,6 +47,8 @@ const SettingsPage = () => {
     const [profile, setProfile] = useState(null);
     const [studentForm, setStudentForm] = useState(studentToForm({}));
     const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
+    const [consentSaving, setConsentSaving] = useState(false);
+    const [consentError, setConsentError] = useState('');
 
     const loadProfile = useCallback(async () => {
         setLoading(true);
@@ -88,6 +91,20 @@ const SettingsPage = () => {
     }, [loadProfile]);
 
     const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
+
+    const handleConsentChange = async (checked) => {
+        setConsentSaving(true);
+        setConsentError('');
+        try {
+            const updated = await patchStudentMe({ publicProfileConsent: checked });
+            setProfile(updated);
+            setStudentForm(studentToForm(updated));
+        } catch (e) {
+            setConsentError(e.message || 'Не удалось сохранить настройку');
+        } finally {
+            setConsentSaving(false);
+        }
+    };
 
     return (
         <>
@@ -147,10 +164,22 @@ const SettingsPage = () => {
                                             Заполненность профиля: <strong>{profile.profileTextScore}</strong>
                                         </p>
                                     )}
-                                    <p>
-                                        Публичная витрина:{' '}
-                                        <strong>{profile.publicProfileConsent ? 'да' : 'нет'}</strong>
-                                    </p>
+                                    <label className="accountPage__field accountPage__field--checkbox">
+                                        <input
+                                            type="checkbox"
+                                            checked={Boolean(profile.publicProfileConsent)}
+                                            disabled={consentSaving}
+                                            onChange={(e) => handleConsentChange(e.target.checked)}
+                                        />
+                                        <span>
+                                            Показывать мою карточку на публичной витрине (без входа на сайт)
+                                        </span>
+                                    </label>
+                                    {consentError ? (
+                                        <div className="accountPage__error" role="alert">
+                                            {consentError}
+                                        </div>
+                                    ) : null}
                                 </div>
 
                                 <div className="accountPage__form accountPage__form--readonly">

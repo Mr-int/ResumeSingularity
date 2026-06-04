@@ -27,11 +27,9 @@ const Header = () => {
                     <Link to="/projects" className="header__navLink header__navLink--desktop">
                         проекты
                     </Link>
-                    {authed ? (
-                        <Link to="/vacancies" className="header__navLink header__navLink--desktop">
-                            вакансии
-                        </Link>
-                    ) : null}
+                    <Link to="/vacancies" className="header__navLink header__navLink--desktop">
+                        вакансии
+                    </Link>
                 </div>
 
                 <Link to="/" className="header__logoLink">

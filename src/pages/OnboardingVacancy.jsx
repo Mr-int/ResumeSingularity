@@ -8,6 +8,7 @@ import {
     getRegistrationSkills,
     catalogRows,
 } from '../services/registrationCatalogApi.js';
+import GuidedHints from '../components/common/GuidedHints.jsx';
 import './accountPage.css';
 
 const WORK_FORMATS = [
@@ -37,6 +38,7 @@ const OnboardingVacancy = () => {
         employmentType: 'INTERNSHIP',
         specialityId: '',
         skillIds: [],
+        visibleToAnonymous: false,
     });
 
     useEffect(() => {
@@ -78,6 +80,7 @@ const OnboardingVacancy = () => {
                 employmentType: form.employmentType,
                 specialityId: form.specialityId ? Number(form.specialityId) : undefined,
                 skillIds: form.skillIds.length ? form.skillIds : undefined,
+                visibleToAnonymous: form.visibleToAnonymous,
             });
             navigate('/vacancies/mine', { replace: true });
         } catch (err) {
@@ -99,6 +102,7 @@ const OnboardingVacancy = () => {
                     {loading && <p className="accountPage__muted">Загрузка…</p>}
                     {!loading && (
                         <section className="accountPage__card">
+                            <GuidedHints formId="vacancy" title="Подсказки по вакансии" />
                             <form className="accountPage__form" onSubmit={handleSubmit}>
                                 <label className="accountPage__field">
                                     <span>Название *</span>
@@ -180,6 +184,16 @@ const OnboardingVacancy = () => {
                                         ))}
                                     </div>
                                 </fieldset>
+                                <label className="accountPage__field accountPage__field--checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.visibleToAnonymous}
+                                        onChange={(e) =>
+                                            setForm((p) => ({ ...p, visibleToAnonymous: e.target.checked }))
+                                        }
+                                    />
+                                    <span>Показывать вакансию без регистрации на сайте</span>
+                                </label>
                                 {error ? (
                                     <div className="accountPage__error" role="alert">
                                         {error}

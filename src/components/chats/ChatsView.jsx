@@ -15,6 +15,7 @@ import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
 import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
+import { filterMyRequests, postStudentDecision, postTuDecision } from '../../services/requestApi.js';
 
 const formatTime = (iso) => {
     if (!iso) return '';
@@ -63,6 +64,19 @@ const initials = (name) => {
 
 const avatarTone = (index) => `chatsView__avatar--tone${index % 3}`;
 
+const MESSAGING_ALLOWED = new Set(['STUDENT_CONFIRMED', 'SUCCESS', 'RECRUITER_CONFIRMED']);
+const TU_PHASE = new Set(['STUDENT_CONFIRMED', 'RECRUITER_CONFIRMED']);
+const canStudentDecide = (result) =>
+    result === 'WAITING' || result === 'EXPECTATION' || result === 'CREATION';
+
+const TU_REASON_OPTIONS = [
+    { value: 'NOT_A_FIT', label: 'Не подходит' },
+    { value: 'NO_RESPONSE', label: 'Нет ответа' },
+    { value: 'CANDIDATE_DECLINED', label: 'Кандидат отказался' },
+    { value: 'EMPLOYER_DECLINED', label: 'Работодатель отказался' },
+    { value: 'OTHER', label: 'Другое' },
+];
+
 const isMessageDeleted = (m) => Boolean(m.deletedAt || m.deletedByAdmin);
 
 async function resolveMe() {
@@ -96,6 +110,11 @@ const ChatsView = () => {
     const [sendError, setSendError] = useState('');
     const [draft, setDraft] = useState('');
     const [sending, setSending] = useState(false);
+    const [chatRequest, setChatRequest] = useState(null);
+    const [requestBusy, setRequestBusy] = useState(false);
+    const [decisionComment, setDecisionComment] = useState('');
+    const [tuReason, setTuReason] = useState('NOT_A_FIT');
+    const [tuComment, setTuComment] = useState('');
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const titleCache = useRef(new Map());
@@ -292,9 +311,25 @@ const ChatsView = () => {
         }
     }, [searchParams, chats]);
 
+    const loadChatRequest = useCallback(async (chatId) => {
+        if (!chatId) {
+            setChatRequest(null);
+            return;
+        }
+        try {
+            const res = await filterMyRequests({}, 0, 50);
+            const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
+            const match = rows.find((r) => String(r.appChatId) === String(chatId));
+            setChatRequest(match || null);
+        } catch {
+            setChatRequest(null);
+        }
+    }, []);
+
     useEffect(() => {
         if (!selectedId) {
             setMessages([]);
+            setChatRequest(null);
             return;
         }
         const gen = ++messagesLoadGen.current;
@@ -302,7 +337,52 @@ const ChatsView = () => {
             if (messagesLoadGen.current !== gen) return;
             refreshSummary(selectedId);
         });
-    }, [selectedId, loadMessages, refreshSummary]);
+        loadChatRequest(selectedId);
+        setDecisionComment('');
+        setTuComment('');
+    }, [selectedId, loadMessages, refreshSummary, loadChatRequest]);
+
+    const messagingAllowed = chatRequest ? MESSAGING_ALLOWED.has(chatRequest.result) : true;
+    const showStudentDecision =
+        me?.role === 'student' && chatRequest && canStudentDecide(chatRequest.result);
+    const showTuPanel = chatRequest && TU_PHASE.has(chatRequest.result);
+
+    const handleStudentDecision = async (accept) => {
+        if (!chatRequest?.id) return;
+        setRequestBusy(true);
+        setSendError('');
+        try {
+            await postStudentDecision(chatRequest.id, {
+                accept,
+                comment: decisionComment.trim() || undefined,
+            });
+            await loadChatRequest(selectedId);
+            await loadMessages(selectedId);
+        } catch (err) {
+            setSendError(err.message || 'Не удалось отправить ответ');
+        } finally {
+            setRequestBusy(false);
+        }
+    };
+
+    const handleTuDecision = async (accept) => {
+        if (!chatRequest?.id) return;
+        setRequestBusy(true);
+        setSendError('');
+        try {
+            await postTuDecision(chatRequest.id, {
+                accept,
+                reasonCode: accept ? undefined : tuReason,
+                comment: accept ? undefined : tuComment.trim() || undefined,
+            });
+            await loadChatRequest(selectedId);
+            await loadMessages(selectedId);
+        } catch (err) {
+            setSendError(err.message || 'Не удалось отправить решение по ТУ');
+        } finally {
+            setRequestBusy(false);
+        }
+    };
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -451,6 +531,80 @@ const ChatsView = () => {
                 </header>
 
                 <div className="chatsView__messages">
+                    {selectedId && showStudentDecision ? (
+                        <div className="chatsView__actionPanel" role="region" aria-label="Решение по заявке">
+                            <p className="chatsView__actionTitle">Заявка ожидает вашего ответа</p>
+                            <textarea
+                                className="chatsView__actionInput"
+                                rows={2}
+                                placeholder="Комментарий (необязательно)"
+                                value={decisionComment}
+                                onChange={(e) => setDecisionComment(e.target.value)}
+                            />
+                            <div className="chatsView__actionBtns">
+                                <button
+                                    type="button"
+                                    className="chatsView__actionBtn chatsView__actionBtn--ok"
+                                    disabled={requestBusy}
+                                    onClick={() => handleStudentDecision(true)}
+                                >
+                                    Принять
+                                </button>
+                                <button
+                                    type="button"
+                                    className="chatsView__actionBtn"
+                                    disabled={requestBusy}
+                                    onClick={() => handleStudentDecision(false)}
+                                >
+                                    Отклонить
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
+                    {selectedId && showTuPanel ? (
+                        <div className="chatsView__actionPanel" role="region" aria-label="Подтверждение ТУ">
+                            <p className="chatsView__actionTitle">Подтвердите участие (ТУ) по заявке</p>
+                            <div className="chatsView__actionBtns">
+                                <button
+                                    type="button"
+                                    className="chatsView__actionBtn chatsView__actionBtn--ok"
+                                    disabled={requestBusy}
+                                    onClick={() => handleTuDecision(true)}
+                                >
+                                    Подтвердить ТУ
+                                </button>
+                            </div>
+                            <label className="chatsView__actionLabel">
+                                Причина отказа
+                                <select
+                                    value={tuReason}
+                                    onChange={(e) => setTuReason(e.target.value)}
+                                    className="chatsView__actionSelect"
+                                >
+                                    {TU_REASON_OPTIONS.map((o) => (
+                                        <option key={o.value} value={o.value}>
+                                            {o.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <textarea
+                                className="chatsView__actionInput"
+                                rows={2}
+                                placeholder="Комментарий к отказу"
+                                value={tuComment}
+                                onChange={(e) => setTuComment(e.target.value)}
+                            />
+                            <button
+                                type="button"
+                                className="chatsView__actionBtn"
+                                disabled={requestBusy}
+                                onClick={() => handleTuDecision(false)}
+                            >
+                                Отклонить ТУ
+                            </button>
+                        </div>
+                    ) : null}
                     {!selectedId && (
                         <div className="chatsView__empty">Выберите чат, чтобы открыть переписку</div>
                     )}
@@ -517,6 +671,11 @@ const ChatsView = () => {
 
                 <footer className="chatsView__composer">
                     {sendError ? <div className="chatsView__composerError">{sendError}</div> : null}
+                    {selectedId && !messagingAllowed ? (
+                        <p className="chatsView__composerHint">
+                            Переписка откроется после принятия заявки и подтверждения этапов.
+                        </p>
+                    ) : null}
                     <form className="chatsView__inputWrap" onSubmit={handleSend}>
                         <input
                             ref={fileInputRef}
@@ -527,7 +686,7 @@ const ChatsView = () => {
                         <button
                             type="button"
                             className="chatsView__attachBtn"
-                            disabled={!selectedId || sending}
+                            disabled={!selectedId || sending || !messagingAllowed}
                             aria-label="Прикрепить файл"
                             onClick={() => fileInputRef.current?.click()}
                         >
@@ -536,17 +695,23 @@ const ChatsView = () => {
                         <input
                             type="text"
                             className="chatsView__textInput"
-                            placeholder={selectedId ? 'Написать сообщение...' : 'Сначала выберите чат'}
+                            placeholder={
+                                !selectedId
+                                    ? 'Сначала выберите чат'
+                                    : messagingAllowed
+                                      ? 'Написать сообщение...'
+                                      : 'Переписка пока недоступна'
+                            }
                             value={draft}
                             onChange={(e) => setDraft(e.target.value)}
-                            disabled={!selectedId || sending}
+                            disabled={!selectedId || sending || !messagingAllowed}
                             maxLength={16000}
                             autoComplete="off"
                         />
                         <button
                             type="submit"
                             className="chatsView__sendBtn"
-                            disabled={!selectedId || sending || !draft.trim()}
+                            disabled={!selectedId || sending || !draft.trim() || !messagingAllowed}
                             aria-label="Отправить"
                         >
                             ➔

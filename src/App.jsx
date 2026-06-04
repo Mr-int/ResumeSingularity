@@ -14,12 +14,16 @@ import MyApplications from './pages/MyApplications.jsx';
 import ProjectsPage from './pages/Projects.jsx';
 import { ProjectModalProvider } from './context/ProjectModalContext.jsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+import GlobalAuthPrompt from './components/auth/GlobalAuthPrompt.jsx';
+import PendingApprovalBanner from './components/common/PendingApprovalBanner.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
+import { useAnalyticsTracker } from './hooks/useAnalyticsTracker.js';
 
 const AppRoutes = () => {
   const location = useLocation();
   const [isRouteLoading, setIsRouteLoading] = useState(false);
   const isFirstRender = useRef(true);
+  useAnalyticsTracker();
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -39,19 +43,12 @@ const AppRoutes = () => {
 
   return (
       <>
+        <PendingApprovalBanner />
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/projects' element={<ProjectsPage />} />
-          <Route path='/students' element={
-            <ProtectedRoute>
-              <Students />
-            </ProtectedRoute>
-          } />
-          <Route path='/studentsResume/:id' element={
-            <ProtectedRoute>
-              <Resume />
-            </ProtectedRoute>
-          } />
+          <Route path='/students' element={<Students />} />
+          <Route path='/studentsResume/:id' element={<Resume />} />
           <Route path='/onboarding/resume' element={
             <ProtectedRoute skipOnboardingCheck>
               <OnboardingResume />
@@ -62,11 +59,7 @@ const AppRoutes = () => {
               <OnboardingVacancy />
             </ProtectedRoute>
           } />
-          <Route path='/vacancies' element={
-            <ProtectedRoute>
-              <Vacancies />
-            </ProtectedRoute>
-          } />
+          <Route path='/vacancies' element={<Vacancies />} />
           <Route path='/vacancies/mine' element={
             <ProtectedRoute>
               <MyVacancies />
@@ -77,11 +70,7 @@ const AppRoutes = () => {
               <MyApplications />
             </ProtectedRoute>
           } />
-          <Route path='/vacancies/:id' element={
-            <ProtectedRoute>
-              <VacancyDetail />
-            </ProtectedRoute>
-          } />
+          <Route path='/vacancies/:id' element={<VacancyDetail />} />
           <Route path='/settings' element={
             <ProtectedRoute>
               <Settings />
@@ -95,6 +84,7 @@ const AppRoutes = () => {
           <Route path='/account' element={<Navigate to="/settings" replace />} />
         </Routes>
         <FloatingButton />
+        <GlobalAuthPrompt />
 
         {isRouteLoading && (
             <div className="appRouteLoader" aria-label="Загрузка страницы">

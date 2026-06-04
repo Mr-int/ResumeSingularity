@@ -24,6 +24,9 @@ import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import AnonymousApplyCTA from "../common/AnonymousApplyCTA.jsx";
+import { getImageUrl } from "../../config/api.js";
+import { isAuthenticated } from "../../services/authApi.js";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -60,7 +63,7 @@ const StudentResume = () => {
                 if (!studentData || !studentData.id) {
                     throw new Error('Студент не найден');
                 }
-                if (!hasStudentProfilePhoto(studentData)) {
+                if (isAuthenticated() && !hasStudentProfilePhoto(studentData)) {
                     throw new Error('Студент не найден');
                 }
 
@@ -235,13 +238,7 @@ const StudentResume = () => {
 
         if (!imagePath) return PLACEHOLDER_AVATAR;
 
-        if (imagePath.startsWith('http')) {
-            return imagePath;
-        }
-
-        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
-        const studentId = id;
-        return `${baseUrl}/${studentId}.jpg`;
+        return getImageUrl(imagePath) || PLACEHOLDER_AVATAR;
     };
 
     if (loading) {
@@ -294,15 +291,17 @@ const StudentResume = () => {
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
                                     <p>{student.speciality || student.profession || 'Специальность не указана'}</p>
-                                    <GradientButton
-                                        as="button"
-                                        type="button"
-                                        className="StudentResume__sendBid"
-                                        icon={<img src={mailIcon} alt="Иконка почты" />}
-                                        onClick={() => setShowApplicationForm(true)}
-                                    >
-                                        Оставить заявку
-                                    </GradientButton>
+                                    <AnonymousApplyCTA target="student">
+                                        <GradientButton
+                                            as="button"
+                                            type="button"
+                                            className="StudentResume__sendBid"
+                                            icon={<img src={mailIcon} alt="Иконка почты" />}
+                                            onClick={() => setShowApplicationForm(true)}
+                                        >
+                                            Оставить заявку
+                                        </GradientButton>
+                                    </AnonymousApplyCTA>
                                 </div>
                             </div>
 
@@ -381,15 +380,17 @@ const StudentResume = () => {
                                 </div>
                             )}
 
-                            <GradientButton
-                                as="button"
-                                type="button"
-                                className="StudentResume__sendBid"
-                                icon={<img src={mailIcon} alt="Иконка почты" />}
-                                onClick={() => setShowApplicationForm(true)}
-                            >
-                                Оставить заявку
-                            </GradientButton>
+                            <AnonymousApplyCTA target="student">
+                                <GradientButton
+                                    as="button"
+                                    type="button"
+                                    className="StudentResume__sendBid"
+                                    icon={<img src={mailIcon} alt="Иконка почты" />}
+                                    onClick={() => setShowApplicationForm(true)}
+                                >
+                                    Оставить заявку
+                                </GradientButton>
+                            </AnonymousApplyCTA>
                         </div>
                     </div>
                 </div>
@@ -543,10 +544,12 @@ const StudentResume = () => {
                             <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
                             <div className="StudentResume__contactWrapper">
                                 <p>Студент готов проходить стажировку в вашей компании!</p>
-                                <button onClick={() => setShowApplicationForm(true)}>
-                                    Связаться
-                                    <img src={mailIcon} alt="Mail icon"/>
-                                </button>
+                                <AnonymousApplyCTA target="student">
+                                    <button type="button" onClick={() => setShowApplicationForm(true)}>
+                                        Связаться
+                                        <img src={mailIcon} alt="Mail icon"/>
+                                    </button>
+                                </AnonymousApplyCTA>
                             </div>
                         </div>
 

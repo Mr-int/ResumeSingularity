@@ -48,3 +48,13 @@ export const postStudentDecision = (requestId, payload) =>
         method: 'POST',
         body: JSON.stringify(payload),
     });
+
+/**
+ * POST /request/{id}/tu-decision
+ * @param {{ accept: boolean, reasonCode?: string, comment?: string }} payload
+ */
+export const postTuDecision = (requestId, payload) =>
+    apiClientJson(`request/${requestId}/tu-decision`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });

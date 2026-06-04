@@ -1,5 +1,7 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
+import { filterStudentCardsPage as catalogFilterStudentCardsPage, getStudentCardById } from './catalogApi.js';
+import { isAuthenticated } from './authApi.js';
 
 export const getAllStudents = async () => {
     try {
@@ -35,10 +37,7 @@ export const getAllStudents = async () => {
 
 export const getStudentById = async (id) => {
     try {
-        const data = await apiClientJson(`student/${id}`, {
-            method: 'GET',
-        });
-        return data;
+        return await getStudentCardById(id);
     } catch (error) {
         if (error.requiresAuth) {
             throw error;
@@ -388,13 +387,16 @@ export const createRecruiterRequest = async (recruiterData) => {
  * Ответ: PageResponseStudentDTO { data, page, size, totalElements, totalPages }
  */
 export const filterStudentsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
+    if (!isAuthenticated()) {
+        return catalogFilterStudentCardsPage(filterReq, pageable);
+    }
     try {
         const page = typeof pageable.page === 'number' ? pageable.page : 0;
         const size = typeof pageable.size === 'number' ? pageable.size : 100;
 
         const resp = await apiClientJson(`student/filter?page=${page}&size=${size}`, {
             method: 'POST',
-            body: JSON.stringify(filterReq)
+            body: JSON.stringify(filterReq),
         });
 
         return {
@@ -425,22 +427,8 @@ export const filterStudents = async (filterReq = {}) => {
  * POST /student/cardsFilter
  * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
  */
-export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
-    const page = typeof pageable.page === 'number' ? pageable.page : 0;
-    const size = typeof pageable.size === 'number' ? pageable.size : 100;
-    const resp = await apiClientJson(`student/cardsFilter?page=${page}&size=${size}`, {
-        method: 'POST',
-        body: JSON.stringify(filterReq),
-    });
-
-    return {
-        data: Array.isArray(resp?.data) ? resp.data : [],
-        page: typeof resp?.page === 'number' ? resp.page : page,
-        size: typeof resp?.size === 'number' ? resp.size : size,
-        totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
-        totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
-    };
-};
+export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) =>
+    catalogFilterStudentCardsPage(filterReq, pageable);
 
 /**
  * Получение всех специальностей с пагинацией.

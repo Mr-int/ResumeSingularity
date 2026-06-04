@@ -1,0 +1,64 @@
+.guidedHints {
+    margin-bottom: 1rem;
+}
+
+.guidedHints__panel {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+}
+
+.guidedHints__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.guidedHints__close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.25rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.guidedHints__list {
+    margin: 0 0 0.75rem;
+    padding-left: 1.2rem;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.guidedHints__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.guidedHints__btn {
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.guidedHints__btn--muted {
+    opacity: 0.75;
+}
+
+.guidedHints__showAgain {
+    background: none;
+    border: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.85;
+    padding: 0;
+}

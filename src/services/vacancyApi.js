@@ -1,4 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
+import { listVacanciesPage, getVacancyCardById } from './catalogApi.js';
 
 const pageQuery = (page, size) => {
     const p = new URLSearchParams();
@@ -16,13 +17,9 @@ const appendFilterParams = (params, filter = {}) => {
     (filter.skillIds || []).forEach((v) => params.append('skillIds', String(v)));
 };
 
-export const listVacancies = (filter = {}, page = 0, size = 20) => {
-    const params = new URLSearchParams(pageQuery(page, size));
-    appendFilterParams(params, filter);
-    return apiClientJson(`vacancies?${params.toString()}`, { method: 'GET' });
-};
+export const listVacancies = (filter = {}, page = 0, size = 20) => listVacanciesPage(filter, page, size);
 
-export const getVacancyById = (id) => apiClientJson(`vacancies/${id}`, { method: 'GET' });
+export const getVacancyById = (id) => getVacancyCardById(id);
 
 export const listMyVacancies = () => apiClientJson('vacancies/mine', { method: 'GET' });
 

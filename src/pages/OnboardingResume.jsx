@@ -8,6 +8,7 @@ import {
     getRegistrationSkills,
     catalogRows,
 } from '../services/registrationCatalogApi.js';
+import GuidedHints from '../components/common/GuidedHints.jsx';
 import './accountPage.css';
 
 const BUSYNESS_OPTIONS = [
@@ -114,6 +115,7 @@ const OnboardingResume = () => {
 
                     {!loading && (
                         <section className="accountPage__card">
+                            <GuidedHints formId="resume" title="Подсказки по резюме" />
                             <form className="accountPage__form" onSubmit={handleSubmit}>
                                 <div className="accountPage__grid2">
                                     <label className="accountPage__field">

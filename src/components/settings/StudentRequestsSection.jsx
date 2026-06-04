@@ -60,8 +60,8 @@ const StudentRequestsSection = () => {
         setError('');
         try {
             await postStudentDecision(requestId, {
-                accepted,
-                studentResponseText: (comments[requestId] || '').trim() || undefined,
+                accept: accepted,
+                comment: (comments[requestId] || '').trim() || undefined,
             });
             await load();
         } catch (e) {

@@ -5,6 +5,8 @@ const AUTH_FLAG_KEY = 'isAuthenticated';
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
 /** Роль с последнего входа (STUDENT, RECRUITER, ADMIN). */
 export const AUTH_ROLE_KEY = 'resumeAuthRole';
+export const AUTH_ACCOUNT_STATUS_KEY = 'resumeAccountStatus';
+export const AUTH_HINTS_DISABLED_KEY = 'resumeHintsDisabled';
 
 /**
  * Авторизация пользователя
@@ -141,6 +143,8 @@ const clearLocalAuth = () => {
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
     localStorage.removeItem(AUTH_ROLE_KEY);
+    localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
+    localStorage.removeItem(AUTH_HINTS_DISABLED_KEY);
     document.cookie.split(';').forEach((c) => {
         document.cookie = c
             .replace(/^ +/, '')
@@ -284,6 +288,14 @@ export async function syncAuthSession() {
         if (data?.role) {
             localStorage.setItem(AUTH_ROLE_KEY, String(data.role).trim());
         }
+        if (data?.accountStatus != null) {
+            localStorage.setItem(AUTH_ACCOUNT_STATUS_KEY, String(data.accountStatus));
+        } else {
+            localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
+        }
+        if (data?.hintsDisabled != null) {
+            localStorage.setItem(AUTH_HINTS_DISABLED_KEY, data.hintsDisabled ? '1' : '0');
+        }
         return data;
     } catch (e) {
         console.warn('[AUTH] syncAuthSession failed', e);
@@ -297,5 +309,23 @@ export function getAuthRole() {
 
 export function isAdmin() {
     return getAuthRole() === 'ADMIN';
+}
+
+export function getAccountStatus() {
+    return localStorage.getItem(AUTH_ACCOUNT_STATUS_KEY);
+}
+
+export function isHintsDisabled() {
+    if (localStorage.getItem('resumeHintsDisabledLocal') === '1') return true;
+    return localStorage.getItem(AUTH_HINTS_DISABLED_KEY) === '1';
+}
+
+export function isRecruiterRole() {
+    const role = getAuthRole();
+    return role === 'RECRUITER' || role === 'USER';
+}
+
+export function isStudentRole() {
+    return getAuthRole() === 'STUDENT';
 }
 
