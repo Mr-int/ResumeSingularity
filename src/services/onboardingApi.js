@@ -9,6 +9,15 @@ export const completeStudentResumeOnboarding = (body) =>
         body: JSON.stringify(body),
     });
 
+export const getStudentResumeEdit = () =>
+    apiClientJson('student/onboarding/resume', { method: 'GET', skipSessionClearOn403: true });
+
+export const updateStudentResume = (body) =>
+    apiClientJson('student/onboarding/resume', {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });
+
 export const getRecruiterOnboardingStatus = () =>
     apiClientJson('recruiter/onboarding/status', { method: 'GET', skipSessionClearOn403: true });
 

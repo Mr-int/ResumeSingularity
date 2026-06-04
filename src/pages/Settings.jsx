@@ -113,12 +113,20 @@ const SettingsPage = () => {
                 <div className="accountPage__inner">
                     <h1 className="accountPage__title">Настройки</h1>
                     <p className="accountPage__lead">
-                        Просмотр профиля. Изменения в анкете вносит администратор после модерации.
+                        Просмотр профиля и настройки. Резюме, навыки, опыт и образование можно редактировать самостоятельно.
                     </p>
                     <p className="accountPage__settingsNav">
                         <Link to="/chats" className="accountPage__settingsNavLink">
                             Перейти к чатам
                         </Link>
+                        {role === 'student' && profile ? (
+                            <>
+                                {' · '}
+                                <Link to="/onboarding/resume" className="accountPage__settingsNavLink">
+                                    Редактировать резюме
+                                </Link>
+                            </>
+                        ) : null}
                     </p>
 
                     {loading && <div className="accountPage__muted">Загрузка…</div>}
@@ -148,6 +156,9 @@ const SettingsPage = () => {
                             )}
                             <section className="accountPage__card">
                                 <h2 className="accountPage__cardTitle">Профиль студента</h2>
+                                <p className="accountPage__hint">
+                                    <Link to="/onboarding/resume">Редактировать резюме, навыки, опыт и образование</Link>
+                                </p>
                                 <div className="accountPage__avatarRow">
                                     {avatarUrl ? (
                                         <img src={avatarUrl} alt="" className="accountPage__avatar" width={96} height={96} />

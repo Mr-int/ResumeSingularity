@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import { completeStudentResumeOnboarding } from '../services/onboardingApi.js';
+import {
+    completeStudentResumeOnboarding,
+    getStudentResumeEdit,
+    updateStudentResume,
+} from '../services/onboardingApi.js';
 import {
     getRegistrationSpecialities,
     getRegistrationSkills,
@@ -16,6 +20,24 @@ const BUSYNESS_OPTIONS = [
     { value: 'FREELANCE', label: 'Фриланс' },
     { value: 'EMPLOYED', label: 'Занят' },
 ];
+
+const emptyExperienceRow = () => ({
+    key: `exp-${Date.now()}-${Math.random()}`,
+    companyName: '',
+    position: '',
+    additionalInfo: '',
+    startDate: '',
+    endDate: '',
+});
+
+const emptyInstitutionRow = () => ({
+    key: `edu-${Date.now()}-${Math.random()}`,
+    institution: '',
+    webUrl: '',
+    additionalInfo: '',
+    startYear: '',
+    endYear: '',
+});
 
 const emptyForm = () => ({
     firstName: '',
@@ -32,9 +54,36 @@ const emptyForm = () => ({
     skillsIds: [],
 });
 
+const mapExperiencePayload = (rows) =>
+    rows
+        .filter((row) => row.position.trim() && row.companyName.trim() && row.startDate)
+        .map((row) => ({
+            companyName: row.companyName.trim(),
+            position: row.position.trim(),
+            additionalInfo: row.additionalInfo.trim() || undefined,
+            startDate: row.startDate,
+            endDate: row.endDate || undefined,
+        }));
+
+const mapInstitutionPayload = (rows) =>
+    rows
+        .filter((row) => row.institution.trim() && row.webUrl.trim() && row.startYear && row.endYear)
+        .map((row) => ({
+            institution: row.institution.trim(),
+            webUrl: row.webUrl.trim(),
+            additionalInfo: row.additionalInfo.trim() || undefined,
+            startYear: Number(row.startYear),
+            endYear: Number(row.endYear),
+        }));
+
 const OnboardingResume = () => {
     const navigate = useNavigate();
     const [form, setForm] = useState(emptyForm);
+    const [editMode, setEditMode] = useState(false);
+    const [existingExperiences, setExistingExperiences] = useState([]);
+    const [existingInstitutions, setExistingInstitutions] = useState([]);
+    const [experienceRows, setExperienceRows] = useState([emptyExperienceRow()]);
+    const [institutionRows, setInstitutionRows] = useState([emptyInstitutionRow()]);
     const [specialities, setSpecialities] = useState([]);
     const [skills, setSkills] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,14 +94,35 @@ const OnboardingResume = () => {
     useEffect(() => {
         (async () => {
             try {
-                const [specRes, skillRes] = await Promise.all([
+                const [specRes, skillRes, editRes] = await Promise.all([
                     getRegistrationSpecialities(0, 100),
                     getRegistrationSkills(0, 200),
+                    getStudentResumeEdit().catch(() => null),
                 ]);
                 setSpecialities(catalogRows(specRes));
                 setSkills(catalogRows(skillRes));
+
+                if (editRes?.specialityId) {
+                    setEditMode(true);
+                    setForm({
+                        firstName: editRes.firstName || '',
+                        lastName: editRes.lastName || '',
+                        email: editRes.email || '',
+                        city: editRes.city || '',
+                        hhLink: editRes.hhLink || '',
+                        birthDate: editRes.birthDate || '',
+                        bio: editRes.bio || '',
+                        busyness: editRes.busyness || 'FREE',
+                        phoneNumber: editRes.phoneNumber || '',
+                        telegramUsername: editRes.telegramUsername || '',
+                        specialityId: String(editRes.specialityId),
+                        skillsIds: Array.isArray(editRes.skillsIds) ? editRes.skillsIds : [],
+                    });
+                    setExistingExperiences(editRes.experiences || []);
+                    setExistingInstitutions(editRes.institutions || []);
+                }
             } catch (e) {
-                setError(e.message || 'Не удалось загрузить справочники');
+                setError(e.message || 'Не удалось загрузить данные');
             } finally {
                 setLoading(false);
             }
@@ -68,6 +138,23 @@ const OnboardingResume = () => {
         });
     };
 
+    const buildPayload = () => ({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        city: form.city.trim() || undefined,
+        hhLink: form.hhLink.trim() || undefined,
+        birthDate: form.birthDate,
+        bio: form.bio.trim() || undefined,
+        busyness: form.busyness,
+        phoneNumber: form.phoneNumber.trim() || undefined,
+        telegramUsername: form.telegramUsername.trim().replace(/^@/, '') || undefined,
+        specialityId: Number(form.specialityId),
+        skillsIds: form.skillsIds.length ? form.skillsIds : [],
+        experiences: mapExperiencePayload(experienceRows),
+        institutions: mapInstitutionPayload(institutionRows),
+    });
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -78,21 +165,14 @@ const OnboardingResume = () => {
         }
         setSaving(true);
         try {
-            await completeStudentResumeOnboarding({
-                firstName: form.firstName.trim(),
-                lastName: form.lastName.trim(),
-                email: form.email.trim(),
-                city: form.city.trim() || undefined,
-                hhLink: form.hhLink.trim() || undefined,
-                birthDate: form.birthDate,
-                bio: form.bio.trim() || undefined,
-                busyness: form.busyness,
-                phoneNumber: form.phoneNumber.trim() || undefined,
-                telegramUsername: form.telegramUsername.trim().replace(/^@/, '') || undefined,
-                specialityId: Number(form.specialityId),
-                skillsIds: form.skillsIds.length ? form.skillsIds : undefined,
-            });
-            setOk('Резюме сохранено. Профиль появится у рекрутеров после модерации.');
+            const payload = buildPayload();
+            if (editMode) {
+                await updateStudentResume(payload);
+                setOk('Резюме обновлено.');
+            } else {
+                await completeStudentResumeOnboarding(payload);
+                setOk('Резюме сохранено. Профиль появится у рекрутеров после модерации.');
+            }
             setTimeout(() => navigate('/settings', { replace: true }), 1200);
         } catch (err) {
             setError(err.message || 'Не удалось сохранить резюме');
@@ -101,15 +181,32 @@ const OnboardingResume = () => {
         }
     };
 
+    const updateExperienceRow = (key, field, value) => {
+        setExperienceRows((rows) => rows.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
+    };
+
+    const updateInstitutionRow = (key, field, value) => {
+        setInstitutionRows((rows) => rows.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
+    };
+
     return (
         <>
             <Header />
             <main className="accountPage">
                 <div className="accountPage__inner">
-                    <h1 className="accountPage__title">Заполнение резюме</h1>
+                    <h1 className="accountPage__title">{editMode ? 'Редактирование резюме' : 'Заполнение резюме'}</h1>
                     <p className="accountPage__lead">
-                        Обязательные поля отмечены. Курс на сервере будет NEW до модерации администратором.
+                        {editMode
+                            ? 'Обновите данные профиля, навыки, опыт и образование. Новые записи добавляются к уже сохранённым.'
+                            : 'Обязательные поля отмечены. Курс на сервере будет NEW до модерации администратором.'}
                     </p>
+                    {editMode ? (
+                        <p className="accountPage__settingsNav">
+                            <Link to="/settings" className="accountPage__settingsNavLink">
+                                Вернуться в настройки
+                            </Link>
+                        </p>
+                    ) : null}
 
                     {loading && <p className="accountPage__muted">Загрузка…</p>}
 
@@ -239,6 +336,180 @@ const OnboardingResume = () => {
                                         />
                                     </label>
                                 </div>
+
+                                <div className="accountPage__subsection">
+                                    <h3 className="accountPage__subsectionTitle">Опыт работы</h3>
+                                    {existingExperiences.length > 0 ? (
+                                        <ul className="accountPage__savedList">
+                                            {existingExperiences.map((item) => (
+                                                <li key={item.id} className="accountPage__savedItem">
+                                                    <strong>{item.position}</strong>
+                                                    {item.companyName ? ` — ${item.companyName}` : ''}
+                                                    {item.startDate ? (
+                                                        <span className="accountPage__muted">
+                                                            {' '}
+                                                            ({item.startDate}
+                                                            {item.endDate ? ` — ${item.endDate}` : ' — н.в.'})
+                                                        </span>
+                                                    ) : null}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="accountPage__hint">Пока нет сохранённого опыта.</p>
+                                    )}
+                                    {experienceRows.map((row, index) => (
+                                        <div key={row.key} className="accountPage__repeatBlock">
+                                            <p className="accountPage__repeatLabel">Новая запись {index + 1}</p>
+                                            <div className="accountPage__grid2">
+                                                <label className="accountPage__field">
+                                                    <span>Компания</span>
+                                                    <input
+                                                        value={row.companyName}
+                                                        onChange={(e) =>
+                                                            updateExperienceRow(row.key, 'companyName', e.target.value)
+                                                        }
+                                                    />
+                                                </label>
+                                                <label className="accountPage__field">
+                                                    <span>Должность</span>
+                                                    <input
+                                                        value={row.position}
+                                                        onChange={(e) =>
+                                                            updateExperienceRow(row.key, 'position', e.target.value)
+                                                        }
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div className="accountPage__grid2">
+                                                <label className="accountPage__field">
+                                                    <span>Начало</span>
+                                                    <input
+                                                        type="date"
+                                                        value={row.startDate}
+                                                        onChange={(e) =>
+                                                            updateExperienceRow(row.key, 'startDate', e.target.value)
+                                                        }
+                                                    />
+                                                </label>
+                                                <label className="accountPage__field">
+                                                    <span>Окончание</span>
+                                                    <input
+                                                        type="date"
+                                                        value={row.endDate}
+                                                        onChange={(e) =>
+                                                            updateExperienceRow(row.key, 'endDate', e.target.value)
+                                                        }
+                                                    />
+                                                </label>
+                                            </div>
+                                            <label className="accountPage__field">
+                                                <span>Описание</span>
+                                                <textarea
+                                                    rows={2}
+                                                    value={row.additionalInfo}
+                                                    onChange={(e) =>
+                                                        updateExperienceRow(row.key, 'additionalInfo', e.target.value)
+                                                    }
+                                                />
+                                            </label>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        className="accountPage__submit accountPage__submit--secondary"
+                                        onClick={() => setExperienceRows((rows) => [...rows, emptyExperienceRow()])}
+                                    >
+                                        Добавить опыт
+                                    </button>
+                                </div>
+
+                                <div className="accountPage__subsection">
+                                    <h3 className="accountPage__subsectionTitle">Образование</h3>
+                                    {existingInstitutions.length > 0 ? (
+                                        <ul className="accountPage__savedList">
+                                            {existingInstitutions.map((item) => (
+                                                <li key={item.id} className="accountPage__savedItem">
+                                                    <strong>{item.institution}</strong>
+                                                    <span className="accountPage__muted">
+                                                        {' '}
+                                                        ({item.startYear} — {item.endYear})
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="accountPage__hint">Пока нет сохранённого образования.</p>
+                                    )}
+                                    {institutionRows.map((row, index) => (
+                                        <div key={row.key} className="accountPage__repeatBlock">
+                                            <p className="accountPage__repeatLabel">Новая запись {index + 1}</p>
+                                            <label className="accountPage__field">
+                                                <span>Учебное заведение</span>
+                                                <input
+                                                    value={row.institution}
+                                                    onChange={(e) =>
+                                                        updateInstitutionRow(row.key, 'institution', e.target.value)
+                                                    }
+                                                />
+                                            </label>
+                                            <label className="accountPage__field">
+                                                <span>Сайт вуза</span>
+                                                <input
+                                                    value={row.webUrl}
+                                                    onChange={(e) =>
+                                                        updateInstitutionRow(row.key, 'webUrl', e.target.value)
+                                                    }
+                                                    placeholder="https://..."
+                                                />
+                                            </label>
+                                            <div className="accountPage__grid2">
+                                                <label className="accountPage__field">
+                                                    <span>Год начала</span>
+                                                    <input
+                                                        type="number"
+                                                        min="1900"
+                                                        max="2100"
+                                                        value={row.startYear}
+                                                        onChange={(e) =>
+                                                            updateInstitutionRow(row.key, 'startYear', e.target.value)
+                                                        }
+                                                    />
+                                                </label>
+                                                <label className="accountPage__field">
+                                                    <span>Год окончания</span>
+                                                    <input
+                                                        type="number"
+                                                        min="1900"
+                                                        max="2100"
+                                                        value={row.endYear}
+                                                        onChange={(e) =>
+                                                            updateInstitutionRow(row.key, 'endYear', e.target.value)
+                                                        }
+                                                    />
+                                                </label>
+                                            </div>
+                                            <label className="accountPage__field">
+                                                <span>Дополнительно</span>
+                                                <textarea
+                                                    rows={2}
+                                                    value={row.additionalInfo}
+                                                    onChange={(e) =>
+                                                        updateInstitutionRow(row.key, 'additionalInfo', e.target.value)
+                                                    }
+                                                />
+                                            </label>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        className="accountPage__submit accountPage__submit--secondary"
+                                        onClick={() => setInstitutionRows((rows) => [...rows, emptyInstitutionRow()])}
+                                    >
+                                        Добавить образование
+                                    </button>
+                                </div>
+
                                 {error ? (
                                     <div className="accountPage__error" role="alert">
                                         {error}
@@ -246,7 +517,7 @@ const OnboardingResume = () => {
                                 ) : null}
                                 {ok ? <div className="accountPage__ok">{ok}</div> : null}
                                 <button type="submit" className="accountPage__submit" disabled={saving}>
-                                    {saving ? 'Сохранение…' : 'Сохранить резюме'}
+                                    {saving ? 'Сохранение…' : editMode ? 'Сохранить изменения' : 'Сохранить резюме'}
                                 </button>
                             </form>
                         </section>

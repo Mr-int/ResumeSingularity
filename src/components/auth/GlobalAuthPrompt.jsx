@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import LoginModal from './LoginModal.jsx';
+import { consumeAuthReturnTo } from '../../services/authApi.js';
 
 /** Модал входа на публичных страницах по событию resume:auth-required */
 const GlobalAuthPrompt = () => {
@@ -25,6 +26,11 @@ const GlobalAuthPrompt = () => {
             onSuccess={() => {
                 sessionStorage.removeItem('showLoginAfter403');
                 setOpen(false);
+                const returnTo = consumeAuthReturnTo();
+                if (returnTo) {
+                    window.location.href = returnTo;
+                    return;
+                }
                 window.location.reload();
             }}
         />

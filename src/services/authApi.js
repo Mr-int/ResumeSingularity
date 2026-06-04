@@ -16,6 +16,13 @@ export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
 export const AUTH_ROLE_KEY = 'resumeAuthRole';
 export const AUTH_ACCOUNT_STATUS_KEY = 'resumeAccountStatus';
 export const AUTH_HINTS_DISABLED_KEY = 'resumeHintsDisabled';
+export const AUTH_RETURN_KEY = 'authReturnTo';
+
+export const consumeAuthReturnTo = () => {
+    const returnTo = sessionStorage.getItem(AUTH_RETURN_KEY);
+    sessionStorage.removeItem(AUTH_RETURN_KEY);
+    return returnTo;
+};
 
 /**
  * Авторизация пользователя
@@ -288,20 +295,18 @@ export const logout = () => {
  * @returns {Promise<{ username: string, role: string } | null>}
  */
 export async function syncAuthSession() {
-    try {
+    const fetchMe = async () => {
         const response = await fetch(`${API_BASE_URL}auth/me`, {
             method: 'GET',
             credentials: 'include',
         });
         if (!response.ok) {
-            if (response.status === 401) {
-                clearLocalAuth();
-                notifyAuthChanged();
-                return null;
-            }
-            throw new Error(`auth/me failed: ${response.status}`);
+            return { ok: false, status: response.status };
         }
-        const data = await response.json();
+        return { ok: true, data: await response.json() };
+    };
+
+    const applyMeData = (data) => {
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         if (data?.username) {
@@ -320,6 +325,30 @@ export async function syncAuthSession() {
         }
         notifyAuthChanged();
         return data;
+    };
+
+    try {
+        let result = await fetchMe();
+        if (result.ok) {
+            return applyMeData(result.data);
+        }
+
+        if (result.status === 401) {
+            try {
+                await refreshSession();
+                result = await fetchMe();
+                if (result.ok) {
+                    return applyMeData(result.data);
+                }
+            } catch (refreshErr) {
+                console.warn('[AUTH] refresh after auth/me 401 failed', refreshErr);
+            }
+            clearLocalAuth();
+            notifyAuthChanged();
+            return null;
+        }
+
+        throw new Error(`auth/me failed: ${result.status}`);
     } catch (e) {
         console.warn('[AUTH] syncAuthSession failed', e);
         return null;

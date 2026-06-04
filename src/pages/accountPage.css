@@ -358,3 +358,40 @@
 .accountPage__skillChip input {
     accent-color: #6366f1;
 }
+
+.accountPage__subsection {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #2d2d3d;
+}
+
+.accountPage__subsectionTitle {
+    margin: 0 0 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #f4f4f5;
+}
+
+.accountPage__savedList {
+    margin: 0 0 16px;
+    padding-left: 18px;
+    color: #d4d4d8;
+}
+
+.accountPage__savedItem {
+    margin-bottom: 6px;
+}
+
+.accountPage__repeatBlock {
+    margin-bottom: 16px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #12121a;
+    border: 1px solid #2d2d3d;
+}
+
+.accountPage__repeatLabel {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: #a1a1aa;
+}
