@@ -47,7 +47,11 @@ const AppRoutes = () => {
         <Routes>
           <Route path='/' element={<Home />} />
           <Route path='/projects' element={<ProjectsPage />} />
-          <Route path='/students' element={<Students />} />
+          <Route path='/students' element={
+            <ProtectedRoute>
+              <Students />
+            </ProtectedRoute>
+          } />
           <Route path='/studentsResume/:id' element={<Resume />} />
           <Route path='/onboarding/resume' element={
             <ProtectedRoute skipOnboardingCheck>

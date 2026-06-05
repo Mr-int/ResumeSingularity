@@ -13,7 +13,7 @@ import {
 } from '../../services/chatApi.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
-import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
+import { AUTH_USERNAME_KEY, getAuthRole } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
 import { filterMyRequests, postStudentDecision, postTuDecision } from '../../services/requestApi.js';
 
@@ -80,6 +80,22 @@ const TU_REASON_OPTIONS = [
 const isMessageDeleted = (m) => Boolean(m.deletedAt || m.deletedByAdmin);
 
 async function resolveMe() {
+    const authRole = getAuthRole();
+    if (authRole === 'STUDENT') {
+        try {
+            const profile = await getStudentMe();
+            return { role: 'student', profile };
+        } catch {
+            /* empty */
+        }
+    } else if (authRole === 'RECRUITER' || authRole === 'USER') {
+        try {
+            const profile = await getRecruiterMe();
+            return { role: 'recruiter', profile };
+        } catch {
+            /* empty */
+        }
+    }
     try {
         const profile = await getStudentMe();
         return { role: 'student', profile };
@@ -97,7 +113,7 @@ async function resolveMe() {
 
 const ChatsView = () => {
     const [searchParams] = useSearchParams();
-    const [loadingList, setLoadingList] = useState(false);
+    const [loadingList, setLoadingList] = useState(true);
     const [listError, setListError] = useState('');
     const [chats, setChats] = useState([]);
     const [titles, setTitles] = useState({});
@@ -245,21 +261,18 @@ const ChatsView = () => {
             const { chats: deduped, aliasToCanonical } = dedupeChatsByPeer(rows, role);
             chatAliasRef.current = aliasToCanonical;
             setChats(deduped);
-            const nextTitles = {};
-            const nextSubtitles = {};
-            await Promise.all(
+            setLoadingList(false);
+
+            void Promise.all(
                 deduped.map(async (c) => {
                     const { title, subtitle } = await enrichChatMeta(c, party);
-                    nextTitles[c.id] = title;
-                    nextSubtitles[c.id] = subtitle;
+                    setTitles((prev) => ({ ...prev, [c.id]: title }));
+                    setSubtitles((prev) => ({ ...prev, [c.id]: subtitle }));
                 }),
             );
-            setTitles(nextTitles);
-            setSubtitles(nextSubtitles);
         } catch (e) {
             setListError(e.message || 'Не удалось загрузить чаты');
             setChats([]);
-        } finally {
             setLoadingList(false);
         }
     }, [enrichChatMeta]);

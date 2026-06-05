@@ -18,7 +18,9 @@
     align-items: center;
 }
 
-.header__searchBtn, .header__homeBtn {
+.header__searchBtn,
+.header__homeBtn,
+.header__navLink--desktop {
     background: none;
     border: none;
     color: #fff;
@@ -29,11 +31,13 @@
     text-decoration: none;
 }
 
-.header__homeBtn {
+.header__homeBtn,
+.header__navLink--desktop {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.header__homeBtn:hover {
+.header__homeBtn:hover,
+.header__navLink--desktop:hover {
     background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
     -webkit-background-clip: text;
     background-clip: text;
@@ -67,13 +71,6 @@
 
 .header__navLink--btn {
     padding: 0;
-}
-
-.header__navLink--desktop:hover {
-    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
 }
 
 .header__logo {
@@ -259,7 +256,9 @@
         padding: 0 40px;
     }
 
-    .header__searchBtn, .header__homeBtn {
+    .header__searchBtn,
+    .header__homeBtn,
+    .header__navLink--desktop {
         font-size: 16px;
     }
 
