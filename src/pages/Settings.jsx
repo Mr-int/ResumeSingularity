@@ -111,7 +111,9 @@ const SettingsPage = () => {
             <Header />
             <main className="accountPage">
                 <div className="accountPage__inner">
-                    <h1 className="accountPage__title">Настройки</h1>
+                    <h1 className="accountPage__title">
+                        <span className="accountPage__titleAccent">Настройки</span>
+                    </h1>
                     <p className="accountPage__lead">
                         Просмотр профиля и настройки. Резюме, навыки, опыт и образование можно редактировать самостоятельно.
                     </p>

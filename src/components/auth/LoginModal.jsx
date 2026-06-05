@@ -167,7 +167,7 @@ const LoginModal = ({ onClose, onSuccess }) => {
             await login(username, password);
             onSuccess();
         } catch (err) {
-            setError('Неверное имя пользователя или пароль');
+            setError(err.message || 'Не удалось войти. Проверьте логин и пароль.');
             console.error('Login error:', err);
         } finally {
             setLoading(false);

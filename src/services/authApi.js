@@ -34,6 +34,62 @@ export const consumeAuthReturnTo = () => {
     return returnTo;
 };
 
+const parseResponseJson = async (response) => {
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        try {
+            return await response.json();
+        } catch {
+            return null;
+        }
+    }
+    const text = await response.text();
+    if (!text) return null;
+    try {
+        return JSON.parse(text);
+    } catch {
+        return { message: text };
+    }
+};
+
+const parseAuthErrorMessage = (status, rawBody) => {
+    let message = rawBody;
+    try {
+        const parsed = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+        message = parsed?.message || message;
+    } catch {
+        /* keep raw */
+    }
+    if (status === 401) {
+        return 'Неверный логин или пароль. Если ошибка повторяется — обновите страницу и попробуйте снова.';
+    }
+    if (status === 403) {
+        return message || 'Доступ запрещён. Аккаунт может быть на проверке.';
+    }
+    return message || `Ошибка входа (${status})`;
+};
+
+/** Сбрасывает протухшую серверную сессию, чтобы login не ломался из‑за старых cookies. */
+async function resetStaleSessionBeforeAuth() {
+    try {
+        await fetch(`${API_BASE_URL}auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch {
+        /* ignore */
+    }
+    authSessionEpoch += 1;
+    syncInFlight = null;
+    localStorage.removeItem(AUTH_FLAG_KEY);
+    localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+    localStorage.removeItem(AUTH_USERNAME_KEY);
+    localStorage.removeItem(AUTH_ROLE_KEY);
+    localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
+    localStorage.removeItem(AUTH_HINTS_DISABLED_KEY);
+    sessionStorage.removeItem('showLoginAfter403');
+}
+
 /**
  * Авторизация пользователя
  * @param {string} username - Имя пользователя
@@ -42,63 +98,37 @@ export const consumeAuthReturnTo = () => {
  */
 export const login = async (username, password) => {
     try {
+        await resetStaleSessionBeforeAuth();
+
         const url = `${API_BASE_URL}auth/login`;
         console.log('[AUTH] Attempting login to:', url);
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', 
+            credentials: 'include',
             body: JSON.stringify({
-                username,
-                password
-            })
+                username: String(username || '').trim(),
+                password,
+            }),
         });
 
         console.log('[AUTH] Response status:', response.status);
-        console.log('[AUTH] Response headers:', Object.fromEntries(response.headers.entries()));
 
         if (!response.ok) {
             const errorText = await response.text();
             console.error('[AUTH] Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            const err = new Error(parseAuthErrorMessage(response.status, errorText));
+            err.status = response.status;
+            throw err;
         }
 
-        const contentType = response.headers.get('content-type');
-        const contentLength = response.headers.get('content-length');
-        
-        let data = null;
-
-        if (contentLength && parseInt(contentLength) > 0) {
-            if (contentType && contentType.includes('application/json')) {
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    console.warn('[AUTH] Failed to parse JSON, response might be empty');
-                }
-            } else {
-                const text = await response.text();
-                if (text) {
-                    try {
-                        data = JSON.parse(text);
-                    } catch (e) {
-                        data = { message: text };
-                    }
-                }
-            }
-        }
-
-        const cookiesAfterLogin = document.cookie;
-        console.log('[AUTH] Login successful, cookies:', cookiesAfterLogin);
-        console.log('[AUTH] Response data:', data);
-
-        const setCookieHeader = response.headers.get('set-cookie');
-        console.log('[AUTH] Set-Cookie header:', setCookieHeader);
+        const data = await parseResponseJson(response);
+        console.log('[AUTH] Login successful, response data:', data);
 
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
-
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         if (username != null && String(username).trim()) {
             localStorage.setItem(AUTH_USERNAME_KEY, String(username).trim());

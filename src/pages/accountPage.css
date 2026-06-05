@@ -1,71 +1,141 @@
 .accountPage {
     min-height: calc(100vh - 120px);
-    background: #050508;
+    background: #000;
     color: #e4e4e7;
-    padding: 40px 20px 80px;
+    padding: 48px 20px 88px;
     box-sizing: border-box;
+    display: flex;
+    justify-content: center;
 }
 
 .accountPage__inner {
-    max-width: 720px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 760px;
+    background:
+        linear-gradient(
+            to top right,
+            rgba(226, 113, 214, 0.18),
+            rgba(168, 142, 230, 0.16),
+            rgba(128, 172, 255, 0.18)
+        ),
+        rgba(0, 0, 0, 0.82);
+    border-radius: 32px;
+    padding: 36px 32px 40px;
+    box-sizing: border-box;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
 }
 
 .accountPage__title {
-    font-family: 'StratosSkyeng', 'StratosLight', sans-serif;
-    font-size: clamp(28px, 4vw, 36px);
-    font-weight: 600;
+    font-family: "Sansation", sans-serif;
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
     margin: 0 0 12px;
     color: #fff;
+}
+
+.accountPage__titleAccent {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .accountPage__lead {
     margin: 0 0 12px;
     font-size: 15px;
-    line-height: 1.55;
-    color: #a1a1aa;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.72);
+    text-align: center;
 }
 
 .accountPage__settingsNav {
     margin: 0 0 28px;
+    text-align: center;
 }
 
 .accountPage__settingsNavLink {
     display: inline-flex;
     align-items: center;
-    font-size: 15px;
-    color: #c4b5fd;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #fff;
     text-decoration: none;
-    border-bottom: 1px solid rgba(196, 181, 253, 0.45);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.28);
     padding-bottom: 2px;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .accountPage__settingsNavLink:hover {
-    color: #fff;
-    border-bottom-color: rgba(255, 255, 255, 0.5);
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    border-bottom-color: transparent;
 }
 
 .accountPage__code {
     font-size: 0.88em;
     padding: 2px 6px;
     border-radius: 6px;
-    background: #171721;
-    border: 1px solid #232335;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     color: #c4b5fd;
 }
 
 .accountPage__muted {
-    color: #8f8f9d;
+    color: rgba(255, 255, 255, 0.55);
     font-size: 15px;
+    text-align: center;
+    padding: 12px 0;
 }
 
 .accountPage__card {
-    background: #111118;
-    border: 1px solid #232335;
-    border-radius: 20px;
-    padding: 24px 22px 28px;
+    position: relative;
+    background: rgba(8, 8, 14, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 26px 24px 28px;
     margin-bottom: 20px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+    box-shadow:
+        0 16px 40px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+}
+
+.accountPage__card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(233, 90, 87, 0.55), rgba(229, 59, 207, 0.45), rgba(62, 142, 255, 0.55));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.75;
+}
+
+.accountPage__card::after {
+    content: '';
+    position: absolute;
+    top: -40%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(229, 59, 207, 0.12), transparent 70%);
+    pointer-events: none;
+}
+
+.accountPage__card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .accountPage__card--muted {
@@ -74,23 +144,37 @@
 }
 
 .accountPage__cardTitle {
-    margin: 0 0 18px;
-    font-size: 20px;
-    font-weight: 600;
+    margin: 0 0 6px;
+    font-family: "Sansation", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
     color: #fff;
+}
+
+.accountPage__cardTitle::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 2px;
+    margin-top: 12px;
+    margin-bottom: 14px;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    border-radius: 2px;
 }
 
 .accountPage__text {
     margin: 0 0 12px;
     font-size: 15px;
-    line-height: 1.55;
-    color: #d4d4d8;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
 }
 
 .accountPage__list {
     margin: 12px 0 0;
     padding-left: 20px;
-    color: #a1a1aa;
+    color: rgba(255, 255, 255, 0.62);
     line-height: 1.6;
     font-size: 14px;
 }
@@ -100,6 +184,10 @@
     align-items: center;
     gap: 20px;
     margin-bottom: 22px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .accountPage__avatar {
@@ -107,15 +195,19 @@
     height: 96px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #2d2d3d;
+    border: 2px solid transparent;
+    background:
+        linear-gradient(#111118, #111118) padding-box,
+        linear-gradient(135deg, #E95A57, #E53BCF, #3E8EFF) border-box;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .accountPage__avatar--placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #232335;
-    color: #8f8f9d;
+    background: #171721;
+    color: #a1a1aa;
     font-size: 28px;
     font-weight: 600;
 }
@@ -130,6 +222,11 @@
     font-size: 14px;
     font-weight: 500;
     position: relative;
+    transition: filter 0.2s;
+}
+
+.accountPage__fileLabel:hover {
+    filter: brightness(1.06);
 }
 
 .accountPage__fileInput {
@@ -161,6 +258,20 @@
 }
 
 @media (max-width: 600px) {
+    .accountPage {
+        padding: 28px 14px 64px;
+    }
+
+    .accountPage__inner {
+        padding: 28px 18px 32px;
+        border-radius: 24px;
+    }
+
+    .accountPage__card {
+        padding: 22px 18px 24px;
+        border-radius: 20px;
+    }
+
     .accountPage__grid2 {
         grid-template-columns: 1fr;
     }
@@ -175,16 +286,18 @@
 .accountPage__field--checkbox input {
     margin-top: 3px;
     width: auto;
+    accent-color: #e53bcf;
 }
 
 .accountPage__banner {
-    background: rgba(251, 191, 36, 0.12);
-    border: 1px solid rgba(251, 191, 36, 0.35);
-    border-radius: 12px;
-    padding: 12px 16px;
     margin-bottom: 20px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: linear-gradient(90deg, rgba(234, 179, 8, 0.14), rgba(251, 191, 36, 0.08));
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    color: #fef08a;
     font-size: 14px;
-    line-height: 1.45;
+    line-height: 1.55;
 }
 
 .accountPage__field {
@@ -192,11 +305,12 @@
     flex-direction: column;
     gap: 6px;
     font-size: 13px;
-    color: #a1a1aa;
+    color: rgba(255, 255, 255, 0.55);
 }
 
 .accountPage__field span {
     font-weight: 500;
+    letter-spacing: 0.2px;
 }
 
 .accountPage__field input,
@@ -210,34 +324,52 @@
     font-size: 15px;
     font-family: inherit;
     outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .accountPage__field input:focus,
 .accountPage__field select:focus,
 .accountPage__field textarea:focus {
     border-color: #6366f1;
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.25);
 }
 
 .accountPage__hint {
-    margin: 0;
-    font-size: 12px;
-    color: #71717a;
+    margin: 0 0 16px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
     line-height: 1.45;
 }
 
+.accountPage__hint a {
+    color: #fff;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.accountPage__hint a:hover {
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    border-bottom-color: transparent;
+}
+
 .accountPage__error {
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(248, 113, 113, 0.12);
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(248, 113, 113, 0.1);
     border: 1px solid rgba(248, 113, 113, 0.35);
     color: #fecaca;
     font-size: 14px;
+    line-height: 1.45;
 }
 
 .accountPage__ok {
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(34, 197, 94, 0.12);
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(34, 197, 94, 0.1);
     border: 1px solid rgba(34, 197, 94, 0.35);
     color: #bbf7d0;
     font-size: 14px;
@@ -248,13 +380,14 @@
     align-self: flex-start;
     padding: 12px 28px;
     border-radius: 100px;
-    border: 2px solid transparent;
+    border: none;
     cursor: pointer;
     font-size: 15px;
     font-weight: 600;
     color: #fff;
-    background: linear-gradient(90deg, #e95a57 0%, #e53bcf 49.5%, #3e8eff 100%) border-box;
+    background: linear-gradient(90deg, #e95a57 0%, #e53bcf 49.5%, #3e8eff 100%);
     font-family: inherit;
+    transition: filter 0.2s, transform 0.15s;
 }
 
 .accountPage__submit:disabled {
@@ -263,23 +396,13 @@
 }
 
 .accountPage__submit:hover:not(:disabled) {
-    filter: brightness(1.05);
+    filter: brightness(1.06);
+    transform: translateY(-1px);
 }
 
 .accountPage__submit--secondary {
     background: transparent;
-    border: 2px solid #3f3f50;
-}
-
-.accountPage__banner {
-    margin-bottom: 20px;
-    padding: 14px 16px;
-    border-radius: 12px;
-    background: rgba(234, 179, 8, 0.12);
-    border: 1px solid rgba(234, 179, 8, 0.35);
-    color: #fef08a;
-    font-size: 14px;
-    line-height: 1.45;
+    border: 2px solid rgba(255, 255, 255, 0.22);
 }
 
 .accountPage__inputReadonly,
@@ -288,13 +411,18 @@
 .accountPage__form--readonly select {
     opacity: 0.95;
     cursor: default;
-    background: #0c0c12;
+    background: rgba(9, 9, 13, 0.85);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 .accountPage__readonlyMeta {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     font-size: 14px;
-    color: #a1a1aa;
+    color: rgba(255, 255, 255, 0.72);
 }
 
 .accountPage__readonlyMeta p {
@@ -307,12 +435,20 @@
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 .accountPage__requestItem {
-    padding: 14px 0;
-    border-top: 1px solid #232335;
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.accountPage__requestItem:hover {
+    border-color: rgba(229, 59, 207, 0.35);
+    background: rgba(229, 59, 207, 0.04);
 }
 
 .accountPage__requestHead {
@@ -323,9 +459,21 @@
     margin-bottom: 8px;
 }
 
+.accountPage__requestHead strong {
+    color: #fff;
+    font-weight: 600;
+}
+
 .accountPage__requestStatus {
-    font-size: 13px;
-    color: #a78bfa;
+    font-size: 12px;
+    font-family: "Sansation", sans-serif;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: #c4b5fd;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: rgba(99, 102, 241, 0.15);
+    border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .accountPage__requestActions {
@@ -348,21 +496,21 @@
     gap: 6px;
     padding: 6px 12px;
     border-radius: 100px;
-    background: #171721;
-    border: 1px solid #2d2d3d;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     font-size: 13px;
     color: #d4d4d8;
     cursor: pointer;
 }
 
 .accountPage__skillChip input {
-    accent-color: #6366f1;
+    accent-color: #e53bcf;
 }
 
 .accountPage__subsection {
     margin-top: 28px;
     padding-top: 20px;
-    border-top: 1px solid #2d2d3d;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .accountPage__subsectionTitle {
@@ -385,13 +533,13 @@
 .accountPage__repeatBlock {
     margin-bottom: 16px;
     padding: 14px;
-    border-radius: 12px;
-    background: #12121a;
-    border: 1px solid #2d2d3d;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .accountPage__repeatLabel {
     margin: 0 0 10px;
     font-size: 13px;
-    color: #a1a1aa;
+    color: rgba(255, 255, 255, 0.55);
 }
