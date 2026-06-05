@@ -6,7 +6,6 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudentsPage, getAllSpecialities } from "../../services/studentApi.js";
-import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
 const STUDENTS_PER_PAGE = 5;
 const MAX_VISIBLE_PAGES = 5;
@@ -344,8 +343,7 @@ const StudentsList = () => {
     }, [currentFilters]);
 
     useEffect(() => {
-        const visibleStudentsCount = allStudents.filter(hasStudentProfilePhoto).length;
-        const nextTotalPages = Math.max(1, Math.ceil(visibleStudentsCount / STUDENTS_PER_PAGE));
+        const nextTotalPages = Math.max(1, Math.ceil(allStudents.length / STUDENTS_PER_PAGE));
         setCurrentPage((prev) => Math.min(prev, nextTotalPages));
     }, [allStudents]);
 
@@ -490,11 +488,10 @@ const StudentsList = () => {
         currentFilters.adult ||
         (Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0) ||
         currentFilters.searchQuery;
-    const visibleStudents = allStudents.filter(hasStudentProfilePhoto);
-    const totalPages = Math.max(1, Math.ceil(visibleStudents.length / STUDENTS_PER_PAGE));
+    const totalPages = Math.max(1, Math.ceil(allStudents.length / STUDENTS_PER_PAGE));
     const safeCurrentPage = Math.min(currentPage, totalPages);
     const pageStartIndex = (safeCurrentPage - 1) * STUDENTS_PER_PAGE;
-    const paginatedStudents = visibleStudents.slice(pageStartIndex, pageStartIndex + STUDENTS_PER_PAGE);
+    const paginatedStudents = allStudents.slice(pageStartIndex, pageStartIndex + STUDENTS_PER_PAGE);
 
     const getVisiblePages = () => {
         if (totalPages <= MAX_VISIBLE_PAGES) {
@@ -631,7 +628,7 @@ const StudentsList = () => {
                 </header>
 
                 <div className="studentsList__cardsWrapper">
-                    {visibleStudents.length > 0 ? (
+                    {allStudents.length > 0 ? (
                         paginatedStudents.map((student) => (
                             <StudentsListCard key={student.id} student={student} />
                         ))
@@ -663,7 +660,7 @@ const StudentsList = () => {
                     )}
                 </div>
 
-                {visibleStudents.length > 0 && totalPages > 1 && (
+                {allStudents.length > 0 && totalPages > 1 && (
                     <div className="studentsList__pagination" aria-label="Пагинация студентов">
                         <button
                             type="button"
