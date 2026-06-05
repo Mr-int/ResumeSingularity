@@ -93,18 +93,57 @@ export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 
     }
 };
 
+const unwrapStudentPayload = (payload) => {
+    if (!payload || typeof payload !== 'object') return payload;
+    if (payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data)) {
+        return payload.data;
+    }
+    if (payload.content && typeof payload.content === 'object' && !Array.isArray(payload.content)) {
+        return payload.content;
+    }
+    return payload;
+};
+
+const normalizeStudentCard = (student, fallbackId) => {
+    if (!student || typeof student !== 'object') return null;
+    const resolvedId = student.id ?? student.studentId ?? fallbackId;
+    if (resolvedId == null || resolvedId === '') return null;
+    return { ...student, id: resolvedId };
+};
+
+/** Карточка резюме: сначала публичный каталог, затем приватный DTO для рекрутёра. */
 export const getStudentCardById = async (id) => {
-    if (!hasRecruiterCatalogAccess()) {
-        return publicJson(`public/students/${id}`, { method: 'GET' });
+    if (!id) {
+        const err = new Error('ID студента не указан');
+        err.status = 400;
+        throw err;
     }
-    try {
-        return await apiClientJson(`student/${id}`, { method: 'GET', skipSessionClearOn403: true });
-    } catch (error) {
-        if (error.status === 403 || error.status === 401) {
-            return publicJson(`public/students/${id}`, { method: 'GET' });
+
+    const sources = [
+        () => publicJson(`public/students/${id}`, { method: 'GET' }),
+    ];
+
+    if (hasRecruiterCatalogAccess()) {
+        sources.push(() =>
+            apiClientJson(`student/${id}`, { method: 'GET', skipSessionClearOn403: true }),
+        );
+    }
+
+    const errors = [];
+    for (const load of sources) {
+        try {
+            const raw = await load();
+            const student = normalizeStudentCard(unwrapStudentPayload(raw), id);
+            if (student) return student;
+        } catch (error) {
+            errors.push(error);
         }
-        throw error;
     }
+
+    const last = errors[errors.length - 1];
+    const err = new Error('Студент не найден');
+    err.status = last?.status ?? 404;
+    throw err;
 };
 
 const appendVacancyFilterParams = (params, filter = {}) => {

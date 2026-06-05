@@ -20,12 +20,10 @@ import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
-import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 import AnonymousApplyCTA from "../common/AnonymousApplyCTA.jsx";
 import { getImageUrl } from "../../config/api.js";
-import { isAuthenticated } from "../../services/authApi.js";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -58,11 +56,7 @@ const StudentResume = () => {
                 setLoading(true);
 
                 const studentData = await getStudentById(id);
-
-                if (!studentData || !studentData.id) {
-                    throw new Error('Студент не найден');
-                }
-                if (isAuthenticated() && !hasStudentProfilePhoto(studentData)) {
+                if (!studentData?.id) {
                     throw new Error('Студент не найден');
                 }
 
@@ -123,15 +117,12 @@ const StudentResume = () => {
                 }
 
                 if (similarStudentsResult.status === 'fulfilled') {
-                    const similar = (similarStudentsResult.value || []).filter(hasStudentProfilePhoto);
-                    setSimilarStudents(similar);
+                    setSimilarStudents(similarStudentsResult.value || []);
                 }
 
             } catch (err) {
                 console.error('Fetch error:', err);
-                if (err?.status !== 403) {
-                    setError(err.message || 'Ошибка загрузки данных студента');
-                }
+                setError(err.message || 'Ошибка загрузки данных студента');
             } finally {
                 setLoading(false);
             }
