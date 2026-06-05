@@ -4,7 +4,7 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import { getAllStudents } from "../../services/studentApi.js";
+import { getFeaturedStudentCards } from "../../services/studentApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
@@ -25,7 +25,7 @@ const StudentSlider = () => {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
-                const data = await getAllStudents();
+                const data = await getFeaturedStudentCards(24);
                 const visible = (Array.isArray(data) ? data : []).filter(hasStudentProfilePhoto);
                 setStudents(visible);
                 if (visible.length > 0) {

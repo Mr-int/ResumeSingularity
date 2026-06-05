@@ -12,8 +12,7 @@ import {
     getStudentById,
     getPortfolioByStudentId,
     getExperienceDetailsByStudentId,
-    getAllStudents,
-    getSkillsByStudentId,
+    getSimilarStudentCards,
     getEducationDetailsByStudentId
 } from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
@@ -73,16 +72,21 @@ const StudentResume = () => {
                     setSkills(studentData.skills);
                 }
 
+                const specialityId =
+                    studentData.specialityId ??
+                    studentData.speciality?.id ??
+                    studentData.specialities?.[0]?.id;
+
                 const [
                     portfolioResult,
                     educationResult,
                     experienceResult,
-                    allStudentsResult
+                    similarStudentsResult
                 ] = await Promise.allSettled([
                     getPortfolioByStudentId(id),
                     getEducationDetailsByStudentId(id),
                     getExperienceDetailsByStudentId(id),
-                    getAllStudents()
+                    getSimilarStudentCards(id, specialityId, 6)
                 ]);
 
                 if (portfolioResult.status === 'fulfilled') {
@@ -118,17 +122,9 @@ const StudentResume = () => {
                     setExperienceDetails(Array.isArray(experienceData) ? experienceData : []);
                 }
 
-                if (allStudentsResult.status === 'fulfilled') {
-                    const allStudents = allStudentsResult.value;
-                    const similar = allStudents
-                        .filter(hasStudentProfilePhoto)
-                        .filter(s => {
-                            const currentId = s.id ? s.id.toString() : s.id;
-                            const targetId = id.toString();
-                            return currentId !== targetId;
-                        })
-                        .slice(0, 6);
-                    setSimilarStudents(similar || []);
+                if (similarStudentsResult.status === 'fulfilled') {
+                    const similar = (similarStudentsResult.value || []).filter(hasStudentProfilePhoto);
+                    setSimilarStudents(similar);
                 }
 
             } catch (err) {

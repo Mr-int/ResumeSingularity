@@ -26,15 +26,13 @@ export function useAuthState() {
     useEffect(() => {
         if (!isAuthenticated()) return undefined;
         let cancelled = false;
-        syncAuthSession().then((me) => {
-            if (!cancelled && (me || isAuthenticated())) {
-                refresh();
-            }
+        syncAuthSession().finally(() => {
+            if (!cancelled) refresh();
         });
         return () => {
             cancelled = true;
         };
-    }, [version, refresh]);
+    }, [refresh]);
 
     return {
         authed: isAuthenticated(),

@@ -6,6 +6,7 @@ import {
     completeStudentResumeOnboarding,
     getStudentResumeEdit,
     updateStudentResume,
+    setCachedOnboardingStatus,
 } from '../services/onboardingApi.js';
 import {
     getRegistrationSpecialities,
@@ -171,6 +172,7 @@ const OnboardingResume = () => {
                 setOk('Резюме обновлено.');
             } else {
                 await completeStudentResumeOnboarding(payload);
+                setCachedOnboardingStatus('student', true);
                 setOk('Резюме сохранено. Профиль появится у рекрутеров после модерации.');
             }
             setTimeout(() => navigate('/settings', { replace: true }), 1200);

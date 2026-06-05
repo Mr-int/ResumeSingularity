@@ -329,31 +329,7 @@ const StudentsList = () => {
         loadSpecialities();
     }, []);
 
-    // Первоначальная загрузка данных
-    useEffect(() => {
-        const loadInitialData = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchFilteredStudents({
-                    course: [],
-                    adult: false,
-                    specialty: [],
-                    searchQuery: ""
-                });
-                setAllStudents(data);
-            } catch (err) {
-                if (err?.status !== 403) {
-                    setError(err.message);
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadInitialData();
-    }, [fetchFilteredStudents]);
-
-    // Применение фильтров при изменении currentFilters
+    // Загрузка и применение фильтров при изменении currentFilters
     useEffect(() => {
         const applyFilters = async () => {
             const data = await fetchFilteredStudents(currentFilters);

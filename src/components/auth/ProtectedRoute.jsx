@@ -8,8 +8,14 @@ import {
     getAuthRole,
     isStudentRole,
     isRecruiterRole,
+    notifyAuthChanged,
 } from '../../services/authApi.js';
-import { getStudentOnboardingStatus, getRecruiterOnboardingStatus } from '../../services/onboardingApi.js';
+import {
+    getStudentOnboardingStatus,
+    getRecruiterOnboardingStatus,
+    getCachedOnboardingStatus,
+    setCachedOnboardingStatus,
+} from '../../services/onboardingApi.js';
 import LoginModal from './LoginModal.jsx';
 
 const ONBOARDING_STUDENT_PATH = '/onboarding/resume';
@@ -92,21 +98,45 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
                 checkingRef.current = false;
             };
 
-            const checkStudentOnboarding = async () => {
-                try {
-                    const studentStatus = await getStudentOnboardingStatus();
-                    if (!studentStatus.completed) {
-                        if (path !== ONBOARDING_STUDENT_PATH) {
-                            navigate(ONBOARDING_STUDENT_PATH, { replace: true });
-                        }
-                        finishOnboardingCheck();
-                        return true;
-                    }
-                    if (path === ONBOARDING_STUDENT_PATH) {
-                        navigate('/settings', { replace: true });
+            const applyStudentOnboarding = (completed) => {
+                if (!completed) {
+                    if (path !== ONBOARDING_STUDENT_PATH) {
+                        navigate(ONBOARDING_STUDENT_PATH, { replace: true });
                     }
                     finishOnboardingCheck();
                     return true;
+                }
+                if (path === ONBOARDING_STUDENT_PATH) {
+                    navigate('/settings', { replace: true });
+                }
+                finishOnboardingCheck();
+                return true;
+            };
+
+            const applyRecruiterOnboarding = (completed) => {
+                if (!completed) {
+                    if (path !== ONBOARDING_RECRUITER_PATH) {
+                        navigate(ONBOARDING_RECRUITER_PATH, { replace: true });
+                    }
+                    finishOnboardingCheck();
+                    return true;
+                }
+                if (path === ONBOARDING_RECRUITER_PATH) {
+                    navigate('/vacancies/mine', { replace: true });
+                }
+                finishOnboardingCheck();
+                return true;
+            };
+
+            const checkStudentOnboarding = async () => {
+                const cached = getCachedOnboardingStatus('student');
+                if (cached) {
+                    return applyStudentOnboarding(cached.completed);
+                }
+                try {
+                    const studentStatus = await getStudentOnboardingStatus();
+                    setCachedOnboardingStatus('student', Boolean(studentStatus.completed));
+                    return applyStudentOnboarding(Boolean(studentStatus.completed));
                 } catch (e) {
                     if (e.status !== 403 && e.status !== 404) {
                         console.warn('[ProtectedRoute] student onboarding check', e);
@@ -116,20 +146,14 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
             };
 
             const checkRecruiterOnboarding = async () => {
+                const cached = getCachedOnboardingStatus('recruiter');
+                if (cached) {
+                    return applyRecruiterOnboarding(cached.completed);
+                }
                 try {
                     const recruiterStatus = await getRecruiterOnboardingStatus();
-                    if (!recruiterStatus.completed) {
-                        if (path !== ONBOARDING_RECRUITER_PATH) {
-                            navigate(ONBOARDING_RECRUITER_PATH, { replace: true });
-                        }
-                        finishOnboardingCheck();
-                        return true;
-                    }
-                    if (path === ONBOARDING_RECRUITER_PATH) {
-                        navigate('/vacancies/mine', { replace: true });
-                    }
-                    finishOnboardingCheck();
-                    return true;
+                    setCachedOnboardingStatus('recruiter', Boolean(recruiterStatus.completed));
+                    return applyRecruiterOnboarding(Boolean(recruiterStatus.completed));
                 } catch (e) {
                     if (e.status !== 403 && e.status !== 404) {
                         console.warn('[ProtectedRoute] recruiter onboarding check', e);
@@ -166,20 +190,22 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, [location.pathname, navigate, skipOnboardingCheck, authCheckVersion]);
 
-    const handleLoginSuccess = () => {
+    const handleLoginSuccess = async () => {
         sessionStorage.removeItem('showLoginAfter403');
         checkingRef.current = false;
-        setAuthenticated(true);
+        await syncAuthSession();
+        setAuthenticated(isAuthenticated());
         setShowLogin(false);
         setLoading(false);
-        setOnboardingReady(true);
+        setOnboardingReady(false);
+        notifyAuthChanged();
 
         const returnTo = consumeAuthReturnTo();
         if (returnTo) {
-            window.location.href = returnTo;
+            navigate(returnTo);
             return;
         }
-        window.location.reload();
+        setAuthCheckVersion((v) => v + 1);
     };
 
     const handleCloseLogin = () => {

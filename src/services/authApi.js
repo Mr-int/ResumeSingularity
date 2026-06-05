@@ -5,6 +5,8 @@ export const AUTH_REQUIRED_EVENT = 'resume:auth-required';
 
 /** Инкремент при выходе — отменяет устаревшие syncAuthSession в полёте. */
 let authSessionEpoch = 0;
+/** Один in-flight syncAuthSession на всех потребителей. */
+let syncInFlight = null;
 
 export function notifyAuthChanged() {
     window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
@@ -165,12 +167,15 @@ export const isAuthenticated = () => {
 
 const clearLocalAuth = () => {
     authSessionEpoch += 1;
+    syncInFlight = null;
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
     localStorage.removeItem(AUTH_ROLE_KEY);
     localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
     localStorage.removeItem(AUTH_HINTS_DISABLED_KEY);
+    sessionStorage.removeItem('resumeOnboardingStudent');
+    sessionStorage.removeItem('resumeOnboardingRecruiter');
     document.cookie.split(';').forEach((c) => {
         document.cookie = c
             .replace(/^ +/, '')
@@ -303,7 +308,7 @@ export const logout = () => {
  * GET /auth/me — синхронизирует флаг входа, логин и роль на клиенте.
  * @returns {Promise<{ username: string, role: string } | null>}
  */
-export async function syncAuthSession() {
+async function syncAuthSessionInternal() {
     const epochAtStart = authSessionEpoch;
 
     const fetchMe = async () => {
@@ -321,23 +326,43 @@ export async function syncAuthSession() {
         if (epochAtStart !== authSessionEpoch) {
             return null;
         }
+
+        const prevUsername = localStorage.getItem(AUTH_USERNAME_KEY);
+        const prevRole = localStorage.getItem(AUTH_ROLE_KEY);
+        const prevStatus = localStorage.getItem(AUTH_ACCOUNT_STATUS_KEY);
+        const prevHints = localStorage.getItem(AUTH_HINTS_DISABLED_KEY);
+
+        const nextUsername = data?.username ? String(data.username).trim() : prevUsername;
+        const nextRole = data?.role ? String(data.role).trim() : prevRole;
+        const nextStatus = data?.accountStatus != null ? String(data.accountStatus) : null;
+        const nextHints = data?.hintsDisabled != null ? (data.hintsDisabled ? '1' : '0') : prevHints;
+
+        const changed =
+            localStorage.getItem(AUTH_FLAG_KEY) !== 'true' ||
+            prevUsername !== nextUsername ||
+            prevRole !== nextRole ||
+            prevStatus !== nextStatus ||
+            prevHints !== nextHints;
+
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         if (data?.username) {
-            localStorage.setItem(AUTH_USERNAME_KEY, String(data.username).trim());
+            localStorage.setItem(AUTH_USERNAME_KEY, nextUsername);
         }
         if (data?.role) {
-            localStorage.setItem(AUTH_ROLE_KEY, String(data.role).trim());
+            localStorage.setItem(AUTH_ROLE_KEY, nextRole);
         }
         if (data?.accountStatus != null) {
-            localStorage.setItem(AUTH_ACCOUNT_STATUS_KEY, String(data.accountStatus));
+            localStorage.setItem(AUTH_ACCOUNT_STATUS_KEY, nextStatus);
         } else {
             localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
         }
         if (data?.hintsDisabled != null) {
-            localStorage.setItem(AUTH_HINTS_DISABLED_KEY, data.hintsDisabled ? '1' : '0');
+            localStorage.setItem(AUTH_HINTS_DISABLED_KEY, nextHints);
         }
-        notifyAuthChanged();
+        if (changed) {
+            notifyAuthChanged();
+        }
         return data;
     };
 
@@ -367,6 +392,16 @@ export async function syncAuthSession() {
         console.warn('[AUTH] syncAuthSession failed', e);
         return null;
     }
+}
+
+export async function syncAuthSession() {
+    if (syncInFlight) {
+        return syncInFlight;
+    }
+    syncInFlight = syncAuthSessionInternal().finally(() => {
+        syncInFlight = null;
+    });
+    return syncInFlight;
 }
 
 export function getAuthRole() {

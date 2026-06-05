@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import { createRecruiterFirstVacancy } from '../services/onboardingApi.js';
+import { createRecruiterFirstVacancy, setCachedOnboardingStatus } from '../services/onboardingApi.js';
 import {
     getRegistrationSpecialities,
     getRegistrationSkills,
@@ -82,6 +82,7 @@ const OnboardingVacancy = () => {
                 skillIds: form.skillIds.length ? form.skillIds : undefined,
                 visibleToAnonymous: form.visibleToAnonymous,
             });
+            setCachedOnboardingStatus('recruiter', true);
             navigate('/vacancies/mine', { replace: true });
         } catch (err) {
             setError(err.message || 'Не удалось создать вакансию');

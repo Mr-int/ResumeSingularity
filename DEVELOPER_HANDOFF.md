@@ -1,6 +1,6 @@
 # Resume Singularity — передача фронтенда разработчику
 
-Документ описывает, **как устроен фронтенд**, **что уже сделано**, **как ходит в API**, и **на что обратить внимание**. Актуально на момент передачи проекта (React + Vite, без админ-панели на фронте).
+Документ описывает, **как устроен фронтенд**, **что уже сделано**, **как ходит в API**, и **на что обратить внимание**. Актуально для ветки **develop-mvp** (React + Vite, без админ-панели на фронте).
 
 ---
 
@@ -36,7 +36,7 @@ Cookies сессии (`HttpOnly`) прокси переписывает на `lo
 | Vite | 7 |
 | React Router | 7 |
 | State | Локальный `useState` / `useEffect`, **без** Redux/Zustand |
-| Стили | CSS-модули по файлам компонентов (`.css` рядом с `.jsx`) |
+| Стили | Colocated `.css` рядом с `.jsx`, BEM-именование (не CSS Modules) |
 | API | `fetch` + обёртка `apiClientJson` |
 | i18n | Только русский UI |
 
@@ -57,19 +57,24 @@ src/
 │   ├── apiClient.js        # Единая точка JSON-запросов, 401/403
 │   ├── formatExperiencePeriod.js  # Даты опыта в резюме
 │   └── hasStudentProfilePhoto.js
+├── hooks/                  # useAuthState, useAnalyticsTracker
+├── context/                # ProjectModalContext
 ├── services/               # Тонкие обёртки над API
-│   ├── authApi.js
-│   ├── chatApi.js
-│   ├── requestApi.js
-│   ├── getApi.js           # GET student/recruiter/me, справочники
-│   ├── studentApi.js       # Студенты, фильтры, опыт, образование
-│   └── accountApi.js       # PATCH профиля (в UI сейчас не используется)
+│   ├── authApi.js          # login, syncAuthSession (dedupe), события auth
+│   ├── catalogApi.js       # public/students, public/vacancies
+│   ├── studentApi.js       # каталог, резюме, bounded getFeaturedStudentCards
+│   ├── vacancyApi.js       # вакансии и отклики
+│   ├── onboardingApi.js    # онбординг + кэш статуса в sessionStorage
+│   ├── chatApi.js, requestApi.js, getApi.js, accountApi.js
+│   ├── projectsApi.js, registrationCatalogApi.js, verificationApi.js
+│   └── analyticsApi.js
 ├── pages/
-│   ├── Home.jsx            # Лендинг (публичный)
-│   ├── Students.jsx        # Каталог студентов
-│   ├── Resume.jsx          # Обёртка StudentResume
-│   ├── Settings.jsx        # Настройки / профиль read-only
-│   └── Chats.jsx           # Страница чатов
+│   ├── Home.jsx, Projects.jsx
+│   ├── Students.jsx        # Каталог (ProtectedRoute)
+│   ├── Resume.jsx          # Публичное резюме
+│   ├── Vacancies.jsx, VacancyDetail.jsx, MyVacancies.jsx, MyApplications.jsx
+│   ├── OnboardingResume.jsx, OnboardingVacancy.jsx
+│   ├── Settings.jsx, Chats.jsx
 └── components/
     ├── auth/               # LoginModal, ProtectedRoute
     ├── chats/              # ChatsView, chatsView.css
@@ -87,14 +92,22 @@ src/
 | Путь | Доступ | Страница |
 |------|--------|----------|
 | `/` | Публичный | Главная |
-| `/students` | `ProtectedRoute` | Каталог студентов |
-| `/studentsResume/:id` | Защищённый | Резюме |
-| `/settings` | Защищённый | Настройки |
-| `/chats` | Защищённый | Чаты |
+| `/projects` | Публичный | Каталог проектов |
+| `/students` | `ProtectedRoute` + онбординг | Каталог студентов |
+| `/studentsResume/:id` | Публичный | Резюме (public API для карточки) |
+| `/vacancies` | Публичный | Лента вакансий |
+| `/vacancies/:id` | Публичный | Деталь вакансии (отклик — студент) |
+| `/vacancies/mine` | Защищённый + онбординг | Мои вакансии (рекрутер) |
+| `/vacancies/applications/mine` | Защищённый + онбординг | Мои отклики (студент) |
+| `/onboarding/resume` | Защищённый (skip onboarding) | Онбординг резюме студента |
+| `/onboarding/vacancy` | Защищённый (skip onboarding) | Первая вакансия рекрутера |
+| `/settings` | Защищённый + онбординг | Настройки |
+| `/chats` | Защищённый + онбординг | Чаты |
 | `/chats?chatId={uuid}` | Защищённый | Deep link в диалог |
 | `/account` | Редирект → `/settings` | — |
 
-`FloatingButton` — плавающая кнопка заявки (глобально в `App.jsx`).
+`FloatingButton`, `GlobalAuthPrompt`, `PendingApprovalBanner` — глобально в `App.jsx`.  
+Кнопка **«войти»** в Header открывает `LoginModal` через `requestLogin()`.
 
 ---
 
@@ -105,7 +118,9 @@ src/
 1. `ProtectedRoute` проверяет `isAuthenticated()` из `authApi.js`.
 2. Если нет — показывается `LoginModal` (не отдельная страница `/login`).
 3. `POST /api/auth/login` с `credentials: 'include'` → cookies на бэкенде.
-4. В `localStorage`: `isAuthenticated`, `isAuthenticated_time`, `resumeAuthUsername` (для чатов — кто автор сообщения).
+4. В `localStorage`: `isAuthenticated`, `isAuthenticated_time`, `resumeAuthUsername`, `resumeAuthRole`, `resumeAccountStatus`.
+5. `syncAuthSession()` — единый dedupe-запрос `auth/me`; `notifyAuthChanged` только при изменении данных.
+6. При выходе `authSessionEpoch` инвалидирует in-flight sync; кэш онбординга в `sessionStorage` сбрасывается.
 
 ### 5.2 Refresh и 401
 
@@ -209,11 +224,19 @@ extractChatPageItems(res) // chatApi.js
 - Маска телефона, валидация email/telegram.
 
 ### 8.4 Настройки (`Settings.jsx`)
-- **Только просмотр** профиля студента/рекрутера.
-- Баннер для курса `NEW`.
-- **Студент:** блок заявок `StudentRequestsSection` — список, принять/отклонить, ссылка в чат.
-- **Рекрутер:** `RecruiterRequestsSection` — список своих заявок, ссылка в чат.
-- Редактирование профиля и загрузка фото **убраны** (по ТЗ — модерация админом).
+- Просмотр профиля студента/рекрутера; toggle `publicProfileConsent` через `patchStudentMe`.
+- Ссылка на `/onboarding/resume` для редактирования резюме.
+- **Студент:** `StudentRequestsSection` — заявки, принять/отклонить, ссылка в чат.
+- **Рекрутер:** `RecruiterRequestsSection` — свои заявки, ссылка в чат.
+
+### 8.7 Вакансии (develop-mvp)
+- Публичный каталог `/vacancies`, деталь `/vacancies/:id`.
+- Рекрутер: `MyVacancies`, онбординг `/onboarding/vacancy`.
+- Студент: отклики `MyApplications`, API `vacancyApi.js`.
+
+### 8.8 Онбординг
+- `ProtectedRoute` проверяет статус по роли; результат кэшируется в `sessionStorage` до logout.
+- После завершения онбординга страницы вызывают `setCachedOnboardingStatus`.
 
 ### 8.5 Чаты (`ChatsView.jsx`, `chatsView.css`)
 
@@ -268,9 +291,11 @@ extractChatPageItems(res) // chatApi.js
 | Cookies `false` в логах AUTH | HttpOnly | Сессия может работать через include |
 | Нет real-time чатов | Архитектура | Нужен WebSocket/polling на бэкенде + подписка на фронте |
 | `patchChatMessage` | Не в UI | API готов |
-| PATCH профиля / фото | `accountApi` | Намеренно отключено в Settings |
+| PATCH профиля / фото | `accountApi` | Частично в Settings (`publicProfileConsent`); полное редактирование — через онбординг |
+| Онбординг обходится через `/vacancies` | VacancyDetail | Отклик без resume onboarding — известное ограничение |
+| `getAllStudents()` | studentApi | Deprecated; использовать `getFeaturedStudentCards` / `getSimilarStudentCards` |
 | Админ-панель | — | Вне scope фронта |
-| Опечатка в ApplicationForm | `appвlicationForm__successWindow-text` | Класс с кириллической «в» — при правках CSS проверить |
+| Опечатка в ApplicationForm | `applicationForm__successWindow-text` | Исправлено (была кириллическая «в») |
 
 ---
 

@@ -3,36 +3,29 @@ import { getCompanyById } from './getApi.js';
 import { filterStudentCardsPage as catalogFilterStudentCardsPage, getStudentCardById } from './catalogApi.js';
 import { isAuthenticated } from './authApi.js';
 
+/** @deprecated Используйте getFeaturedStudentCards или getSimilarStudentCards */
 export const getAllStudents = async () => {
-    try {
-        const pageSize = 200;
-        const maxPages = 200;
-        const byId = new Map();
+    return getFeaturedStudentCards(200);
+};
 
-        const first = await filterStudentCardsPage({}, { page: 0, size: pageSize });
-        const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
-        const pagesToFetch = Math.min(totalPages, maxPages);
+/** Ограниченная выборка для слайдера/главной — один запрос вместо полного каталога. */
+export const getFeaturedStudentCards = async (limit = 24) => {
+    const result = await catalogFilterStudentCardsPage({}, { page: 0, size: limit });
+    return Array.isArray(result?.data) ? result.data : [];
+};
 
-        for (const s of first.data) {
-            const key = s?.id != null ? String(s.id) : JSON.stringify(s);
-            if (!byId.has(key)) byId.set(key, s);
-        }
-
-        for (let page = 1; page < pagesToFetch; page += 1) {
-            const res = await filterStudentCardsPage({}, { page, size: pageSize });
-            for (const s of res.data) {
-                const key = s?.id != null ? String(s.id) : JSON.stringify(s);
-                if (!byId.has(key)) byId.set(key, s);
-            }
-        }
-
-        return Array.from(byId.values());
-    } catch (error) {
-        if (error.requiresAuth) {
-            throw error;
-        }
-        throw error;
+/** Похожие студенты по специальности — bounded-запрос для страницы резюме. */
+export const getSimilarStudentCards = async (excludeStudentId, specialityId, limit = 6) => {
+    const filterReq = {};
+    const specId = Number(specialityId);
+    if (Number.isFinite(specId)) {
+        filterReq.specialitiesIds = [specId];
     }
+    const result = await catalogFilterStudentCardsPage(filterReq, { page: 0, size: limit + 8 });
+    const rows = Array.isArray(result?.data) ? result.data : [];
+    return rows
+        .filter((s) => String(s?.id) !== String(excludeStudentId))
+        .slice(0, limit);
 };
 
 export const getStudentById = async (id) => {

@@ -6,18 +6,30 @@ const PendingApprovalBanner = () => {
     const [status, setStatus] = useState(null);
 
     useEffect(() => {
-        const load = async () => {
+        const applyStatus = () => {
             if (!isAuthenticated()) {
                 setStatus(null);
+                return;
+            }
+            setStatus(getAccountStatus());
+        };
+
+        const loadInitial = async () => {
+            if (!isAuthenticated()) {
+                setStatus(null);
+                return;
+            }
+            if (getAccountStatus()) {
+                setStatus(getAccountStatus());
                 return;
             }
             const me = await syncAuthSession();
             setStatus(me?.accountStatus ?? getAccountStatus());
         };
-        load();
-        const onAuthChanged = () => load();
-        window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
-        return () => window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
+
+        loadInitial();
+        window.addEventListener(AUTH_CHANGED_EVENT, applyStatus);
+        return () => window.removeEventListener(AUTH_CHANGED_EVENT, applyStatus);
     }, []);
 
     if (status !== 'PENDING_APPROVAL') {
