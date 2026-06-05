@@ -5,7 +5,8 @@ import Footer from '../components/footer/Footer.jsx';
 import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
-import { patchStudentMe } from '../services/accountApi.js';
+import { patchStudentMe, patchRecruiter } from '../services/accountApi.js';
+import { getAccountStatus } from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
 
@@ -49,6 +50,9 @@ const SettingsPage = () => {
     const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
     const [consentSaving, setConsentSaving] = useState(false);
     const [consentError, setConsentError] = useState('');
+    const [recruiterSaving, setRecruiterSaving] = useState(false);
+    const [recruiterSaveError, setRecruiterSaveError] = useState('');
+    const [recruiterSaveOk, setRecruiterSaveOk] = useState('');
 
     const loadProfile = useCallback(async () => {
         setLoading(true);
@@ -92,6 +96,43 @@ const SettingsPage = () => {
 
     const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
 
+    const handleRecruiterField = (field, value) => {
+        setRecruiterForm((prev) => ({ ...prev, [field]: value }));
+        setRecruiterSaveOk('');
+        setRecruiterSaveError('');
+    };
+
+    const handleRecruiterSave = async (e) => {
+        e.preventDefault();
+        if (!profile?.id) return;
+        setRecruiterSaving(true);
+        setRecruiterSaveError('');
+        setRecruiterSaveOk('');
+        try {
+            const updated = await patchRecruiter(profile.id, {
+                companyName: recruiterForm.companyName.trim(),
+                firstName: recruiterForm.firstName.trim(),
+                lastName: recruiterForm.lastName.trim(),
+                email: recruiterForm.email.trim(),
+                phoneNumber: recruiterForm.phoneNumber.trim(),
+                telegramUsername: recruiterForm.telegramUsername.trim().replace(/^@/, '') || undefined,
+            });
+            setProfile(updated);
+            setRecruiterForm(recruiterToForm(updated));
+            setRecruiterSaveOk('Профиль сохранён');
+        } catch (err) {
+            if (err.status === 403 || getAccountStatus() === 'PENDING_APPROVAL') {
+                setRecruiterSaveError(
+                    'Сохранение недоступно: аккаунт на проверке у администратора.',
+                );
+            } else {
+                setRecruiterSaveError(err.message || 'Не удалось сохранить профиль');
+            }
+        } finally {
+            setRecruiterSaving(false);
+        }
+    };
+
     const handleConsentChange = async (checked) => {
         setConsentSaving(true);
         setConsentError('');
@@ -115,7 +156,11 @@ const SettingsPage = () => {
                         <span className="accountPage__titleAccent">Настройки</span>
                     </h1>
                     <p className="accountPage__lead">
-                        Просмотр профиля и настройки. Резюме, навыки, опыт и образование можно редактировать в карточке ниже.
+                        {role === 'recruiter'
+                            ? 'Контакты и данные компании можно изменить в форме ниже и сохранить.'
+                            : role === 'student'
+                              ? 'Резюме, навыки, опыт и образование — по ссылке в карточке профиля.'
+                              : 'Просмотр профиля и настройки аккаунта.'}
                     </p>
 
                     {loading && <div className="accountPage__muted">Загрузка…</div>}
@@ -255,36 +300,82 @@ const SettingsPage = () => {
 
                     {!loading && role === 'recruiter' && profile && (
                         <>
+                            {getAccountStatus() === 'PENDING_APPROVAL' && (
+                                <div className="accountPage__banner" role="status">
+                                    Аккаунт на проверке. После одобрения администратором изменения профиля будут
+                                    сохраняться на сервере.
+                                </div>
+                            )}
                             <section className="accountPage__card">
                                 <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
-                                <div className="accountPage__form accountPage__form--readonly">
+                                <p className="accountPage__hint">
+                                    <Link to="/vacancies/mine">Мои вакансии</Link>
+                                </p>
+                                <form className="accountPage__form" onSubmit={handleRecruiterSave}>
                                     <label className="accountPage__field">
                                         <span>Компания</span>
-                                        <ReadOnlyInput value={recruiterForm.companyName} />
+                                        <input
+                                            value={recruiterForm.companyName}
+                                            onChange={(e) => handleRecruiterField('companyName', e.target.value)}
+                                            required
+                                        />
                                     </label>
                                     <div className="accountPage__grid2">
                                         <label className="accountPage__field">
                                             <span>Имя</span>
-                                            <ReadOnlyInput value={recruiterForm.firstName} />
+                                            <input
+                                                value={recruiterForm.firstName}
+                                                onChange={(e) => handleRecruiterField('firstName', e.target.value)}
+                                                required
+                                            />
                                         </label>
                                         <label className="accountPage__field">
                                             <span>Фамилия</span>
-                                            <ReadOnlyInput value={recruiterForm.lastName} />
+                                            <input
+                                                value={recruiterForm.lastName}
+                                                onChange={(e) => handleRecruiterField('lastName', e.target.value)}
+                                                required
+                                            />
                                         </label>
                                     </div>
                                     <label className="accountPage__field">
                                         <span>Email</span>
-                                        <ReadOnlyInput value={recruiterForm.email} />
+                                        <input
+                                            type="email"
+                                            value={recruiterForm.email}
+                                            onChange={(e) => handleRecruiterField('email', e.target.value)}
+                                            required
+                                        />
                                     </label>
                                     <label className="accountPage__field">
                                         <span>Телефон</span>
-                                        <ReadOnlyInput value={recruiterForm.phoneNumber} />
+                                        <input
+                                            value={recruiterForm.phoneNumber}
+                                            onChange={(e) => handleRecruiterField('phoneNumber', e.target.value)}
+                                        />
                                     </label>
                                     <label className="accountPage__field">
                                         <span>Telegram</span>
-                                        <ReadOnlyInput value={recruiterForm.telegramUsername} />
+                                        <input
+                                            value={recruiterForm.telegramUsername}
+                                            onChange={(e) => handleRecruiterField('telegramUsername', e.target.value)}
+                                            placeholder="@username"
+                                        />
                                     </label>
-                                </div>
+                                    {recruiterSaveError ? (
+                                        <div className="accountPage__error" role="alert">
+                                            {recruiterSaveError}
+                                        </div>
+                                    ) : null}
+                                    {recruiterSaveOk ? (
+                                        <div className="accountPage__ok" role="status">
+                                            {recruiterSaveOk}
+                                        </div>
+                                    ) : null}
+                                    <button type="submit" className="accountPage__submit" disabled={recruiterSaving}>
+                                        {recruiterSaving ? 'Сохранение…' : 'Сохранить профиль'}
+                                    </button>
+                                </form>
                             </section>
                             <RecruiterRequestsSection />
                         </>

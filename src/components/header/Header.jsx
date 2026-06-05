@@ -53,11 +53,9 @@ const Header = () => {
                 <div className="header__rightCluster">
                     {authed ? (
                         <>
-                            {isStudent ? (
-                                <Link to="/settings" className="header__navLink header__navLink--desktop">
-                                    мой профиль
-                                </Link>
-                            ) : null}
+                            <Link to="/settings" className="header__navLink header__navLink--desktop">
+                                {isStudent ? 'мой профиль' : 'настройки'}
+                            </Link>
                             <Link to="/chats" className="header__navLink">
                                 чаты
                             </Link>
@@ -135,13 +133,13 @@ const Header = () => {
                 >
                     вакансии
                 </Link>
-                {authed && isStudent ? (
+                {authed ? (
                     <Link
                         to="/settings"
                         className="header__mobileBtn"
                         onClick={handleMobileLinkClick}
                     >
-                        мой профиль
+                        {isStudent ? 'мой профиль' : 'настройки'}
                     </Link>
                 ) : null}
                 <Link
@@ -153,13 +151,6 @@ const Header = () => {
                 </Link>
                 {authed ? (
                     <>
-                        <Link
-                            to="/settings"
-                            className="header__mobileBtn"
-                            onClick={handleMobileLinkClick}
-                        >
-                            настройки
-                        </Link>
                         <Link
                             to="/chats"
                             className="header__mobileBtn"

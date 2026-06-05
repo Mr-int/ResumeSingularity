@@ -20,6 +20,7 @@ export const patchRecruiter = (recruiterId, body) =>
     apiClientJson(`recruiter/${recruiterId}`, {
         method: 'PATCH',
         body: JSON.stringify(body),
+        skipSessionClearOn403: true,
     });
 
 /**
