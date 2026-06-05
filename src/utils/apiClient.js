@@ -1,14 +1,13 @@
 import { API_BASE_URL } from '../config/api.js';
-import { refreshSession, isAdmin, AUTH_RETURN_KEY } from '../services/authApi.js';
+import { refreshSession, isAdmin, AUTH_RETURN_KEY, logout } from '../services/authApi.js';
 
 const clearAuthAndRedirect = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('isAuthenticated_time');
-    sessionStorage.setItem('showLoginAfter403', 'true');
     const returnPath = `${window.location.pathname}${window.location.search}`;
     if (returnPath && returnPath !== '/students' && returnPath !== '/') {
         sessionStorage.setItem(AUTH_RETURN_KEY, returnPath);
     }
+    sessionStorage.setItem('showLoginAfter403', 'true');
+    logout();
     window.dispatchEvent(new CustomEvent('resume:auth-required'));
     if (!window.location.pathname.startsWith('/students')) {
         window.location.href = '/students';

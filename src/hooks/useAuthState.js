@@ -3,12 +3,12 @@ import {
     getAccountStatus,
     getAuthRole,
     isAuthenticated,
-    syncAuthSession,
     AUTH_CHANGED_EVENT,
 } from '../services/authApi.js';
 
 /**
  * Реактивное состояние входа (Header/Hero слушают resume:auth-changed).
+ * Синхронизация сессии — в ProtectedRoute / PendingApprovalBanner, не здесь.
  */
 export function useAuthState() {
     const [version, setVersion] = useState(0);
@@ -21,17 +21,6 @@ export function useAuthState() {
         const onAuthChanged = () => refresh();
         window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
         return () => window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
-    }, [refresh]);
-
-    useEffect(() => {
-        if (!isAuthenticated()) return undefined;
-        let cancelled = false;
-        syncAuthSession().finally(() => {
-            if (!cancelled) refresh();
-        });
-        return () => {
-            cancelled = true;
-        };
     }, [refresh]);
 
     return {

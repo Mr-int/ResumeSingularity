@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     isAuthenticated,
     syncAuthSession,
     isAdmin,
     consumeAuthReturnTo,
-    getAuthRole,
     isStudentRole,
     isRecruiterRole,
     notifyAuthChanged,
+    AUTH_CHANGED_EVENT,
 } from '../../services/authApi.js';
 import {
     getStudentOnboardingStatus,
@@ -35,81 +35,66 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
     const [authCheckVersion, setAuthCheckVersion] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
-    const checkingRef = useRef(false);
 
     useEffect(() => {
-        const onAuthRequired = () => {
-            setAuthenticated(false);
-            setShowLogin(true);
+        let cancelled = false;
+        let inFlight = false;
+
+        const finishLoading = (authed, loginVisible, ready = true) => {
+            if (cancelled) return;
+            setAuthenticated(authed);
+            setShowLogin(loginVisible);
+            setOnboardingReady(ready);
             setLoading(false);
-            setOnboardingReady(false);
         };
-        window.addEventListener('resume:auth-required', onAuthRequired);
-        return () => window.removeEventListener('resume:auth-required', onAuthRequired);
-    }, []);
 
-    useEffect(() => {
         const checkAuth = async () => {
-            const authStatus = isAuthenticated();
+            if (cancelled || inFlight) return;
+            inFlight = true;
+
+            setLoading(true);
             const showLoginFlag = sessionStorage.getItem('showLoginAfter403');
-
-            if (!authStatus) {
-                setAuthenticated(false);
-                setLoading(false);
-                setOnboardingReady(true);
-                setShowLogin(true);
-                return;
-            }
-
-            setShowLogin(false);
             if (showLoginFlag === 'true') {
                 sessionStorage.removeItem('showLoginAfter403');
             }
 
-            if (!getAuthRole()) {
-                await syncAuthSession();
-            }
-            const stillAuthed = isAuthenticated();
-            setAuthenticated(stillAuthed);
-
-            if (!stillAuthed) {
-                setLoading(false);
-                setOnboardingReady(true);
-                setShowLogin(true);
+            try {
+            if (!isAuthenticated()) {
+                finishLoading(false, true);
                 return;
             }
+
+            await syncAuthSession();
+            if (cancelled) return;
+
+            if (!isAuthenticated()) {
+                finishLoading(false, true);
+                return;
+            }
+
+            setShowLogin(false);
+            setAuthenticated(true);
 
             if (skipOnboardingCheck || isAdmin()) {
-                setOnboardingReady(true);
-                setLoading(false);
-                checkingRef.current = false;
+                finishLoading(true, false);
                 return;
             }
 
-            if (checkingRef.current) return;
-            checkingRef.current = true;
             setOnboardingReady(false);
-
             const path = location.pathname;
-
-            const finishOnboardingCheck = () => {
-                setOnboardingReady(true);
-                setLoading(false);
-                checkingRef.current = false;
-            };
 
             const applyStudentOnboarding = (completed) => {
                 if (!completed) {
                     if (path !== ONBOARDING_STUDENT_PATH) {
                         navigate(ONBOARDING_STUDENT_PATH, { replace: true });
                     }
-                    finishOnboardingCheck();
+                    finishLoading(true, false);
                     return true;
                 }
                 if (path === ONBOARDING_STUDENT_PATH) {
                     navigate('/settings', { replace: true });
                 }
-                finishOnboardingCheck();
+                finishLoading(true, false);
                 return true;
             };
 
@@ -118,13 +103,13 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
                     if (path !== ONBOARDING_RECRUITER_PATH) {
                         navigate(ONBOARDING_RECRUITER_PATH, { replace: true });
                     }
-                    finishOnboardingCheck();
+                    finishLoading(true, false);
                     return true;
                 }
                 if (path === ONBOARDING_RECRUITER_PATH) {
                     navigate('/vacancies/mine', { replace: true });
                 }
-                finishOnboardingCheck();
+                finishLoading(true, false);
                 return true;
             };
 
@@ -135,6 +120,7 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
                 }
                 try {
                     const studentStatus = await getStudentOnboardingStatus();
+                    if (cancelled) return false;
                     setCachedOnboardingStatus('student', Boolean(studentStatus.completed));
                     return applyStudentOnboarding(Boolean(studentStatus.completed));
                 } catch (e) {
@@ -152,6 +138,7 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
                 }
                 try {
                     const recruiterStatus = await getRecruiterOnboardingStatus();
+                    if (cancelled) return false;
                     setCachedOnboardingStatus('recruiter', Boolean(recruiterStatus.completed));
                     return applyRecruiterOnboarding(Boolean(recruiterStatus.completed));
                 } catch (e) {
@@ -164,35 +151,50 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
 
             if (isStudentRole()) {
                 if (await checkStudentOnboarding()) return;
-                finishOnboardingCheck();
+                finishLoading(true, false);
                 return;
             }
 
             if (isRecruiterRole()) {
                 if (await checkRecruiterOnboarding()) return;
-                finishOnboardingCheck();
+                finishLoading(true, false);
                 return;
             }
 
             if (await checkStudentOnboarding()) return;
             if (await checkRecruiterOnboarding()) return;
 
-            finishOnboardingCheck();
+            finishLoading(true, false);
+            } finally {
+                inFlight = false;
+            }
+        };
+
+        const onAuthRequired = () => {
+            if (cancelled) return;
+            finishLoading(false, true);
         };
 
         checkAuth();
 
+        window.addEventListener('resume:auth-required', onAuthRequired);
+        window.addEventListener(AUTH_CHANGED_EVENT, checkAuth);
+
         const handleStorageChange = (e) => {
             if (e.key === 'showLoginAfter403') checkAuth();
         };
-
         window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+
+        return () => {
+            cancelled = true;
+            window.removeEventListener('resume:auth-required', onAuthRequired);
+            window.removeEventListener(AUTH_CHANGED_EVENT, checkAuth);
+            window.removeEventListener('storage', handleStorageChange);
+        };
     }, [location.pathname, navigate, skipOnboardingCheck, authCheckVersion]);
 
     const handleLoginSuccess = async () => {
         sessionStorage.removeItem('showLoginAfter403');
-        checkingRef.current = false;
         await syncAuthSession();
         setAuthenticated(isAuthenticated());
         setShowLogin(false);
