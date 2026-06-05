@@ -8,8 +8,22 @@ const pageQuery = (pageable = {}) => {
     return { page, size };
 };
 
+/** Spring Page: content (актуальный API) или data (legacy). */
+export const extractPageRows = (resp) => {
+    if (Array.isArray(resp?.content)) return resp.content;
+    if (Array.isArray(resp?.data)) return resp.data;
+    return [];
+};
+
+const withDefaultCatalogSort = (filterReq = {}) => ({
+    sortBy: 'CREATED_AT',
+    sortDirection: 'DESC',
+    useDefaultRanking: true,
+    ...filterReq,
+});
+
 const normalizePage = (resp, page, size) => ({
-    data: Array.isArray(resp?.data) ? resp.data : [],
+    data: extractPageRows(resp),
     page: typeof resp?.page === 'number' ? resp.page : page,
     size: typeof resp?.size === 'number' ? resp.size : size,
     totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
@@ -47,27 +61,33 @@ async function publicJson(path, init = {}) {
 const fetchPublicStudentCardsPage = async (filterReq, page, size) => {
     const resp = await publicJson(`public/students/cards?page=${page}&size=${size}`, {
         method: 'POST',
-        body: JSON.stringify(filterReq ?? {}),
+        body: JSON.stringify(withDefaultCatalogSort(filterReq)),
     });
     return normalizePage(resp, page, size);
 };
 
-/** Каталог студентов: гости и аккаунты без полного доступа — /public/students, рекрутер/админ — /student */
+/**
+ * Каталог карточек студентов.
+ * - без входа / STUDENT / pending → POST /public/students/cards
+ * - RECRUITER / ADMIN → POST /student/cardsFilter
+ */
 export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
     const { page, size } = pageQuery(pageable);
+    const body = withDefaultCatalogSort(filterReq);
+
     if (!hasRecruiterCatalogAccess()) {
-        return fetchPublicStudentCardsPage(filterReq, page, size);
+        return fetchPublicStudentCardsPage(body, page, size);
     }
     try {
         const resp = await apiClientJson(`student/cardsFilter?page=${page}&size=${size}`, {
             method: 'POST',
-            body: JSON.stringify(filterReq),
+            body: JSON.stringify(body),
             skipSessionClearOn403: true,
         });
         return normalizePage(resp, page, size);
     } catch (error) {
         if (error.status === 403 || error.status === 401) {
-            return fetchPublicStudentCardsPage(filterReq, page, size);
+            return fetchPublicStudentCardsPage(body, page, size);
         }
         throw error;
     }

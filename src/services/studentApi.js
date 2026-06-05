@@ -1,6 +1,10 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
-import { filterStudentCardsPage as catalogFilterStudentCardsPage, getStudentCardById } from './catalogApi.js';
+import {
+    filterStudentCardsPage as catalogFilterStudentCardsPage,
+    getStudentCardById,
+    extractPageRows,
+} from './catalogApi.js';
 import { hasRecruiterCatalogAccess } from './authApi.js';
 import { getRegistrationSpecialities, catalogRows } from './registrationCatalogApi.js';
 
@@ -376,37 +380,36 @@ export const createRecruiterRequest = async (recruiterData) => {
 };
 
 /**
- * POST /student/filter
- * В API pageable обязателен в query: ?page=0&size=200
- * Ответ: PageResponseStudentDTO { data, page, size, totalElements, totalPages }
+ * Каталог карточек для UI (StudentsList, слайдер).
+ * Публично → /public/students/cards; рекрутер/админ → /student/cardsFilter.
  */
-export const filterStudentsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
+export const filterStudentsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) =>
+    catalogFilterStudentCardsPage(filterReq, pageable);
+
+/**
+ * POST /student/filter — полный StudentDTO (только RECRUITER / ADMIN).
+ * Page в query; сортировка в JSON.
+ */
+export const filterStudentsFullPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
     if (!hasRecruiterCatalogAccess()) {
-        return catalogFilterStudentCardsPage(filterReq, pageable);
+        const err = new Error('Полный каталог доступен только рекрутёрам и администраторам');
+        err.status = 403;
+        throw err;
     }
-    try {
-        const page = typeof pageable.page === 'number' ? pageable.page : 0;
-        const size = typeof pageable.size === 'number' ? pageable.size : 100;
-
-        const resp = await apiClientJson(`student/filter?page=${page}&size=${size}`, {
-            method: 'POST',
-            body: JSON.stringify(filterReq),
-            skipSessionClearOn403: true,
-        });
-
-        return {
-            data: Array.isArray(resp?.data) ? resp.data : [],
-            page: typeof resp?.page === 'number' ? resp.page : page,
-            size: typeof resp?.size === 'number' ? resp.size : size,
-            totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
-            totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
-        };
-    } catch (error) {
-        if (error.status === 403 || error.status === 401 || error.requiresAuth) {
-            return catalogFilterStudentCardsPage(filterReq, pageable);
-        }
-        throw error;
-    }
+    const page = typeof pageable.page === 'number' ? pageable.page : 0;
+    const size = typeof pageable.size === 'number' ? pageable.size : 100;
+    const resp = await apiClientJson(`student/filter?page=${page}&size=${size}`, {
+        method: 'POST',
+        body: JSON.stringify(filterReq),
+        skipSessionClearOn403: true,
+    });
+    return {
+        data: extractPageRows(resp),
+        page: typeof resp?.page === 'number' ? resp.page : page,
+        size: typeof resp?.size === 'number' ? resp.size : size,
+        totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
+        totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
+    };
 };
 
 /**
@@ -473,7 +476,7 @@ export const getAllSpecialities = async () => {
             skipSessionClearOn403: true,
         });
 
-        const firstData = Array.isArray(first?.data) ? first.data : [];
+        const firstData = extractPageRows(first);
         const totalPages = typeof first?.totalPages === 'number' ? first.totalPages : 1;
         const pagesToFetch = Math.min(totalPages, maxPages);
 
@@ -487,7 +490,7 @@ export const getAllSpecialities = async () => {
                 body: JSON.stringify({}),
                 skipSessionClearOn403: true,
             });
-            const pageData = Array.isArray(res?.data) ? res.data : [];
+            const pageData = extractPageRows(res);
             for (const s of pageData) {
                 if (s?.id != null) byId.set(String(s.id), s);
             }

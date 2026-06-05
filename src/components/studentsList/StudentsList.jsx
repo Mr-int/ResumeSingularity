@@ -272,8 +272,8 @@ const StudentsList = () => {
 
             const filterData = buildStudentFilterReq(filters);
 
-            // /student/filter is pageable. В API page/size должны быть в query (?page=&size=),
-            // а в ответе используем PageResponseStudentDTO { data, totalPages, totalElements }.
+            // POST /public/students/cards или /student/cardsFilter — page/size в query, фильтры в JSON.
+            // Ответ Spring Page: { content, page, size, totalElements, totalPages }.
             const pageSize = 200;
             const maxPages = 200; // safety cap
             const byId = new Map();
