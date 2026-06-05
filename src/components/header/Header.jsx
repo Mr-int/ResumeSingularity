@@ -1,7 +1,7 @@
 import './header.css';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { logoutServer } from '../../services/authApi.js';
+import { logoutServer, requestLogin } from '../../services/authApi.js';
 import { useAuthState } from '../../hooks/useAuthState.js';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
@@ -10,8 +10,14 @@ import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 const Header = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const { authed, role } = useAuthState();
+    const { authed, role, refresh } = useAuthState();
     const isStudent = role === 'STUDENT';
+
+    const handleLogout = async () => {
+        await logoutServer();
+        refresh();
+        navigate('/');
+    };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -58,15 +64,20 @@ const Header = () => {
                             <button
                                 type="button"
                                 className="header__navLink header__navLink--btn"
-                                onClick={async () => {
-                                    await logoutServer();
-                                    navigate('/');
-                                }}
+                                onClick={handleLogout}
                             >
                                 выйти
                             </button>
                         </>
-                    ) : null}
+                    ) : (
+                        <button
+                            type="button"
+                            className="header__navLink header__navLink--btn"
+                            onClick={requestLogin}
+                        >
+                            войти
+                        </button>
+                    )}
                     <Link to="/students" className="header__search">
                     <span className="header__searchBtn">
                         <span className="header__searchBtnWhite">найти стажера</span>
@@ -117,25 +128,21 @@ const Header = () => {
                 >
                     проекты
                 </Link>
-                {authed ? (
-                    <>
-                        {isStudent ? (
-                            <Link
-                                to="/settings"
-                                className="header__mobileBtn"
-                                onClick={handleMobileLinkClick}
-                            >
-                                мой профиль
-                            </Link>
-                        ) : null}
-                        <Link
-                            to="/vacancies"
+                <Link
+                    to="/vacancies"
+                    className="header__mobileBtn"
+                    onClick={handleMobileLinkClick}
+                >
+                    вакансии
+                </Link>
+                {authed && isStudent ? (
+                    <Link
+                        to="/settings"
                         className="header__mobileBtn"
                         onClick={handleMobileLinkClick}
                     >
-                        вакансии
+                        мой профиль
                     </Link>
-                    </>
                 ) : null}
                 <Link
                     to="/students"
@@ -144,15 +151,15 @@ const Header = () => {
                 >
                     найти стажера
                 </Link>
-                <Link
-                    to="/settings"
-                    className="header__mobileBtn"
-                    onClick={handleMobileLinkClick}
-                >
-                    настройки
-                </Link>
                 {authed ? (
                     <>
+                        <Link
+                            to="/settings"
+                            className="header__mobileBtn"
+                            onClick={handleMobileLinkClick}
+                        >
+                            настройки
+                        </Link>
                         <Link
                             to="/chats"
                             className="header__mobileBtn"
@@ -163,16 +170,26 @@ const Header = () => {
                         <button
                             type="button"
                             className="header__mobileBtn"
-                            onClick={async () => {
+                            onClick={() => {
                                 handleMobileLinkClick();
-                                await logoutServer();
-                                navigate('/');
+                                handleLogout();
                             }}
                         >
                             выйти
                         </button>
                     </>
-                ) : null}
+                ) : (
+                    <button
+                        type="button"
+                        className="header__mobileBtn"
+                        onClick={() => {
+                            handleMobileLinkClick();
+                            requestLogin();
+                        }}
+                    >
+                        войти
+                    </button>
+                )}
             </div>
         </header>
     )

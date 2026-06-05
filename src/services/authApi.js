@@ -1,9 +1,17 @@
 import { API_BASE_URL } from '../config/api.js';
 
 export const AUTH_CHANGED_EVENT = 'resume:auth-changed';
+export const AUTH_REQUIRED_EVENT = 'resume:auth-required';
+
+/** Инкремент при выходе — отменяет устаревшие syncAuthSession в полёте. */
+let authSessionEpoch = 0;
 
 export function notifyAuthChanged() {
     window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
+}
+
+export function requestLogin() {
+    window.dispatchEvent(new CustomEvent(AUTH_REQUIRED_EVENT));
 }
 
 // Re-export for hooks
@@ -156,6 +164,7 @@ export const isAuthenticated = () => {
 };
 
 const clearLocalAuth = () => {
+    authSessionEpoch += 1;
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
@@ -295,6 +304,8 @@ export const logout = () => {
  * @returns {Promise<{ username: string, role: string } | null>}
  */
 export async function syncAuthSession() {
+    const epochAtStart = authSessionEpoch;
+
     const fetchMe = async () => {
         const response = await fetch(`${API_BASE_URL}auth/me`, {
             method: 'GET',
@@ -307,6 +318,9 @@ export async function syncAuthSession() {
     };
 
     const applyMeData = (data) => {
+        if (epochAtStart !== authSessionEpoch) {
+            return null;
+        }
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         if (data?.username) {

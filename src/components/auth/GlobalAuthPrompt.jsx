@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal.jsx';
-import { consumeAuthReturnTo } from '../../services/authApi.js';
+import { consumeAuthReturnTo, AUTH_REQUIRED_EVENT } from '../../services/authApi.js';
 
 /** Модал входа на публичных страницах по событию resume:auth-required */
 const GlobalAuthPrompt = () => {
+    const navigate = useNavigate();
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
@@ -11,8 +13,8 @@ const GlobalAuthPrompt = () => {
         if (sessionStorage.getItem('showLoginAfter403') === 'true') {
             setOpen(true);
         }
-        window.addEventListener('resume:auth-required', onAuthRequired);
-        return () => window.removeEventListener('resume:auth-required', onAuthRequired);
+        window.addEventListener(AUTH_REQUIRED_EVENT, onAuthRequired);
+        return () => window.removeEventListener(AUTH_REQUIRED_EVENT, onAuthRequired);
     }, []);
 
     if (!open) return null;
@@ -28,10 +30,9 @@ const GlobalAuthPrompt = () => {
                 setOpen(false);
                 const returnTo = consumeAuthReturnTo();
                 if (returnTo) {
-                    window.location.href = returnTo;
+                    navigate(returnTo);
                     return;
                 }
-                window.location.reload();
             }}
         />
     );
