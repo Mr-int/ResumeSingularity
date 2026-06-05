@@ -1,32 +1,15 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
+import StudentProfileEditor from '../components/settings/StudentProfileEditor.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
-import { patchStudentMe, patchRecruiter } from '../services/accountApi.js';
+import { patchStudentMe, patchRecruiter, uploadStudentPhoto } from '../services/accountApi.js';
 import { getAccountStatus } from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
-
-const studentToForm = (s) => ({
-    firstName: s.firstName || '',
-    lastName: s.lastName || '',
-    city: s.city || '',
-    bio: s.bio || '',
-    hhLink: s.hhLink || '',
-    birthDate: s.birthDate || '',
-    course: s.course || 'FIRST',
-    busyness: s.busyness || 'FREE',
-    email: s.email || '',
-    phoneNumber: s.phoneNumber || '',
-    telegramUsername: s.telegramUsername || '',
-    specialityId: s.specialityId != null ? String(s.specialityId) : '',
-    skillsLabel: Array.isArray(s.skills)
-        ? s.skills.map((sk) => sk.name || sk.title || sk.id).filter(Boolean).join(', ')
-        : '',
-});
 
 const recruiterToForm = (r) => ({
     companyName: r.companyName || '',
@@ -37,22 +20,20 @@ const recruiterToForm = (r) => ({
     telegramUsername: r.telegramUsername || '',
 });
 
-const ReadOnlyInput = ({ value, ...rest }) => (
-    <input {...rest} value={value ?? ''} readOnly className="accountPage__inputReadonly" />
-);
-
 const SettingsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [role, setRole] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [studentForm, setStudentForm] = useState(studentToForm({}));
     const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
     const [consentSaving, setConsentSaving] = useState(false);
     const [consentError, setConsentError] = useState('');
     const [recruiterSaving, setRecruiterSaving] = useState(false);
     const [recruiterSaveError, setRecruiterSaveError] = useState('');
     const [recruiterSaveOk, setRecruiterSaveOk] = useState('');
+    const [photoSaving, setPhotoSaving] = useState(false);
+    const [photoError, setPhotoError] = useState('');
+    const photoInputRef = useRef(null);
 
     const loadProfile = useCallback(async () => {
         setLoading(true);
@@ -62,7 +43,6 @@ const SettingsPage = () => {
                 const s = await getStudentMe();
                 setRole('student');
                 setProfile(s);
-                setStudentForm(studentToForm(s));
                 return;
             } catch (e) {
                 if (e.status !== 404 && e.status !== 403) throw e;
@@ -139,11 +119,29 @@ const SettingsPage = () => {
         try {
             const updated = await patchStudentMe({ publicProfileConsent: checked });
             setProfile(updated);
-            setStudentForm(studentToForm(updated));
         } catch (e) {
             setConsentError(e.message || 'Не удалось сохранить настройку');
         } finally {
             setConsentSaving(false);
+        }
+    };
+
+    const handlePhotoChange = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file || !profile?.id) return;
+        setPhotoSaving(true);
+        setPhotoError('');
+        try {
+            await uploadStudentPhoto(profile.id, file);
+            const updated = await getStudentMe();
+            setProfile(updated);
+        } catch (e) {
+            setPhotoError(e.message || 'Не удалось загрузить фото');
+        } finally {
+            setPhotoSaving(false);
+            if (photoInputRef.current) {
+                photoInputRef.current.value = '';
+            }
         }
     };
 
@@ -159,7 +157,7 @@ const SettingsPage = () => {
                         {role === 'recruiter'
                             ? 'Контакты и данные компании можно изменить в форме ниже и сохранить.'
                             : role === 'student'
-                              ? 'Резюме, навыки, опыт и образование — по ссылке в карточке профиля.'
+                              ? 'Редактируйте резюме, контакты, навыки, опыт и образование прямо здесь.'
                               : 'Просмотр профиля и настройки аккаунта.'}
                     </p>
 
@@ -183,16 +181,13 @@ const SettingsPage = () => {
 
                     {!loading && role === 'student' && profile && (
                         <>
-                            {studentForm.course === 'NEW' && (
+                            {profile.course === 'NEW' && (
                                 <div className="accountPage__banner" role="status">
                                     Профиль с курсом NEW не показывается рекрутерам до модерации и заполнения.
                                 </div>
                             )}
                             <section className="accountPage__card">
                                 <h2 className="accountPage__cardTitle">Профиль студента</h2>
-                                <p className="accountPage__hint">
-                                    <Link to="/onboarding/resume">Редактировать резюме, навыки, опыт и образование</Link>
-                                </p>
                                 <div className="accountPage__avatarRow">
                                     {avatarUrl ? (
                                         <img src={avatarUrl} alt="" className="accountPage__avatar" width={96} height={96} />
@@ -201,6 +196,29 @@ const SettingsPage = () => {
                                             ?
                                         </div>
                                     )}
+                                    <div className="accountPage__avatarActions">
+                                        <input
+                                            ref={photoInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            className="accountPage__fileInput"
+                                            onChange={handlePhotoChange}
+                                            disabled={photoSaving}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="accountPage__submit accountPage__submit--secondary"
+                                            onClick={() => photoInputRef.current?.click()}
+                                            disabled={photoSaving}
+                                        >
+                                            {photoSaving ? 'Загрузка…' : 'Изменить фото'}
+                                        </button>
+                                        {photoError ? (
+                                            <div className="accountPage__error" role="alert">
+                                                {photoError}
+                                            </div>
+                                        ) : null}
+                                    </div>
                                 </div>
 
                                 <div className="accountPage__readonlyMeta">
@@ -227,71 +245,10 @@ const SettingsPage = () => {
                                     ) : null}
                                 </div>
 
-                                <div className="accountPage__form accountPage__form--readonly">
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Имя</span>
-                                            <ReadOnlyInput value={studentForm.firstName} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Фамилия</span>
-                                            <ReadOnlyInput value={studentForm.lastName} />
-                                        </label>
-                                    </div>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Город</span>
-                                            <ReadOnlyInput value={studentForm.city} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Дата рождения</span>
-                                            <ReadOnlyInput type="date" value={studentForm.birthDate} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
-                                        <span>Ссылка на HH</span>
-                                        <ReadOnlyInput value={studentForm.hhLink} />
-                                    </label>
-                                    <label className="accountPage__field">
-                                        <span>О себе</span>
-                                        <textarea
-                                            className="accountPage__inputReadonly"
-                                            value={studentForm.bio}
-                                            readOnly
-                                            rows={4}
-                                        />
-                                    </label>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Курс</span>
-                                            <ReadOnlyInput value={studentForm.course} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Занятость</span>
-                                            <ReadOnlyInput value={studentForm.busyness} />
-                                        </label>
-                                    </div>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Email</span>
-                                            <ReadOnlyInput value={studentForm.email} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Телефон</span>
-                                            <ReadOnlyInput value={studentForm.phoneNumber} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
-                                        <span>Telegram</span>
-                                        <ReadOnlyInput value={studentForm.telegramUsername} />
-                                    </label>
-                                    {profile.speciality ? (
-                                        <p className="accountPage__hint">Специальность: {profile.speciality}</p>
-                                    ) : null}
-                                    {studentForm.skillsLabel ? (
-                                        <p className="accountPage__hint">Навыки: {studentForm.skillsLabel}</p>
-                                    ) : null}
-                                </div>
+                                <StudentProfileEditor
+                                    onSaved={(updated) => setProfile(updated)}
+                                    submitLabel="Сохранить профиль"
+                                />
                             </section>
 
                             <StudentRequestsSection />

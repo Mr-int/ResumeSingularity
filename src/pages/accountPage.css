@@ -212,6 +212,17 @@
     font-weight: 600;
 }
 
+.accountPage__avatarActions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.accountPage__avatarActions .accountPage__fileInput {
+    display: none;
+}
+
 .accountPage__fileLabel {
     display: inline-block;
     cursor: pointer;
