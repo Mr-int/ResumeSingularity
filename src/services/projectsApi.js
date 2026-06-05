@@ -2,9 +2,10 @@ import { apiClientJson } from '../utils/apiClient.js';
 import { API_BASE_URL } from '../config/api.js';
 import { hasRecruiterCatalogAccess } from './authApi.js';
 
-/** API может вернуть массив или обёртку PageResponse. */
+/** API может вернуть массив или обёртку PageResponse / { value, Count }. */
 export function normalizeProjectsList(response) {
     if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.value)) return response.value;
     if (Array.isArray(response?.data)) return response.data;
     if (Array.isArray(response?.content)) return response.content;
     if (Array.isArray(response?.items)) return response.items;

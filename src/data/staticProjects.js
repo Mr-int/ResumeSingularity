@@ -1,6 +1,8 @@
 import GameChebImg from '../assets/other/GameCheb.png';
 import VrImg from '../assets/other/vrProject.png';
 import resumeProjectImg from '../assets/logos/singularityLogo.svg';
+import { getProjectsForViewer } from '../services/projectsApi.js';
+import { getProjectCoverUrl, getProjectTheme } from '../utils/projectUtils.js';
 
 export const STATIC_PROJECTS = [
     {
@@ -59,6 +61,44 @@ export function toProjectViewModel(project, index = 0) {
         images: project.imageSrc
             ? [{ imageUrl: project.imageSrc, sortOrder: 0 }]
             : project.images ?? [],
-        theme: project.theme ?? ['gamecheb', 'resume', 'vr'][index % 3],
+        theme: project.theme ?? getProjectTheme(index),
     };
+}
+
+export function mapApiProjectToViewModel(project, index = 0) {
+    if (!project) return null;
+    const cover = getProjectCoverUrl(project);
+    return toProjectViewModel(
+        {
+            ...project,
+            summary: project.summary || '',
+            body: project.body || project.summary || '',
+            imageSrc: cover,
+            tags: (project.skills ?? []).map((skill) => skill.name).filter(Boolean),
+            theme: getProjectTheme(index),
+        },
+        index,
+    );
+}
+
+/** Статические витринные + все проекты с API (без дублей по id). */
+export async function loadAllProjectsCatalog() {
+    const staticItems = STATIC_PROJECTS.map((project, index) => toProjectViewModel(project, index));
+    const byId = new Map(staticItems.map((project) => [String(project.id), project]));
+
+    try {
+        const rows = await getProjectsForViewer();
+        rows.forEach((row, index) => {
+            const vm = mapApiProjectToViewModel(row, staticItems.length + index);
+            if (!vm?.id) return;
+            const key = String(vm.id);
+            if (!byId.has(key)) {
+                byId.set(key, vm);
+            }
+        });
+    } catch (error) {
+        console.warn('[Projects] API catalog unavailable, showing static showcase only', error);
+    }
+
+    return Array.from(byId.values());
 }

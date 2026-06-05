@@ -6,7 +6,7 @@ import Footer from '../components/footer/Footer.jsx';
 
 import { ProjectGridCard } from '../components/projects/ProjectGridCard.jsx';
 
-import { STATIC_PROJECTS, toProjectViewModel } from '../data/staticProjects.js';
+import { loadAllProjectsCatalog } from '../data/staticProjects.js';
 
 import { useProjectModal } from '../context/ProjectModalContext.jsx';
 
@@ -14,10 +14,11 @@ import './vacanciesPage.css';
 
 const SEARCH_DEBOUNCE_MS = 350;
 
-const STATIC_ITEMS = STATIC_PROJECTS.map((project, index) => toProjectViewModel(project, index));
-
 const ProjectsPage = () => {
     const { openProject } = useProjectModal();
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeSection, setActiveSection] = useState('');
@@ -29,9 +30,33 @@ const ProjectsPage = () => {
         return () => window.clearTimeout(timer);
     }, [searchInput]);
 
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            setError('');
+            try {
+                const rows = await loadAllProjectsCatalog();
+                if (!cancelled) {
+                    setItems(rows);
+                }
+            } catch (e) {
+                if (!cancelled) {
+                    setError(e.message || 'Не удалось загрузить проекты');
+                    setItems([]);
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const filteredItems = useMemo(() => {
         const query = searchQuery.toLowerCase();
-        return STATIC_ITEMS.filter((project) => {
+        return items.filter((project) => {
             if (activeSection && project.section !== activeSection) {
                 return false;
             }
@@ -39,6 +64,7 @@ const ProjectsPage = () => {
             const haystack = [
                 project.title,
                 project.summary,
+                project.body,
                 project.section,
                 ...(project.tags ?? []),
                 ...(project.skills ?? []).map((skill) => skill.name),
@@ -48,15 +74,15 @@ const ProjectsPage = () => {
                 .toLowerCase();
             return haystack.includes(query);
         });
-    }, [searchQuery, activeSection]);
+    }, [items, searchQuery, activeSection]);
 
     const sections = useMemo(() => {
         const unique = new Set();
-        STATIC_ITEMS.forEach((project) => {
+        items.forEach((project) => {
             if (project.section?.trim()) unique.add(project.section.trim());
         });
         return Array.from(unique).sort((a, b) => a.localeCompare(b, 'ru'));
-    }, []);
+    }, [items]);
 
     return (
         <>
@@ -116,13 +142,22 @@ const ProjectsPage = () => {
                         ) : null}
                     </div>
 
-                    {filteredItems.length === 0 ? (
+                    {loading && <p className="accountPage__muted">Загрузка…</p>}
+                    {error ? (
+                        <div className="accountPage__error" role="alert">
+                            {error}
+                        </div>
+                    ) : null}
+
+                    {!loading && filteredItems.length === 0 && (
                         <p className="accountPage__text">
                             {searchQuery || activeSection
                                 ? 'Ничего не найдено. Попробуйте другой запрос или раздел.'
                                 : 'Проектов пока нет.'}
                         </p>
-                    ) : (
+                    )}
+
+                    {!loading && filteredItems.length > 0 ? (
                         <p className="projectsPage__count">
                             {filteredItems.length}{' '}
                             {filteredItems.length === 1
@@ -131,7 +166,7 @@ const ProjectsPage = () => {
                                   ? 'проекта'
                                   : 'проектов'}
                         </p>
-                    )}
+                    ) : null}
 
                     <div className="projectsPage__grid">
                         {filteredItems.map((project, index) => (
