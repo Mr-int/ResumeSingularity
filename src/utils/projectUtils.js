@@ -25,6 +25,7 @@ export function resolveProjectImageUrl(image) {
 }
 
 export function getProjectCoverUrl(project) {
+    if (project?.imageSrc) return project.imageSrc;
     const images = getProjectImages(project);
     return images.length ? resolveProjectImageUrl(images[0]) : null;
 }

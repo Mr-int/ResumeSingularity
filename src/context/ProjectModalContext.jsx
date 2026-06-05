@@ -7,7 +7,7 @@ export function ProjectModalProvider({ children }) {
     const [projectId, setProjectId] = useState(null);
 
     const openProject = useCallback((id) => {
-        if (id != null && String(id).trim() && !String(id).startsWith('static')) {
+        if (id != null && String(id).trim()) {
             setProjectId(String(id));
         }
     }, []);

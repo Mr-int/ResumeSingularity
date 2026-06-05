@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getProjectForViewer } from '../../services/projectsApi.js';
+import { getStaticProjectById, isStaticProjectId, toProjectViewModel } from '../../data/staticProjects.js';
 import { getImageUrl } from '../../config/api.js';
 import { isAuthenticated } from '../../services/authApi.js';
 import {
@@ -37,6 +38,18 @@ export function ProjectDetailModal({ projectId, onClose }) {
             setVisible(false);
             setActiveImage(0);
             try {
+                if (isStaticProjectId(projectId)) {
+                    const staticProject = toProjectViewModel(getStaticProjectById(projectId));
+                    if (!staticProject) {
+                        throw new Error('Проект не найден');
+                    }
+                    if (!cancelled) {
+                        setProject(staticProject);
+                        requestAnimationFrame(() => setVisible(true));
+                    }
+                    return;
+                }
+
                 const data = await getProjectForViewer(projectId);
                 if (!cancelled) {
                     setProject(data);

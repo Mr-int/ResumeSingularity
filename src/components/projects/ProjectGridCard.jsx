@@ -2,8 +2,11 @@ import { getProjectCoverUrl, getProjectTheme } from '../../utils/projectUtils.js
 
 export function ProjectGridCard({ project, index = 0, onOpen }) {
     const cover = getProjectCoverUrl(project);
-    const theme = getProjectTheme(index);
+    const theme = project?.theme || getProjectTheme(index);
     const imageCount = project?.images?.length ?? 0;
+    const skillTags = Array.isArray(project?.skills) && project.skills.length > 0
+        ? project.skills
+        : (project?.tags ?? []).map((name, tagIndex) => ({ id: tagIndex, name }));
 
     return (
         <button
@@ -28,16 +31,16 @@ export function ProjectGridCard({ project, index = 0, onOpen }) {
                 ) : null}
                 <h3>{project.title}</h3>
                 {project.summary ? <p className="projectsPage__cardSummary">{project.summary}</p> : null}
-                {Array.isArray(project.skills) && project.skills.length > 0 ? (
+                {skillTags.length > 0 ? (
                     <div className="projectsPage__skillTags">
-                        {project.skills.slice(0, 4).map((skill) => (
+                        {skillTags.slice(0, 4).map((skill) => (
                             <span key={skill.id} className="projectsPage__skillTag">
                                 {skill.name}
                             </span>
                         ))}
-                        {project.skills.length > 4 ? (
+                        {skillTags.length > 4 ? (
                             <span className="projectsPage__skillTag projectsPage__skillTag--more">
-                                +{project.skills.length - 4}
+                                +{skillTags.length - 4}
                             </span>
                         ) : null}
                     </div>

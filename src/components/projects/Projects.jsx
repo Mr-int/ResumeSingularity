@@ -2,67 +2,11 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { Link } from "react-router-dom";
 import { useProjectModal } from "../../context/ProjectModalContext.jsx";
 import "./projects.css";
-import { getProjectsForViewer } from "../../services/projectsApi.js";
-import { getProjectCoverUrl, getProjectTheme } from "../../utils/projectUtils.js";
+import { STATIC_PROJECTS } from "../../data/staticProjects.js";
 import { ProjectBodyText } from "./ProjectBodyText.jsx";
-import GameChebImg from "../../assets/other/GameCheb.png";
-import VrImg from "../../assets/other/vrProject.png";
-import resumeProjectImg from "../../assets/logos/singularityLogo.svg";
-
-const CARD_THEMES = ['gamecheb', 'resume', 'vr'];
-const FALLBACK_IMAGES = [GameChebImg, resumeProjectImg, VrImg];
-
-const STATIC_PROJECTS = [
-    {
-        id: 'static-1',
-        title: 'GameCheb',
-        section: 'Игры',
-        summary:
-            'Это туристический сервис нового поколения для регионов России, где прогулки по городам превращаются в увлекательное приключение.',
-        body: 'Мы создаем сервис с интерактивными маршрутами и голосовым гидом, который помогает исследовать города России. С телефоном и наушниками ты открываешь как популярные, так и малоизвестные места, а гид рассказывает всё, что интересно в путешествии.\n\nНаша миссия — сохранить чувашскую культуру в настоящем через современный бизнес и туризм.',
-        tags: ['Культура', 'Бизнес', 'IT'],
-        imageSrc: GameChebImg,
-        theme: 'gamecheb',
-    },
-    {
-        id: 'static-2',
-        title: 'Singularity Resume',
-        section: 'Веб-разработка',
-        summary:
-            'Этот сайт создавали студенты нашего колледжа. Начиная с идеи, продолжая дизайном, и заканчивая разработкой.',
-        body: 'Платформа-каталог резюме студентов IT-колледжа Singularity: работодатели могут быстро просматривать карточки, фильтровать по стеку и направлению, открывать унифицированные резюме и отправлять заявки на стажировку.\n\nЗадача проекта — минимизировать время поиска кандидата и упростить коммуникацию между работодателем, куратором и студентом.',
-        tags: ['Python', 'JavaScript', 'React', 'Figma', 'PostgreSQL'],
-        imageSrc: resumeProjectImg,
-        theme: 'resume',
-    },
-    {
-        id: 'static-3',
-        title: 'VR-музей',
-        section: 'VR / AR',
-        summary:
-            'Иммерсивный образовательный опыт: искусство и история в виртуальной реальности.',
-        body: 'VR-музей — это современный образовательный инструмент, делающий изучение искусства и истории увлекательным.\n\nВиртуальная реальность позволяет рассматривать эпохи и культуру, а также проживать события внутри картин. Такой формат сочетает обучение, интерактив и практику, усиливает интерес и понимание материала.',
-        tags: ['Unreal Engine 5', 'VR', 'C++'],
-        imageSrc: VrImg,
-        theme: 'vr',
-    },
-];
-
-const mapApiProject = (p, index) => ({
-    id: p.id,
-    title: p.title,
-    section: p.section || null,
-    summary: p.summary || '',
-    body: p.body || p.summary || '',
-    tags: (p.skills ?? []).map((s) => s.name).slice(0, 6),
-    imageSrc: getProjectCoverUrl(p) || FALLBACK_IMAGES[index % FALLBACK_IMAGES.length],
-    theme: getProjectTheme(index),
-});
 
 const Projects = () => {
     const { openProject } = useProjectModal();
-    const [projects, setProjects] = useState([]);
-    const [loadingProjects, setLoadingProjects] = useState(true);
     const [activeCard, setActiveCard] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
     const [expandedCards, setExpandedCards] = useState([1]);
@@ -70,29 +14,8 @@ const Projects = () => {
     const [containerHeight, setContainerHeight] = useState("800px");
     const cardsWrapperRef = useRef(null);
 
+    const projects = STATIC_PROJECTS;
     const cardCount = projects.length;
-
-    useEffect(() => {
-        (async () => {
-            setLoadingProjects(true);
-            try {
-                const rows = await getProjectsForViewer();
-                if (rows.length > 0) {
-                    const mapped = rows.slice(0, 3).map((p, i) => mapApiProject(p, i));
-                    setProjects(mapped);
-                    setExpandedCards([1]);
-                    setActiveCard(1);
-                } else {
-                    setProjects(STATIC_PROJECTS);
-                }
-            } catch (e) {
-                console.warn('[Projects] API unavailable, using static showcase', e);
-                setProjects(STATIC_PROJECTS);
-            } finally {
-                setLoadingProjects(false);
-            }
-        })();
-    }, []);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -191,7 +114,7 @@ const Projects = () => {
         () =>
             projects.map((project, index) => {
                 const cardNumber = index + 1;
-                const theme = project.theme || CARD_THEMES[index % CARD_THEMES.length];
+                const theme = project.theme;
                 return (
                     <div
                         key={project.id}
@@ -265,18 +188,16 @@ const Projects = () => {
                                         ) : null}
                                     </div>
 
-                                    {!String(project.id).startsWith('static') ? (
-                                        <button
-                                            type="button"
-                                            className="card__moreLink"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openProject(project.id);
-                                            }}
-                                        >
-                                            Подробнее →
-                                        </button>
-                                    ) : null}
+                                    <button
+                                        type="button"
+                                        className="card__moreLink"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            openProject(project.id);
+                                        }}
+                                    >
+                                        Подробнее →
+                                    </button>
                                 </>
                             )}
                         </div>
@@ -297,11 +218,7 @@ const Projects = () => {
                 </div>
 
                 <div className="projects__cardsWrapper" ref={cardsWrapperRef}>
-                    {loadingProjects && projects.length === 0 ? (
-                        <p className="projects__loading" aria-live="polite">Загрузка проектов…</p>
-                    ) : (
-                        cards
-                    )}
+                    {cards}
                 </div>
             </div>
         </section>
