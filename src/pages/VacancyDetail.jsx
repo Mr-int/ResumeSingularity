@@ -6,6 +6,7 @@ import { getVacancyById, applyToVacancy } from '../services/vacancyApi.js';
 import { getStudentMe } from '../services/getApi.js';
 import { isAuthenticated, isStudentRole, isRecruiterRole } from '../services/authApi.js';
 import AnonymousApplyCTA from '../components/common/AnonymousApplyCTA.jsx';
+import GradientButton from '../components/common/gradientButton/GradientButton.jsx';
 import './vacanciesPage.css';
 
 const STATUS_LABELS = {
@@ -74,83 +75,91 @@ const VacancyDetail = () => {
             <Header />
             <main className="vacanciesPage">
                 <div className="vacanciesPage__inner">
-                    <nav className="vacanciesPage__nav">
-                        <Link to="/vacancies">← К списку вакансий</Link>
-                    </nav>
+                    <div className="vacanciesPage__panel">
+                        <nav className="vacanciesPage__nav">
+                            <Link to="/vacancies">← К списку вакансий</Link>
+                        </nav>
 
-                    {loading && <p className="accountPage__muted">Загрузка…</p>}
-                    {error && !vacancy ? (
-                        <div className="accountPage__error" role="alert">
-                            {error}
-                        </div>
-                    ) : null}
-
-                    {vacancy && (
-                        <>
-                            <div className="vacanciesPage__detailBody">
-                                <h2>{vacancy.title}</h2>
-                                <p>
-                                    {[vacancy.companyName, vacancy.city, vacancy.specialityName]
-                                        .filter(Boolean)
-                                        .join(' · ')}
-                                </p>
-                                {vacancy.status ? (
-                                    <p className="vacanciesPage__badge">
-                                        {STATUS_LABELS[vacancy.status] || vacancy.status}
-                                    </p>
-                                ) : null}
-                                {vacancy.description ? <p>{vacancy.description}</p> : null}
-                                {vacancy.skills?.length ? (
-                                    <p>Навыки: {vacancy.skills.map((s) => s.name).join(', ')}</p>
-                                ) : null}
+                        {loading && <p className="vacanciesPage__status">Загрузка…</p>}
+                        {error && !vacancy ? (
+                            <div className="vacanciesPage__error" role="alert">
+                                {error}
                             </div>
+                        ) : null}
 
-                            {vacancy.status === 'PUBLISHED' && !vacancy.hasApplied && (
-                                <section className="accountPage__card">
-                                    <h3 className="accountPage__cardTitle">Отклик</h3>
-                                    {canApply ? (
-                                        <>
-                                            <label className="accountPage__field">
-                                                <span>Сопроводительное письмо</span>
-                                                <textarea
-                                                    rows={4}
-                                                    value={coverLetter}
-                                                    onChange={(e) => setCoverLetter(e.target.value)}
-                                                />
-                                            </label>
-                                            {error ? (
-                                                <div className="accountPage__error" role="alert">
-                                                    {error}
-                                                </div>
-                                            ) : null}
-                                            {ok ? <div className="accountPage__ok">{ok}</div> : null}
-                                            <button
-                                                type="button"
-                                                className="accountPage__submit"
-                                                disabled={applying}
-                                                onClick={handleApply}
-                                            >
-                                                {applying ? 'Отправка…' : 'Откликнуться'}
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <AnonymousApplyCTA
-                                            target="vacancy"
-                                            message={
-                                                isRecruiterRole()
-                                                    ? 'Рекрутеры не откликаются на вакансии'
-                                                    : 'Зарегистрируйтесь, чтобы откликнуться'
-                                            }
-                                        />
-                                    )}
-                                </section>
-                            )}
+                        {vacancy && (
+                            <>
+                                <div className="vacanciesPage__detailBody">
+                                    <h2>{vacancy.title}</h2>
+                                    <p>
+                                        {[vacancy.companyName, vacancy.city, vacancy.specialityName]
+                                            .filter(Boolean)
+                                            .join(' · ')}
+                                    </p>
+                                    {vacancy.status ? (
+                                        <span className="vacanciesPage__badge">
+                                            {STATUS_LABELS[vacancy.status] || vacancy.status}
+                                        </span>
+                                    ) : null}
+                                    {vacancy.description ? <p>{vacancy.description}</p> : null}
+                                    {vacancy.skills?.length ? (
+                                        <div className="vacanciesPage__cardTags">
+                                            {vacancy.skills.map((s) => (
+                                                <span key={s.id || s.name} className="vacanciesPage__tag">
+                                                    {s.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : null}
+                                </div>
 
-                            {vacancy.hasApplied && (
-                                <p className="accountPage__ok">Вы уже откликнулись на эту вакансию.</p>
-                            )}
-                        </>
-                    )}
+                                {vacancy.status === 'PUBLISHED' && !vacancy.hasApplied && (
+                                    <section className="vacanciesPage__applyCard">
+                                        <h3 className="vacanciesPage__applyTitle">Отклик</h3>
+                                        {canApply ? (
+                                            <>
+                                                <label className="vacanciesPage__field">
+                                                    <span>Сопроводительное письмо</span>
+                                                    <textarea
+                                                        rows={4}
+                                                        value={coverLetter}
+                                                        onChange={(e) => setCoverLetter(e.target.value)}
+                                                    />
+                                                </label>
+                                                {error ? (
+                                                    <div className="vacanciesPage__error" role="alert">
+                                                        {error}
+                                                    </div>
+                                                ) : null}
+                                                {ok ? <div className="vacanciesPage__ok">{ok}</div> : null}
+                                                <GradientButton
+                                                    type="button"
+                                                    className="vacanciesPage__applyBtn"
+                                                    disabled={applying}
+                                                    onClick={handleApply}
+                                                >
+                                                    {applying ? 'Отправка…' : 'Откликнуться'}
+                                                </GradientButton>
+                                            </>
+                                        ) : (
+                                            <AnonymousApplyCTA
+                                                target="vacancy"
+                                                message={
+                                                    isRecruiterRole()
+                                                        ? 'Рекрутеры не откликаются на вакансии'
+                                                        : 'Зарегистрируйтесь, чтобы откликнуться'
+                                                }
+                                            />
+                                        )}
+                                    </section>
+                                )}
+
+                                {vacancy.hasApplied && (
+                                    <p className="vacanciesPage__ok">Вы уже откликнулись на эту вакансию.</p>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             </main>
             <Footer />
