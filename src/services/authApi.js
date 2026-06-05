@@ -381,9 +381,13 @@ async function syncAuthSessionInternal() {
                 }
             } catch (refreshErr) {
                 console.warn('[AUTH] refresh after auth/me 401 failed', refreshErr);
+                if (refreshErr?.status === 401 || refreshErr?.status === 403) {
+                    clearLocalAuth();
+                    notifyAuthChanged();
+                }
+                return null;
             }
-            clearLocalAuth();
-            notifyAuthChanged();
+            console.warn('[AUTH] auth/me still unauthorized after refresh — keeping local session');
             return null;
         }
 

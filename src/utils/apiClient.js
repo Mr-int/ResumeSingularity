@@ -1,18 +1,5 @@
 import { API_BASE_URL } from '../config/api.js';
-import { refreshSession, AUTH_RETURN_KEY, logout } from '../services/authApi.js';
-
-const clearAuthAndRedirect = () => {
-    const returnPath = `${window.location.pathname}${window.location.search}`;
-    if (returnPath && returnPath !== '/students' && returnPath !== '/') {
-        sessionStorage.setItem(AUTH_RETURN_KEY, returnPath);
-    }
-    sessionStorage.setItem('showLoginAfter403', 'true');
-    logout();
-    window.dispatchEvent(new CustomEvent('resume:auth-required'));
-    if (!window.location.pathname.startsWith('/students')) {
-        window.location.href = '/students';
-    }
-};
+import { refreshSession } from '../services/authApi.js';
 
 export const apiClientJson = async (endpoint, options = {}) => {
     const defaultHeaders = {
@@ -49,9 +36,11 @@ export const apiClientJson = async (endpoint, options = {}) => {
                     /* fall through */
                 }
             }
-            console.log('[API] 401 Unauthorized - redirecting to login');
-            clearAuthAndRedirect();
-            throw new Error('HTTP error! status: 401 - Unauthorized');
+            console.log('[API] 401 Unauthorized — session not cleared (handled by ProtectedRoute/sync)');
+            const unauthorized = new Error('HTTP error! status: 401 - Unauthorized');
+            unauthorized.status = 401;
+            unauthorized.requiresAuth = true;
+            throw unauthorized;
         }
 
         if (response.status === 403) {
