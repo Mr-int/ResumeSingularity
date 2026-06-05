@@ -61,7 +61,8 @@ const mapApiProject = (p, index) => ({
 
 const Projects = () => {
     const { openProject } = useProjectModal();
-    const [projects, setProjects] = useState(STATIC_PROJECTS);
+    const [projects, setProjects] = useState([]);
+    const [loadingProjects, setLoadingProjects] = useState(true);
     const [activeCard, setActiveCard] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
     const [expandedCards, setExpandedCards] = useState([1]);
@@ -73,16 +74,22 @@ const Projects = () => {
 
     useEffect(() => {
         (async () => {
+            setLoadingProjects(true);
             try {
                 const rows = await getProjectsForViewer();
-                if (Array.isArray(rows) && rows.length > 0) {
+                if (rows.length > 0) {
                     const mapped = rows.slice(0, 3).map((p, i) => mapApiProject(p, i));
                     setProjects(mapped);
                     setExpandedCards([1]);
                     setActiveCard(1);
+                } else {
+                    setProjects(STATIC_PROJECTS);
                 }
             } catch (e) {
-                console.warn('[Projects] public API fallback to static', e);
+                console.warn('[Projects] API unavailable, using static showcase', e);
+                setProjects(STATIC_PROJECTS);
+            } finally {
+                setLoadingProjects(false);
             }
         })();
     }, []);
@@ -290,7 +297,11 @@ const Projects = () => {
                 </div>
 
                 <div className="projects__cardsWrapper" ref={cardsWrapperRef}>
-                    {cards}
+                    {loadingProjects && projects.length === 0 ? (
+                        <p className="projects__loading" aria-live="polite">Загрузка проектов…</p>
+                    ) : (
+                        cards
+                    )}
                 </div>
             </div>
         </section>

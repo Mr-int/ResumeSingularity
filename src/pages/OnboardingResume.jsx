@@ -14,6 +14,8 @@ import {
     catalogRows,
 } from '../services/registrationCatalogApi.js';
 import GuidedHints from '../components/common/GuidedHints.jsx';
+import { getStudentMe } from '../services/getApi.js';
+import { getAccountStatus } from '../services/authApi.js';
 import './accountPage.css';
 
 const BUSYNESS_OPTIONS = [
@@ -91,6 +93,51 @@ const OnboardingResume = () => {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [ok, setOk] = useState('');
+    const [accessLimited, setAccessLimited] = useState(false);
+
+    const mapProfileToEditForm = (profile) => {
+        if (!profile) return null;
+        const hasProfile =
+            profile.specialityId != null ||
+            profile.firstName ||
+            profile.lastName ||
+            profile.email;
+        if (!hasProfile) return null;
+        return {
+            firstName: profile.firstName || '',
+            lastName: profile.lastName || '',
+            email: profile.email || '',
+            city: profile.city || '',
+            hhLink: profile.hhLink || '',
+            birthDate: profile.birthDate || '',
+            bio: profile.bio || '',
+            busyness: profile.busyness || 'FREE',
+            phoneNumber: profile.phoneNumber || '',
+            telegramUsername: profile.telegramUsername || '',
+            specialityId: profile.specialityId != null ? String(profile.specialityId) : '',
+            skillsIds: Array.isArray(profile.skills)
+                ? profile.skills.map((s) => s.id).filter((id) => id != null)
+                : Array.isArray(profile.skillsIds)
+                  ? profile.skillsIds
+                  : [],
+            experiences: profile.experiences || [],
+            institutions: profile.institutions || [],
+        };
+    };
+
+    const loadResumeEditData = async () => {
+        try {
+            return await getStudentResumeEdit();
+        } catch (e) {
+            if (e.status !== 403) throw e;
+            setAccessLimited(true);
+            try {
+                return mapProfileToEditForm(await getStudentMe());
+            } catch {
+                return null;
+            }
+        }
+    };
 
     useEffect(() => {
         (async () => {
@@ -98,7 +145,7 @@ const OnboardingResume = () => {
                 const [specRes, skillRes, editRes] = await Promise.all([
                     getRegistrationSpecialities(0, 100),
                     getRegistrationSkills(0, 200),
-                    getStudentResumeEdit().catch(() => null),
+                    loadResumeEditData(),
                 ]);
                 setSpecialities(catalogRows(specRes));
                 setSkills(catalogRows(skillRes));
@@ -177,7 +224,13 @@ const OnboardingResume = () => {
             }
             setTimeout(() => navigate('/settings', { replace: true }), 1200);
         } catch (err) {
-            setError(err.message || 'Не удалось сохранить резюме');
+            if (err.status === 403 || getAccountStatus() === 'PENDING_APPROVAL') {
+                setError(
+                    'Сохранение резюме пока недоступно: аккаунт на проверке у администратора. Попробуйте после одобрения.',
+                );
+            } else {
+                setError(err.message || 'Не удалось сохранить резюме');
+            }
         } finally {
             setSaving(false);
         }
@@ -211,6 +264,13 @@ const OnboardingResume = () => {
                     ) : null}
 
                     {loading && <p className="accountPage__muted">Загрузка…</p>}
+
+                    {!loading && (accessLimited || getAccountStatus() === 'PENDING_APPROVAL') && (
+                        <div className="accountPage__banner" role="status">
+                            Аккаунт на проверке: полное редактирование резюме откроется после одобрения администратором.
+                            {editMode ? ' Ниже показаны данные из профиля — только для просмотра.' : ''}
+                        </div>
+                    )}
 
                     {!loading && (
                         <section className="accountPage__card">

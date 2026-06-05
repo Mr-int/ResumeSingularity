@@ -28,6 +28,7 @@ export const completeStudentResumeOnboarding = (body) =>
     apiClientJson('student/onboarding/resume', {
         method: 'POST',
         body: JSON.stringify(body),
+        skipSessionClearOn403: true,
     });
 
 export const getStudentResumeEdit = () =>
@@ -37,6 +38,7 @@ export const updateStudentResume = (body) =>
     apiClientJson('student/onboarding/resume', {
         method: 'PUT',
         body: JSON.stringify(body),
+        skipSessionClearOn403: true,
     });
 
 export const getRecruiterOnboardingStatus = () =>

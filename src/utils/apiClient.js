@@ -92,8 +92,11 @@ export const apiClientJson = async (endpoint, options = {}) => {
             return {};
         }
     } catch (error) {
-        console.error(`[API] Error for endpoint ${endpoint}:`, error);
-        console.error('[API] Full URL was:', url);
+        const expected403 = options.skipSessionClearOn403 && error.status === 403;
+        if (!expected403) {
+            console.error(`[API] Error for endpoint ${endpoint}:`, error);
+            console.error('[API] Full URL was:', url);
+        }
 
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${window.location.origin}/api/`);

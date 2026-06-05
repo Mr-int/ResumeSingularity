@@ -115,20 +115,7 @@ const SettingsPage = () => {
                         <span className="accountPage__titleAccent">Настройки</span>
                     </h1>
                     <p className="accountPage__lead">
-                        Просмотр профиля и настройки. Резюме, навыки, опыт и образование можно редактировать самостоятельно.
-                    </p>
-                    <p className="accountPage__settingsNav">
-                        <Link to="/chats" className="accountPage__settingsNavLink">
-                            Перейти к чатам
-                        </Link>
-                        {role === 'student' && profile ? (
-                            <>
-                                {' · '}
-                                <Link to="/onboarding/resume" className="accountPage__settingsNavLink">
-                                    Редактировать резюме
-                                </Link>
-                            </>
-                        ) : null}
+                        Просмотр профиля и настройки. Резюме, навыки, опыт и образование можно редактировать в карточке ниже.
                     </p>
 
                     {loading && <div className="accountPage__muted">Загрузка…</div>}

@@ -66,7 +66,7 @@ const ProjectsPage = () => {
 
                 if (!cancelled) {
 
-                    setItems(Array.isArray(rows) ? rows : []);
+                    setItems(rows);
 
                 }
 
