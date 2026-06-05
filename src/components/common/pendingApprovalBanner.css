@@ -1,13 +1,123 @@
 .pendingApprovalBanner {
-    background: linear-gradient(90deg, rgba(255, 180, 80, 0.2), rgba(255, 120, 60, 0.15));
-    border-bottom: 1px solid rgba(255, 200, 100, 0.35);
-    color: inherit;
-    padding: 0.65rem 1.25rem;
-    text-align: center;
-    font-size: 0.92rem;
-    line-height: 1.4;
+    position: relative;
+    background:
+        linear-gradient(180deg, rgba(17, 17, 24, 0.98) 0%, rgba(10, 10, 16, 0.96) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 20px;
+    animation: pendingApprovalBannerIn 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.pendingApprovalBanner strong {
-    margin-right: 0.35rem;
+.pendingApprovalBanner::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    opacity: 0.9;
+}
+
+.pendingApprovalBanner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse 80% 120% at 50% -40%,
+        rgba(229, 59, 207, 0.14),
+        transparent 65%
+    );
+    pointer-events: none;
+}
+
+.pendingApprovalBanner__inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.pendingApprovalBanner__icon {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    color: #fff;
+    background:
+        linear-gradient(135deg, rgba(233, 90, 87, 0.22), rgba(62, 142, 255, 0.18));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow:
+        0 0 0 1px rgba(229, 59, 207, 0.12),
+        0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.pendingApprovalBanner__iconSvg {
+    display: block;
+    opacity: 0.95;
+}
+
+.pendingApprovalBanner__content {
+    min-width: 0;
+    text-align: left;
+}
+
+.pendingApprovalBanner__title {
+    margin: 0 0 4px;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #ffffff 0%, #d4d4d8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.pendingApprovalBanner__text {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #a1a1aa;
+}
+
+@keyframes pendingApprovalBannerIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 640px) {
+    .pendingApprovalBanner {
+        padding: 12px 16px;
+    }
+
+    .pendingApprovalBanner__inner {
+        gap: 12px;
+    }
+
+    .pendingApprovalBanner__icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+    }
+
+    .pendingApprovalBanner__title {
+        font-size: 13px;
+    }
+
+    .pendingApprovalBanner__text {
+        font-size: 12px;
+        line-height: 1.5;
+    }
 }

@@ -39,6 +39,7 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
     useEffect(() => {
         let cancelled = false;
         let inFlight = false;
+        let pendingRerun = false;
 
         const finishLoading = (authed, loginVisible, ready = true) => {
             if (cancelled) return;
@@ -49,8 +50,13 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
         };
 
         const checkAuth = async () => {
-            if (cancelled || inFlight) return;
+            if (cancelled) return;
+            if (inFlight) {
+                pendingRerun = true;
+                return;
+            }
             inFlight = true;
+            pendingRerun = false;
 
             setLoading(true);
             const showLoginFlag = sessionStorage.getItem('showLoginAfter403');
@@ -167,6 +173,10 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
             finishLoading(true, false);
             } finally {
                 inFlight = false;
+                if (pendingRerun && !cancelled) {
+                    pendingRerun = false;
+                    checkAuth();
+                }
             }
         };
 

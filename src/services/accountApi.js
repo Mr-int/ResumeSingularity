@@ -45,10 +45,6 @@ export const uploadStudentPhoto = async (studentId, file) => {
     }
 
     if (response.status === 403) {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('isAuthenticated_time');
-        sessionStorage.setItem('showLoginAfter403', 'true');
-        window.dispatchEvent(new CustomEvent('resume:auth-required'));
         const err = new Error('HTTP error! status: 403 - Forbidden');
         err.status = 403;
         throw err;

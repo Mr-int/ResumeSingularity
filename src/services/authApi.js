@@ -430,3 +430,11 @@ export function isStudentRole() {
     return getAuthRole() === 'STUDENT';
 }
 
+/** Полный каталог студентов (/student/*) — только одобренные рекрутёр/админ. */
+export function hasRecruiterCatalogAccess() {
+    if (!isAuthenticated()) return false;
+    if (isAdmin()) return true;
+    if (!isRecruiterRole()) return false;
+    return getAccountStatus() !== 'PENDING_APPROVAL';
+}
+

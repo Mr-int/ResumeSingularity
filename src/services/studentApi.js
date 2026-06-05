@@ -1,7 +1,8 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
 import { filterStudentCardsPage as catalogFilterStudentCardsPage, getStudentCardById } from './catalogApi.js';
-import { isAuthenticated } from './authApi.js';
+import { hasRecruiterCatalogAccess } from './authApi.js';
+import { getRegistrationSpecialities, catalogRows } from './registrationCatalogApi.js';
 
 /** @deprecated Используйте getFeaturedStudentCards или getSimilarStudentCards */
 export const getAllStudents = async () => {
@@ -380,7 +381,7 @@ export const createRecruiterRequest = async (recruiterData) => {
  * Ответ: PageResponseStudentDTO { data, page, size, totalElements, totalPages }
  */
 export const filterStudentsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
-    if (!isAuthenticated()) {
+    if (!hasRecruiterCatalogAccess()) {
         return catalogFilterStudentCardsPage(filterReq, pageable);
     }
     try {
@@ -390,6 +391,7 @@ export const filterStudentsPage = async (filterReq = {}, pageable = { page: 0, s
         const resp = await apiClientJson(`student/filter?page=${page}&size=${size}`, {
             method: 'POST',
             body: JSON.stringify(filterReq),
+            skipSessionClearOn403: true,
         });
 
         return {
@@ -400,8 +402,8 @@ export const filterStudentsPage = async (filterReq = {}, pageable = { page: 0, s
             totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
         };
     } catch (error) {
-        if (error.requiresAuth) {
-            throw error;
+        if (error.status === 403 || error.status === 401 || error.requiresAuth) {
+            return catalogFilterStudentCardsPage(filterReq, pageable);
         }
         throw error;
     }
@@ -427,7 +429,39 @@ export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 
  * Получение всех специальностей с пагинацией.
  * Пробуем стандартный pageable endpoint, затем fallback без пагинации.
  */
+const getPublicSpecialities = async () => {
+    const pageSize = 200;
+    const maxPages = 50;
+    const byId = new Map();
+
+    const first = await getRegistrationSpecialities(0, pageSize);
+    const firstData = catalogRows(first);
+    const totalPages = typeof first?.totalPages === 'number' ? first.totalPages : 1;
+    const pagesToFetch = Math.min(totalPages, maxPages);
+
+    for (const s of firstData) {
+        if (s?.id != null) byId.set(String(s.id), s);
+    }
+
+    for (let page = 1; page < pagesToFetch; page += 1) {
+        const res = await getRegistrationSpecialities(page, pageSize);
+        for (const s of catalogRows(res)) {
+            if (s?.id != null) byId.set(String(s.id), s);
+        }
+    }
+
+    return Array.from(byId.values());
+};
+
 export const getAllSpecialities = async () => {
+    if (!hasRecruiterCatalogAccess()) {
+        try {
+            return await getPublicSpecialities();
+        } catch {
+            return [];
+        }
+    }
+
     const pageSize = 200;
     const maxPages = 200;
 
@@ -435,7 +469,8 @@ export const getAllSpecialities = async () => {
         const byId = new Map();
         const first = await apiClientJson(`speciality/filter?page=0&size=${pageSize}`, {
             method: 'POST',
-            body: JSON.stringify({})
+            body: JSON.stringify({}),
+            skipSessionClearOn403: true,
         });
 
         const firstData = Array.isArray(first?.data) ? first.data : [];
@@ -449,7 +484,8 @@ export const getAllSpecialities = async () => {
         for (let page = 1; page < pagesToFetch; page += 1) {
             const res = await apiClientJson(`speciality/filter?page=${page}&size=${pageSize}`, {
                 method: 'POST',
-                body: JSON.stringify({})
+                body: JSON.stringify({}),
+                skipSessionClearOn403: true,
             });
             const pageData = Array.isArray(res?.data) ? res.data : [];
             for (const s of pageData) {
@@ -458,11 +494,19 @@ export const getAllSpecialities = async () => {
         }
 
         return Array.from(byId.values());
-    } catch (_) {
-        const fallback = await apiClientJson('speciality', { method: 'GET' });
-        if (Array.isArray(fallback)) return fallback;
-        if (Array.isArray(fallback?.data)) return fallback.data;
-        return [];
+    } catch (error) {
+        if (error.status === 403 || error.status === 401) {
+            try {
+                return await getPublicSpecialities();
+            } catch {
+                return [];
+            }
+        }
+        try {
+            return await getPublicSpecialities();
+        } catch {
+            return [];
+        }
     }
 };
 

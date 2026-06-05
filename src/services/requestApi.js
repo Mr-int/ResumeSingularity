@@ -38,6 +38,7 @@ export const filterMyRequests = (filter = {}, page = 0, size = 50) =>
     apiClientJson(`request/mine/filter?${pageQuery(page, size)}`, {
         method: 'POST',
         body: JSON.stringify(filter),
+        skipSessionClearOn403: true,
     });
 
 /**

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { filterMyRequests } from '../../services/requestApi.js';
 import { getStudentById } from '../../services/studentApi.js';
+import { getAccountStatus } from '../../services/authApi.js';
 
 const RESULT_LABELS = {
     CREATION: 'Создана',
@@ -23,6 +24,11 @@ const RecruiterRequestsSection = () => {
     const load = useCallback(async () => {
         setLoading(true);
         setError('');
+        if (getAccountStatus() === 'PENDING_APPROVAL') {
+            setRequests([]);
+            setLoading(false);
+            return;
+        }
         try {
             const res = await filterMyRequests({}, 0, 50);
             const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
@@ -39,8 +45,13 @@ const RecruiterRequestsSection = () => {
             );
             setStudents(map);
         } catch (e) {
-            setError(e.message || 'Не удалось загрузить заявки');
-            setRequests([]);
+            if (e.status === 403) {
+                setError('');
+                setRequests([]);
+            } else {
+                setError(e.message || 'Не удалось загрузить заявки');
+                setRequests([]);
+            }
         } finally {
             setLoading(false);
         }
@@ -53,13 +64,18 @@ const RecruiterRequestsSection = () => {
     return (
         <section className="accountPage__card">
             <h2 className="accountPage__cardTitle">Мои заявки студентам</h2>
+            {getAccountStatus() === 'PENDING_APPROVAL' && (
+                <div className="accountPage__banner" role="status">
+                    Заявки станут доступны после одобрения аккаунта администратором.
+                </div>
+            )}
             {loading && <p className="accountPage__muted">Загрузка…</p>}
             {error ? (
                 <div className="accountPage__error" role="alert">
                     {error}
                 </div>
             ) : null}
-            {!loading && requests.length === 0 && (
+            {!loading && requests.length === 0 && getAccountStatus() !== 'PENDING_APPROVAL' && (
                 <p className="accountPage__text">Заявок пока нет.</p>
             )}
             <ul className="accountPage__requestList">
