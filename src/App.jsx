@@ -14,6 +14,7 @@ import MyApplications from './pages/MyApplications.jsx';
 import ProjectsPage from './pages/Projects.jsx';
 import { ProjectModalProvider } from './context/ProjectModalContext.jsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+import ApprovedRoute from './components/auth/ApprovedRoute.jsx';
 import GlobalAuthPrompt from './components/auth/GlobalAuthPrompt.jsx';
 import PendingApprovalBanner from './components/common/PendingApprovalBanner.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
@@ -46,9 +47,21 @@ const AppRoutes = () => {
         <PendingApprovalBanner />
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='/projects' element={<ProjectsPage />} />
-          <Route path='/students' element={<Students />} />
-          <Route path='/studentsResume/:id' element={<Resume />} />
+          <Route path='/projects' element={
+            <ApprovedRoute>
+              <ProjectsPage />
+            </ApprovedRoute>
+          } />
+          <Route path='/students' element={
+            <ApprovedRoute>
+              <Students />
+            </ApprovedRoute>
+          } />
+          <Route path='/studentsResume/:id' element={
+            <ApprovedRoute>
+              <Resume />
+            </ApprovedRoute>
+          } />
           <Route path='/onboarding/resume' element={
             <ProtectedRoute skipOnboardingCheck>
               <OnboardingResume />
@@ -59,7 +72,11 @@ const AppRoutes = () => {
               <OnboardingVacancy />
             </ProtectedRoute>
           } />
-          <Route path='/vacancies' element={<Vacancies />} />
+          <Route path='/vacancies' element={
+            <ApprovedRoute>
+              <Vacancies />
+            </ApprovedRoute>
+          } />
           <Route path='/vacancies/mine' element={
             <ProtectedRoute>
               <MyVacancies />
@@ -70,7 +87,11 @@ const AppRoutes = () => {
               <MyApplications />
             </ProtectedRoute>
           } />
-          <Route path='/vacancies/:id' element={<VacancyDetail />} />
+          <Route path='/vacancies/:id' element={
+            <ApprovedRoute>
+              <VacancyDetail />
+            </ApprovedRoute>
+          } />
           <Route path='/settings' element={
             <ProtectedRoute>
               <Settings />

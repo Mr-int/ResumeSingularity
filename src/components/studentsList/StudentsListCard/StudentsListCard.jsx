@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { getImageUrl } from '../../../config/api.js';
+import { requestLogin } from '../../../services/authApi.js';
 import './studentsListCard.css';
 
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 
-const StudentsListCard = ({ student }) => {
+const StudentsListCard = ({ student, guestVitrina = false }) => {
     const [showFullBio, setShowFullBio] = useState(false);
 
     if (!student) {
@@ -119,15 +120,27 @@ const StudentsListCard = ({ student }) => {
                             {isBioTruncated && !showFullBio && (
                                 <span className="studentsCard__read-more">
                                     {' ... '}
-                                    <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
+                                    {guestVitrina ? (
+                                        <button type="button" className="read-more-link" onClick={requestLogin}>
+                                            Читать дальше
+                                        </button>
+                                    ) : (
+                                        <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
+                                    )}
                                 </span>
                             )}
                         </p>
                     </div>
 
-                    <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
-                        <span className="studentsCard__buttonText">Смотреть резюме</span>
-                    </Link>
+                    {guestVitrina ? (
+                        <button type="button" className="studentsCard__button" onClick={requestLogin}>
+                            <span className="studentsCard__buttonText">Смотреть резюме</span>
+                        </button>
+                    ) : (
+                        <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
+                            <span className="studentsCard__buttonText">Смотреть резюме</span>
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>

@@ -4,11 +4,11 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import { getFeaturedStudentCards } from "../../services/studentApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import { requestLogin } from "../../services/authApi.js";
 
-const StudentSlider = () => {
+const StudentSlider = ({ students: studentsProp, loading: loadingProp, guestVitrina = false }) => {
     const [searchValue, setSearchValue] = useState('');
     const [activeCardIndex, setActiveCardIndex] = useState(0);
     const [students, setStudents] = useState([]);
@@ -22,24 +22,20 @@ const StudentSlider = () => {
     const SLOTS_TOTAL = total > 0 ? SPACERS_PER_SIDE * 2 + total : 0;
 
     useEffect(() => {
-        const fetchStudents = async () => {
-            try {
-                setLoading(true);
-                const data = await getFeaturedStudentCards(24);
-                const visible = (Array.isArray(data) ? data : []).filter(hasStudentProfilePhoto);
-                setStudents(visible);
-                if (visible.length > 0) {
-                    const middleIndex = Math.floor(visible.length / 2);
-                    setActiveCardIndex(middleIndex);
-                }
-            } catch (error) {
-                console.error('Failed to fetch students:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchStudents();
-    }, []);
+        if (studentsProp == null) return;
+        const visible = (Array.isArray(studentsProp) ? studentsProp : []).filter(hasStudentProfilePhoto);
+        setStudents(visible);
+        if (visible.length > 0) {
+            const middleIndex = Math.floor(visible.length / 2);
+            setActiveCardIndex(middleIndex);
+        }
+    }, [studentsProp]);
+
+    useEffect(() => {
+        if (typeof loadingProp === 'boolean') {
+            setLoading(loadingProp);
+        }
+    }, [loadingProp]);
 
     const handleSearchChange = (e) => {
         setSearchValue(e.target.value);
@@ -69,7 +65,13 @@ const StudentSlider = () => {
     };
 
     const handleCardClick = (index) => {
-        if (total === 0 || index === activeCardIndex) return;
+        if (total === 0) return;
+        if (index === activeCardIndex) {
+            if (guestVitrina) {
+                requestLogin();
+            }
+            return;
+        }
         setActiveCardIndex(index);
     };
 
@@ -184,13 +186,17 @@ const StudentSlider = () => {
                         </div>
 
                         <div className="studentSlider__listInfo">
-                            {activeStudent && <StudentsListCard student={activeStudent} />}
+                            {activeStudent && (
+                                <StudentsListCard student={activeStudent} guestVitrina={guestVitrina} />
+                            )}
                         </div>
 
                         <GradientButton
-                            as="link"
-                            to="/students"
+                            as={guestVitrina ? 'button' : 'link'}
+                            to={guestVitrina ? undefined : '/students'}
+                            type="button"
                             className="studentSlider__button"
+                            onClick={guestVitrina ? requestLogin : undefined}
                             icon={(
                                 <svg className="button__icon" viewBox="0 0 24 24" aria-hidden="true">
                                     <circle cx="11" cy="11" r="7"></circle>
@@ -202,7 +208,7 @@ const StudentSlider = () => {
                         </GradientButton>
                     </>
                 ) : (
-                    <p style={{ color: '#fff' }}>Для показа студентов ты должен быть авторизован :(</p>
+                    <p style={{ color: '#fff' }}>Скоро здесь появятся карточки студентов</p>
                 )}
             </div>
         </section>

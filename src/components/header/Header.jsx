@@ -1,17 +1,59 @@
 import './header.css';
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { logoutServer, requestLogin } from '../../services/authApi.js';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { logoutServer, requestLogin, hasApprovedCatalogAccess, AUTH_REQUIRED_EVENT } from '../../services/authApi.js';
 import { useAuthState } from '../../hooks/useAuthState.js';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
+const HeaderSearchContent = () => (
+    <>
+        <span className="header__searchBtn">
+            <span className="header__searchBtnWhite">найти стажера</span>
+            <span className="header__searchBtnGradient" aria-hidden="true">найти стажера</span>
+        </span>
+        <div className="header__searchIconContainer">
+            <img
+                src={searchIcon}
+                alt="search"
+                className="header__searchIcon"
+                width="20"
+                height="20"
+            />
+            <img
+                src={gradientSearchIcon}
+                alt="search"
+                className="header__searchIconGradient"
+                width="20"
+                height="20"
+            />
+        </div>
+    </>
+);
+
 const Header = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { authed, role, refresh } = useAuthState();
     const isStudent = role === 'STUDENT';
+    const catalogAccess = hasApprovedCatalogAccess();
+
+    useEffect(() => {
+        setIsMenuOpen(false);
+    }, [location.pathname]);
+
+    useEffect(() => {
+        const closeMenu = () => setIsMenuOpen(false);
+        window.addEventListener(AUTH_REQUIRED_EVENT, closeMenu);
+        return () => window.removeEventListener(AUTH_REQUIRED_EVENT, closeMenu);
+    }, []);
+
+    const handleLoginClick = () => {
+        setIsMenuOpen(false);
+        requestLogin();
+    };
 
     const handleLogout = async () => {
         await logoutServer();
@@ -27,17 +69,28 @@ const Header = () => {
         setIsMenuOpen(false);
     };
 
+    const handleCatalogNav = () => {
+        setIsMenuOpen(false);
+        if (!catalogAccess) {
+            requestLogin();
+        }
+    };
+
     return (
         <header className="header">
             <div className="header__inner">
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
-                    <Link to="/projects" className="header__navLink header__navLink--desktop">
-                        проекты
-                    </Link>
-                    <Link to="/vacancies" className="header__navLink header__navLink--desktop">
-                        вакансии
-                    </Link>
+                    {catalogAccess ? (
+                        <>
+                            <Link to="/projects" className="header__navLink header__navLink--desktop">
+                                проекты
+                            </Link>
+                            <Link to="/vacancies" className="header__navLink header__navLink--desktop">
+                                вакансии
+                            </Link>
+                        </>
+                    ) : null}
                 </div>
 
                 <Link to="/" className="header__logoLink">
@@ -71,33 +124,20 @@ const Header = () => {
                         <button
                             type="button"
                             className="header__navLink header__navLink--btn"
-                            onClick={requestLogin}
+                            onClick={handleLoginClick}
                         >
                             войти
                         </button>
                     )}
-                    <Link to="/students" className="header__search">
-                    <span className="header__searchBtn">
-                        <span className="header__searchBtnWhite">найти стажера</span>
-                        <span className="header__searchBtnGradient" aria-hidden="true">найти стажера</span>
-                    </span>
-                    <div className="header__searchIconContainer">
-                        <img
-                            src={searchIcon}
-                            alt="search"
-                            className="header__searchIcon"
-                            width="20"
-                            height="20"
-                        />
-                        <img
-                            src={gradientSearchIcon}
-                            alt="search"
-                            className="header__searchIconGradient"
-                            width="20"
-                            height="20"
-                        />
-                    </div>
-                    </Link>
+                    {catalogAccess ? (
+                        <Link to="/students" className="header__search">
+                            <HeaderSearchContent />
+                        </Link>
+                    ) : (
+                        <button type="button" className="header__search" onClick={handleLoginClick}>
+                            <HeaderSearchContent />
+                        </button>
+                    )}
                 </div>
 
                 <button
@@ -119,20 +159,55 @@ const Header = () => {
                 >
                     главная
                 </Link>
-                <Link
-                    to="/projects"
-                    className="header__mobileBtn"
-                    onClick={handleMobileLinkClick}
-                >
-                    проекты
-                </Link>
-                <Link
-                    to="/vacancies"
-                    className="header__mobileBtn"
-                    onClick={handleMobileLinkClick}
-                >
-                    вакансии
-                </Link>
+                {catalogAccess ? (
+                    <>
+                        <Link
+                            to="/projects"
+                            className="header__mobileBtn"
+                            onClick={handleMobileLinkClick}
+                        >
+                            проекты
+                        </Link>
+                        <Link
+                            to="/vacancies"
+                            className="header__mobileBtn"
+                            onClick={handleMobileLinkClick}
+                        >
+                            вакансии
+                        </Link>
+                        <Link
+                            to="/students"
+                            className="header__mobileBtn"
+                            onClick={handleMobileLinkClick}
+                        >
+                            найти стажера
+                        </Link>
+                    </>
+                ) : (
+                    <>
+                        <button
+                            type="button"
+                            className="header__mobileBtn"
+                            onClick={handleCatalogNav}
+                        >
+                            проекты
+                        </button>
+                        <button
+                            type="button"
+                            className="header__mobileBtn"
+                            onClick={handleCatalogNav}
+                        >
+                            вакансии
+                        </button>
+                        <button
+                            type="button"
+                            className="header__mobileBtn"
+                            onClick={handleLoginClick}
+                        >
+                            найти стажера
+                        </button>
+                    </>
+                )}
                 {authed ? (
                     <Link
                         to="/settings"
@@ -142,13 +217,6 @@ const Header = () => {
                         {isStudent ? 'мой профиль' : 'настройки'}
                     </Link>
                 ) : null}
-                <Link
-                    to="/students"
-                    className="header__mobileBtn"
-                    onClick={handleMobileLinkClick}
-                >
-                    найти стажера
-                </Link>
                 {authed ? (
                     <>
                         <Link
@@ -173,10 +241,7 @@ const Header = () => {
                     <button
                         type="button"
                         className="header__mobileBtn"
-                        onClick={() => {
-                            handleMobileLinkClick();
-                            requestLogin();
-                        }}
+                        onClick={handleLoginClick}
                     >
                         войти
                     </button>

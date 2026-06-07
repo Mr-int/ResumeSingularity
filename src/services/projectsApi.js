@@ -1,6 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
-import { API_BASE_URL } from '../config/api.js';
-import { hasRecruiterCatalogAccess } from './authApi.js';
+import { hasApprovedCatalogAccess, requestLogin } from './authApi.js';
 
 /** API может вернуть массив или обёртку PageResponse / { value, Count }. */
 export function normalizeProjectsList(response) {
@@ -37,22 +36,13 @@ function withSearchQuery(basePath, q) {
     return `${basePath}?${params.toString()}`;
 }
 
-export const getPublicProjects = async (q) => {
-    const response = await fetch(`${API_BASE_URL}${withSearchQuery('public/projects', q)}`, {
-        method: 'GET',
-    });
-    if (!response.ok) {
-        throw new Error(`Не удалось загрузить проекты: ${response.status}`);
+const requireCatalogAccess = () => {
+    if (!hasApprovedCatalogAccess()) {
+        requestLogin();
+        const err = new Error('Требуется вход и одобрение аккаунта');
+        err.status = 401;
+        throw err;
     }
-    return response.json();
-};
-
-export const getPublicProject = async (id) => {
-    const response = await fetch(`${API_BASE_URL}public/projects/${id}`, { method: 'GET' });
-    if (!response.ok) {
-        throw new Error(response.status === 404 ? 'Проект не найден' : `Ошибка: ${response.status}`);
-    }
-    return response.json();
 };
 
 export const getProjects = (q) =>
@@ -69,32 +59,14 @@ async function fetchProjectsList(fetcher) {
     return sortProjectsNewestFirst(normalizeProjectsList(raw));
 }
 
-/** Список проектов: публичный каталог для гостей и аккаунтов без полного доступа. */
+/** Список проектов — только для одобренных пользователей. */
 export async function getProjectsForViewer(q) {
-    if (!hasRecruiterCatalogAccess()) {
-        return fetchProjectsList(() => getPublicProjects(q));
-    }
-    try {
-        return await fetchProjectsList(() => getProjects(q));
-    } catch (error) {
-        if (error.status === 401 || error.status === 403) {
-            return fetchProjectsList(() => getPublicProjects(q));
-        }
-        throw error;
-    }
+    requireCatalogAccess();
+    return fetchProjectsList(() => getProjects(q));
 }
 
 /** Детальная карточка с учётом доступа. */
 export async function getProjectForViewer(id) {
-    if (!hasRecruiterCatalogAccess()) {
-        return getPublicProject(id);
-    }
-    try {
-        return await getProject(id);
-    } catch (error) {
-        if (error.status === 401 || error.status === 403) {
-            return getPublicProject(id);
-        }
-        throw error;
-    }
+    requireCatalogAccess();
+    return getProject(id);
 }

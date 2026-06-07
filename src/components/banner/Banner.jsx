@@ -3,8 +3,10 @@ import "./banner.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import bannerImg from "../../assets/other/bannerImg.png";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import { hasApprovedCatalogAccess, requestLogin } from "../../services/authApi.js";
 
 const Banner = () => {
+    const catalogAccess = hasApprovedCatalogAccess();
     return (
         <article className="banner">
             <div className="banner__wrapper">
@@ -18,9 +20,11 @@ const Banner = () => {
                             Отберите кандидатов по стеку и проектному опыту — удобно и быстро за счёт поиска и фильтрации.
                         </p>
                         <GradientButton
-                            as="link"
-                            to="/students"
+                            as={catalogAccess ? 'link' : 'button'}
+                            to={catalogAccess ? '/students' : undefined}
+                            type="button"
                             className="banner__button"
+                            onClick={catalogAccess ? undefined : requestLogin}
                             icon={<img src={searchIcon} alt="Поиск" />}
                         >
                             Найти стажёра

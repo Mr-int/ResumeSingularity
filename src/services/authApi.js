@@ -464,11 +464,15 @@ export function isStudentRole() {
     return getAuthRole() === 'STUDENT';
 }
 
-/** Полный каталог студентов (/student/*) — только одобренные рекрутёр/админ. */
-export function hasRecruiterCatalogAccess() {
+/** Одобренный аккаунт или админ — доступ к каталогам после регистрации. */
+export function hasApprovedCatalogAccess() {
     if (!isAuthenticated()) return false;
     if (isAdmin()) return true;
-    if (!isRecruiterRole()) return false;
-    return getAccountStatus() !== 'PENDING_APPROVAL';
+    return getAccountStatus() === 'APPROVED';
+}
+
+/** Полный каталог студентов (/student/*) — одобренные пользователи. */
+export function hasRecruiterCatalogAccess() {
+    return hasApprovedCatalogAccess();
 }
 

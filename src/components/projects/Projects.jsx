@@ -2,10 +2,10 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from "react"
 import { Link } from "react-router-dom";
 import { useProjectModal } from "../../context/ProjectModalContext.jsx";
 import "./projects.css";
-import { STATIC_PROJECTS } from "../../data/staticProjects.js";
 import { ProjectBodyText } from "./ProjectBodyText.jsx";
+import { requestLogin } from "../../services/authApi.js";
 
-const Projects = () => {
+const Projects = ({ projects: projectsProp = [], guestVitrina = false }) => {
     const { openProject } = useProjectModal();
     const [activeCard, setActiveCard] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
@@ -14,7 +14,7 @@ const Projects = () => {
     const [containerHeight, setContainerHeight] = useState("800px");
     const cardsWrapperRef = useRef(null);
 
-    const projects = STATIC_PROJECTS;
+    const projects = Array.isArray(projectsProp) ? projectsProp : [];
     const cardCount = projects.length;
 
     useEffect(() => {
@@ -62,11 +62,9 @@ const Projects = () => {
     const handleCardClick = useCallback((cardNumber) => {
         if (isMobile) {
             if (expandedCards.includes(cardNumber)) {
-                if (expandedCards.length > 1) {
-                    setExpandedCards(prev => prev.filter(id => id !== cardNumber));
-                }
+                setExpandedCards((prev) => prev.filter((id) => id !== cardNumber));
             } else {
-                setExpandedCards(prev => [...prev, cardNumber]);
+                setExpandedCards([cardNumber]);
                 setTimeout(() => {
                     const element = document.querySelector(`.card:nth-child(${cardNumber})`);
                     if (element) {
@@ -193,6 +191,10 @@ const Projects = () => {
                                         className="card__moreLink"
                                         onClick={(e) => {
                                             e.stopPropagation();
+                                            if (guestVitrina) {
+                                                requestLogin();
+                                                return;
+                                            }
                                             openProject(project.id);
                                         }}
                                     >
@@ -204,8 +206,12 @@ const Projects = () => {
                     </div>
                 );
             }),
-        [projects, activeCard, isMobile, isAnimating, expandedCards, getCardPosition, isCardExpanded, handleCardClick, openProject],
+        [projects, activeCard, isMobile, isAnimating, expandedCards, getCardPosition, isCardExpanded, handleCardClick, openProject, guestVitrina],
     );
+
+    if (cardCount === 0) {
+        return null;
+    }
 
     return (
         <section id="projects" className="projects" style={{ minHeight: containerHeight }}>
@@ -213,7 +219,13 @@ const Projects = () => {
                 <div className="projects__head">
                     <h2 className="projects__title">Лучшие проекты наших студентов</h2>
                     <p className="projects__more">
-                        <Link to="/projects">Все проекты →</Link>
+                        {guestVitrina ? (
+                            <button type="button" className="projects__moreLinkBtn" onClick={requestLogin}>
+                                Все проекты →
+                            </button>
+                        ) : (
+                            <Link to="/projects">Все проекты →</Link>
+                        )}
                     </p>
                 </div>
 

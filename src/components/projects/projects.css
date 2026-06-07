@@ -41,18 +41,24 @@
     text-align: right;
 }
 
-.projects__more a {
+.projects__more a,
+.projects__moreLinkBtn {
     color: #c4b5fd;
     font-size: 15px;
     text-decoration: none;
     padding: 8px 14px;
     border-radius: 999px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
     border: 1px solid rgba(196, 181, 253, 0.35);
     background: rgba(124, 58, 237, 0.12);
     transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
 
-.projects__more a:hover {
+.projects__more a:hover,
+.projects__moreLinkBtn:hover {
     color: #fff;
     background: rgba(124, 58, 237, 0.28);
     border-color: rgba(196, 181, 253, 0.6);

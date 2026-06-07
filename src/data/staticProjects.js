@@ -81,24 +81,15 @@ export function mapApiProjectToViewModel(project, index = 0) {
     );
 }
 
-/** Статические витринные + все проекты с API (без дублей по id). */
+/** Каталог проектов только из API (без устаревших статических карточек). */
 export async function loadAllProjectsCatalog() {
-    const staticItems = STATIC_PROJECTS.map((project, index) => toProjectViewModel(project, index));
-    const byId = new Map(staticItems.map((project) => [String(project.id), project]));
-
     try {
         const rows = await getProjectsForViewer();
-        rows.forEach((row, index) => {
-            const vm = mapApiProjectToViewModel(row, staticItems.length + index);
-            if (!vm?.id) return;
-            const key = String(vm.id);
-            if (!byId.has(key)) {
-                byId.set(key, vm);
-            }
-        });
+        return rows
+            .map((row, index) => mapApiProjectToViewModel(row, index))
+            .filter(Boolean);
     } catch (error) {
-        console.warn('[Projects] API catalog unavailable, showing static showcase only', error);
+        console.warn('[Projects] API catalog unavailable', error);
+        return [];
     }
-
-    return Array.from(byId.values());
 }

@@ -10,12 +10,14 @@ import leraUnactive from '../../assets/heroAnimation/lera_unactive.png';
 import { useEffect, useState } from 'react';
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 import { useAuthState } from '../../hooks/useAuthState.js';
+import { hasApprovedCatalogAccess, requestLogin } from '../../services/authApi.js';
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [isRightCardHovered, setIsRightCardHovered] = useState(false);
     const { authed, role } = useAuthState();
     const isStudent = authed && role === 'STUDENT';
+    const catalogAccess = hasApprovedCatalogAccess();
 
     useEffect(() => {
         const checkMobile = () => {
@@ -51,11 +53,21 @@ const Hero = () => {
                         >
                             Мой профиль
                         </GradientButton>
-                    ) : (
+                    ) : catalogAccess ? (
                         <GradientButton
                             as="link"
                             to="/students"
                             className="hero__button"
+                            icon={<img src={searchIcon} alt="search" className="button__icon" />}
+                        >
+                            Найти стажёра
+                        </GradientButton>
+                    ) : (
+                        <GradientButton
+                            as="button"
+                            type="button"
+                            className="hero__button"
+                            onClick={requestLogin}
                             icon={<img src={searchIcon} alt="search" className="button__icon" />}
                         >
                             Найти стажёра
