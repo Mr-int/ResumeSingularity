@@ -1,7 +1,13 @@
 import './header.css';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { logoutServer, requestLogin, hasApprovedCatalogAccess, AUTH_REQUIRED_EVENT } from '../../services/authApi.js';
+import {
+    logoutServer,
+    requestLogin,
+    hasApprovedCatalogAccess,
+    getAuthenticatedDestination,
+    AUTH_REQUIRED_EVENT,
+} from '../../services/authApi.js';
 import { useAuthState } from '../../hooks/useAuthState.js';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
@@ -38,6 +44,7 @@ const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { authed, role, refresh } = useAuthState();
     const isStudent = role === 'STUDENT';
+    const isAdmin = role === 'ADMIN';
     const catalogAccess = hasApprovedCatalogAccess();
 
     useEffect(() => {
@@ -82,14 +89,29 @@ const Header = () => {
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
                     {catalogAccess ? (
-                        <>
-                            <Link to="/projects" className="header__navLink header__navLink--desktop">
-                                проекты
-                            </Link>
-                            <Link to="/vacancies" className="header__navLink header__navLink--desktop">
-                                вакансии
-                            </Link>
-                        </>
+                        <Link to="/students" className="header__navLink header__navLink--desktop">
+                            студенты
+                        </Link>
+                    ) : getAuthenticatedDestination() ? (
+                        <Link
+                            to={getAuthenticatedDestination()}
+                            className="header__navLink header__navLink--desktop"
+                        >
+                            студенты
+                        </Link>
+                    ) : (
+                        <button
+                            type="button"
+                            className="header__navLink header__navLink--desktop header__navLink--btn"
+                            onClick={handleLoginClick}
+                        >
+                            студенты
+                        </button>
+                    )}
+                    {catalogAccess ? (
+                        <Link to="/projects" className="header__navLink header__navLink--desktop">
+                            проекты
+                        </Link>
                     ) : null}
                 </div>
 
@@ -104,11 +126,18 @@ const Header = () => {
                 </Link>
 
                 <div className="header__rightCluster">
+                    {catalogAccess ? (
+                        <Link to="/vacancies" className="header__navLink header__navLink--desktop">
+                            вакансии
+                        </Link>
+                    ) : null}
                     {authed ? (
                         <>
-                            <Link to="/settings" className="header__navLink header__navLink--desktop">
-                                {isStudent ? 'мой профиль' : 'настройки'}
-                            </Link>
+                            {!isAdmin ? (
+                                <Link to="/settings" className="header__navLink header__navLink--desktop">
+                                    {isStudent ? 'мой профиль' : 'настройки'}
+                                </Link>
+                            ) : null}
                             <Link to="/chats" className="header__navLink">
                                 чаты
                             </Link>
@@ -129,14 +158,16 @@ const Header = () => {
                             войти
                         </button>
                     )}
-                    {catalogAccess ? (
-                        <Link to="/students" className="header__search">
-                            <HeaderSearchContent />
-                        </Link>
-                    ) : (
-                        <button type="button" className="header__search" onClick={handleLoginClick}>
-                            <HeaderSearchContent />
-                        </button>
+                    {!isStudent && (
+                        catalogAccess ? (
+                            <Link to="/students" className="header__search">
+                                <HeaderSearchContent />
+                            </Link>
+                        ) : (
+                            <button type="button" className="header__search" onClick={handleLoginClick}>
+                                <HeaderSearchContent />
+                            </button>
+                        )
                     )}
                 </div>
 
@@ -160,6 +191,31 @@ const Header = () => {
                     главная
                 </Link>
                 {catalogAccess ? (
+                    <Link
+                        to="/students"
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
+                    >
+                        студенты
+                    </Link>
+                ) : getAuthenticatedDestination() ? (
+                    <Link
+                        to={getAuthenticatedDestination()}
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
+                    >
+                        студенты
+                    </Link>
+                ) : (
+                    <button
+                        type="button"
+                        className="header__mobileBtn"
+                        onClick={handleLoginClick}
+                    >
+                        студенты
+                    </button>
+                )}
+                {catalogAccess ? (
                     <>
                         <Link
                             to="/projects"
@@ -168,20 +224,15 @@ const Header = () => {
                         >
                             проекты
                         </Link>
-                        <Link
-                            to="/vacancies"
-                            className="header__mobileBtn"
-                            onClick={handleMobileLinkClick}
-                        >
-                            вакансии
-                        </Link>
-                        <Link
-                            to="/students"
-                            className="header__mobileBtn"
-                            onClick={handleMobileLinkClick}
-                        >
-                            найти стажера
-                        </Link>
+                        {!isStudent ? (
+                            <Link
+                                to="/students"
+                                className="header__mobileBtn"
+                                onClick={handleMobileLinkClick}
+                            >
+                                найти стажера
+                            </Link>
+                        ) : null}
                     </>
                 ) : (
                     <>
@@ -192,23 +243,35 @@ const Header = () => {
                         >
                             проекты
                         </button>
-                        <button
-                            type="button"
-                            className="header__mobileBtn"
-                            onClick={handleCatalogNav}
-                        >
-                            вакансии
-                        </button>
-                        <button
-                            type="button"
-                            className="header__mobileBtn"
-                            onClick={handleLoginClick}
-                        >
-                            найти стажера
-                        </button>
+                        {!isStudent ? (
+                            <button
+                                type="button"
+                                className="header__mobileBtn"
+                                onClick={handleLoginClick}
+                            >
+                                найти стажера
+                            </button>
+                        ) : null}
                     </>
                 )}
-                {authed ? (
+                {catalogAccess ? (
+                    <Link
+                        to="/vacancies"
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
+                    >
+                        вакансии
+                    </Link>
+                ) : (
+                    <button
+                        type="button"
+                        className="header__mobileBtn"
+                        onClick={handleCatalogNav}
+                    >
+                        вакансии
+                    </button>
+                )}
+                {authed && !isAdmin ? (
                     <Link
                         to="/settings"
                         className="header__mobileBtn"

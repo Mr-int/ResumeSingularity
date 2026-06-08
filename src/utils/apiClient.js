@@ -11,12 +11,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
     const headers = { ...defaultHeaders, ...options.headers };
     const body = options.body;
 
-    console.log('[API Client] Base URL:', API_BASE_URL);
-    console.log('[API Client] Endpoint:', endpoint);
-
     const url = `${API_BASE_URL}${endpoint}`;
-    console.log('[API Client] Full URL:', url);
-    console.log('[API Client] Request Body:', body);
 
     try {
         const response = await fetch(url, {
@@ -36,7 +31,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
                     /* fall through */
                 }
             }
-            console.log('[API] 401 Unauthorized — session not cleared (handled by ProtectedRoute/sync)');
             const unauthorized = new Error('HTTP error! status: 401 - Unauthorized');
             unauthorized.status = 401;
             unauthorized.requiresAuth = true;
@@ -50,11 +44,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
                 responseBody = errorText ? JSON.parse(errorText) : null;
             } catch (_) {
                 responseBody = { message: errorText };
-            }
-            if (skipSessionClearOn403) {
-                console.log('[API] 403 Forbidden (soft probe — session preserved)');
-            } else {
-                console.log('[API] 403 Forbidden — access denied, session preserved');
             }
             const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
             error.status = 403;

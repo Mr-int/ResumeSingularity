@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../config/api.js';
+import { apiClientJson } from '../utils/apiClient.js';
 
 export const AUTH_CHANGED_EVENT = 'resume:auth-changed';
 export const AUTH_REQUIRED_EVENT = 'resume:auth-required';
@@ -10,10 +11,6 @@ let syncInFlight = null;
 
 export function notifyAuthChanged() {
     window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
-}
-
-export function requestLogin() {
-    window.dispatchEvent(new CustomEvent(AUTH_REQUIRED_EVENT));
 }
 
 // Re-export for hooks
@@ -218,6 +215,7 @@ const clearLocalAuth = () => {
  * @param {{ username: string, password: string, passwordConfirm: string, name?: string, phoneNumber: string, phoneVerificationId: string }} body
  */
 export const registerStudent = async (body) => {
+    await resetStaleSessionBeforeAuth();
     const url = `${API_BASE_URL}auth/register-student`;
     const response = await fetch(url, {
         method: 'POST',
@@ -255,6 +253,7 @@ export const registerStudent = async (body) => {
  * POST /auth/register-recruiter
  */
 export const registerRecruiter = async (body) => {
+    await resetStaleSessionBeforeAuth();
     const url = `${API_BASE_URL}auth/register-recruiter`;
     const response = await fetch(url, {
         method: 'POST',
@@ -314,6 +313,13 @@ export const refreshSession = async () => {
 /**
  * POST /auth/logout + очистка клиента
  */
+export const changePassword = async (currentPassword, newPassword) => {
+    return apiClientJson('auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+    });
+};
+
 export const logoutServer = async () => {
     try {
         await fetch(`${API_BASE_URL}auth/logout`, {
@@ -468,11 +474,30 @@ export function isStudentRole() {
 export function hasApprovedCatalogAccess() {
     if (!isAuthenticated()) return false;
     if (isAdmin()) return true;
+    if (isStudentRole()) return true;
     return getAccountStatus() === 'APPROVED';
 }
 
 /** Полный каталог студентов (/student/*) — одобренные пользователи. */
 export function hasRecruiterCatalogAccess() {
     return hasApprovedCatalogAccess();
+}
+
+/** Куда направить уже авторизованного пользователя вместо модала входа. */
+export function getAuthenticatedDestination() {
+    if (!isAuthenticated()) return null;
+    if (isStudentRole()) return '/settings';
+    if (hasApprovedCatalogAccess()) return '/students';
+    if (isRecruiterRole()) return '/settings';
+    return '/settings';
+}
+
+export function requestLogin() {
+    const redirectTo = getAuthenticatedDestination();
+    window.dispatchEvent(
+        new CustomEvent(AUTH_REQUIRED_EVENT, {
+            detail: redirectTo ? { redirectTo } : undefined,
+        }),
+    );
 }
 

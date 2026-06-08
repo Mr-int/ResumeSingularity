@@ -33,3 +33,23 @@ export const catalogRows = (res) => {
     if (Array.isArray(res?.content)) return res.content;
     return [];
 };
+
+/** Загружает все страницы справочника (лимит страницы задаётся на бэкенде). */
+export async function loadAllRegistrationCatalog(fetchPage, pageSize = 50) {
+    const rows = [];
+    let page = 0;
+    let totalPages = 1;
+    while (page < totalPages) {
+        const res = await fetchPage(page, pageSize);
+        rows.push(...catalogRows(res));
+        totalPages = typeof res?.totalPages === 'number' ? res.totalPages : page + 1;
+        page += 1;
+    }
+    return rows;
+}
+
+export const loadAllRegistrationSkills = (pageSize = 50) =>
+    loadAllRegistrationCatalog(getRegistrationSkills, pageSize);
+
+export const loadAllRegistrationSpecialities = (pageSize = 50) =>
+    loadAllRegistrationCatalog(getRegistrationSpecialities, pageSize);

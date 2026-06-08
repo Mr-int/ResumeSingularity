@@ -1,7 +1,16 @@
+import { normalizePhone } from './phoneFormat.js';
+
 export const BUSYNESS_OPTIONS = [
     { value: 'FREE', label: 'Свободен' },
     { value: 'FREELANCE', label: 'Фриланс' },
     { value: 'EMPLOYED', label: 'Занят' },
+];
+
+export const COURSE_OPTIONS = [
+    { value: 'FIRST', label: '1 курс' },
+    { value: 'SECOND', label: '2 курс' },
+    { value: 'THIRD', label: '3 курс' },
+    { value: 'FOURTH', label: '4 курс' },
 ];
 
 export const emptyExperienceRow = () => ({
@@ -31,6 +40,7 @@ export const emptyStudentResumeForm = () => ({
     birthDate: '',
     bio: '',
     busyness: 'FREE',
+    course: '',
     phoneNumber: '',
     telegramUsername: '',
     specialityId: '',
@@ -65,7 +75,8 @@ export const mapProfileToEditForm = (profile) => {
         profile.specialityId != null ||
         profile.firstName ||
         profile.lastName ||
-        profile.email;
+        profile.email ||
+        profile.phoneNumber;
     if (!hasProfile) return null;
     return {
         firstName: profile.firstName || '',
@@ -76,6 +87,7 @@ export const mapProfileToEditForm = (profile) => {
         birthDate: profile.birthDate || '',
         bio: profile.bio || '',
         busyness: profile.busyness || 'FREE',
+        course: profile.course && profile.course !== 'NEW' ? profile.course : '',
         phoneNumber: profile.phoneNumber || '',
         telegramUsername: profile.telegramUsername || '',
         specialityId: profile.specialityId != null ? String(profile.specialityId) : '',
@@ -89,19 +101,24 @@ export const mapProfileToEditForm = (profile) => {
     };
 };
 
-export const buildStudentResumePayload = (form, experienceRows, institutionRows) => ({
+export const buildStudentResumePayload = (form, experienceRows, institutionRows) => {
+    const phoneRaw = form.phoneNumber.trim();
+    const phoneNumber = phoneRaw ? normalizePhone(phoneRaw) : undefined;
+    return {
     firstName: form.firstName.trim(),
     lastName: form.lastName.trim(),
     email: form.email.trim(),
     city: form.city.trim() || undefined,
     hhLink: form.hhLink.trim() || undefined,
-    birthDate: form.birthDate,
+    birthDate: form.birthDate || undefined,
     bio: form.bio.trim() || undefined,
     busyness: form.busyness,
-    phoneNumber: form.phoneNumber.trim() || undefined,
+    course: form.course || undefined,
+    phoneNumber,
     telegramUsername: form.telegramUsername.trim().replace(/^@/, '') || undefined,
     specialityId: Number(form.specialityId),
     skillsIds: form.skillsIds.length ? form.skillsIds : [],
     experiences: mapExperiencePayload(experienceRows),
     institutions: mapInstitutionPayload(institutionRows),
-});
+};
+};

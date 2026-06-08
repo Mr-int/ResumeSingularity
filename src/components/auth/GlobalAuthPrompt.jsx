@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LoginModal from './LoginModal.jsx';
-import { consumeAuthReturnTo, AUTH_REQUIRED_EVENT, isAuthenticated } from '../../services/authApi.js';
+import {
+    consumeAuthReturnTo,
+    AUTH_REQUIRED_EVENT,
+    isAuthenticated,
+    getAuthenticatedDestination,
+} from '../../services/authApi.js';
 
 /** Модал входа на публичных страницах по событию resume:auth-required */
 const GlobalAuthPrompt = () => {
@@ -9,10 +14,13 @@ const GlobalAuthPrompt = () => {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
-        const onAuthRequired = () => {
-            if (!isAuthenticated()) {
-                setOpen(true);
+        const onAuthRequired = (event) => {
+            if (isAuthenticated()) {
+                const dest = event?.detail?.redirectTo ?? getAuthenticatedDestination() ?? '/settings';
+                navigate(dest);
+                return;
             }
+            setOpen(true);
         };
         if (sessionStorage.getItem('showLoginAfter403') === 'true' && !isAuthenticated()) {
             setOpen(true);

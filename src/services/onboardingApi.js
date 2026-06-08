@@ -41,6 +41,22 @@ export const updateStudentResume = (body) =>
         skipSessionClearOn403: true,
     });
 
+export const getStudentPortfolio = () =>
+    apiClientJson('student/onboarding/portfolio', { method: 'GET', skipSessionClearOn403: true });
+
+export const addStudentPortfolio = (body) =>
+    apiClientJson('student/onboarding/portfolio', {
+        method: 'POST',
+        body: JSON.stringify(body),
+        skipSessionClearOn403: true,
+    });
+
+export const deleteStudentPortfolio = (portfolioId) =>
+    apiClientJson(`student/onboarding/portfolio/${portfolioId}`, {
+        method: 'DELETE',
+        skipSessionClearOn403: true,
+    });
+
 export const getRecruiterOnboardingStatus = () =>
     apiClientJson('recruiter/onboarding/status', { method: 'GET', skipSessionClearOn403: true });
 

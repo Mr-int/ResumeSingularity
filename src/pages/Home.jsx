@@ -8,8 +8,10 @@ import Projects from "../components/projects/Projects.jsx";
 import Banner from "../components/banner/Banner.jsx";
 import { fetchHomeVitrina } from "../services/vitrinaApi.js";
 import { mapApiProjectToViewModel } from "../data/staticProjects.js";
+import { useAuthState } from "../hooks/useAuthState.js";
 
 const Home = () => {
+    const { authed } = useAuthState();
     const [vitrinaStudents, setVitrinaStudents] = useState([]);
     const [vitrinaProjects, setVitrinaProjects] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -50,12 +52,12 @@ const Home = () => {
             <StudentSlider
                 students={vitrinaStudents}
                 loading={loading}
-                guestVitrina
+                guestVitrina={!authed}
             />
             <Benefits />
             <Projects
                 projects={vitrinaProjects}
-                guestVitrina
+                guestVitrina={!authed}
             />
             <Banner />
             <Footer />

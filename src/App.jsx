@@ -7,6 +7,7 @@ import Settings from "./pages/Settings.jsx";
 import Chats from "./pages/Chats.jsx";
 import OnboardingResume from './pages/OnboardingResume.jsx';
 import OnboardingVacancy from './pages/OnboardingVacancy.jsx';
+import OnboardingRecruiterProfile from './pages/OnboardingRecruiterProfile.jsx';
 import Vacancies from './pages/Vacancies.jsx';
 import VacancyDetail from './pages/VacancyDetail.jsx';
 import MyVacancies from './pages/MyVacancies.jsx';
@@ -53,18 +54,23 @@ const AppRoutes = () => {
             </ApprovedRoute>
           } />
           <Route path='/students' element={
-            <ApprovedRoute>
+            <ApprovedRoute allowPendingRecruiter>
               <Students />
             </ApprovedRoute>
           } />
           <Route path='/studentsResume/:id' element={
-            <ApprovedRoute>
+            <ApprovedRoute allowPendingRecruiter>
               <Resume />
             </ApprovedRoute>
           } />
           <Route path='/onboarding/resume' element={
             <ProtectedRoute skipOnboardingCheck>
               <OnboardingResume />
+            </ProtectedRoute>
+          } />
+          <Route path='/onboarding/recruiter-profile' element={
+            <ProtectedRoute skipOnboardingCheck>
+              <OnboardingRecruiterProfile />
             </ProtectedRoute>
           } />
           <Route path='/onboarding/vacancy' element={
@@ -98,7 +104,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } />
           <Route path='/chats' element={
-            <ProtectedRoute>
+            <ProtectedRoute requireCommunicationReady>
               <Chats />
             </ProtectedRoute>
           } />

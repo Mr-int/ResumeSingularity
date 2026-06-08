@@ -1,5 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
-import { hasApprovedCatalogAccess, requestLogin } from './authApi.js';
+import { hasApprovedCatalogAccess } from './authApi.js';
 
 const pageQuery = (pageable = {}) => {
     const page = typeof pageable.page === 'number' ? pageable.page : 0;
@@ -15,8 +15,6 @@ export const extractPageRows = (resp) => {
 };
 
 const withDefaultCatalogSort = (filterReq = {}) => ({
-    sortBy: 'CREATED_AT',
-    sortDirection: 'DESC',
     useDefaultRanking: true,
     ...filterReq,
 });
@@ -29,29 +27,39 @@ const normalizePage = (resp, page, size) => ({
     totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
 });
 
-const requireCatalogAccess = () => {
-    if (!hasApprovedCatalogAccess()) {
-        requestLogin();
-        const err = new Error('Требуется вход и одобрение аккаунта');
-        err.status = 401;
-        throw err;
-    }
-};
-
-/**
- * Каталог карточек студентов — только для одобренных пользователей.
- */
-export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
-    requireCatalogAccess();
-    const { page, size } = pageQuery(pageable);
+const fetchPublicStudentCardsPage = async (filterReq, page, size) => {
     const body = withDefaultCatalogSort(filterReq);
-
-    const resp = await apiClientJson(`student/cardsFilter?page=${page}&size=${size}`, {
+    const resp = await apiClientJson(`public/students/cards?page=${page}&size=${size}`, {
         method: 'POST',
         body: JSON.stringify(body),
         skipSessionClearOn403: true,
     });
     return normalizePage(resp, page, size);
+};
+
+/**
+ * Каталог карточек: полный — для одобренных; публичная витрина — для остальных.
+ */
+export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
+    const { page, size } = pageQuery(pageable);
+    const body = withDefaultCatalogSort(filterReq);
+
+    if (hasApprovedCatalogAccess()) {
+        try {
+            const resp = await apiClientJson(`student/cardsFilter?page=${page}&size=${size}`, {
+                method: 'POST',
+                body: JSON.stringify(body),
+                skipSessionClearOn403: true,
+            });
+            return normalizePage(resp, page, size);
+        } catch (error) {
+            if (error?.status !== 403 && error?.status !== 401) {
+                throw error;
+            }
+        }
+    }
+
+    return fetchPublicStudentCardsPage(filterReq, page, size);
 };
 
 const unwrapStudentPayload = (payload) => {
@@ -80,7 +88,11 @@ export const getStudentCardById = async (id) => {
         throw err;
     }
 
-    requireCatalogAccess();
+    if (!hasApprovedCatalogAccess()) {
+        const err = new Error('Студент не найден');
+        err.status = 404;
+        throw err;
+    }
 
     try {
         const raw = await apiClientJson(`student/${id}`, { method: 'GET', skipSessionClearOn403: true });

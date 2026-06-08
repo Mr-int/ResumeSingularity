@@ -1,14 +1,16 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import StudentProfileEditor from '../components/settings/StudentProfileEditor.jsx';
+import '../components/studentResume/studentResume.css';
+import '../components/settings/studentOwnProfile.css';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
-import StudentProfileEditor from '../components/settings/StudentProfileEditor.jsx';
+import StudentOwnProfile from '../components/settings/StudentOwnProfile.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
-import { patchStudentMe, patchRecruiter, uploadStudentPhoto } from '../services/accountApi.js';
+import { patchStudentMe, patchRecruiter } from '../services/accountApi.js';
 import { getAccountStatus } from '../services/authApi.js';
-import { getImageUrl } from '../config/api.js';
+import { setCachedOnboardingStatus } from '../services/onboardingApi.js';
 import './accountPage.css';
 
 const recruiterToForm = (r) => ({
@@ -16,12 +18,16 @@ const recruiterToForm = (r) => ({
     firstName: r.firstName || '',
     lastName: r.lastName || '',
     email: r.email || '',
+    city: r.city || '',
     phoneNumber: r.phoneNumber || '',
     telegramUsername: r.telegramUsername || '',
 });
 
 const SettingsPage = () => {
+    const [searchParams] = useSearchParams();
+    const resumeSetup = searchParams.get('setup') === 'resume';
     const [loading, setLoading] = useState(true);
+    const [needsResumeSetup, setNeedsResumeSetup] = useState(false);
     const [error, setError] = useState('');
     const [role, setRole] = useState(null);
     const [profile, setProfile] = useState(null);
@@ -31,10 +37,6 @@ const SettingsPage = () => {
     const [recruiterSaving, setRecruiterSaving] = useState(false);
     const [recruiterSaveError, setRecruiterSaveError] = useState('');
     const [recruiterSaveOk, setRecruiterSaveOk] = useState('');
-    const [photoSaving, setPhotoSaving] = useState(false);
-    const [photoError, setPhotoError] = useState('');
-    const photoInputRef = useRef(null);
-
     const loadProfile = useCallback(async () => {
         setLoading(true);
         setError('');
@@ -43,9 +45,17 @@ const SettingsPage = () => {
                 const s = await getStudentMe();
                 setRole('student');
                 setProfile(s);
+                setNeedsResumeSetup(false);
                 return;
             } catch (e) {
-                if (e.status !== 404 && e.status !== 403) throw e;
+                if (e.status === 404) {
+                    setRole('student');
+                    setProfile(null);
+                    setNeedsResumeSetup(true);
+                    setError('');
+                    return;
+                }
+                if (e.status !== 403) throw e;
             }
             try {
                 const r = await getRecruiterMe();
@@ -74,8 +84,6 @@ const SettingsPage = () => {
         loadProfile();
     }, [loadProfile]);
 
-    const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
-
     const handleRecruiterField = (field, value) => {
         setRecruiterForm((prev) => ({ ...prev, [field]: value }));
         setRecruiterSaveOk('');
@@ -94,6 +102,7 @@ const SettingsPage = () => {
                 firstName: recruiterForm.firstName.trim(),
                 lastName: recruiterForm.lastName.trim(),
                 email: recruiterForm.email.trim(),
+                city: recruiterForm.city.trim(),
                 phoneNumber: recruiterForm.phoneNumber.trim(),
                 telegramUsername: recruiterForm.telegramUsername.trim().replace(/^@/, '') || undefined,
             });
@@ -126,39 +135,30 @@ const SettingsPage = () => {
         }
     };
 
-    const handlePhotoChange = async (event) => {
-        const file = event.target.files?.[0];
-        if (!file || !profile?.id) return;
-        setPhotoSaving(true);
-        setPhotoError('');
-        try {
-            await uploadStudentPhoto(profile.id, file);
-            const updated = await getStudentMe();
-            setProfile(updated);
-        } catch (e) {
-            setPhotoError(e.message || 'Не удалось загрузить фото');
-        } finally {
-            setPhotoSaving(false);
-            if (photoInputRef.current) {
-                photoInputRef.current.value = '';
-            }
-        }
-    };
-
     return (
         <>
             <Header />
             <main className="accountPage">
-                <div className="accountPage__inner">
+                <div
+                    className={`accountPage__inner${
+                        role === 'student' ? ' accountPage__inner--resumeView' : ''
+                    }`}
+                >
                     <h1 className="accountPage__title">
-                        <span className="accountPage__titleAccent">Настройки</span>
+                        <span className="accountPage__titleAccent">
+                            {role === 'student' && (needsResumeSetup || resumeSetup)
+                                ? 'Заполнение резюме'
+                                : 'Настройки'}
+                        </span>
                     </h1>
                     <p className="accountPage__lead">
                         {role === 'recruiter'
                             ? 'Контакты и данные компании можно изменить в форме ниже и сохранить.'
-                            : role === 'student'
-                              ? 'Редактируйте резюме, контакты, навыки, опыт и образование прямо здесь.'
-                              : 'Просмотр профиля и настройки аккаунта.'}
+                            : role === 'student' && (needsResumeSetup || resumeSetup)
+                              ? 'Соберите резюме в макете витрины: фото, навыки, портфолио, опыт и образование.'
+                              : role === 'student'
+                                ? 'Так рекрутеры видят ваше резюме. Нажмите «Изменить», чтобы заполнить или обновить данные.'
+                                : 'Просмотр профиля и настройки аккаунта.'}
                     </p>
 
                     {loading && <div className="accountPage__muted">Загрузка…</div>}
@@ -179,79 +179,36 @@ const SettingsPage = () => {
                         </div>
                     )}
 
+                    {!loading && role === 'student' && needsResumeSetup && (
+                        <div className="accountPage__resumePreview">
+                            <StudentProfileEditor
+                                resumeLayout
+                                submitLabel="Сохранить резюме"
+                                onSaved={(updated) => {
+                                    setCachedOnboardingStatus('student', true);
+                                    setProfile(updated);
+                                    setNeedsResumeSetup(false);
+                                }}
+                            />
+                        </div>
+                    )}
+
                     {!loading && role === 'student' && profile && (
                         <>
-                            {profile.course === 'NEW' && (
+                            {getAccountStatus() === 'PENDING_APPROVAL' && (
                                 <div className="accountPage__banner" role="status">
-                                    Профиль с курсом NEW не показывается рекрутерам до модерации и заполнения.
+                                    Профиль не показывается рекрутерам до одобрения аккаунта администратором.
                                 </div>
                             )}
-                            <section className="accountPage__card">
-                                <h2 className="accountPage__cardTitle">Профиль студента</h2>
-                                <div className="accountPage__avatarRow">
-                                    {avatarUrl ? (
-                                        <img src={avatarUrl} alt="" className="accountPage__avatar" width={96} height={96} />
-                                    ) : (
-                                        <div className="accountPage__avatar accountPage__avatar--placeholder" aria-hidden>
-                                            ?
-                                        </div>
-                                    )}
-                                    <div className="accountPage__avatarActions">
-                                        <input
-                                            ref={photoInputRef}
-                                            type="file"
-                                            accept="image/*"
-                                            className="accountPage__fileInput"
-                                            onChange={handlePhotoChange}
-                                            disabled={photoSaving}
-                                        />
-                                        <button
-                                            type="button"
-                                            className="accountPage__submit accountPage__submit--secondary"
-                                            onClick={() => photoInputRef.current?.click()}
-                                            disabled={photoSaving}
-                                        >
-                                            {photoSaving ? 'Загрузка…' : 'Изменить фото'}
-                                        </button>
-                                        {photoError ? (
-                                            <div className="accountPage__error" role="alert">
-                                                {photoError}
-                                            </div>
-                                        ) : null}
-                                    </div>
-                                </div>
 
-                                <div className="accountPage__readonlyMeta">
-                                    {profile.profileTextScore != null && (
-                                        <p>
-                                            Заполненность профиля: <strong>{profile.profileTextScore}</strong>
-                                        </p>
-                                    )}
-                                    <label className="accountPage__field accountPage__field--checkbox">
-                                        <input
-                                            type="checkbox"
-                                            checked={Boolean(profile.publicProfileConsent)}
-                                            disabled={consentSaving}
-                                            onChange={(e) => handleConsentChange(e.target.checked)}
-                                        />
-                                        <span>
-                                            Показывать мою карточку на публичной витрине (без входа на сайт)
-                                        </span>
-                                    </label>
-                                    {consentError ? (
-                                        <div className="accountPage__error" role="alert">
-                                            {consentError}
-                                        </div>
-                                    ) : null}
-                                </div>
-
-                                <StudentProfileEditor
-                                    onSaved={(updated) => setProfile(updated)}
-                                    submitLabel="Сохранить профиль"
-                                />
-                            </section>
-
-                            <StudentRequestsSection />
+                            <StudentOwnProfile
+                                profile={profile}
+                                defaultEditing={resumeSetup}
+                                onProfileUpdate={setProfile}
+                                onConsentChange={handleConsentChange}
+                                consentSaving={consentSaving}
+                                consentError={consentError}
+                            />
                         </>
                     )}
 
@@ -301,6 +258,14 @@ const SettingsPage = () => {
                                             type="email"
                                             value={recruiterForm.email}
                                             onChange={(e) => handleRecruiterField('email', e.target.value)}
+                                            required
+                                        />
+                                    </label>
+                                    <label className="accountPage__field">
+                                        <span>Город</span>
+                                        <input
+                                            value={recruiterForm.city}
+                                            onChange={(e) => handleRecruiterField('city', e.target.value)}
                                             required
                                         />
                                     </label>

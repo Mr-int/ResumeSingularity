@@ -5,7 +5,8 @@ import {
     getStudentCardById,
     extractPageRows,
 } from './catalogApi.js';
-import { hasRecruiterCatalogAccess } from './authApi.js';
+import { hasRecruiterCatalogAccess, isStudentRole } from './authApi.js';
+import { getStudentMe } from './getApi.js';
 import { getRegistrationSpecialities, catalogRows } from './registrationCatalogApi.js';
 
 /** @deprecated Используйте getFeaturedStudentCards или getSimilarStudentCards */
@@ -34,14 +35,19 @@ export const getSimilarStudentCards = async (excludeStudentId, specialityId, lim
 };
 
 export const getStudentById = async (id) => {
-    try {
-        return await getStudentCardById(id);
-    } catch (error) {
-        if (error.requiresAuth) {
-            throw error;
+    if (isStudentRole()) {
+        try {
+            const me = await getStudentMe();
+            if (me?.id && String(me.id) === String(id)) {
+                return me;
+            }
+        } catch (error) {
+            if (error.status !== 404 && error.status !== 403) {
+                throw error;
+            }
         }
-        throw error;
     }
+    return getStudentCardById(id);
 };
 
 export const getPortfolioByStudentId = async (studentId) => {
@@ -457,12 +463,14 @@ const getPublicSpecialities = async () => {
 };
 
 export const getAllSpecialities = async () => {
+    try {
+        return await getPublicSpecialities();
+    } catch {
+        /* fallback to authenticated catalog below */
+    }
+
     if (!hasRecruiterCatalogAccess()) {
-        try {
-            return await getPublicSpecialities();
-        } catch {
-            return [];
-        }
+        return [];
     }
 
     const pageSize = 200;

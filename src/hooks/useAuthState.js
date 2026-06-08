@@ -4,6 +4,7 @@ import {
     getAuthRole,
     isAuthenticated,
     AUTH_CHANGED_EVENT,
+    syncAuthSession,
 } from '../services/authApi.js';
 
 /**
@@ -21,6 +22,17 @@ export function useAuthState() {
         const onAuthChanged = () => refresh();
         window.addEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
         return () => window.removeEventListener(AUTH_CHANGED_EVENT, onAuthChanged);
+    }, [refresh]);
+
+    useEffect(() => {
+        if (!isAuthenticated() || getAuthRole()) return;
+        let cancelled = false;
+        syncAuthSession().then(() => {
+            if (!cancelled) refresh();
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [refresh]);
 
     return {

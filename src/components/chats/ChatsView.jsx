@@ -16,6 +16,11 @@ import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/g
 import { AUTH_USERNAME_KEY, getAuthRole } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
 import { filterMyRequests, postStudentDecision, postTuDecision } from '../../services/requestApi.js';
+import {
+    disconnectChatWebSocket,
+    ensureChatWebSocket,
+    subscribeChatTopic,
+} from '../../services/chatWebSocket.js';
 
 const formatTime = (iso) => {
     if (!iso) return '';
@@ -68,6 +73,81 @@ const MESSAGING_ALLOWED = new Set(['STUDENT_CONFIRMED', 'SUCCESS', 'RECRUITER_CO
 const TU_PHASE = new Set(['STUDENT_CONFIRMED', 'RECRUITER_CONFIRMED']);
 const canStudentDecide = (result) =>
     result === 'WAITING' || result === 'EXPECTATION' || result === 'CREATION';
+
+const POLL_FALLBACK_MS = 60000;
+
+const SYSTEM_EVENTS_REFRESH_REQUEST = new Set([
+    'REQUEST_SENT',
+    'STUDENT_ACCEPTED',
+    'STUDENT_REJECTED',
+    'TU_CONFIRMED',
+    'TU_REJECTED',
+    'VACANCY_APPLICATION_ACCEPTED',
+]);
+
+const messageSignature = (m) =>
+    `${m.id}|${m.body}|${m.createdAt}|${m.messageKind}|${m.deletedAt || ''}`;
+
+const mergeMessages = (prev, rows) => {
+    const byId = new Map((prev || []).map((m) => [m.id, m]));
+    let changed = false;
+    for (const m of rows || []) {
+        if (!m?.id) continue;
+        const existing = byId.get(m.id);
+        if (!existing || messageSignature(existing) !== messageSignature(m)) {
+            byId.set(m.id, m);
+            changed = true;
+        }
+    }
+    if (!changed) return prev;
+    return [...byId.values()].sort(
+        (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0),
+    );
+};
+
+const chatsEqual = (a, b) => {
+    if (a === b) return true;
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+    return a.every((chat, i) => {
+        const other = b[i];
+        return (
+            String(chat.id) === String(other.id) &&
+            chat.lastMessagePreview === other.lastMessagePreview &&
+            chat.unreadCount === other.unreadCount &&
+            chat.lastActivityAt === other.lastActivityAt
+        );
+    });
+};
+
+const requestEqual = (a, b) =>
+    a === b ||
+    (a &&
+        b &&
+        a.id === b.id &&
+        a.result === b.result &&
+        String(a.appChatId) === String(b.appChatId));
+
+/** Заявка по chatId, объединённым id или паре рекрутер↔студент. */
+const pickChatRequest = (rows, chatRow, chatId) => {
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    const chatIds = new Set(
+        [chatId, ...(chatRow?._mergedIds || [])].filter(Boolean).map(String),
+    );
+    const matches = rows.filter((r) => {
+        if (chatIds.has(String(r.appChatId))) return true;
+        if (chatRow?.studentId && chatRow?.recruiterId) {
+            return (
+                String(r.studentId) === String(chatRow.studentId) &&
+                String(r.recruiterId) === String(chatRow.recruiterId)
+            );
+        }
+        return false;
+    });
+    if (!matches.length) return null;
+    const accepted = matches.find((r) => MESSAGING_ALLOWED.has(r.result));
+    if (accepted) return accepted;
+    return matches.sort((a, b) => (b.id || 0) - (a.id || 0))[0];
+};
 
 const TU_REASON_OPTIONS = [
     { value: 'NOT_A_FIT', label: 'Не подходит' },
@@ -140,6 +220,12 @@ const ChatsView = () => {
     const chatAliasRef = useRef({});
     const studentCacheRef = useRef(new Map());
     const recruiterCacheRef = useRef(new Map());
+    const chatsRef = useRef([]);
+    const selectedIdRef = useRef(null);
+    const meRef = useRef(null);
+    const lastScrolledMessageIdRef = useRef(null);
+    const pollInFlightRef = useRef(false);
+    const wsConnectedRef = useRef(false);
 
     const myUsername = useMemo(() => {
         try {
@@ -245,35 +331,49 @@ const ChatsView = () => {
         return { title, subtitle };
     }, []);
 
-    const loadChats = useCallback(async () => {
-        setLoadingList(true);
-        setListError('');
-        titleCache.current.clear();
-        subtitleCache.current.clear();
-        studentCacheRef.current.clear();
-        recruiterCacheRef.current.clear();
+    const loadChats = useCallback(async ({ quiet = false } = {}) => {
+        if (!quiet) {
+            setLoadingList(true);
+            setListError('');
+            titleCache.current.clear();
+            subtitleCache.current.clear();
+            studentCacheRef.current.clear();
+            recruiterCacheRef.current.clear();
+        }
         try {
-            const party = await resolveMe();
-            setMe(party);
+            const party = quiet
+                ? meRef.current ?? (await resolveMe())
+                : await resolveMe();
+            if (party) {
+                meRef.current = party;
+                if (!quiet) setMe(party);
+            }
             const res = await getMyChats(0, 50);
             const rows = extractChatPageItems(res);
             const role = party?.role || null;
             const { chats: deduped, aliasToCanonical } = dedupeChatsByPeer(rows, role);
             chatAliasRef.current = aliasToCanonical;
-            setChats(deduped);
-            setLoadingList(false);
+            setChats((prev) => (chatsEqual(prev, deduped) ? prev : deduped));
+            if (!quiet) setLoadingList(false);
 
             void Promise.all(
                 deduped.map(async (c) => {
+                    if (quiet && titleCache.current.has(c.id)) return;
                     const { title, subtitle } = await enrichChatMeta(c, party);
-                    setTitles((prev) => ({ ...prev, [c.id]: title }));
-                    setSubtitles((prev) => ({ ...prev, [c.id]: subtitle }));
+                    setTitles((prev) =>
+                        prev[c.id] === title ? prev : { ...prev, [c.id]: title },
+                    );
+                    setSubtitles((prev) =>
+                        prev[c.id] === subtitle ? prev : { ...prev, [c.id]: subtitle },
+                    );
                 }),
             );
         } catch (e) {
-            setListError(e.message || 'Не удалось загрузить чаты');
-            setChats([]);
-            setLoadingList(false);
+            if (!quiet) {
+                setListError(e.message || 'Не удалось загрузить чаты');
+                setChats([]);
+                setLoadingList(false);
+            }
         }
     }, [enrichChatMeta]);
 
@@ -311,6 +411,14 @@ const ChatsView = () => {
     );
 
     useEffect(() => {
+        chatsRef.current = chats;
+    }, [chats]);
+
+    useEffect(() => {
+        selectedIdRef.current = selectedId;
+    }, [selectedId]);
+
+    useEffect(() => {
         loadChats();
     }, [loadChats]);
 
@@ -324,38 +432,143 @@ const ChatsView = () => {
         }
     }, [searchParams, chats]);
 
-    const loadChatRequest = useCallback(async (chatId) => {
+    const loadChatRequest = useCallback(async (chatId, chatRow = null) => {
         if (!chatId) {
             setChatRequest(null);
-            return;
+            return null;
         }
         try {
             const res = await filterMyRequests({}, 0, 50);
             const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
-            const match = rows.find((r) => String(r.appChatId) === String(chatId));
-            setChatRequest(match || null);
+            const match = pickChatRequest(rows, chatRow, chatId);
+            setChatRequest((prev) => (requestEqual(prev, match) ? prev : match || null));
+            return match || null;
         } catch {
             setChatRequest(null);
+            return null;
         }
     }, []);
+
+    const refreshMessagesQuiet = useCallback(async (chatId) => {
+        if (!chatId) return;
+        try {
+            const res = await getChatMessages(chatId, 0, 50);
+            const rows = extractChatPageItems(res);
+            setMessages((prev) => mergeMessages(prev, rows));
+        } catch {
+            /* фоновое обновление */
+        }
+    }, []);
+
+    const refreshActiveChat = useCallback(async () => {
+        const chatId = selectedIdRef.current;
+        if (!chatId || pollInFlightRef.current) return;
+        if (document.visibilityState !== 'visible') return;
+
+        pollInFlightRef.current = true;
+        const chatRow =
+            chatsRef.current.find((c) => String(c.id) === String(chatId)) || null;
+        try {
+            await Promise.all([
+                refreshMessagesQuiet(chatId),
+                loadChatRequest(chatId, chatRow),
+                refreshSummary(chatId),
+            ]);
+        } finally {
+            pollInFlightRef.current = false;
+        }
+    }, [refreshMessagesQuiet, loadChatRequest, refreshSummary]);
 
     useEffect(() => {
         if (!selectedId) {
             setMessages([]);
             setChatRequest(null);
+            lastScrolledMessageIdRef.current = null;
             return;
         }
         const gen = ++messagesLoadGen.current;
+        const chatRow = chatsRef.current.find((c) => String(c.id) === String(selectedId)) || null;
         loadMessages(selectedId).then(() => {
             if (messagesLoadGen.current !== gen) return;
             refreshSummary(selectedId);
         });
-        loadChatRequest(selectedId);
+        loadChatRequest(selectedId, chatRow);
         setDecisionComment('');
         setTuComment('');
     }, [selectedId, loadMessages, refreshSummary, loadChatRequest]);
 
-    const messagingAllowed = chatRequest ? MESSAGING_ALLOWED.has(chatRequest.result) : true;
+    useEffect(() => {
+        ensureChatWebSocket((online) => {
+            wsConnectedRef.current = online;
+        });
+        return () => disconnectChatWebSocket();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedId) return undefined;
+
+        const chatRow =
+            chatsRef.current.find((c) => String(c.id) === String(selectedId)) || null;
+        const chatIds = [
+            ...new Set([selectedId, ...(chatRow?._mergedIds || [])].filter(Boolean).map(String)),
+        ];
+
+        const handleWsMessage = (msg) => {
+            if (!msg?.id) return;
+            setMessages((prev) => mergeMessages(prev, [msg]));
+            const preview = msg.body || msg.systemEvent || '';
+            const previewChatId = msg.chatId || selectedIdRef.current;
+            if (preview && previewChatId) {
+                updateChatPreview(previewChatId, preview, msg.createdAt);
+            }
+            if (
+                msg.messageKind === 'SYSTEM' &&
+                SYSTEM_EVENTS_REFRESH_REQUEST.has(msg.systemEvent)
+            ) {
+                const row =
+                    chatsRef.current.find(
+                        (c) => String(c.id) === String(selectedIdRef.current),
+                    ) || null;
+                void loadChatRequest(selectedIdRef.current, row);
+            }
+            if (msg.chatId) {
+                void refreshSummary(msg.chatId);
+            }
+        };
+
+        const unsubs = chatIds.map((id) => subscribeChatTopic(id, handleWsMessage));
+
+        return () => {
+            unsubs.forEach((unsub) => unsub());
+        };
+    }, [selectedId, loadChatRequest, refreshSummary]);
+
+    useEffect(() => {
+        if (!selectedId) return undefined;
+
+        const onVisible = () => {
+            if (document.visibilityState === 'visible') {
+                void refreshActiveChat();
+            }
+        };
+
+        const fallbackTimer = window.setInterval(() => {
+            if (!wsConnectedRef.current && document.visibilityState === 'visible') {
+                void refreshActiveChat();
+            }
+        }, POLL_FALLBACK_MS);
+
+        document.addEventListener('visibilitychange', onVisible);
+
+        return () => {
+            window.clearInterval(fallbackTimer);
+            document.removeEventListener('visibilitychange', onVisible);
+        };
+    }, [selectedId, refreshActiveChat]);
+
+    const messagingAllowed = Boolean(
+        chatRequest && MESSAGING_ALLOWED.has(chatRequest.result),
+    );
     const showStudentDecision =
         me?.role === 'student' && chatRequest && canStudentDecide(chatRequest.result);
     const showTuPanel = chatRequest && TU_PHASE.has(chatRequest.result);
@@ -369,7 +582,8 @@ const ChatsView = () => {
                 accept,
                 comment: decisionComment.trim() || undefined,
             });
-            await loadChatRequest(selectedId);
+            const chatRow = chats.find((c) => String(c.id) === String(selectedId)) || null;
+            await loadChatRequest(selectedId, chatRow);
             await loadMessages(selectedId);
         } catch (err) {
             setSendError(err.message || 'Не удалось отправить ответ');
@@ -388,7 +602,8 @@ const ChatsView = () => {
                 reasonCode: accept ? undefined : tuReason,
                 comment: accept ? undefined : tuComment.trim() || undefined,
             });
-            await loadChatRequest(selectedId);
+            const chatRow = chats.find((c) => String(c.id) === String(selectedId)) || null;
+            await loadChatRequest(selectedId, chatRow);
             await loadMessages(selectedId);
         } catch (err) {
             setSendError(err.message || 'Не удалось отправить решение по ТУ');
@@ -398,6 +613,10 @@ const ChatsView = () => {
     };
 
     useEffect(() => {
+        const visible = messages.filter((m) => !isMessageDeleted(m));
+        const last = visible[visible.length - 1];
+        if (!last?.id || last.id === lastScrolledMessageIdRef.current) return;
+        lastScrolledMessageIdRef.current = last.id;
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
@@ -684,9 +903,11 @@ const ChatsView = () => {
 
                 <footer className="chatsView__composer">
                     {sendError ? <div className="chatsView__composerError">{sendError}</div> : null}
-                    {selectedId && !messagingAllowed ? (
+                    {selectedId && chatRequest && !messagingAllowed ? (
                         <p className="chatsView__composerHint">
-                            Переписка откроется после принятия заявки и подтверждения этапов.
+                            {canStudentDecide(chatRequest.result)
+                                ? 'Ожидается решение студента по заявке.'
+                                : 'Переписка откроется после принятия заявки и подтверждения этапов.'}
                         </p>
                     ) : null}
                     <form className="chatsView__inputWrap" onSubmit={handleSend}>

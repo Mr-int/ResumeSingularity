@@ -4,6 +4,7 @@ import {
     isAuthenticated,
     syncAuthSession,
     isAdmin,
+    isStudentRole,
     getAccountStatus,
     consumeAuthReturnTo,
     notifyAuthChanged,
@@ -18,7 +19,7 @@ const RouteLoadingScreen = () => (
     </div>
 );
 
-const ApprovedRoute = ({ children }) => {
+const ApprovedRoute = ({ children, allowPendingRecruiter = false }) => {
     const [showLogin, setShowLogin] = useState(false);
     const [allowed, setAllowed] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -54,7 +55,12 @@ const ApprovedRoute = ({ children }) => {
             }
 
             const status = getAccountStatus();
-            if (!isAdmin() && status === 'PENDING_APPROVAL') {
+            if (
+                !allowPendingRecruiter
+                && !isAdmin()
+                && status === 'PENDING_APPROVAL'
+                && !isStudentRole()
+            ) {
                 navigate('/', { replace: true });
                 finish({ showLogin: false, allowed: false });
                 return;
@@ -70,7 +76,7 @@ const ApprovedRoute = ({ children }) => {
             cancelled = true;
             window.removeEventListener(AUTH_CHANGED_EVENT, checkAccess);
         };
-    }, [location.pathname, location.search, navigate]);
+    }, [location.pathname, location.search, navigate, allowPendingRecruiter]);
 
     const handleLoginSuccess = async () => {
         await syncAuthSession();
@@ -78,7 +84,12 @@ const ApprovedRoute = ({ children }) => {
         notifyAuthChanged();
 
         const status = getAccountStatus();
-        if (!isAdmin() && status === 'PENDING_APPROVAL') {
+        if (
+            !allowPendingRecruiter
+            && !isAdmin()
+            && status === 'PENDING_APPROVAL'
+            && !isStudentRole()
+        ) {
             navigate('/', { replace: true });
             return;
         }

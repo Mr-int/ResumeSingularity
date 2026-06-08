@@ -16,10 +16,13 @@ import {
     getCachedOnboardingStatus,
     setCachedOnboardingStatus,
 } from '../../services/onboardingApi.js';
+import { getCommunicationReadiness } from '../../services/profileApi.js';
 import LoginModal from './LoginModal.jsx';
 
 const ONBOARDING_STUDENT_PATH = '/onboarding/resume';
-const ONBOARDING_RECRUITER_PATH = '/onboarding/vacancy';
+const ONBOARDING_RECRUITER_PROFILE_PATH = '/onboarding/recruiter-profile';
+const CHATS_PATH = '/chats';
+const SETTINGS_PATH = '/settings';
 
 const RouteLoadingScreen = () => (
     <div className="appRouteLoader" aria-label="Загрузка">
@@ -27,7 +30,7 @@ const RouteLoadingScreen = () => (
     </div>
 );
 
-const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
+const ProtectedRoute = ({ children, skipOnboardingCheck = false, requireCommunicationReady = false }) => {
     const [showLogin, setShowLogin] = useState(false);
     const [authenticated, setAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -104,18 +107,20 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
                 return true;
             };
 
-            const applyRecruiterOnboarding = (completed) => {
-                if (!completed) {
-                    if (path !== ONBOARDING_RECRUITER_PATH) {
-                        navigate(ONBOARDING_RECRUITER_PATH, { replace: true });
+            const applyRecruiterOnboarding = (status) => {
+                const profileCompleted = status?.profileCompleted ?? status?.completed ?? false;
+
+                if (!profileCompleted) {
+                    if (path !== ONBOARDING_RECRUITER_PROFILE_PATH) {
+                        navigate(ONBOARDING_RECRUITER_PROFILE_PATH, { replace: true });
                     }
-                    finishLoading(true, false);
+                    finishLoading(true, false, true);
                     return true;
                 }
-                if (path === ONBOARDING_RECRUITER_PATH) {
-                    navigate('/vacancies/mine', { replace: true });
+                if (path === ONBOARDING_RECRUITER_PROFILE_PATH) {
+                    navigate('/students', { replace: true });
                 }
-                finishLoading(true, false);
+                finishLoading(true, false, true);
                 return true;
             };
 
@@ -139,14 +144,17 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
 
             const checkRecruiterOnboarding = async () => {
                 const cached = getCachedOnboardingStatus('recruiter');
-                if (cached) {
-                    return applyRecruiterOnboarding(cached.completed);
+                if (cached?.completed) {
+                    return applyRecruiterOnboarding({ profileCompleted: true, completed: true });
                 }
                 try {
                     const recruiterStatus = await getRecruiterOnboardingStatus();
                     if (cancelled) return false;
-                    setCachedOnboardingStatus('recruiter', Boolean(recruiterStatus.completed));
-                    return applyRecruiterOnboarding(Boolean(recruiterStatus.completed));
+                    const profileDone = Boolean(
+                        recruiterStatus.profileCompleted ?? recruiterStatus.completed,
+                    );
+                    setCachedOnboardingStatus('recruiter', profileDone);
+                    return applyRecruiterOnboarding(recruiterStatus);
                 } catch (e) {
                     if (e.status !== 403 && e.status !== 404) {
                         console.warn('[ProtectedRoute] recruiter onboarding check', e);
@@ -155,14 +163,42 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
                 }
             };
 
+            const checkCommunicationReadiness = async (role) => {
+                if (isAdmin()) return false;
+                try {
+                    const readiness = await getCommunicationReadiness();
+                    if (cancelled) return false;
+                    if (readiness?.ready) return false;
+                    sessionStorage.setItem('resumeProfileIncompleteNotice', '1');
+                    if (role === 'student') {
+                        navigate(SETTINGS_PATH, { replace: true });
+                    } else {
+                        navigate(ONBOARDING_RECRUITER_PROFILE_PATH, { replace: true });
+                    }
+                    finishLoading(true, false);
+                    return true;
+                } catch (e) {
+                    if (e.status !== 403 && e.status !== 404) {
+                        console.warn('[ProtectedRoute] communication readiness check', e);
+                    }
+                    return false;
+                }
+            };
+
             if (isStudentRole()) {
                 if (await checkStudentOnboarding()) return;
+                if (requireCommunicationReady && path === CHATS_PATH) {
+                    if (await checkCommunicationReadiness('student')) return;
+                }
                 finishLoading(true, false);
                 return;
             }
 
             if (isRecruiterRole()) {
                 if (await checkRecruiterOnboarding()) return;
+                if (requireCommunicationReady && path === CHATS_PATH) {
+                    if (await checkCommunicationReadiness('recruiter')) return;
+                }
                 finishLoading(true, false);
                 return;
             }
@@ -201,7 +237,7 @@ const ProtectedRoute = ({ children, skipOnboardingCheck = false }) => {
             window.removeEventListener(AUTH_CHANGED_EVENT, checkAuth);
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, [location.pathname, navigate, skipOnboardingCheck, authCheckVersion]);
+    }, [location.pathname, navigate, skipOnboardingCheck, requireCommunicationReady, authCheckVersion]);
 
     const handleLoginSuccess = async () => {
         sessionStorage.removeItem('showLoginAfter403');

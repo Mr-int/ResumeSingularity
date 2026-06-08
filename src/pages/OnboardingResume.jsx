@@ -1,9 +1,12 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import StudentProfileEditor from '../components/settings/StudentProfileEditor.jsx';
+import { Link } from 'react-router-dom';
 import { getAccountStatus } from '../services/authApi.js';
+import '../components/studentResume/studentResume.css';
+import '../components/settings/studentOwnProfile.css';
 import './accountPage.css';
 
 const OnboardingResume = () => {
@@ -13,32 +16,37 @@ const OnboardingResume = () => {
         <>
             <Header />
             <main className="accountPage">
-                <div className="accountPage__inner">
-                    <h1 className="accountPage__title">Заполнение резюме</h1>
+                <div className="accountPage__inner accountPage__inner--resumeView">
+                    <h1 className="accountPage__title">
+                        <span className="accountPage__titleAccent">Заполнение резюме</span>
+                    </h1>
                     <p className="accountPage__lead">
-                        Обязательные поля отмечены. Курс на сервере будет NEW до модерации администратором.
-                    </p>
-                    <p className="accountPage__settingsNav">
-                        <Link to="/settings" className="accountPage__settingsNavLink">
-                            Вернуться в настройки
-                        </Link>
+                        Заполните профиль в том же виде, как его увидят рекрутеры: фото, навыки, портфолио и
+                        опыт.
                     </p>
 
                     {getAccountStatus() === 'PENDING_APPROVAL' && (
                         <div className="accountPage__banner" role="status">
-                            Аккаунт на проверке: полное редактирование резюме откроется после одобрения администратором.
+                            Аккаунт на проверке: после одобрения администратором изменения сохранятся на
+                            сервере.
                         </div>
                     )}
 
-                    <section className="accountPage__card">
+                    <p className="accountPage__settingsNav">
+                        <Link to="/settings" className="accountPage__settingsNavLink">
+                            Перейти в настройки
+                        </Link>
+                    </p>
+
+                    <div className="accountPage__resumePreview">
                         <StudentProfileEditor
-                            showGuidedHints
+                            resumeLayout
                             submitLabel="Сохранить резюме"
                             onSaved={() => {
-                                setTimeout(() => navigate('/settings', { replace: true }), 1200);
+                                navigate('/settings', { replace: true });
                             }}
                         />
-                    </section>
+                    </div>
                 </div>
             </main>
             <Footer />

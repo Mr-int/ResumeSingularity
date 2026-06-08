@@ -9,14 +9,12 @@ import leraActive from '../../assets/heroAnimation/lera_active.png';
 import leraUnactive from '../../assets/heroAnimation/lera_unactive.png';
 import { useEffect, useState } from 'react';
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
-import { useAuthState } from '../../hooks/useAuthState.js';
-import { hasApprovedCatalogAccess, requestLogin } from '../../services/authApi.js';
+import { hasApprovedCatalogAccess, isStudentRole, requestLogin } from '../../services/authApi.js';
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [isRightCardHovered, setIsRightCardHovered] = useState(false);
-    const { authed, role } = useAuthState();
-    const isStudent = authed && role === 'STUDENT';
+    const isStudent = isStudentRole();
     const catalogAccess = hasApprovedCatalogAccess();
 
     useEffect(() => {

@@ -15,6 +15,7 @@ import {
     getSimilarStudentCards,
     getEducationDetailsByStudentId
 } from "../../services/studentApi.js";
+import { getStudentPortfolio } from "../../services/onboardingApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
 import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 import numbersImg from "../../assets/other/numbers.png";
@@ -25,8 +26,9 @@ import GradientButton from "../common/gradientButton/GradientButton.jsx";
 import AnonymousApplyCTA from "../common/AnonymousApplyCTA.jsx";
 import { getImageUrl } from "../../config/api.js";
 
-const StudentResume = () => {
-    const { id } = useParams();
+const StudentResume = ({ studentId: studentIdProp, ownerView = false, showEmptySections = false }) => {
+    const { id: routeId } = useParams();
+    const id = studentIdProp ?? routeId;
     const navigate = useNavigate();
     const [student, setStudent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -71,16 +73,18 @@ const StudentResume = () => {
                     studentData.speciality?.id ??
                     studentData.specialities?.[0]?.id;
 
+                const portfolioLoader = ownerView ? getStudentPortfolio : () => getPortfolioByStudentId(id);
+
                 const [
                     portfolioResult,
                     educationResult,
                     experienceResult,
                     similarStudentsResult
                 ] = await Promise.allSettled([
-                    getPortfolioByStudentId(id),
+                    portfolioLoader(),
                     getEducationDetailsByStudentId(id),
                     getExperienceDetailsByStudentId(id),
-                    getSimilarStudentCards(id, specialityId, 6)
+                    ownerView ? Promise.resolve([]) : getSimilarStudentCards(id, specialityId, 6)
                 ]);
 
                 if (portfolioResult.status === 'fulfilled') {
@@ -129,7 +133,7 @@ const StudentResume = () => {
         };
 
         fetchStudent();
-    }, [id]);
+    }, [id, ownerView]);
 
     const toggleExperience = () => {
         setExpandedExperience(!expandedExperience);
@@ -278,17 +282,19 @@ const StudentResume = () => {
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
                                     <p>{student.speciality || student.profession || 'Специальность не указана'}</p>
-                                    <AnonymousApplyCTA target="student">
-                                        <GradientButton
-                                            as="button"
-                                            type="button"
-                                            className="StudentResume__sendBid"
-                                            icon={<img src={mailIcon} alt="Иконка почты" />}
-                                            onClick={() => setShowApplicationForm(true)}
-                                        >
-                                            Оставить заявку
-                                        </GradientButton>
-                                    </AnonymousApplyCTA>
+                                    {!ownerView ? (
+                                        <AnonymousApplyCTA target="student">
+                                            <GradientButton
+                                                as="button"
+                                                type="button"
+                                                className="StudentResume__sendBid"
+                                                icon={<img src={mailIcon} alt="Иконка почты" />}
+                                                onClick={() => setShowApplicationForm(true)}
+                                            >
+                                                Оставить заявку
+                                            </GradientButton>
+                                        </AnonymousApplyCTA>
+                                    ) : null}
                                 </div>
                             </div>
 
@@ -321,7 +327,7 @@ const StudentResume = () => {
                             </div>
 
                             <div className="StudentResume__section">
-                                <h3 className="StudentResume__sectionTitle">Навыки</h3>
+                                <h3 className="StudentResume__sectionTitle">Hard-скиллы (навыки)</h3>
                                 <div className="StudentResume__skills">
                                     {displaySkills.length > 0 ? (
                                         displaySkills.map((skill, index) => (
@@ -335,49 +341,57 @@ const StudentResume = () => {
                                 </div>
                             </div>
 
-                            {portfolioWithLinks.length > 0 && (
+                            {(portfolioWithLinks.length > 0 || (ownerView && showEmptySections)) && (
                                 <div className="StudentResume__section">
-                                    <h3 className="StudentResume__sectionTitle">Портфолио и ссылки</h3>
-                                    <div className="StudentResume__portfolio">
-                                        {portfolioWithLinks.map((project, index) => (
-                                            <a
-                                                key={project.id || index}
-                                                href={(project.link || project.url || project.website).toString().trim()}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="StudentResume__portfolioItem"
-                                                style={{
-                                                    backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
-                                                }}
-                                            >
-                                                <div className={`StudentResume__portfolioContent ${getPortfolioTextSizeClass(project)}`.trim()}>
-                                                    {project.name && (
-                                                        <p className="StudentResume__portfolioTitle">{project.name}</p>
-                                                    )}
+                                    <h3 className="StudentResume__sectionTitle">Портфолио</h3>
+                                    {portfolioWithLinks.length > 0 ? (
+                                        <div className="StudentResume__portfolio">
+                                            {portfolioWithLinks.map((project, index) => (
+                                                <a
+                                                    key={project.id || index}
+                                                    href={(project.link || project.url || project.website).toString().trim()}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="StudentResume__portfolioItem"
+                                                    style={{
+                                                        backgroundImage: `url(${getRandomPortfolioBackground(index)})`,
+                                                    }}
+                                                >
+                                                    <div className={`StudentResume__portfolioContent ${getPortfolioTextSizeClass(project)}`.trim()}>
+                                                        {project.name && (
+                                                            <p className="StudentResume__portfolioTitle">{project.name}</p>
+                                                        )}
 
-                                                    {project.description || project.additionalInfo ? (
-                                                        <p className="StudentResume__portfolioDescription">
-                                                            {project.description || project.additionalInfo}
-                                                        </p>
-                                                    ) : null}
-                                                </div>
-                                            </a>
-                                        ))}
-                                    </div>
+                                                        {project.description || project.additionalInfo ? (
+                                                            <p className="StudentResume__portfolioDescription">
+                                                                {project.description || project.additionalInfo}
+                                                            </p>
+                                                        ) : null}
+                                                    </div>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="StudentResume__sectionText StudentResume__emptyPlaceholder">
+                                            Добавьте ссылки на проекты — нажмите «Изменить» выше
+                                        </p>
+                                    )}
                                 </div>
                             )}
 
-                            <AnonymousApplyCTA target="student">
-                                <GradientButton
-                                    as="button"
-                                    type="button"
-                                    className="StudentResume__sendBid"
-                                    icon={<img src={mailIcon} alt="Иконка почты" />}
-                                    onClick={() => setShowApplicationForm(true)}
-                                >
-                                    Оставить заявку
-                                </GradientButton>
-                            </AnonymousApplyCTA>
+                            {!ownerView ? (
+                                <AnonymousApplyCTA target="student">
+                                    <GradientButton
+                                        as="button"
+                                        type="button"
+                                        className="StudentResume__sendBid"
+                                        icon={<img src={mailIcon} alt="Иконка почты" />}
+                                        onClick={() => setShowApplicationForm(true)}
+                                    >
+                                        Оставить заявку
+                                    </GradientButton>
+                                </AnonymousApplyCTA>
+                            ) : null}
                         </div>
                     </div>
                 </div>
@@ -520,35 +534,37 @@ const StudentResume = () => {
                     </div>
                 </div>
 
-                <div className="StudentResume__contactSection">
-                    <h2 className="StudentResume__contactTitle">Свяжитесь со студентом</h2>
-                    <div className="StudentResume__contactContent">
-                        <div className="StudentResume__contactSlider">
-                            {student && <StudentSliderCard student={student} isActive={true} />}
-                        </div>
-
-                        <div className="StudentResume__contactInfo">
-                            <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
-                            <div className="StudentResume__contactWrapper">
-                                <p>Студент готов проходить стажировку в вашей компании!</p>
-                                <AnonymousApplyCTA target="student">
-                                    <button type="button" onClick={() => setShowApplicationForm(true)}>
-                                        Связаться
-                                        <img src={mailIcon} alt="Mail icon"/>
-                                    </button>
-                                </AnonymousApplyCTA>
+                {!ownerView ? (
+                    <div className="StudentResume__contactSection">
+                        <h2 className="StudentResume__contactTitle">Свяжитесь со студентом</h2>
+                        <div className="StudentResume__contactContent">
+                            <div className="StudentResume__contactSlider">
+                                {student && <StudentSliderCard student={student} isActive={true} />}
                             </div>
+
+                            <div className="StudentResume__contactInfo">
+                                <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
+                                <div className="StudentResume__contactWrapper">
+                                    <p>Студент готов проходить стажировку в вашей компании!</p>
+                                    <AnonymousApplyCTA target="student">
+                                        <button type="button" onClick={() => setShowApplicationForm(true)}>
+                                            Связаться
+                                            <img src={mailIcon} alt="Mail icon"/>
+                                        </button>
+                                    </AnonymousApplyCTA>
+                                </div>
+                            </div>
+
+                            <img
+                                src={cloudMailIcon}
+                                alt="Cloud mail icon"
+                                className="StudentResume__cloudMailIcon"
+                            />
                         </div>
-
-                        <img
-                            src={cloudMailIcon}
-                            alt="Cloud mail icon"
-                            className="StudentResume__cloudMailIcon"
-                        />
                     </div>
-                </div>
+                ) : null}
 
-                {similarStudents.length > 0 && (
+                {!ownerView && similarStudents.length > 0 && (
                     <div className="StudentResume__similarSection">
                         <h2 className="StudentResume__similarTitle">Студенты с похожими навыками</h2>
                         <div className="StudentResume__similarList">
@@ -566,7 +582,7 @@ const StudentResume = () => {
                     </div>
                 )}
             </div>
-            {showApplicationForm && (
+            {!ownerView && showApplicationForm && (
                 <ApplicationForm
                     studentName={fullName}
                     studentId={id}

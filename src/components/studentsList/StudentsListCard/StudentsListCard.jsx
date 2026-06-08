@@ -1,13 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getImageUrl } from '../../../config/api.js';
-import { requestLogin } from '../../../services/authApi.js';
+import { requestLogin, isStudentRole } from '../../../services/authApi.js';
+import { getStudentMe } from '../../../services/getApi.js';
 import './studentsListCard.css';
 
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 
 const StudentsListCard = ({ student, guestVitrina = false }) => {
     const [showFullBio, setShowFullBio] = useState(false);
+    const [isOwnCard, setIsOwnCard] = useState(false);
+
+    useEffect(() => {
+        if (!isStudentRole() || !student?.id) {
+            setIsOwnCard(false);
+            return;
+        }
+        let cancelled = false;
+        getStudentMe()
+            .then((me) => {
+                if (!cancelled) {
+                    setIsOwnCard(Boolean(me?.id && String(me.id) === String(student.id)));
+                }
+            })
+            .catch(() => {
+                if (!cancelled) setIsOwnCard(false);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [student?.id]);
 
     if (!student) {
         return null;
@@ -100,7 +122,10 @@ const StudentsListCard = ({ student, guestVitrina = false }) => {
                                 </>
                             )}
                         </h2>
-                        <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
+                        <p className="studentsCard__subtitle">
+                            {student.speciality || 'Специальность не указана'}
+                            {isOwnCard ? <span className="studentsCard__ownBadge"> — это вы</span> : null}
+                        </p>
                     </div>
 
                     <div className="studentsCard__skills">

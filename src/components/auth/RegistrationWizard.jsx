@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerStudent, registerRecruiter, notifyAuthChanged } from '../../services/authApi.js';
-import { completeStudentResumeOnboarding } from '../../services/onboardingApi.js';
-import { getRegistrationSpecialities, catalogRows } from '../../services/registrationCatalogApi.js';
 import { startPhoneVerification, getPhoneVerificationStatus } from '../../services/verificationApi.js';
 import logo from '../../assets/logos/Logo.png';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { MIN_REGISTRATION_PASSWORD_LENGTH, validateRegistrationPassword } from '../../utils/passwordPolicy.js';
+import { normalizePhone, formatPhoneDisplay } from '../../utils/phoneFormat.js';
 import './loginModal.css';
 
 const ChevronLeftIcon = () => (
@@ -20,40 +19,6 @@ const TelegramPlaneIcon = () => (
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
     </svg>
 );
-
-const COURSE_OPTIONS = [
-    { value: 'FIRST', label: '1 курс' },
-    { value: 'SECOND', label: '2 курс' },
-    { value: 'THIRD', label: '3 курс' },
-    { value: 'FOURTH', label: '4 курс' },
-    { value: 'NEW', label: 'Выпускник / другое' },
-];
-
-const normalizePhone = (raw) => {
-    const digits = String(raw || '').replace(/\D/g, '');
-    if (!digits) return '';
-    const normalized = digits.startsWith('8') && digits.length === 11 ? `7${digits.slice(1)}` : digits;
-    return normalized.startsWith('7') || normalized.length > 10 ? `+${normalized}` : `+7${normalized}`;
-};
-
-const formatPhoneDisplay = (raw) => {
-    const digits = String(raw || '').replace(/\D/g, '').replace(/^7|^8/, '');
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
-    if (digits.length <= 8) return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6)}`;
-    return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
-};
-
-const buildDisplayName = (lastName, firstName, middleName, noMiddle) => {
-    const parts = [lastName, firstName, noMiddle ? null : middleName].filter(Boolean).map((s) => s.trim()).filter(Boolean);
-    return parts.join(' ') || undefined;
-};
-
-const usernameFromEmail = (email) => {
-    const local = String(email || '').split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_').replace(/_+/g, '_');
-    if (local.length >= 3) return local.slice(0, 64);
-    return `user_${Date.now().toString(36).slice(-8)}`;
-};
 
 const Shell = ({ onBack, heading, subheading, step, children, footer }) => (
     <>
@@ -92,21 +57,14 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
     const [phoneLocal, setPhoneLocal] = useState('');
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
-    const [usernameManuallyEdited, setUsernameManuallyEdited] = useState(false);
     const [password, setPassword] = useState('');
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [middleName, setMiddleName] = useState('');
-    const [noMiddleName, setNoMiddleName] = useState(false);
-    const [companyName, setCompanyName] = useState('');
-    const [city, setCity] = useState('');
-    const [marketingConsent, setMarketingConsent] = useState(true);
-    const [course, setCourse] = useState('');
-    const [specialityId, setSpecialityId] = useState('');
-    const [birthDate, setBirthDate] = useState('');
-    const [specialities, setSpecialities] = useState([]);
+    const [recruiterCompany, setRecruiterCompany] = useState('');
+    const [recruiterFirstName, setRecruiterFirstName] = useState('');
+    const [recruiterLastName, setRecruiterLastName] = useState('');
+    const [recruiterEmail, setRecruiterEmail] = useState('');
+    const [recruiterCity, setRecruiterCity] = useState('');
 
     const stopPolling = () => {
         if (pollRef.current) {
@@ -116,18 +74,6 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
     };
 
     useEffect(() => () => stopPolling(), []);
-
-    useEffect(() => {
-        if (view !== 'student-education') return;
-        (async () => {
-            try {
-                const res = await getRegistrationSpecialities(0, 100);
-                setSpecialities(catalogRows(res));
-            } catch (err) {
-                setError(err.message || 'Не удалось загрузить направления');
-            }
-        })();
-    }, [view]);
 
     const showError = (msg) => setError(msg);
     const clearError = () => setError('');
@@ -212,108 +158,46 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
         return true;
     };
 
-    const validateUsername = () => {
-        if (!username.trim() || username.trim().length < 3) {
-            showError('Укажите логин (минимум 3 символа)');
-            return false;
-        }
-        return true;
-    };
-
-    const syncUsernameFromEmail = (nextEmail, manuallyEdited = usernameManuallyEdited) => {
-        if (!manuallyEdited) {
-            setUsername(usernameFromEmail(nextEmail));
-        }
-    };
-
-    const submitStudent = async () => {
+    const submitRegistration = async () => {
         clearError();
         if (!verification?.verificationId) {
             showError('Подтвердите телефон в Telegram');
             return;
         }
-        if (!email.trim()) {
-            showError('Укажите email');
-            return;
-        }
-        if (!specialityId) {
-            showError('Выберите направление');
-            return;
-        }
-        if (!birthDate) {
-            showError('Укажите дату рождения');
-            return;
-        }
-        if (!validateUsername()) {
+        if (!validatePassword(true)) {
             return;
         }
         const login = username.trim();
         setLoading(true);
         try {
-            await registerStudent({
-                username: login,
-                password,
-                passwordConfirm,
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                middleName: noMiddleName ? undefined : middleName.trim() || undefined,
-                phoneNumber: verification.phoneNumber,
-                phoneVerificationId: verification.verificationId,
-            });
-            await completeStudentResumeOnboarding({
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
-                email: email.trim(),
-                birthDate,
-                busyness: 'FREE',
-                phoneNumber: verification.phoneNumber,
-                specialityId: Number(specialityId),
-                skillsIds: [],
-            });
-            stopPolling();
-            setView('done-student');
+            if (isStudent) {
+                await registerStudent({
+                    username: login,
+                    password,
+                    passwordConfirm,
+                    phoneNumber: verification.phoneNumber,
+                    phoneVerificationId: verification.verificationId,
+                });
+                stopPolling();
+                setView('done-student');
+            } else {
+                await registerRecruiter({
+                    username: login,
+                    password,
+                    passwordConfirm,
+                    phoneNumber: verification.phoneNumber,
+                    phoneVerificationId: verification.verificationId,
+                    companyName: recruiterCompany.trim(),
+                    firstName: recruiterFirstName.trim(),
+                    lastName: recruiterLastName.trim(),
+                    email: recruiterEmail.trim(),
+                    city: recruiterCity.trim(),
+                });
+                stopPolling();
+                setView('done-recruiter');
+            }
         } catch (err) {
             showError(err.message || 'Не удалось зарегистрироваться');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const submitRecruiter = async () => {
-        clearError();
-        if (!verification?.verificationId) {
-            showError('Подтвердите телефон в Telegram');
-            return;
-        }
-        if (!companyName.trim()) {
-            showError('Укажите название компании или ФИО');
-            return;
-        }
-        if (!email.trim()) {
-            showError('Укажите email');
-            return;
-        }
-        setLoading(true);
-        try {
-            await registerRecruiter({
-                username: username.trim(),
-                password,
-                passwordConfirm,
-                name: buildDisplayName(lastName, firstName, middleName, noMiddleName),
-                companyName: companyName.trim(),
-                city: city.trim() || undefined,
-                firstName: firstName.trim() || undefined,
-                lastName: lastName.trim() || undefined,
-                middleName: noMiddleName ? undefined : middleName.trim() || undefined,
-                email: email.trim(),
-                phoneNumber: verification.phoneNumber,
-                phoneVerificationId: verification.verificationId,
-                marketingConsent,
-            });
-            stopPolling();
-            setView('done-recruiter');
-        } catch (err) {
-            showError(err.message || 'Не удалось отправить заявку');
         } finally {
             setLoading(false);
         }
@@ -326,11 +210,7 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
             contact: 'choice',
             telegram: 'contact',
             password: 'telegram',
-            name: 'password',
-            'student-email': 'name',
-            'student-education': 'student-email',
-            email: 'name',
-            company: 'email',
+            'recruiter-profile': 'password',
             'done-student': onClose,
             'done-recruiter': onClose,
         };
@@ -500,24 +380,28 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                clearError();
-                                if (!validatePassword(!isStudent)) return;
-                                setView('name');
+                                if (!validatePassword(true)) return;
+                                if (isStudent) {
+                                    submitRegistration();
+                                } else {
+                                    setView('recruiter-profile');
+                                }
                             }}
                             className="loginModal__form"
                         >
-                            {!isStudent && (
-                                <div className="loginModal__inputGroup">
-                                    <label>Логин</label>
-                                    <input
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value.replace(/\s/g, ''))}
-                                        required
-                                        autoComplete="username"
-                                        placeholder="latin_login"
-                                    />
-                                </div>
-                            )}
+                            <div className="loginModal__inputGroup">
+                                <label>Логин</label>
+                                <input
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value.replace(/\s/g, ''))}
+                                    required
+                                    autoComplete="username"
+                                    placeholder="latin_login"
+                                />
+                                <p className="loginModal__fieldHint">
+                                    Латинские буквы и цифры. Этот логин понадобится для входа.
+                                </p>
+                            </div>
                             <div className="loginModal__inputGroup">
                                 <label>Пароль</label>
                                 <div className="loginModal__inputWrap">
@@ -552,253 +436,87 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                                     />
                                 </div>
                             </div>
-                            <button type="submit" className="loginModal__primaryBtn">
-                                Дальше
+                            <button type="submit" className="loginModal__primaryBtn" disabled={loading}>
+                                {isStudent ? 'Зарегистрироваться' : 'Дальше'}
                             </button>
                         </form>
                     </Shell>
                 )}
 
-                {view === 'name' && (
+                {view === 'recruiter-profile' && (
                     <Shell
                         onBack={handleBack}
-                        heading="Как вас зовут"
-                        subheading="Или того, кто будет пользоваться сервисом"
-                        step="Шаг 1 из 3"
+                        heading="Данные компании"
+                        subheading="Укажите контакты работодателя"
                     >
                         <form
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                clearError();
-                                if (!firstName.trim() || !lastName.trim()) {
+                                if (!recruiterCompany.trim()) {
+                                    showError('Укажите название компании');
+                                    return;
+                                }
+                                if (!recruiterFirstName.trim() || !recruiterLastName.trim()) {
                                     showError('Укажите имя и фамилию');
                                     return;
                                 }
-                                setView(isStudent ? 'student-email' : 'email');
-                            }}
-                            className="loginModal__form"
-                        >
-                            <div className="loginModal__inputGroup">
-                                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} required placeholder="Имя" />
-                            </div>
-                            <div className="loginModal__inputGroup">
-                                <input value={lastName} onChange={(e) => setLastName(e.target.value)} required placeholder="Фамилия" />
-                            </div>
-                            <div className="loginModal__inputGroup">
-                                <input
-                                    value={middleName}
-                                    onChange={(e) => setMiddleName(e.target.value)}
-                                    disabled={noMiddleName}
-                                    placeholder="Отчество"
-                                />
-                            </div>
-                            <label className="loginModal__checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={noMiddleName}
-                                    onChange={(e) => setNoMiddleName(e.target.checked)}
-                                />
-                                <span>У меня нет отчества</span>
-                            </label>
-                            <button type="submit" className="loginModal__primaryBtn">
-                                Дальше
-                            </button>
-                        </form>
-                    </Shell>
-                )}
-
-                {view === 'student-email' && isStudent && (
-                    <Shell
-                        onBack={handleBack}
-                        heading="Ваш почтовый ящик"
-                        subheading="Будут приходить отклики и другая полезная информация"
-                        step="Шаг 2 из 3"
-                    >
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                clearError();
-                                if (!email.trim()) {
+                                if (!recruiterEmail.trim()) {
                                     showError('Укажите email');
                                     return;
                                 }
-                                if (!validateUsername()) {
+                                if (!recruiterCity.trim()) {
+                                    showError('Укажите город');
                                     return;
                                 }
-                                setView('student-education');
+                                submitRegistration();
                             }}
                             className="loginModal__form"
                         >
-                            <div className="loginModal__emailRow">
-                                <div className="loginModal__emailIcon">✉</div>
+                            <div className="loginModal__inputGroup">
+                                <label>Компания</label>
                                 <input
-                                    className="loginModal__phoneInput"
+                                    value={recruiterCompany}
+                                    onChange={(e) => setRecruiterCompany(e.target.value)}
+                                    required
+                                    placeholder="ООО Пример"
+                                />
+                            </div>
+                            <div className="loginModal__inputGroup">
+                                <label>Имя</label>
+                                <input
+                                    value={recruiterFirstName}
+                                    onChange={(e) => setRecruiterFirstName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="loginModal__inputGroup">
+                                <label>Фамилия</label>
+                                <input
+                                    value={recruiterLastName}
+                                    onChange={(e) => setRecruiterLastName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="loginModal__inputGroup">
+                                <label>Email</label>
+                                <input
                                     type="email"
-                                    value={email}
-                                    onChange={(e) => {
-                                        const nextEmail = e.target.value;
-                                        setEmail(nextEmail);
-                                        syncUsernameFromEmail(nextEmail);
-                                    }}
+                                    value={recruiterEmail}
+                                    onChange={(e) => setRecruiterEmail(e.target.value)}
                                     required
-                                    placeholder="youremail@example.com"
+                                    placeholder="hr@company.ru"
                                 />
                             </div>
                             <div className="loginModal__inputGroup">
-                                <label>Логин для входа</label>
+                                <label>Город</label>
                                 <input
-                                    value={username}
-                                    onChange={(e) => {
-                                        setUsernameManuallyEdited(true);
-                                        setUsername(e.target.value.replace(/\s/g, ''));
-                                    }}
+                                    value={recruiterCity}
+                                    onChange={(e) => setRecruiterCity(e.target.value)}
                                     required
-                                    autoComplete="username"
-                                    placeholder="latin_login"
-                                />
-                                <p className="loginModal__fieldHint">
-                                    Заполняется автоматически из email — можно изменить. Этот логин понадобится для входа.
-                                </p>
-                            </div>
-                            <button type="submit" className="loginModal__primaryBtn">
-                                Дальше
-                            </button>
-                        </form>
-                    </Shell>
-                )}
-
-                {view === 'student-education' && isStudent && (
-                    <Shell
-                        onBack={handleBack}
-                        heading="На каком вы курсе"
-                        subheading="Если вы студент колледжа"
-                        step="Шаг 3 из 3"
-                    >
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                submitStudent();
-                            }}
-                            className="loginModal__form"
-                        >
-                            <div className="loginModal__inputGroup">
-                                <select
-                                    className="loginModal__select"
-                                    value={course}
-                                    onChange={(e) => setCourse(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Выберите свой курс</option>
-                                    {COURSE_OPTIONS.map((c) => (
-                                        <option key={c.value} value={c.value}>
-                                            {c.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="loginModal__inputGroup">
-                                <select
-                                    className="loginModal__select"
-                                    value={specialityId}
-                                    onChange={(e) => setSpecialityId(e.target.value)}
-                                    required
-                                >
-                                    <option value="">Текущее направление</option>
-                                    {specialities.map((s) => (
-                                        <option key={s.id} value={String(s.id)}>
-                                            {s.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="loginModal__inputGroup">
-                                <input
-                                    type="date"
-                                    className="loginModal__inputDate"
-                                    value={birthDate}
-                                    onChange={(e) => setBirthDate(e.target.value)}
-                                    required
-                                    placeholder="Дата рождения"
+                                    placeholder="Москва"
                                 />
                             </div>
-                            <button type="submit" className="loginModal__primaryBtn">
-                                Зарегистрироваться
-                            </button>
-                        </form>
-                    </Shell>
-                )}
-
-                {view === 'email' && !isStudent && (
-                    <Shell
-                        onBack={handleBack}
-                        heading="Ваш почтовый ящик"
-                        subheading="Будут приходить отклики и другая полезная информация"
-                        step="Шаг 2 из 3"
-                    >
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                clearError();
-                                if (!email.trim()) {
-                                    showError('Укажите email');
-                                    return;
-                                }
-                                setView('company');
-                            }}
-                            className="loginModal__form"
-                        >
-                            <div className="loginModal__emailRow">
-                                <div className="loginModal__emailIcon">✉</div>
-                                <input
-                                    className="loginModal__phoneInput"
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                    placeholder="youremail@example.com"
-                                />
-                            </div>
-                            <button type="submit" className="loginModal__primaryBtn">
-                                Дальше
-                            </button>
-                        </form>
-                    </Shell>
-                )}
-
-                {view === 'company' && !isStudent && (
-                    <Shell
-                        onBack={handleBack}
-                        heading="Ваша компания"
-                        subheading="Если нет компании или вы ИП, можете указать ФИО"
-                        step="Шаг 3 из 3"
-                    >
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                submitRecruiter();
-                            }}
-                            className="loginModal__form"
-                        >
-                            <div className="loginModal__inputGroup">
-                                <input
-                                    value={companyName}
-                                    onChange={(e) => setCompanyName(e.target.value)}
-                                    required
-                                    placeholder="Официальное название"
-                                />
-                            </div>
-                            <div className="loginModal__inputGroup">
-                                <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Город" />
-                            </div>
-                            <label className="loginModal__checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={marketingConsent}
-                                    onChange={(e) => setMarketingConsent(e.target.checked)}
-                                />
-                                <span>Пишите, когда появится специальное предложение или совет</span>
-                            </label>
-                            <button type="submit" className="loginModal__primaryBtn">
+                            <button type="submit" className="loginModal__primaryBtn" disabled={loading}>
                                 Зарегистрироваться
                             </button>
                         </form>
@@ -809,10 +527,10 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                     <Shell onBack={onClose} heading="Аккаунт создан">
                         <div className="loginModal__infoBlock">
                             <p>
-                                Профиль создан. Для входа используйте логин <strong>{username.trim()}</strong> и пароль,
+                                Аккаунт создан. Для входа используйте логин <strong>{username.trim()}</strong> и пароль,
                                 который вы задали при регистрации.
                             </p>
-                            <p>После модерации карточка появится у работодателей.</p>
+                            <p>Заполните резюме в профиле — после модерации карточка появится у работодателей.</p>
                             <button
                                 type="button"
                                 className="loginModal__primaryBtn"
@@ -829,9 +547,16 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                 )}
 
                 {view === 'done-recruiter' && (
-                    <Shell onBack={onClose} heading="Заявка отправлена">
+                    <Shell onBack={onClose} heading="Аккаунт создан">
                         <div className="loginModal__infoBlock">
-                            <p>Вход будет доступен после одобрения администратором.</p>
+                            <p>
+                                Аккаунт создан. Для входа используйте логин <strong>{username.trim()}</strong> и пароль,
+                                который вы задали при регистрации.
+                            </p>
+                            <p>
+                                Данные компании сохранены. Полный каталог студентов откроется после одобрения
+                                администратором — публичные карточки уже доступны в разделе «Студенты».
+                            </p>
                             <button type="button" className="loginModal__primaryBtn" onClick={onLogin}>
                                 Понятно
                             </button>

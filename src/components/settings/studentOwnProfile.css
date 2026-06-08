@@ -1,0 +1,261 @@
+.StudentOwnProfile__editHint {
+    margin: 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.62);
+}
+
+.StudentResume--editing {
+    background: #000;
+}
+
+.StudentResume--editing .StudentResume__mainContent {
+    padding-bottom: 32px;
+}
+
+.StudentOwnProfile__input,
+.StudentOwnProfile__textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    font: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.StudentOwnProfile__input:focus,
+.StudentOwnProfile__textarea:focus {
+    outline: none;
+    border-color: rgba(229, 59, 207, 0.55);
+    box-shadow: 0 0 0 2px rgba(229, 59, 207, 0.15);
+}
+
+.StudentOwnProfile__input--title {
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.StudentOwnProfile__input--subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.StudentOwnProfile__nameFields {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.StudentOwnProfile__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+    margin-bottom: 20px;
+}
+
+.StudentOwnProfile__linkBtn {
+    padding: 0;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.72);
+    font: inherit;
+    font-size: 15px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.StudentOwnProfile__linkBtn:hover {
+    color: #fff;
+}
+
+.StudentOwnProfile__phoneField.loginModal__phoneRow {
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
+.StudentOwnProfile__input--phone {
+    flex: 1;
+    min-width: 0;
+}
+
+.StudentOwnProfile__phoneField .loginModal__phonePrefix {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.StudentOwnProfile__metaFields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-end;
+    min-width: 220px;
+}
+
+.StudentOwnProfile__metaLabel {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    width: 100%;
+    max-width: 280px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.StudentOwnProfile__input--meta {
+    font-size: 15px;
+    padding: 8px 12px;
+    text-align: right;
+}
+
+.StudentResume--editing .StudentResume__header {
+    align-items: flex-end;
+    gap: 24px;
+}
+
+.StudentResume--editing .StudentResume__person {
+    flex: 1;
+    min-width: 0;
+}
+
+.StudentResume--editing .StudentResume__personName {
+    top: var(--StudentResume-header-text-offset, -50px);
+}
+
+.StudentOwnProfile__skillsEmpty {
+    opacity: 0.65;
+    cursor: default;
+}
+
+.accountPage__card--settings {
+    margin-top: 28px;
+}
+
+.accountPage__card--settings .accountPage__profileMeta {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.accountPage__passwordForm {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.StudentOwnProfile__contactsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.StudentOwnProfile__extraSections {
+    margin-top: 8px;
+    padding: 0 24px 8px;
+}
+
+.StudentOwnProfile__formActions {
+    padding: 0 24px;
+}
+
+.StudentOwnProfile__skillsHint,
+.StudentOwnProfile__emptyHint {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.StudentResume__skillCapsule--toggle {
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #fff;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.StudentResume__skillCapsule--toggle:hover {
+    border-color: rgba(229, 59, 207, 0.6);
+}
+
+.StudentResume__skillCapsule--toggle.is-selected {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+}
+
+.StudentOwnProfile__portfolioEdit .StudentOwnProfile__portfolioItem {
+    position: relative;
+    display: block;
+    text-decoration: none;
+}
+
+.StudentOwnProfile__portfolioLink {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.72);
+    word-break: break-all;
+}
+
+.StudentOwnProfile__portfolioRemove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.StudentOwnProfile__portfolioAdd {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.StudentResume__emptyPlaceholder {
+    color: rgba(255, 255, 255, 0.45);
+    font-style: italic;
+}
+
+.StudentOwnProfile__photoBtn {
+    position: absolute;
+    left: 50%;
+    bottom: -118px;
+    transform: translateX(-50%);
+    padding: 8px 14px;
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.StudentOwnProfile__photoBtn:hover {
+    border-color: rgba(229, 59, 207, 0.65);
+}
+
+@media (max-width: 768px) {
+    .StudentOwnProfile__contactsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .StudentOwnProfile__metaFields {
+        align-items: stretch;
+        margin-top: 16px;
+    }
+}
