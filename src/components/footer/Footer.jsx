@@ -1,5 +1,11 @@
 import './footer.css';
 import { Link } from "react-router-dom";
+import {
+    requestLogin,
+    hasApprovedCatalogAccess,
+    isAuthenticated,
+    getAuthenticatedDestination,
+} from '../../services/authApi.js';
 
 import resumeFooter from "../../assets/logos/resume.png";
 import resumeLogo from '../../assets/logos/Logo.png';
@@ -7,6 +13,17 @@ import singularityLogo from '../../assets/logos/singularityLogo.svg';
 import skyEngLogo from '../../assets/logos/skyEngLogo.svg';
 
 const Footer = () => {
+    const catalogAccess = hasApprovedCatalogAccess();
+    const authed = isAuthenticated();
+    const studentsHref = catalogAccess ? '/students' : getAuthenticatedDestination();
+
+    const handleProtectedNav = (event) => {
+        if (!catalogAccess) {
+            event.preventDefault();
+            requestLogin();
+        }
+    };
+
     return (
         <footer className="footer">
             <div className="footer__image">
@@ -17,9 +34,15 @@ const Footer = () => {
                 <div className='footer__siteMap'>
                     <h2>Навигация</h2>
                     <Link to="/">Главная</Link>
-                    <Link to="/students">Студенты</Link>
+                    {catalogAccess || authed ? (
+                        <Link to={studentsHref || '/settings'}>Студенты</Link>
+                    ) : (
+                        <button type="button" className="footer__linkBtn" onClick={requestLogin}>
+                            Студенты
+                        </button>
+                    )}
                     <a href="https://singularity.academy/college" target="_blank" rel="noreferrer">Обучение</a>
-                    <a href="/#projects">Проекты</a>
+                    <a href="/#projects" onClick={handleProtectedNav}>Проекты</a>
                 </div>
 
                 <div className='footer__contacts'>

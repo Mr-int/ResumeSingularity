@@ -1,14 +1,9 @@
 import React from "react";
 import './studentSliderCard.css';
+import { getImageUrl } from '../../../config/api.js';
+import SpecialityBadge from '../../common/SpecialityBadge.jsx';
+
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
-import javaIcon from "../../../assets/specialities/java.png";
-import pythonIcon from "../../../assets/specialities/python.png";
-import designIcon from "../../../assets/specialities/design.png";
-import webIcon from "../../../assets/specialities/web.png";
-import analyticsIcon from "../../../assets/specialities/dataAnalyst.png";
-import managementIcon from "../../../assets/specialities/management.png";
-import projectManagerIcon from "../../../assets/specialities/projectManager.png";
-import marketingIcon from "../../../assets/specialities/marketing.png";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -24,16 +19,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
 
         if (!imagePath) return PLACEHOLDER_AVATAR;
 
-        if (imagePath.startsWith('http')) {
-            return imagePath;
-        }
-
-        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
-        const studentId = studentData.id;
-
-        if (!studentId) return PLACEHOLDER_AVATAR;
-
-        return `${baseUrl}/${studentId}.jpg`;
+        return getImageUrl(imagePath) || PLACEHOLDER_AVATAR;
     };
 
     const getCourseNumber = (course) => {
@@ -53,54 +39,6 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
             default:
                 return '4';
         }
-    };
-
-    const getSkillIcon = (specialityName) => {
-        if (!specialityName) {
-            return javaIcon;
-        }
-
-        const specLower = specialityName.toLowerCase();
-
-        if (specLower.includes('java') || specLower.includes('джава')) {
-            return javaIcon;
-        }
-
-        if (specLower.includes('python') || specLower.includes('питон')) {
-            return pythonIcon;
-        }
-
-        if (specLower.includes('аналитик данных') || specLower.includes('аналитик') || specLower.includes('analytics')) {
-            return analyticsIcon;
-        }
-
-        if (specLower.includes('тестировщик') || specLower.includes('qa') || specLower.includes('testing')) {
-            return managementIcon;
-        }
-
-        if (specLower.includes('менеджер проектов') || specLower.includes('project manager') || specLower.includes('менеджер')) {
-            return projectManagerIcon;
-        }
-
-        if (specLower.includes('backend') || specLower.includes('бекенд') || specLower.includes('бэкенд')) {
-            return javaIcon;
-        }
-
-        if (specLower.includes('маркетолог') || specLower.includes('marketing')) {
-            return marketingIcon;
-        }
-
-        if (specLower.includes('веб-разработчик') || specLower.includes('web')) {
-            return webIcon;
-        }
-
-        if (specLower.includes('дизайнер') || specLower.includes('design') ||
-            
-            specLower.includes('таргетолог') || specLower.includes('target')) {
-            return designIcon;
-        }
-
-        return javaIcon;
     };
 
     const getExtraIcoGradientModifier = (specialityName) => {
@@ -136,9 +74,12 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
 
     const imageSrc = getStudentImageUrl(student);
     const courseNumber = getCourseNumber(student.course);
-    const skillIcon = getSkillIcon(student.speciality);
     const specialityName = student.speciality || 'Специальность не указана';
-    const extraIcoModifier = getExtraIcoGradientModifier(student.speciality);
+    const extraIcoModifier = getExtraIcoGradientModifier(specialityName);
+    const specialityForBadge = {
+        name: specialityName,
+        icon_path: student.specialityIconPath ?? student.speciality_icon_path ?? student.iconPath,
+    };
 
     const handleClick = (e) => {
         if (onClick) {
@@ -165,7 +106,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
                 </div>
 
                 <div className={`student-slider-card__extraIco ${extraIcoModifier}`}>
-                    <img src={skillIcon} alt=""/>
+                    <SpecialityBadge speciality={specialityForBadge} />
                 </div>
             </div>
 

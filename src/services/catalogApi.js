@@ -1,14 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
-import { hasApprovedCatalogAccess, requestLogin } from './authApi.js';
-
-const requireCatalogAccess = () => {
-    if (!hasApprovedCatalogAccess()) {
-        requestLogin();
-        const err = new Error('Требуется вход и одобрение аккаунта');
-        err.status = 401;
-        throw err;
-    }
-};
+import { hasApprovedCatalogAccess } from './authApi.js';
 
 const pageQuery = (pageable = {}) => {
     const page = typeof pageable.page === 'number' ? pageable.page : 0;

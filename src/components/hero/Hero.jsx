@@ -9,10 +9,13 @@ import leraActive from '../../assets/heroAnimation/lera_active.png';
 import leraUnactive from '../../assets/heroAnimation/lera_unactive.png';
 import { useEffect, useState } from 'react';
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import { hasApprovedCatalogAccess, isStudentRole, requestLogin } from '../../services/authApi.js';
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [isRightCardHovered, setIsRightCardHovered] = useState(false);
+    const isStudent = isStudentRole();
+    const catalogAccess = hasApprovedCatalogAccess();
 
     useEffect(() => {
         const checkMobile = () => {
@@ -40,14 +43,34 @@ const Hero = () => {
                         <span>под задачи вашей компании</span>
                     </div>
 
-                    <GradientButton
-                        as="link"
-                        to="/students"
-                        className="hero__button"
-                        icon={<img src={searchIcon} alt="search" className="button__icon" />}
-                    >
-                        Найти стажёра
-                    </GradientButton>
+                    {isStudent ? (
+                        <GradientButton
+                            as="link"
+                            to="/settings"
+                            className="hero__button"
+                        >
+                            Мой профиль
+                        </GradientButton>
+                    ) : catalogAccess ? (
+                        <GradientButton
+                            as="link"
+                            to="/students"
+                            className="hero__button"
+                            icon={<img src={searchIcon} alt="search" className="button__icon" />}
+                        >
+                            Найти стажёра
+                        </GradientButton>
+                    ) : (
+                        <GradientButton
+                            as="button"
+                            type="button"
+                            className="hero__button"
+                            onClick={requestLogin}
+                            icon={<img src={searchIcon} alt="search" className="button__icon" />}
+                        >
+                            Найти стажёра
+                        </GradientButton>
+                    )}
                 </div>
 
                 <div className={`hero__right ${isRightCardHovered ? 'hero__right--cards-hovered' : ''}`}>
