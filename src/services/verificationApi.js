@@ -53,3 +53,45 @@ export const confirmPhoneVerificationCode = async (verificationId, code) => {
     if (!response.ok) await parseError(response);
     return response.json();
 };
+
+/** @alias confirmPhoneVerificationCode */
+export const confirmPhoneCode = confirmPhoneVerificationCode;
+
+const POLL_MS = 2500;
+
+/** Polling до CONFIRMED | EXPIRED */
+export const waitPhoneVerified = (verificationId, { signal } = {}) =>
+    new Promise((resolve, reject) => {
+        let timer;
+
+        const tick = async () => {
+            if (signal?.aborted) {
+                reject(new Error('Отменено'));
+                return;
+            }
+            try {
+                const res = await getPhoneVerificationStatus(verificationId);
+                const status = res?.status;
+                if (status === 'CONFIRMED') {
+                    resolve(res);
+                    return;
+                }
+                if (status === 'EXPIRED') {
+                    reject(new Error('Код истёк. Запросите новый.'));
+                    return;
+                }
+                timer = window.setTimeout(tick, POLL_MS);
+            } catch (e) {
+                reject(e);
+            }
+        };
+
+        tick();
+
+        if (signal) {
+            signal.addEventListener('abort', () => {
+                window.clearTimeout(timer);
+                reject(new Error('Отменено'));
+            });
+        }
+    });

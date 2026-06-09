@@ -60,40 +60,6 @@
     align-items: center;
 }
 
-.StudentResume__error {
-    color: #fff;
-    text-align: center;
-    padding: 60px 24px;
-    font-family: StratosSemiLight, sans-serif;
-}
-
-.StudentResume__error h2 {
-    font-size: 32px;
-    margin: 0 0 16px;
-    font-weight: 400;
-}
-
-.StudentResume__error p {
-    font-size: 20px;
-    color: #ccc;
-    margin: 0 0 28px;
-}
-
-.StudentResume__backLink {
-    display: inline-block;
-    color: #fff;
-    border: 1px solid #fff;
-    border-radius: 100px;
-    padding: 12px 28px;
-    text-decoration: none;
-    font-size: 18px;
-    transition: opacity 0.2s ease;
-}
-
-.StudentResume__backLink:hover {
-    opacity: 0.85;
-}
-
 .StudentResume__wrapper {
     width: 100%;
     background-image: linear-gradient(90deg, #4655FF, #BDF7FF);

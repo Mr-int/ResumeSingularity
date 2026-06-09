@@ -4,7 +4,6 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 import { requestLogin } from "../../services/authApi.js";
 
@@ -23,7 +22,7 @@ const StudentSlider = ({ students: studentsProp, loading: loadingProp, guestVitr
 
     useEffect(() => {
         if (studentsProp == null) return;
-        const visible = (Array.isArray(studentsProp) ? studentsProp : []).filter(hasStudentProfilePhoto);
+        const visible = Array.isArray(studentsProp) ? studentsProp : [];
         setStudents(visible);
         if (visible.length > 0) {
             const middleIndex = Math.floor(visible.length / 2);

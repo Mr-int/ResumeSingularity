@@ -6,7 +6,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
         'Content-Type': 'application/json',
     };
 
-    const skipSessionClearOn403 = options.skipSessionClearOn403 === true;
     const method = options.method || 'GET';
     const headers = { ...defaultHeaders, ...options.headers };
     const body = options.body;

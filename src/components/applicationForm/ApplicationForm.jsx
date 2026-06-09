@@ -7,7 +7,6 @@ import sunIcon from '../../assets/other/sun.png';
 import cloudMailIcon from '../../assets/other/cloudMail.png';
 import { apiClientJson } from '../../utils/apiClient.js';
 import { createRequest } from '../../services/requestApi.js';
-import { isRecruiterRole } from '../../services/authApi.js';
 
 const getInputNumbersValue = (value) => String(value ?? '').replace(/\D/g, '');
 
@@ -111,7 +110,6 @@ const isFullNameInvalidHint = (value) =>
 
 const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChats }) => {
     const hasStudent = Boolean(studentId);
-    const isRecruiterInterest = hasStudent && isRecruiterRole();
     const [formData, setFormData] = useState({
         name: '',
         company: '',
@@ -315,24 +313,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
         return 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз.';
     };
 
-    const submitRecruiterInterest = async () => {
-        setError('');
-        setSuccess(false);
-        setLoading(true);
-        try {
-            const response = await createRequest({ studentId });
-            setCreatedChatId(response?.appChatId || null);
-            setSuccess(true);
-            if (onSubmit) {
-                await onSubmit({ studentId });
-            }
-        } catch (err) {
-            setError(getFriendlyError(err));
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -417,12 +397,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
     const getButtonText = () => {
         if (loading) return 'Отправка...';
         if (success) return 'Заявка отправлена!';
-        return isRecruiterInterest ? 'Подтвердить интерес' : 'Связаться';
+        return 'Связаться';
     };
-
-    const successMessage = isRecruiterInterest
-        ? 'Заявка отправлена. Ожидается решение студента — вы можете следить за статусом в чате.'
-        : 'Мы свяжемся с вами в течении 24 часов.';
 
     const showMailIcon = () => {
         return !loading && !success;
@@ -442,8 +418,8 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
                                     <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
                                     <img src={successIcon} alt="" className="applicationForm__successWindow-titleIcon" width={40} height={40} />
                                 </div>
-                            <p className="applicationForm__successWindow-text">
-                                {successMessage}
+                            <p className="appвlicationForm__successWindow-text">
+                                Мы свяжемся с вами в течении 24 часов.
                             </p>
                             {typeof onGoToChats === 'function' ? (
                                 <div className="applicationForm__successWindow-tgBlock">
@@ -473,42 +449,6 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
                                 </div>
                             ) : null}
                         </div>
-                    </div>
-                </div>
-            ) : isRecruiterInterest ? (
-                <div className="applicationForm__content" onClick={(e) => e.stopPropagation()}>
-                    <div className="applicationForm__contentInner">
-                        <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
-                        <button className="applicationForm__close" onClick={onClose}>×</button>
-                        <div className="applicationForm__info">
-                            <img
-                                src={exclamationIcon}
-                                alt="info"
-                                className="applicationForm__info-icon"
-                            />
-                            {studentName
-                                ? `Подтвердите интерес к студенту ${studentName}. После отправки откроется чат — студент получит заявку и сможет принять или отклонить её.`
-                                : 'Подтвердите интерес к студенту. После отправки откроется чат — студент получит заявку и сможет принять или отклонить её.'}
-                        </div>
-                        {error && <div className="applicationForm__error">{error}</div>}
-                        <div className="applicationForm__button-container">
-                            <button
-                                type="button"
-                                className="applicationForm__submit"
-                                disabled={loading || success}
-                                onClick={submitRecruiterInterest}
-                            >
-                                {getButtonText()}
-                                {showMailIcon() && (
-                                    <img
-                                        src={mailIcon}
-                                        alt="mail"
-                                        className="applicationForm__submit-icon"
-                                    />
-                                )}
-                            </button>
-                        </div>
-                        <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
                     </div>
                 </div>
             ) : (

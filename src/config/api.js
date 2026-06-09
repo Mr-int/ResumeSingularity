@@ -1,17 +1,19 @@
-/**
- * Базовый URL API.
- * - Dev (`npm run dev`): по умолчанию `/api/` → прокси в vite.config.js на backend.
- * - Docker / prod: задайте VITE_API_URL при сборке (например https://test-api.singularity-resume.ru).
- */
-const viteApi = import.meta.env.VITE_API_URL;
-export const API_BASE_URL = viteApi
-    ? `${String(viteApi).replace(/\/$/, '')}/`
+const envBase = import.meta.env.VITE_API_URL;
+
+/** Dev: /api/ (Vite proxy). Prod: VITE_API_URL + trailing slash */
+export const API_BASE_URL = envBase
+    ? `${String(envBase).replace(/\/$/, '')}/`
     : '/api/';
 
+/** Origin для WebSocket (без /api) */
+export const API_WS_ORIGIN = envBase
+    ? String(envBase).replace(/\/$/, '')
+    : typeof window !== 'undefined'
+      ? `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`
+      : '';
+
 /**
- * Получить URL изображения через эндпоинт /main/photo/{image_path}
- * @param {string} imagePath - Путь к изображению из поля imagePath в теле ответа
- * @returns {string} Полный URL изображения
+ * URL изображения: {BASE}main/photo/{imagePath}
  */
 export const getImageUrl = (imagePath) => {
     if (!imagePath) return null;

@@ -1,35 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import { Link } from "react-router-dom";
-import { getImageUrl } from '../../../config/api.js';
-import { requestLogin, isStudentRole } from '../../../services/authApi.js';
-import { getStudentMe } from '../../../services/getApi.js';
 import './studentsListCard.css';
 
-const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
-
-const StudentsListCard = ({ student, guestVitrina = false }) => {
+const StudentsListCard = ({ student }) => {
     const [showFullBio, setShowFullBio] = useState(false);
-    const [isOwnCard, setIsOwnCard] = useState(false);
-
-    useEffect(() => {
-        if (!isStudentRole() || !student?.id) {
-            setIsOwnCard(false);
-            return;
-        }
-        let cancelled = false;
-        getStudentMe()
-            .then((me) => {
-                if (!cancelled) {
-                    setIsOwnCard(Boolean(me?.id && String(me.id) === String(student.id)));
-                }
-            })
-            .catch(() => {
-                if (!cancelled) setIsOwnCard(false);
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [student?.id]);
 
     if (!student) {
         return null;
@@ -42,7 +17,16 @@ const StudentsListCard = ({ student, guestVitrina = false }) => {
 
         if (!imagePath) return PLACEHOLDER_AVATAR;
 
-        return getImageUrl(imagePath) || PLACEHOLDER_AVATAR;
+        if (imagePath.startsWith('http')) {
+            return imagePath;
+        }
+
+        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
+        const studentId = studentData.id;
+
+        if (!studentId) return PLACEHOLDER_AVATAR;
+
+        return `${baseUrl}/${studentId}.jpg`;
     };
 
     const getCourseNumber = (course) => {
@@ -122,10 +106,7 @@ const StudentsListCard = ({ student, guestVitrina = false }) => {
                                 </>
                             )}
                         </h2>
-                        <p className="studentsCard__subtitle">
-                            {student.speciality || 'Специальность не указана'}
-                            {isOwnCard ? <span className="studentsCard__ownBadge"> — это вы</span> : null}
-                        </p>
+                        <p className="studentsCard__subtitle">{student.speciality || 'Специальность не указана'}</p>
                     </div>
 
                     <div className="studentsCard__skills">
@@ -145,27 +126,15 @@ const StudentsListCard = ({ student, guestVitrina = false }) => {
                             {isBioTruncated && !showFullBio && (
                                 <span className="studentsCard__read-more">
                                     {' ... '}
-                                    {guestVitrina ? (
-                                        <button type="button" className="read-more-link" onClick={requestLogin}>
-                                            Читать дальше
-                                        </button>
-                                    ) : (
-                                        <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
-                                    )}
+                                    <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
                                 </span>
                             )}
                         </p>
                     </div>
 
-                    {guestVitrina ? (
-                        <button type="button" className="studentsCard__button" onClick={requestLogin}>
-                            <span className="studentsCard__buttonText">Смотреть резюме</span>
-                        </button>
-                    ) : (
-                        <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
-                            <span className="studentsCard__buttonText">Смотреть резюме</span>
-                        </Link>
-                    )}
+                    <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
+                        <span className="studentsCard__buttonText">Смотреть резюме</span>
+                    </Link>
                 </div>
             </div>
         </div>

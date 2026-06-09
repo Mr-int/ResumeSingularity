@@ -13,13 +13,10 @@ export function notifyAuthChanged() {
     window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
 }
 
-// Re-export for hooks
 export { AUTH_CHANGED_EVENT as RESUME_AUTH_CHANGED_EVENT };
 
 const AUTH_FLAG_KEY = 'isAuthenticated';
-/** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
-/** Роль с последнего входа (STUDENT, RECRUITER, ADMIN). */
 export const AUTH_ROLE_KEY = 'resumeAuthRole';
 export const AUTH_ACCOUNT_STATUS_KEY = 'resumeAccountStatus';
 export const AUTH_HINTS_DISABLED_KEY = 'resumeHintsDisabled';
@@ -66,7 +63,6 @@ const parseAuthErrorMessage = (status, rawBody) => {
     return message || `Ошибка входа (${status})`;
 };
 
-/** Сбрасывает протухшую серверную сессию, чтобы login не ломался из‑за старых cookies. */
 async function resetStaleSessionBeforeAuth() {
     try {
         await fetch(`${API_BASE_URL}auth/logout`, {
@@ -87,19 +83,11 @@ async function resetStaleSessionBeforeAuth() {
     sessionStorage.removeItem('showLoginAfter403');
 }
 
-/**
- * Авторизация пользователя
- * @param {string} username - Имя пользователя
- * @param {string} password - Пароль
- * @returns {Promise<Object>} Ответ сервера
- */
 export const login = async (username, password) => {
     try {
         await resetStaleSessionBeforeAuth();
 
         const url = `${API_BASE_URL}auth/login`;
-        console.log('[AUTH] Attempting login to:', url);
-
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -112,18 +100,14 @@ export const login = async (username, password) => {
             }),
         });
 
-        console.log('[AUTH] Response status:', response.status);
-
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('[AUTH] Error response:', errorText);
             const err = new Error(parseAuthErrorMessage(response.status, errorText));
             err.status = response.status;
             throw err;
         }
 
         const data = await parseResponseJson(response);
-        console.log('[AUTH] Login successful, response data:', data);
 
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
@@ -153,27 +137,18 @@ const getCookie = (name) => {
 const hasAuthCookies = () => {
     const accessToken = getCookie('ACCESS_TOKEN');
     const refreshToken = getCookie('REFRESH_TOKEN');
-    const hasTokens = !!(accessToken || refreshToken);
-    
-    console.log('[AUTH] Cookie check - ACCESS_TOKEN:', !!accessToken, 'REFRESH_TOKEN:', !!refreshToken);
-    
-    return hasTokens;
+    return !!(accessToken || refreshToken);
 };
 
 export const isAuthenticated = () => {
     const authFlag = localStorage.getItem(AUTH_FLAG_KEY);
     const authTime = localStorage.getItem(`${AUTH_FLAG_KEY}_time`);
 
-    const hasTokens = hasAuthCookies();
-    
-    console.log('[AUTH] isAuthenticated - hasTokens:', hasTokens, 'authFlag:', authFlag, 'authTime:', authTime);
-
     if (authFlag === 'true') {
         if (authTime) {
-            const timeDiff = Date.now() - parseInt(authTime);
+            const timeDiff = Date.now() - parseInt(authTime, 10);
             const hours24 = 24 * 60 * 60 * 1000;
             if (timeDiff > hours24) {
-                console.log('[AUTH] Session expired, clearing flag');
                 localStorage.removeItem(AUTH_FLAG_KEY);
                 localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
                 return false;
@@ -182,13 +157,12 @@ export const isAuthenticated = () => {
         return true;
     }
 
-    if (hasTokens) {
-        console.log('[AUTH] Tokens found, setting flag');
+    if (hasAuthCookies()) {
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         return true;
     }
-    
+
     return false;
 };
 
@@ -210,10 +184,6 @@ const clearLocalAuth = () => {
     });
 };
 
-/**
- * POST /auth/register-student
- * @param {{ username: string, password: string, passwordConfirm: string, name?: string, phoneNumber: string, phoneVerificationId: string }} body
- */
 export const registerStudent = async (body) => {
     await resetStaleSessionBeforeAuth();
     const url = `${API_BASE_URL}auth/register-student`;
@@ -249,9 +219,6 @@ export const registerStudent = async (body) => {
     return {};
 };
 
-/**
- * POST /auth/register-recruiter
- */
 export const registerRecruiter = async (body) => {
     await resetStaleSessionBeforeAuth();
     const url = `${API_BASE_URL}auth/register-recruiter`;
@@ -287,9 +254,6 @@ export const registerRecruiter = async (body) => {
     return {};
 };
 
-/**
- * POST /auth/refresh
- */
 export const refreshSession = async () => {
     const url = `${API_BASE_URL}auth/refresh`;
     const response = await fetch(url, {
@@ -310,9 +274,6 @@ export const refreshSession = async () => {
     return {};
 };
 
-/**
- * POST /auth/logout + очистка клиента
- */
 export const changePassword = async (currentPassword, newPassword) => {
     return apiClientJson('auth/change-password', {
         method: 'POST',
@@ -337,13 +298,8 @@ export const logoutServer = async () => {
 export const logout = () => {
     clearLocalAuth();
     notifyAuthChanged();
-    console.log('[AUTH] Logged out, cleared all auth data');
 };
 
-/**
- * GET /auth/me — синхронизирует флаг входа, логин и роль на клиенте.
- * @returns {Promise<{ username: string, role: string } | null>}
- */
 async function syncAuthSessionInternal() {
     const epochAtStart = authSessionEpoch;
 
@@ -470,7 +426,6 @@ export function isStudentRole() {
     return getAuthRole() === 'STUDENT';
 }
 
-/** Одобренный аккаунт или админ — доступ к каталогам после регистрации. */
 export function hasApprovedCatalogAccess() {
     if (!isAuthenticated()) return false;
     if (isAdmin()) return true;
@@ -478,12 +433,10 @@ export function hasApprovedCatalogAccess() {
     return getAccountStatus() === 'APPROVED';
 }
 
-/** Полный каталог студентов (/student/*) — одобренные пользователи. */
 export function hasRecruiterCatalogAccess() {
     return hasApprovedCatalogAccess();
 }
 
-/** Куда направить уже авторизованного пользователя вместо модала входа. */
 export function getAuthenticatedDestination() {
     if (!isAuthenticated()) return null;
     if (isStudentRole()) return '/settings';
@@ -501,3 +454,12 @@ export function requestLogin() {
     );
 }
 
+/** @deprecated use getAccountStatus */
+export const getAuthAccountStatus = getAccountStatus;
+
+/** @deprecated use consumeAuthReturnTo + getAuthenticatedDestination */
+export const getPostLoginPath = () => {
+    const returnTo = consumeAuthReturnTo();
+    if (returnTo) return returnTo;
+    return getAuthenticatedDestination() || '/settings';
+};
