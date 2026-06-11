@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { login, registerStudent, registerRecruiter } from '../../services/authApi.js';
+import React, { useEffect, useRef, useState } from 'react';
+import { login } from '../../services/authApi.js';
+import { startPhoneVerification, getPhoneVerificationStatus } from '../../services/verificationApi.js';
+import RegistrationWizard from './RegistrationWizard.jsx';
+import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
+import { validateRegistrationPassword } from '../../utils/passwordPolicy.js';
+import logo from '../../assets/logos/Logo.png';
 import './loginModal.css';
 
 const ChevronLeftIcon = () => (
     <svg className="loginModal__backIcon" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-        <path
-            fill="currentColor"
-            d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
-        />
+        <path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
     </svg>
 );
 
@@ -25,46 +27,137 @@ const EyeOffIcon = () => (
     </svg>
 );
 
-const emptyCreds = () => ({ username: '', password: '', passwordConfirm: '' });
+const MailIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M4 8l8 5 8-5M4 8v10h16V8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+const normalizePhone = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '');
+    if (!digits) return '';
+    const normalized = digits.startsWith('8') && digits.length === 11 ? `7${digits.slice(1)}` : digits;
+    return normalized.startsWith('7') || normalized.length > 10 ? `+${normalized}` : `+7${normalized}`;
+};
+
+const formatPhoneDisplay = (raw) => {
+    const digits = String(raw || '').replace(/\D/g, '').replace(/^7|^8/, '');
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    if (digits.length <= 8) return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    return `${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
+};
+
+const PasswordField = ({
+    id,
+    label,
+    value,
+    onChange,
+    autoComplete,
+    showPassword,
+    onToggle,
+    groupClass = '',
+    onFocus,
+    onBlur,
+}) => (
+    <div className={`loginModal__inputGroup ${groupClass}`.trim()}>
+        <label htmlFor={id}>{label}</label>
+        <div className="loginModal__inputWrap">
+            <input
+                id={id}
+                type={showPassword ? 'text' : 'password'}
+                autoComplete={autoComplete}
+                value={value}
+                onChange={onChange}
+                onFocus={onFocus}
+                onBlur={onBlur}
+                required
+                className="loginModal__inputPassword"
+            />
+            <button
+                type="button"
+                className="loginModal__passwordToggle"
+                onClick={onToggle}
+                aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+            >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+        </div>
+    </div>
+);
+
+const AuthShell = ({ onBack, heading, subheading, children, footer }) => (
+    <>
+        <button type="button" className="loginModal__backBtn" onClick={onBack} aria-label="Назад">
+            <ChevronLeftIcon />
+        </button>
+        <div className="loginModal__logoWrap">
+            <img src={logo} alt="Резюме" className="loginModal__logo" />
+        </div>
+        <h2 className="loginModal__heading">{heading}</h2>
+        {subheading ? <p className="loginModal__subheading">{subheading}</p> : null}
+        {children}
+        {footer}
+    </>
+);
+
+const LoadingScreen = () => (
+    <div className="loginModal__card loginModal__card--loading" role="status" aria-live="polite">
+        <div className="loginModal__logoWrap">
+            <img src={logo} alt="Резюме" className="loginModal__logo" />
+        </div>
+        <h2 className="loginModal__loadingTitle">Одну секунду…</h2>
+        <p className="loginModal__loadingText">
+            Знаете ли вы, что все резюме наших студентов проходят проверку контроля качества? Мы тоже не знаем
+        </p>
+        <div className="loginModal__spinner" aria-hidden="true" />
+    </div>
+);
+
+const ErrorToast = ({ message, onClose }) =>
+    message ? (
+        <div className="loginModal__toast" role="alert">
+            {message}
+            <button type="button" className="loginModal__toastClose" onClick={onClose} aria-label="Закрыть">
+                ×
+            </button>
+        </div>
+    ) : null;
 
 const LoginModal = ({ onClose, onSuccess }) => {
     const [view, setView] = useState('login');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [passwordConfirm, setPasswordConfirm] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showNewPasswordConfirm, setShowNewPasswordConfirm] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [info, setInfo] = useState('');
+    const [focusedField, setFocusedField] = useState(null);
 
-    const [studentReg, setStudentReg] = useState({
-        ...emptyCreds(),
-        firstName: '',
-        lastName: '',
-        email: '',
-        city: '',
-        bio: '',
-    });
+    const [verification, setVerification] = useState(null);
+    const pollRef = useRef(null);
 
-    const [recruiterReg, setRecruiterReg] = useState({
-        ...emptyCreds(),
-        companyName: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        telegramUsername: '',
-    });
+    const [forgotTab, setForgotTab] = useState('phone');
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotPhoneLocal, setForgotPhoneLocal] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
 
-    const resetMessages = () => {
-        setError('');
-        setInfo('');
+    const stopPolling = () => {
+        if (pollRef.current) {
+            clearInterval(pollRef.current);
+            pollRef.current = null;
+        }
     };
 
     const switchView = (next) => {
-        resetMessages();
+        setError('');
+        if (next !== 'forgot-telegram') stopPolling();
         setView(next);
     };
+
+    useEffect(() => () => stopPolling(), []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -72,286 +165,324 @@ const LoginModal = ({ onClose, onSuccess }) => {
         setLoading(true);
         try {
             await login(username, password);
-            setTimeout(() => {
-                setLoading(false);
-                onSuccess();
-            }, 100);
+            onSuccess();
         } catch (err) {
-            setError('Неверное имя пользователя или пароль');
+            setError(err.message || 'Не удалось войти. Проверьте логин и пароль.');
             console.error('Login error:', err);
-            setLoading(false);
-        }
-    };
-
-    const validatePasswords = () => {
-        if (password.length < 4) {
-            setError('Пароль слишком короткий');
-            return false;
-        }
-        if (password !== passwordConfirm) {
-            setError('Пароли не совпадают');
-            return false;
-        }
-        return true;
-    };
-
-    const handleRegisterStudent = async (e) => {
-        e.preventDefault();
-        resetMessages();
-        if (!validatePasswords()) return;
-        setLoading(true);
-        try {
-            await registerStudent({
-                username: username.trim(),
-                password,
-                passwordConfirm,
-                firstName: studentReg.firstName.trim(),
-                lastName: studentReg.lastName.trim(),
-                email: studentReg.email.trim() || undefined,
-                city: studentReg.city.trim() || undefined,
-                bio: studentReg.bio.trim() || undefined,
-            });
-            setInfo('');
-            switchView('register-student-done');
-        } catch (err) {
-            setError(err.message || 'Не удалось зарегистрироваться');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleRegisterRecruiter = async (e) => {
+    const startVerificationPolling = (verificationId, onConfirmed, onExpired) => {
+        stopPolling();
+        pollRef.current = setInterval(async () => {
+            try {
+                const statusRes = await getPhoneVerificationStatus(verificationId);
+                if (statusRes.status === 'CONFIRMED') {
+                    stopPolling();
+                    onConfirmed();
+                } else if (statusRes.status === 'EXPIRED') {
+                    stopPolling();
+                    onExpired();
+                }
+            } catch (pollErr) {
+                console.warn('poll verification', pollErr);
+            }
+        }, 2500);
+    };
+
+    const handleForgotSubmit = async (e) => {
         e.preventDefault();
-        resetMessages();
-        if (!validatePasswords()) return;
-        if (!recruiterReg.companyName.trim()) {
-            setError('Укажите компанию');
+        setError('');
+        if (forgotTab === 'email') {
+            setError('Подтверждение по почте появится позже');
+            return;
+        }
+        const phone = normalizePhone(forgotPhoneLocal);
+        if (phone.replace(/\D/g, '').length < 11) {
+            setError('Укажите корректный номер телефона');
             return;
         }
         setLoading(true);
         try {
-            await registerRecruiter({
-                username: username.trim(),
-                password,
-                passwordConfirm,
-                companyName: recruiterReg.companyName.trim(),
-                firstName: recruiterReg.firstName.trim(),
-                lastName: recruiterReg.lastName.trim(),
-                email: recruiterReg.email.trim() || undefined,
-                phoneNumber: recruiterReg.phoneNumber.trim() || undefined,
-                telegramUsername: recruiterReg.telegramUsername.trim().replace(/^@/, '') || undefined,
-            });
-            switchView('register-recruiter-done');
+            const res = await startPhoneVerification({ phoneNumber: phone });
+            setVerification({ ...res, phoneNumber: phone, mode: 'forgot' });
+            switchView('forgot-telegram');
+            startVerificationPolling(
+                res.verificationId,
+                () => switchView('forgot-new-password'),
+                () => {
+                    setError('Время подтверждения истекло');
+                    switchView('forgot-password');
+                },
+            );
         } catch (err) {
-            setError(err.message || 'Не удалось отправить заявку');
+            setError(err.message || 'Не удалось отправить запрос');
         } finally {
             setLoading(false);
         }
     };
 
-    const heading =
-        view === 'login'
-            ? 'Вход'
-            : view === 'register-student'
-              ? 'Регистрация студента'
-              : view === 'register-recruiter'
-                ? 'Заявка работодателя'
-                : view === 'register-student-done'
-                  ? 'Регистрация принята'
-                  : 'Заявка отправлена';
+    const handleForgotNewPassword = (e) => {
+        e.preventDefault();
+        setError('');
+        const passwordCheck = validateRegistrationPassword(newPassword);
+        if (!passwordCheck.ok) {
+            setError(passwordCheck.message);
+            return;
+        }
+        if (newPassword !== newPasswordConfirm) {
+            setError('Пароли не совпадают');
+            return;
+        }
+        setError('Смена пароля на сайте пока недоступна — обратитесь к администратору');
+    };
+
+    const restartTelegramVerification = async () => {
+        setError('');
+        const phone = verification?.phoneNumber;
+        if (!phone) return;
+        setLoading(true);
+        try {
+            const res = await startPhoneVerification({ phoneNumber: phone });
+            setVerification((prev) => ({ ...prev, ...res, phoneNumber: phone, mode: 'forgot' }));
+            startVerificationPolling(
+                res.verificationId,
+                () => switchView('forgot-new-password'),
+                () => setError('Время подтверждения истекло'),
+            );
+        } catch (err) {
+            setError(err.message || 'Не удалось обновить сессию');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBack = () => {
+        if (view === 'login') {
+            onClose();
+            return;
+        }
+        const backMap = {
+            'forgot-password': 'login',
+            'forgot-telegram': 'forgot-password',
+            'forgot-new-password': 'forgot-telegram',
+        };
+        switchView(backMap[view] || 'login');
+    };
+
+    const usernameGroupClass = [
+        focusedField === 'username' ? 'loginModal__inputGroup--focusedUsername' : '',
+        error && view === 'login' ? 'loginModal__inputGroup--error' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
+
+    const passwordGroupClass = [
+        focusedField === 'password' ? 'loginModal__inputGroup--focusedPassword' : '',
+        error && view === 'login' ? 'loginModal__inputGroup--error' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
+
+    if (view === 'register') {
+        return (
+            <div className="loginModal__overlay">
+                <RegistrationWizard
+                    onClose={onClose}
+                    onSuccess={onSuccess}
+                    onLogin={() => switchView('login')}
+                />
+            </div>
+        );
+    }
+
+    if (loading && view !== 'forgot-telegram') {
+        return (
+            <div className="loginModal__overlay">
+                <LoadingScreen />
+            </div>
+        );
+    }
 
     return (
         <div className="loginModal__overlay">
             <div className="loginModal__card">
-                <button
-                    type="button"
-                    className="loginModal__backBtn"
-                    onClick={view === 'login' ? onClose : () => switchView('login')}
-                    aria-label="Назад"
-                >
-                    <ChevronLeftIcon />
-                </button>
-
-                <div className="loginModal__logoWrap">
-                    <div className="loginModal__logoPlaceholder" aria-hidden="true">
-                        рез<br />юм<br />ище
-                    </div>
-                </div>
-
-                <h2 className="loginModal__heading">{heading}</h2>
-
-                {view === 'register-student-done' && (
-                    <div className="loginModal__infoBlock">
-                        <p>
-                            Аккаунт создан с курсом NEW. Профиль появится у рекрутеров после модерации
-                            администратором.
-                        </p>
-                        <button type="button" className="loginModal__primaryBtn" onClick={() => switchView('login')}>
-                            Перейти ко входу
-                        </button>
-                    </div>
-                )}
-
-                {view === 'register-recruiter-done' && (
-                    <div className="loginModal__infoBlock">
-                        <p>
-                            Заявка на регистрацию принята. Вход будет доступен после одобрения администратором
-                            (cookie не выдаются до одобрения).
-                        </p>
-                        <button type="button" className="loginModal__primaryBtn" onClick={() => switchView('login')}>
-                            Понятно
-                        </button>
-                    </div>
-                )}
-
                 {view === 'login' && (
-                    <form onSubmit={handleLogin} className="loginModal__form">
-                        <div className="loginModal__inputGroup">
-                            <label htmlFor="loginModal-login">Логин</label>
-                            <div className="loginModal__inputWrap">
+                    <AuthShell onBack={onClose} heading="Вход">
+                        <form onSubmit={handleLogin} className="loginModal__form">
+                            <div className={`loginModal__inputGroup ${usernameGroupClass}`.trim()}>
+                                <label htmlFor="loginModal-login">Логин</label>
                                 <input
                                     id="loginModal-login"
                                     type="text"
                                     autoComplete="username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
+                                    onFocus={() => setFocusedField('username')}
+                                    onBlur={() => setFocusedField(null)}
                                     required
-                                    disabled={loading}
                                 />
                             </div>
-                        </div>
-
-                        <div className="loginModal__inputGroup">
-                            <label htmlFor="loginModal-password">Пароль</label>
-                            <div className="loginModal__inputWrap">
-                                <input
-                                    id="loginModal-password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    autoComplete="current-password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                    disabled={loading}
-                                    className="loginModal__inputPassword"
-                                />
-                                <button
-                                    type="button"
-                                    className="loginModal__passwordToggle"
-                                    onClick={() => setShowPassword((v) => !v)}
-                                    disabled={loading}
-                                    aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
-                                    aria-pressed={showPassword}
-                                >
-                                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {error ? <div className="loginModal__error" role="alert">{error}</div> : null}
-
-                        <button type="submit" className="loginModal__primaryBtn" disabled={loading}>
-                            {loading ? 'Вход…' : 'Войти'}
-                        </button>
-                        <button
-                            type="button"
-                            className="loginModal__secondaryBtn"
-                            disabled={loading}
-                            onClick={() => switchView('register-student')}
+                            <PasswordField
+                                id="loginModal-password"
+                                label="Пароль"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                onFocus={() => setFocusedField('password')}
+                                onBlur={() => setFocusedField(null)}
+                                autoComplete="current-password"
+                                showPassword={showPassword}
+                                onToggle={() => setShowPassword((v) => !v)}
+                                groupClass={passwordGroupClass}
+                            />
+                            <button type="submit" className="loginModal__primaryBtn">
+                                Войти
+                            </button>
+                            <button
+                                type="button"
+                                className="loginModal__secondaryBtn"
+                                onClick={() => switchView('register')}
+                            >
+                                <span>Зарегистрироваться</span>
+                            </button>
+                        </form>
+                        <a
+                            href="#"
+                            className="loginModal__forgotLink"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                switchView('forgot-password');
+                            }}
                         >
-                            <span>Регистрация студента</span>
-                        </button>
-                        <button
-                            type="button"
-                            className="loginModal__secondaryBtn"
-                            disabled={loading}
-                            onClick={() => switchView('register-recruiter')}
+                            Забыли пароль?
+                        </a>
+                    </AuthShell>
+                )}
+
+                {view === 'forgot-password' && (
+                    <AuthShell
+                        onBack={handleBack}
+                        heading="Восстановление пароля"
+                        subheading="Подтверждение через Telegram-бота (не SMS)"
+                        footer={
+                            <p className="loginModal__legal">
+                                Нажимая «Отправить код», вы принимаете{' '}
+                                <a href="/">политику конфиденциальности</a> и <a href="/">правила сервиса</a>
+                            </p>
+                        }
+                    >
+                        <div className="loginModal__tabs" role="tablist">
+                            <button
+                                type="button"
+                                className={`loginModal__tab ${forgotTab === 'phone' ? 'loginModal__tab--active' : ''}`}
+                                onClick={() => setForgotTab('phone')}
+                            >
+                                Телефон
+                            </button>
+                            <button
+                                type="button"
+                                className={`loginModal__tab ${forgotTab === 'email' ? 'loginModal__tab--active' : ''}`}
+                                onClick={() => setForgotTab('email')}
+                            >
+                                Почта
+                                <span className="loginModal__tabBadge">скоро</span>
+                            </button>
+                        </div>
+                        <form onSubmit={handleForgotSubmit} className="loginModal__form">
+                            {forgotTab === 'phone' ? (
+                                <div className="loginModal__phoneRow">
+                                    <div className="loginModal__phonePrefix">
+                                        <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
+                                        +7
+                                    </div>
+                                    <input
+                                        className="loginModal__phoneInput"
+                                        type="tel"
+                                        value={formatPhoneDisplay(forgotPhoneLocal)}
+                                        onChange={(e) => setForgotPhoneLocal(e.target.value.replace(/\D/g, ''))}
+                                        required
+                                        placeholder="952 312-94-90"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="loginModal__emailRow">
+                                    <div className="loginModal__emailIcon">
+                                        <MailIcon />
+                                    </div>
+                                    <input type="email" disabled placeholder="youremail@example.com" />
+                                </div>
+                            )}
+                            <button type="submit" className="loginModal__primaryBtn">
+                                Отправить код
+                            </button>
+                        </form>
+                    </AuthShell>
+                )}
+
+                {view === 'forgot-telegram' && verification && (
+                    <AuthShell
+                        onBack={handleBack}
+                        heading="Введите код из СМС"
+                        subheading={`Для тестов: 7890. Или Telegram @${verification.botUsername}, ${verification.phoneNumber}`}
+                    >
+                        <PhoneOtpConfirm
+                            verificationId={verification.verificationId}
+                            onConfirmed={() => switchView('forgot-new-password')}
+                            onError={setError}
+                        />
+                        <div className="loginModal__telegramWait">
+                            <div className="loginModal__spinner loginModal__spinner--inline" aria-hidden="true" />
+                            <p className="loginModal__infoText">Или подтвердите в Telegram…</p>
+                        </div>
+                        <a
+                            href={verification.botDeepLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="loginModal__primaryBtn loginModal__linkBtn"
                         >
-                            <span>Заявка работодателя</span>
+                            Открыть Telegram
+                        </a>
+                        <button type="button" className="loginModal__ghostBtn" onClick={restartTelegramVerification}>
+                            Запросить снова
                         </button>
-                    </form>
+                    </AuthShell>
                 )}
 
-                {view === 'register-student' && (
-                    <form onSubmit={handleRegisterStudent} className="loginModal__form">
-                        <div className="loginModal__inputGroup">
-                            <label>Логин</label>
-                            <input value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Пароль</label>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Повтор пароля</label>
-                            <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Имя</label>
-                            <input value={studentReg.firstName} onChange={(e) => setStudentReg((p) => ({ ...p, firstName: e.target.value }))} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Фамилия</label>
-                            <input value={studentReg.lastName} onChange={(e) => setStudentReg((p) => ({ ...p, lastName: e.target.value }))} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Email</label>
-                            <input type="email" value={studentReg.email} onChange={(e) => setStudentReg((p) => ({ ...p, email: e.target.value }))} disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Город</label>
-                            <input value={studentReg.city} onChange={(e) => setStudentReg((p) => ({ ...p, city: e.target.value }))} disabled={loading} />
-                        </div>
-                        {error ? <div className="loginModal__error" role="alert">{error}</div> : null}
-                        <button type="submit" className="loginModal__primaryBtn" disabled={loading}>
-                            {loading ? 'Отправка…' : 'Зарегистрироваться'}
-                        </button>
-                    </form>
+                {view === 'forgot-new-password' && (
+                    <AuthShell
+                        onBack={handleBack}
+                        heading="Новый пароль"
+                        subheading="Придумайте надёжный пароль и запишите на листочек, чтобы не забыть"
+                    >
+                        <form onSubmit={handleForgotNewPassword} className="loginModal__form">
+                            <PasswordField
+                                id="forgot-new-password"
+                                label="Новый пароль"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                autoComplete="new-password"
+                                showPassword={showNewPassword}
+                                onToggle={() => setShowNewPassword((v) => !v)}
+                            />
+                            <PasswordField
+                                id="forgot-new-password-confirm"
+                                label="Повторите новый пароль"
+                                value={newPasswordConfirm}
+                                onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                                autoComplete="new-password"
+                                showPassword={showNewPasswordConfirm}
+                                onToggle={() => setShowNewPasswordConfirm((v) => !v)}
+                            />
+                            <button type="submit" className="loginModal__primaryBtn">
+                                Войти с новым паролем
+                            </button>
+                        </form>
+                    </AuthShell>
                 )}
-
-                {view === 'register-recruiter' && (
-                    <form onSubmit={handleRegisterRecruiter} className="loginModal__form">
-                        <div className="loginModal__inputGroup">
-                            <label>Логин</label>
-                            <input value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Пароль</label>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Повтор пароля</label>
-                            <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Компания</label>
-                            <input value={recruiterReg.companyName} onChange={(e) => setRecruiterReg((p) => ({ ...p, companyName: e.target.value }))} required disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Имя</label>
-                            <input value={recruiterReg.firstName} onChange={(e) => setRecruiterReg((p) => ({ ...p, firstName: e.target.value }))} disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Фамилия</label>
-                            <input value={recruiterReg.lastName} onChange={(e) => setRecruiterReg((p) => ({ ...p, lastName: e.target.value }))} disabled={loading} />
-                        </div>
-                        <div className="loginModal__inputGroup">
-                            <label>Email</label>
-                            <input type="email" value={recruiterReg.email} onChange={(e) => setRecruiterReg((p) => ({ ...p, email: e.target.value }))} disabled={loading} />
-                        </div>
-                        {error ? <div className="loginModal__error" role="alert">{error}</div> : null}
-                        <button type="submit" className="loginModal__primaryBtn" disabled={loading}>
-                            {loading ? 'Отправка…' : 'Подать заявку'}
-                        </button>
-                    </form>
-                )}
-
-                {view === 'login' && (
-                    <a href="#" className="loginModal__forgotLink" onClick={(e) => e.preventDefault()}>
-                        Забыли пароль?
-                    </a>
-                )}
-                {info ? <p className="loginModal__infoText">{info}</p> : null}
             </div>
+            <ErrorToast message={error} onClose={() => setError('')} />
         </div>
     );
 };

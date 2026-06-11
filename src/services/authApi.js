@@ -1,8 +1,91 @@
 import { API_BASE_URL } from '../config/api.js';
+import { apiClientJson } from '../utils/apiClient.js';
+
+export const AUTH_CHANGED_EVENT = 'resume:auth-changed';
+export const AUTH_REQUIRED_EVENT = 'resume:auth-required';
+
+/** Инкремент при выходе — отменяет устаревшие syncAuthSession в полёте. */
+let authSessionEpoch = 0;
+/** Один in-flight syncAuthSession на всех потребителей. */
+let syncInFlight = null;
+
+export function notifyAuthChanged() {
+    window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
+}
+
+// Re-export for hooks
+export { AUTH_CHANGED_EVENT as RESUME_AUTH_CHANGED_EVENT };
 
 const AUTH_FLAG_KEY = 'isAuthenticated';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
+/** Роль с последнего входа (STUDENT, RECRUITER, ADMIN). */
+export const AUTH_ROLE_KEY = 'resumeAuthRole';
+export const AUTH_ACCOUNT_STATUS_KEY = 'resumeAccountStatus';
+export const AUTH_HINTS_DISABLED_KEY = 'resumeHintsDisabled';
+export const AUTH_RETURN_KEY = 'authReturnTo';
+
+export const consumeAuthReturnTo = () => {
+    const returnTo = sessionStorage.getItem(AUTH_RETURN_KEY);
+    sessionStorage.removeItem(AUTH_RETURN_KEY);
+    return returnTo;
+};
+
+const parseResponseJson = async (response) => {
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        try {
+            return await response.json();
+        } catch {
+            return null;
+        }
+    }
+    const text = await response.text();
+    if (!text) return null;
+    try {
+        return JSON.parse(text);
+    } catch {
+        return { message: text };
+    }
+};
+
+const parseAuthErrorMessage = (status, rawBody) => {
+    let message = rawBody;
+    try {
+        const parsed = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+        message = parsed?.message || message;
+    } catch {
+        /* keep raw */
+    }
+    if (status === 401) {
+        return 'Неверный логин или пароль. Если ошибка повторяется — обновите страницу и попробуйте снова.';
+    }
+    if (status === 403) {
+        return message || 'Доступ запрещён. Аккаунт может быть на проверке.';
+    }
+    return message || `Ошибка входа (${status})`;
+};
+
+/** Сбрасывает протухшую серверную сессию, чтобы login не ломался из‑за старых cookies. */
+async function resetStaleSessionBeforeAuth() {
+    try {
+        await fetch(`${API_BASE_URL}auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch {
+        /* ignore */
+    }
+    authSessionEpoch += 1;
+    syncInFlight = null;
+    localStorage.removeItem(AUTH_FLAG_KEY);
+    localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+    localStorage.removeItem(AUTH_USERNAME_KEY);
+    localStorage.removeItem(AUTH_ROLE_KEY);
+    localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
+    localStorage.removeItem(AUTH_HINTS_DISABLED_KEY);
+    sessionStorage.removeItem('showLoginAfter403');
+}
 
 /**
  * Авторизация пользователя
@@ -12,68 +95,45 @@ export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
  */
 export const login = async (username, password) => {
     try {
+        await resetStaleSessionBeforeAuth();
+
         const url = `${API_BASE_URL}auth/login`;
         console.log('[AUTH] Attempting login to:', url);
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', 
+            credentials: 'include',
             body: JSON.stringify({
-                username,
-                password
-            })
+                username: String(username || '').trim(),
+                password,
+            }),
         });
 
         console.log('[AUTH] Response status:', response.status);
-        console.log('[AUTH] Response headers:', Object.fromEntries(response.headers.entries()));
 
         if (!response.ok) {
             const errorText = await response.text();
             console.error('[AUTH] Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            const err = new Error(parseAuthErrorMessage(response.status, errorText));
+            err.status = response.status;
+            throw err;
         }
 
-        const contentType = response.headers.get('content-type');
-        const contentLength = response.headers.get('content-length');
-        
-        let data = null;
-
-        if (contentLength && parseInt(contentLength) > 0) {
-            if (contentType && contentType.includes('application/json')) {
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    console.warn('[AUTH] Failed to parse JSON, response might be empty');
-                }
-            } else {
-                const text = await response.text();
-                if (text) {
-                    try {
-                        data = JSON.parse(text);
-                    } catch (e) {
-                        data = { message: text };
-                    }
-                }
-            }
-        }
-
-        const cookiesAfterLogin = document.cookie;
-        console.log('[AUTH] Login successful, cookies:', cookiesAfterLogin);
-        console.log('[AUTH] Response data:', data);
-
-        const setCookieHeader = response.headers.get('set-cookie');
-        console.log('[AUTH] Set-Cookie header:', setCookieHeader);
+        const data = await parseResponseJson(response);
+        console.log('[AUTH] Login successful, response data:', data);
 
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
-
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         if (username != null && String(username).trim()) {
             localStorage.setItem(AUTH_USERNAME_KEY, String(username).trim());
         }
-        
+
+        await syncAuthSession();
+        notifyAuthChanged();
+
         return data || { success: true };
     } catch (error) {
         console.error('[AUTH] Error during login:', error);
@@ -133,9 +193,16 @@ export const isAuthenticated = () => {
 };
 
 const clearLocalAuth = () => {
+    authSessionEpoch += 1;
+    syncInFlight = null;
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
+    localStorage.removeItem(AUTH_ROLE_KEY);
+    localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
+    localStorage.removeItem(AUTH_HINTS_DISABLED_KEY);
+    sessionStorage.removeItem('resumeOnboardingStudent');
+    sessionStorage.removeItem('resumeOnboardingRecruiter');
     document.cookie.split(';').forEach((c) => {
         document.cookie = c
             .replace(/^ +/, '')
@@ -145,8 +212,10 @@ const clearLocalAuth = () => {
 
 /**
  * POST /auth/register-student
+ * @param {{ username: string, password: string, passwordConfirm: string, name?: string, phoneNumber: string, phoneVerificationId: string }} body
  */
 export const registerStudent = async (body) => {
+    await resetStaleSessionBeforeAuth();
     const url = `${API_BASE_URL}auth/register-student`;
     const response = await fetch(url, {
         method: 'POST',
@@ -166,6 +235,13 @@ export const registerStudent = async (body) => {
         err.status = response.status;
         throw err;
     }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    if (body.username != null && String(body.username).trim()) {
+        localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
+    }
+    await syncAuthSession();
+    notifyAuthChanged();
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
@@ -177,6 +253,7 @@ export const registerStudent = async (body) => {
  * POST /auth/register-recruiter
  */
 export const registerRecruiter = async (body) => {
+    await resetStaleSessionBeforeAuth();
     const url = `${API_BASE_URL}auth/register-recruiter`;
     const response = await fetch(url, {
         method: 'POST',
@@ -196,6 +273,13 @@ export const registerRecruiter = async (body) => {
         err.status = response.status;
         throw err;
     }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    if (body.username != null && String(body.username).trim()) {
+        localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
+    }
+    await syncAuthSession();
+    notifyAuthChanged();
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
@@ -229,6 +313,13 @@ export const refreshSession = async () => {
 /**
  * POST /auth/logout + очистка клиента
  */
+export const changePassword = async (currentPassword, newPassword) => {
+    return apiClientJson('auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword }),
+    });
+};
+
 export const logoutServer = async () => {
     try {
         await fetch(`${API_BASE_URL}auth/logout`, {
@@ -239,11 +330,174 @@ export const logoutServer = async () => {
         console.warn('[AUTH] logout request failed', e);
     } finally {
         clearLocalAuth();
+        notifyAuthChanged();
     }
 };
 
 export const logout = () => {
     clearLocalAuth();
+    notifyAuthChanged();
     console.log('[AUTH] Logged out, cleared all auth data');
 };
+
+/**
+ * GET /auth/me — синхронизирует флаг входа, логин и роль на клиенте.
+ * @returns {Promise<{ username: string, role: string } | null>}
+ */
+async function syncAuthSessionInternal() {
+    const epochAtStart = authSessionEpoch;
+
+    const fetchMe = async () => {
+        const response = await fetch(`${API_BASE_URL}auth/me`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) {
+            return { ok: false, status: response.status };
+        }
+        return { ok: true, data: await response.json() };
+    };
+
+    const applyMeData = (data) => {
+        if (epochAtStart !== authSessionEpoch) {
+            return null;
+        }
+
+        const prevUsername = localStorage.getItem(AUTH_USERNAME_KEY);
+        const prevRole = localStorage.getItem(AUTH_ROLE_KEY);
+        const prevStatus = localStorage.getItem(AUTH_ACCOUNT_STATUS_KEY);
+        const prevHints = localStorage.getItem(AUTH_HINTS_DISABLED_KEY);
+
+        const nextUsername = data?.username ? String(data.username).trim() : prevUsername;
+        const nextRole = data?.role ? String(data.role).trim() : prevRole;
+        const nextStatus = data?.accountStatus != null ? String(data.accountStatus) : null;
+        const nextHints = data?.hintsDisabled != null ? (data.hintsDisabled ? '1' : '0') : prevHints;
+
+        const changed =
+            localStorage.getItem(AUTH_FLAG_KEY) !== 'true' ||
+            prevUsername !== nextUsername ||
+            prevRole !== nextRole ||
+            prevStatus !== nextStatus ||
+            prevHints !== nextHints;
+
+        localStorage.setItem(AUTH_FLAG_KEY, 'true');
+        localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+        if (data?.username) {
+            localStorage.setItem(AUTH_USERNAME_KEY, nextUsername);
+        }
+        if (data?.role) {
+            localStorage.setItem(AUTH_ROLE_KEY, nextRole);
+        }
+        if (data?.accountStatus != null) {
+            localStorage.setItem(AUTH_ACCOUNT_STATUS_KEY, nextStatus);
+        } else {
+            localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
+        }
+        if (data?.hintsDisabled != null) {
+            localStorage.setItem(AUTH_HINTS_DISABLED_KEY, nextHints);
+        }
+        if (changed) {
+            notifyAuthChanged();
+        }
+        return data;
+    };
+
+    try {
+        let result = await fetchMe();
+        if (result.ok) {
+            return applyMeData(result.data);
+        }
+
+        if (result.status === 401) {
+            try {
+                await refreshSession();
+                result = await fetchMe();
+                if (result.ok) {
+                    return applyMeData(result.data);
+                }
+            } catch (refreshErr) {
+                console.warn('[AUTH] refresh after auth/me 401 failed', refreshErr);
+                if (refreshErr?.status === 401 || refreshErr?.status === 403) {
+                    clearLocalAuth();
+                    notifyAuthChanged();
+                }
+                return null;
+            }
+            console.warn('[AUTH] auth/me still unauthorized after refresh — keeping local session');
+            return null;
+        }
+
+        throw new Error(`auth/me failed: ${result.status}`);
+    } catch (e) {
+        console.warn('[AUTH] syncAuthSession failed', e);
+        return null;
+    }
+}
+
+export async function syncAuthSession() {
+    if (syncInFlight) {
+        return syncInFlight;
+    }
+    syncInFlight = syncAuthSessionInternal().finally(() => {
+        syncInFlight = null;
+    });
+    return syncInFlight;
+}
+
+export function getAuthRole() {
+    return localStorage.getItem(AUTH_ROLE_KEY);
+}
+
+export function isAdmin() {
+    return getAuthRole() === 'ADMIN';
+}
+
+export function getAccountStatus() {
+    return localStorage.getItem(AUTH_ACCOUNT_STATUS_KEY);
+}
+
+export function isHintsDisabled() {
+    if (localStorage.getItem('resumeHintsDisabledLocal') === '1') return true;
+    return localStorage.getItem(AUTH_HINTS_DISABLED_KEY) === '1';
+}
+
+export function isRecruiterRole() {
+    const role = getAuthRole();
+    return role === 'RECRUITER' || role === 'USER';
+}
+
+export function isStudentRole() {
+    return getAuthRole() === 'STUDENT';
+}
+
+/** Одобренный аккаунт или админ — доступ к каталогам после регистрации. */
+export function hasApprovedCatalogAccess() {
+    if (!isAuthenticated()) return false;
+    if (isAdmin()) return true;
+    if (isStudentRole()) return true;
+    return getAccountStatus() === 'APPROVED';
+}
+
+/** Полный каталог студентов (/student/*) — одобренные пользователи. */
+export function hasRecruiterCatalogAccess() {
+    return hasApprovedCatalogAccess();
+}
+
+/** Куда направить уже авторизованного пользователя вместо модала входа. */
+export function getAuthenticatedDestination() {
+    if (!isAuthenticated()) return null;
+    if (isStudentRole()) return '/settings';
+    if (hasApprovedCatalogAccess()) return '/students';
+    if (isRecruiterRole()) return '/settings';
+    return '/settings';
+}
+
+export function requestLogin() {
+    const redirectTo = getAuthenticatedDestination();
+    window.dispatchEvent(
+        new CustomEvent(AUTH_REQUIRED_EVENT, {
+            detail: redirectTo ? { redirectTo } : undefined,
+        }),
+    );
+}
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { isAuthenticated } from '../../services/authApi.js';
+import { isAuthenticated, notifyAuthChanged, consumeAuthReturnTo } from '../../services/authApi.js';
 import LoginModal from './LoginModal.jsx';
 
 const ProtectedRoute = ({ children }) => {
@@ -61,26 +61,15 @@ const ProtectedRoute = ({ children }) => {
     }, [location.pathname]);
 
     const handleLoginSuccess = () => {
-        console.log('[ProtectedRoute] Login successful, updating state');
-        // После успешного входа сразу устанавливаем авторизацию
-        // Флаг уже установлен в login(), cookies могут быть HttpOnly
-        setAuthenticated(true);
+        sessionStorage.removeItem('showLoginAfter403');
+        setAuthenticated(isAuthenticated());
         setShowLogin(false);
-        
-        // Дополнительная проверка через небольшую задержку
-        setTimeout(() => {
-            const authStatus = isAuthenticated();
-            console.log('[ProtectedRoute] After login check - auth status:', authStatus);
-            if (!authStatus) {
-                // Если проверка не прошла, проверяем еще раз
-                setTimeout(() => {
-                    const recheckStatus = isAuthenticated();
-                    console.log('[ProtectedRoute] Recheck - auth status:', recheckStatus);
-                    setAuthenticated(recheckStatus);
-                    setShowLogin(!recheckStatus);
-                }, 300);
-            }
-        }, 100);
+        notifyAuthChanged();
+
+        const returnTo = consumeAuthReturnTo();
+        if (returnTo) {
+            navigate(returnTo);
+        }
     };
 
     const handleCloseLogin = () => {

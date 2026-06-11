@@ -6,6 +6,7 @@ import Resume from "./pages/Resume.jsx";
 import Settings from "./pages/Settings.jsx";
 import Chats from "./pages/Chats.jsx";
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+import GlobalAuthPrompt from './components/auth/GlobalAuthPrompt.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 
 const AppRoutes = () => {
@@ -56,6 +57,7 @@ const AppRoutes = () => {
           <Route path='/account' element={<Navigate to="/settings" replace />} />
         </Routes>
         <FloatingButton />
+        <GlobalAuthPrompt />
 
         {isRouteLoading && (
             <div className="appRouteLoader" aria-label="Загрузка страницы">

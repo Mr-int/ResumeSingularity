@@ -13,18 +13,23 @@
     z-index: 10000;
     font-family: 'Montserrat', sans-serif;
     animation: loginModalFadeIn 0.3s ease-in-out;
+    padding: 16px;
+    color: #ffffff;
+    color-scheme: dark;
 }
 
 .loginModal__card {
     background: #111118;
     border-radius: 40px;
-    padding: 40px 35px;
+    padding: 40px 35px 32px;
     width: 100%;
     max-width: 440px;
     position: relative;
     text-align: center;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     animation: loginModalSlideIn 0.3s ease-in-out;
+    color: #ffffff;
+    color-scheme: dark;
 }
 
 .loginModal__card::before {
@@ -33,32 +38,43 @@
     inset: -1px;
     border-radius: 40px;
     padding: 1px;
-    background: linear-gradient(135deg, #ff416c 0%, #2b5876 50%, #4e54c8 100%);
+    background: linear-gradient(135deg, #ff416c 0%, #7c3aed 45%, #3b82f6 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
 }
 
+.loginModal__card--loading {
+    background: linear-gradient(145deg, #1a1030 0%, #0f1528 40%, #120a1e 100%);
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+}
+
 .loginModal__backBtn {
     position: absolute;
     left: 35px;
     top: 45px;
-    color: #8f8f9d;
+    color: #ffffff;
     background: none;
     border: none;
     padding: 4px;
     cursor: pointer;
     font-size: 20px;
     line-height: 1;
-    transition: color 0.2s;
+    transition: opacity 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 2;
 }
 
 .loginModal__backBtn:hover {
-    color: #ffffff;
+    opacity: 0.75;
 }
 
 .loginModal__backIcon {
@@ -66,32 +82,31 @@
 }
 
 .loginModal__logoWrap {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     display: inline-block;
 }
 
-.loginModal__logoPlaceholder {
-    width: 60px;
-    height: 60px;
+.loginModal__logo {
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
-    background: #1a1a24;
-    border: 1px solid #333344;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    line-height: 1.2;
+    object-fit: cover;
+    display: block;
 }
 
 .loginModal__heading {
     color: #ffffff;
     font-size: 24px;
     font-weight: 500;
-    margin: 0 0 30px;
+    margin: 0 0 8px;
+}
+
+.loginModal__subheading {
+    color: #9ca3af;
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 0 0 24px;
+    text-align: center;
 }
 
 .loginModal__form {
@@ -99,15 +114,33 @@
 }
 
 .loginModal__inputGroup {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .loginModal__inputGroup label {
     display: block;
-    color: #8f8f9d;
+    color: #9ca3af;
     font-size: 14px;
-    margin-bottom: 10px;
-    padding-left: 5px;
+    margin-bottom: 8px;
+    padding-left: 4px;
+    transition: color 0.2s;
+}
+
+.loginModal__fieldHint {
+    color: #9ca3af;
+    font-size: 12px;
+    line-height: 1.45;
+    margin: 8px 0 0;
+    padding-left: 4px;
+}
+
+.loginModal__inputGroup--focusedUsername label {
+    color: #60a5fa;
+}
+
+.loginModal__inputGroup--focusedPassword label,
+.loginModal__inputGroup--error label {
+    color: #fb7185;
 }
 
 .loginModal__inputWrap {
@@ -116,7 +149,9 @@
     align-items: center;
 }
 
-.loginModal__inputWrap input {
+.loginModal__inputGroup input,
+.loginModal__inputWrap input,
+.loginModal__phoneInput {
     width: 100%;
     background-color: #09090d;
     border: 1px solid #1f1f2e;
@@ -126,20 +161,37 @@
     font-size: 16px;
     font-family: inherit;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.loginModal__inputGroup input::placeholder,
+.loginModal__inputWrap input::placeholder,
+.loginModal__phoneInput::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+.loginModal__inputGroup--focusedUsername input {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
+}
+
+.loginModal__inputGroup--focusedPassword input,
+.loginModal__inputGroup--error input {
+    border-color: #ff416c;
+    box-shadow: 0 0 0 1px rgba(255, 65, 108, 0.3);
+}
+
+.loginModal__inputGroup input:disabled,
+.loginModal__inputWrap input:disabled,
+.loginModal__phoneInput:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    color: #9ca3af;
 }
 
 .loginModal__inputPassword {
     padding-right: 48px;
-}
-
-.loginModal__inputWrap input:focus {
-    border-color: #ff416c;
-}
-
-.loginModal__inputWrap input:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
 }
 
 .loginModal__passwordToggle {
@@ -169,7 +221,7 @@
 
 .loginModal__primaryBtn {
     width: 100%;
-    background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+    background: linear-gradient(90deg, #ff416c 0%, #a855f7 55%, #3b82f6 100%);
     border: none;
     border-radius: 14px;
     padding: 16px;
@@ -178,17 +230,21 @@
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    margin-top: 15px;
-    margin-bottom: 15px;
-    transition: opacity 0.2s;
+    margin-top: 8px;
+    margin-bottom: 12px;
+    transition: opacity 0.2s, transform 0.15s;
 }
 
 .loginModal__primaryBtn:hover:not(:disabled) {
-    opacity: 0.9;
+    opacity: 0.92;
+}
+
+.loginModal__primaryBtn:active:not(:disabled) {
+    transform: scale(0.99);
 }
 
 .loginModal__primaryBtn:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: not-allowed;
 }
 
@@ -198,13 +254,12 @@
     border: none;
     border-radius: 14px;
     padding: 16px;
-    color: #ef4444;
     font-size: 16px;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
     position: relative;
-    margin-bottom: 25px;
+    margin-bottom: 8px;
     transition: background 0.2s;
 }
 
@@ -214,7 +269,7 @@
     inset: 0;
     border-radius: 14px;
     padding: 1px;
-    background: linear-gradient(90deg, #ff416c, #4e54c8);
+    background: linear-gradient(90deg, #ff416c, #3b82f6);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
@@ -225,10 +280,14 @@
 .loginModal__secondaryBtn span {
     position: relative;
     z-index: 1;
+    background: linear-gradient(90deg, #ff416c, #3b82f6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .loginModal__secondaryBtn:hover:not(:disabled) {
-    background: rgba(255, 65, 108, 0.05);
+    background: rgba(255, 65, 108, 0.06);
 }
 
 .loginModal__secondaryBtn:disabled {
@@ -236,35 +295,369 @@
     cursor: not-allowed;
 }
 
-.loginModal__error {
-    color: #f87171;
-    font-size: 14px;
-    text-align: center;
-    padding: 10px 12px;
-    background: rgba(239, 68, 68, 0.12);
-    border-radius: 12px;
-    margin-bottom: 4px;
+.loginModal__ghostBtn {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 8px;
+    color: #fb7185;
+}
+
+.loginModal__ghostBtn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    padding: 1px;
+    background: linear-gradient(90deg, #ff416c, #3b82f6);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
 }
 
 .loginModal__forgotLink {
     display: inline-block;
-    color: #6366f1;
+    color: #818cf8;
     text-decoration: none;
     font-size: 14px;
+    margin-top: 4px;
     transition: color 0.2s;
 }
 
 .loginModal__forgotLink:hover {
-    color: #818cf8;
+    color: #a5b4fc;
+}
+
+.loginModal__toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(440px, calc(100% - 32px));
+    background: rgba(127, 29, 29, 0.92);
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    border-radius: 16px;
+    padding: 16px 44px 16px 20px;
+    color: #fecaca;
+    font-size: 14px;
+    line-height: 1.45;
+    text-align: left;
+    z-index: 10001;
+    animation: loginModalToastIn 0.35s ease-out;
+    backdrop-filter: blur(8px);
+}
+
+.loginModal__toastClose {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #fca5a5;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    font-size: 18px;
+    opacity: 0.7;
+}
+
+.loginModal__toastClose:hover {
+    opacity: 1;
+}
+
+.loginModal__loadingTitle {
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 500;
+    margin: 24px 0 16px;
+}
+
+.loginModal__loadingText {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+    line-height: 1.55;
+    max-width: 300px;
+    margin: 0 0 32px;
+}
+
+.loginModal__spinner {
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: loginModalSpin 0.85s linear infinite;
+}
+
+.loginModal__spinner--inline {
+    width: 28px;
+    height: 28px;
+    margin: 8px auto 0;
+}
+
+.loginModal__tabs {
+    display: flex;
+    gap: 0;
+    background: #09090d;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 20px;
+}
+
+.loginModal__tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 14px;
+    font-family: inherit;
+    padding: 12px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    position: relative;
+}
+
+.loginModal__tab--active {
+    background: #1a1a24;
+    color: #ffffff;
+}
+
+.loginModal__tab--disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.loginModal__tabBadge {
+    display: block;
+    font-size: 10px;
+    color: #6366f1;
+    margin-top: 2px;
+}
+
+.loginModal__phoneRow {
+    display: flex;
+    gap: 8px;
+}
+
+.loginModal__phonePrefix {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 12px;
+    padding: 0 14px;
+    color: #ffffff;
+    font-size: 15px;
+    min-width: 88px;
+}
+
+.loginModal__phonePrefixFlag {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.loginModal__phoneInput {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.loginModal__phoneInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
+}
+
+.loginModal__emailRow {
+    display: flex;
+    gap: 8px;
+}
+
+.loginModal__emailIcon {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 12px;
+    padding: 0 16px;
+    color: #9ca3af;
+}
+
+.loginModal__legal {
+    margin-top: 20px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: #52525b;
+    text-align: center;
+}
+
+.loginModal__legal a {
+    color: #6366f1;
+    text-decoration: none;
+}
+
+.loginModal__legal a:hover {
+    text-decoration: underline;
+}
+
+.loginModal__telegramWait {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0 4px;
+}
+
+.loginModal__telegramIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #229ed9, #1d8cbd);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.loginModal__infoBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #d4d4d8;
+    text-align: center;
+}
+
+.loginModal__infoBlock p {
+    margin: 0;
+}
+
+.loginModal__infoText {
+    margin: 0;
+    font-size: 14px;
+    color: #9ca3af;
+    text-align: center;
+}
+
+.loginModal__infoText strong {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.loginModal__linkBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.loginModal__choiceList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.loginModal__choiceBtn {
+    width: 100%;
+    text-align: left;
+    background: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 14px;
+    padding: 16px 18px;
+    color: #ffffff;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.loginModal__choiceBtn:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.06);
+}
+
+.loginModal__choiceBtnTitle {
+    display: block;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.loginModal__choiceBtnDesc {
+    display: block;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.loginModal__otpRow {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0 12px;
+}
+
+.loginModal__otpInput {
+    width: 56px;
+    height: 56px;
+    background: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 22px;
+    font-weight: 500;
+    text-align: center;
+    font-family: inherit;
+    outline: none;
+    padding: 0;
+}
+
+.loginModal__otpInput--filled,
+.loginModal__otpInput:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
+}
+
+.loginModal__otpBox {
+    width: 56px;
+    height: 56px;
+    background: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.loginModal__otpBox--active {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
+}
+
+.loginModal__otpBox--dash {
+    color: #52525b;
 }
 
 @keyframes loginModalFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes loginModalSlideIn {
@@ -278,27 +671,25 @@
     }
 }
 
-.loginModal__infoBlock {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    font-size: 15px;
-    line-height: 1.5;
-    color: #3f3f46;
+@keyframes loginModalToastIn {
+    from {
+        transform: translateX(-50%) translateY(16px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
 }
 
-.loginModal__infoText {
-    margin: 12px 0 0;
-    font-size: 14px;
-    color: #52525b;
-    text-align: center;
+@keyframes loginModalSpin {
+    to { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {
     .loginModal__card {
-        padding: 36px 22px;
+        padding: 36px 22px 28px;
         border-radius: 28px;
-        margin: 0 12px;
     }
 
     .loginModal__card::before {
@@ -313,4 +704,192 @@
     .loginModal__heading {
         font-size: 22px;
     }
+
+    .loginModal__toast {
+        bottom: 20px;
+    }
+
+    .loginModal__otpBox {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
 }
+
+.loginModal__step {
+    color: #60a5fa;
+    font-size: 14px;
+    margin: 0 0 20px;
+    text-align: center;
+}
+
+.loginModal__roleList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.loginModal__roleCard {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    text-align: left;
+    background: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 16px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    color: #ffffff;
+    font-family: inherit;
+}
+
+.loginModal__roleCard--active {
+    border-color: transparent;
+    box-shadow: 0 0 0 1px rgba(255, 65, 108, 0.5), 0 0 24px rgba(59, 130, 246, 0.15);
+    background: linear-gradient(#09090d, #09090d) padding-box,
+        linear-gradient(135deg, #ff416c, #3b82f6) border-box;
+    border: 1px solid transparent;
+}
+
+.loginModal__roleCardIcon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+}
+
+.loginModal__roleCardIcon--employer {
+    background-image: linear-gradient(135deg, #3d2c1e, #6b4423);
+}
+
+.loginModal__roleCardIcon--student {
+    background-image: linear-gradient(135deg, #1e3a5f, #2563eb);
+}
+
+.loginModal__roleCardText {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.loginModal__roleCardText strong {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.loginModal__roleCardText span {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.loginModal__textLink {
+    background: none;
+    border: none;
+    color: #818cf8;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.loginModal__textLink:hover {
+    color: #a5b4fc;
+}
+
+.loginModal__telegramBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 14px;
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 15px;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.loginModal__telegramBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.loginModal__checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: #d4d4d8;
+    font-size: 13px;
+    line-height: 1.45;
+    margin: 8px 0 16px;
+    cursor: pointer;
+}
+
+.loginModal__checkbox input {
+    margin-top: 3px;
+    accent-color: #6366f1;
+}
+
+.loginModal__select,
+.loginModal__inputDate {
+    width: 100%;
+    background-color: #09090d;
+    border: 1px solid #1f1f2e;
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: #ffffff;
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.loginModal__select:focus,
+.loginModal__inputDate:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35);
+}
+
+.loginModal__select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239ca3af' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+}
+
+.loginModal__select:invalid {
+    color: #9ca3af;
+}
+
+.loginModal__select option {
+    background-color: #111118;
+    color: #ffffff;
+}
+
+.loginModal__inputDate {
+    cursor: text;
+    color-scheme: dark;
+}
+
+.loginModal__inputDate::-webkit-calendar-picker-indicator {
+    filter: invert(0.85);
+    cursor: pointer;
+}
+
+.loginModal__infoText--link {
+    color: #60a5fa;
+    margin-bottom: 8px;
+}
+
