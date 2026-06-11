@@ -175,3 +175,42 @@ html, body, #root {
   src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-BLACKITALIC.OTF') format('opentype');
   font-display: swap;
 }
+
+/* ——— Кастомный скроллбар (глобально) ——— */
+html {
+  color-scheme: dark;
+  scrollbar-width: thin;
+  scrollbar-color: #a855f7 #0d0d12;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #a855f7 #0d0d12;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #0d0d12;
+  border-radius: 100px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff416c 0%, #a855f7 55%, #3b82f6 100%);
+  border-radius: 100px;
+  border: 2px solid #0d0d12;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff5c7c 0%, #b975f9 55%, #60a5fa 100%);
+  border: 2px solid #0d0d12;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner {
+  background: #0d0d12;
+}

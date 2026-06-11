@@ -5,6 +5,7 @@ import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
 import Settings from "./pages/Settings.jsx";
 import Chats from "./pages/Chats.jsx";
+import Vacancies from './pages/Vacancies.jsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import GlobalAuthPrompt from './components/auth/GlobalAuthPrompt.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
@@ -34,6 +35,7 @@ const AppRoutes = () => {
       <>
         <Routes>
           <Route path='/' element={<Home />} />
+          <Route path='/vacancies' element={<Vacancies />} />
           <Route path='/students' element={
             <ProtectedRoute>
               <Students />
