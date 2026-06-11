@@ -1,15 +1,46 @@
 import './header.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { isAuthenticated, logoutServer } from '../../services/authApi.js';
+import {
+    isAuthenticated,
+    logoutServer,
+    requestLogin,
+    AUTH_CHANGED_EVENT,
+} from '../../services/authApi.js';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
+const LoginIcon = () => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+    >
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+        <polyline points="10 17 15 12 10 7" />
+        <line x1="15" y1="12" x2="3" y2="12" />
+    </svg>
+);
+
 const Header = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const authed = isAuthenticated();
+    const [authed, setAuthed] = useState(() => isAuthenticated());
+
+    useEffect(() => {
+        const sync = () => setAuthed(isAuthenticated());
+        sync();
+        window.addEventListener(AUTH_CHANGED_EVENT, sync);
+        return () => window.removeEventListener(AUTH_CHANGED_EVENT, sync);
+    }, []);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -17,6 +48,11 @@ const Header = () => {
 
     const handleMobileLinkClick = () => {
         setIsMenuOpen(false);
+    };
+
+    const handleLoginClick = () => {
+        handleMobileLinkClick();
+        requestLogin();
     };
 
     return (
@@ -56,27 +92,40 @@ const Header = () => {
                         </>
                     ) : null}
                     <Link to="/students" className="header__search">
-                    <span className="header__searchBtn">
-                        <span className="header__searchBtnWhite">найти стажера</span>
-                        <span className="header__searchBtnGradient" aria-hidden="true">найти стажера</span>
-                    </span>
-                    <div className="header__searchIconContainer">
-                        <img
-                            src={searchIcon}
-                            alt="search"
-                            className="header__searchIcon"
-                            width="20"
-                            height="20"
-                        />
-                        <img
-                            src={gradientSearchIcon}
-                            alt="search"
-                            className="header__searchIconGradient"
-                            width="20"
-                            height="20"
-                        />
-                    </div>
+                        <span className="header__searchBtn">
+                            <span className="header__searchBtnWhite">найти стажера</span>
+                            <span className="header__searchBtnGradient" aria-hidden="true">найти стажера</span>
+                        </span>
+                        <div className="header__searchIconContainer">
+                            <img
+                                src={searchIcon}
+                                alt="search"
+                                className="header__searchIcon"
+                                width="20"
+                                height="20"
+                            />
+                            <img
+                                src={gradientSearchIcon}
+                                alt="search"
+                                className="header__searchIconGradient"
+                                width="20"
+                                height="20"
+                            />
+                        </div>
                     </Link>
+                    {!authed ? (
+                        <button
+                            type="button"
+                            className="header__loginBtn"
+                            onClick={handleLoginClick}
+                            aria-label="Войти"
+                            title="Войти"
+                        >
+                            <span className="header__loginIcon">
+                                <LoginIcon />
+                            </span>
+                        </button>
+                    ) : null}
                 </div>
 
                 <button
@@ -140,10 +189,21 @@ const Header = () => {
                             выйти
                         </button>
                     </>
-                ) : null}
+                ) : (
+                    <button
+                        type="button"
+                        className="header__mobileBtn header__mobileBtn--login"
+                        onClick={handleLoginClick}
+                    >
+                        <span className="header__mobileLoginIcon" aria-hidden>
+                            <LoginIcon />
+                        </span>
+                        войти
+                    </button>
+                )}
             </div>
         </header>
-    )
-}
+    );
+};
 
 export default Header;

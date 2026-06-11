@@ -1,14 +1,9 @@
 import { API_BASE_URL } from '../config/api.js';
 import { refreshSession } from '../services/authApi.js';
 
-const clearAuthAndRedirect = () => {
+const clearLocalAuthSilently = () => {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('isAuthenticated_time');
-    sessionStorage.setItem('showLoginAfter403', 'true');
-    window.dispatchEvent(new CustomEvent('resume:auth-required'));
-    if (!window.location.pathname.startsWith('/students')) {
-        window.location.href = '/students';
-    }
 };
 
 export const apiClientJson = async (endpoint, options = {}) => {
@@ -46,9 +41,12 @@ export const apiClientJson = async (endpoint, options = {}) => {
                     /* fall through */
                 }
             }
-            console.log('[API] 401 Unauthorized - redirecting to login');
-            clearAuthAndRedirect();
-            throw new Error('HTTP error! status: 401 - Unauthorized');
+            console.log('[API] 401 Unauthorized — session cleared silently');
+            clearLocalAuthSilently();
+            const unauthorized = new Error('HTTP error! status: 401 - Unauthorized');
+            unauthorized.status = 401;
+            unauthorized.requiresAuth = true;
+            throw unauthorized;
         }
 
         if (response.status === 403) {
@@ -60,13 +58,9 @@ export const apiClientJson = async (endpoint, options = {}) => {
                 responseBody = { message: errorText };
             }
             if (!skipSessionClearOn403) {
-                console.log('[API] 403 Forbidden - access denied, clearing client auth and requesting login');
-                localStorage.removeItem('isAuthenticated');
-                localStorage.removeItem('isAuthenticated_time');
-                sessionStorage.setItem('showLoginAfter403', 'true');
-                window.dispatchEvent(new CustomEvent('resume:auth-required'));
+                console.log('[API] 403 Forbidden — access denied');
             } else {
-                console.log('[API] 403 Forbidden (session not cleared — soft probe)');
+                console.log('[API] 403 Forbidden (soft probe)');
             }
             const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
             error.status = 403;

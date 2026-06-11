@@ -31,17 +31,13 @@ export const uploadStudentPhoto = async (studentId, file) => {
     });
 
     if (response.status === 401) {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('isAuthenticated_time');
-        window.location.href = '/login';
-        throw new Error('HTTP error! status: 401 - Unauthorized');
+        const err = new Error('HTTP error! status: 401 - Unauthorized');
+        err.status = 401;
+        err.requiresAuth = true;
+        throw err;
     }
 
     if (response.status === 403) {
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('isAuthenticated_time');
-        sessionStorage.setItem('showLoginAfter403', 'true');
-        window.dispatchEvent(new CustomEvent('resume:auth-required'));
         const err = new Error('HTTP error! status: 403 - Forbidden');
         err.status = 403;
         throw err;

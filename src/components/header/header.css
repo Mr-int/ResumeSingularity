@@ -165,6 +165,46 @@
     opacity: 1;
 }
 
+.header__loginBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.header__loginBtn:hover {
+    opacity: 0.85;
+    transform: translateX(1px);
+}
+
+.header__loginIcon {
+    display: block;
+    width: 22px;
+    height: 22px;
+}
+
+.header__mobileBtn--login {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.header__mobileLoginIcon {
+    display: inline-flex;
+    width: 20px;
+    height: 20px;
+    color: #fff;
+}
+
 .header__burger {
     display: none;
     flex-direction: column;

@@ -14,6 +14,8 @@ const GlobalAuthPrompt = () => {
     const [open, setOpen] = useState(false);
 
     useEffect(() => {
+        sessionStorage.removeItem('showLoginAfter403');
+
         const onAuthRequired = (event) => {
             if (isAuthenticated()) {
                 const dest = event?.detail?.redirectTo ?? getAuthenticatedDestination() ?? '/settings';
@@ -22,14 +24,10 @@ const GlobalAuthPrompt = () => {
             }
             setOpen(true);
         };
-        if (sessionStorage.getItem('showLoginAfter403') === 'true' && !isAuthenticated()) {
-            setOpen(true);
-        } else if (isAuthenticated()) {
-            sessionStorage.removeItem('showLoginAfter403');
-        }
+
         window.addEventListener(AUTH_REQUIRED_EVENT, onAuthRequired);
         return () => window.removeEventListener(AUTH_REQUIRED_EVENT, onAuthRequired);
-    }, []);
+    }, [navigate]);
 
     if (!open) return null;
 
