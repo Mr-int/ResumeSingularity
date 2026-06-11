@@ -39,3 +39,27 @@ export const postStudentDecision = (requestId, payload) =>
         method: 'POST',
         body: JSON.stringify(payload),
     });
+
+/**
+ * POST /request/mine/filter
+ */
+export const filterMyRequests = (filter = {}, page = 0, size = 50) =>
+    apiClientJson(`request/mine/filter?${pageQuery(page, size)}`, {
+        method: 'POST',
+        body: JSON.stringify(filter),
+    });
+
+/**
+ * POST /request/{id}/tu-decision
+ */
+export const postRequestTuDecision = (requestId, payload) =>
+    apiClientJson(`request/${requestId}/tu-decision`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+
+/**
+ * DELETE /request/{id}
+ */
+export const deleteRequest = (id) =>
+    apiClientJson(`request/${id}`, { method: 'DELETE' });

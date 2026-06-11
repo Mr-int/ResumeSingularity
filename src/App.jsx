@@ -6,7 +6,11 @@ import Resume from "./pages/Resume.jsx";
 import Settings from "./pages/Settings.jsx";
 import Chats from "./pages/Chats.jsx";
 import Vacancies from './pages/Vacancies.jsx';
+import VacancyDetail from './pages/VacancyDetail.jsx';
+import MyVacancies from './pages/MyVacancies.jsx';
+import MyApplications from './pages/MyApplications.jsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
+import ApprovedRoute from './components/auth/ApprovedRoute.jsx';
 import GlobalAuthPrompt from './components/auth/GlobalAuthPrompt.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 
@@ -35,16 +39,35 @@ const AppRoutes = () => {
       <>
         <Routes>
           <Route path='/' element={<Home />} />
-          <Route path='/vacancies' element={<Vacancies />} />
-          <Route path='/students' element={
+          <Route path='/vacancies' element={
+            <ApprovedRoute>
+              <Vacancies />
+            </ApprovedRoute>
+          } />
+          <Route path='/vacancies/mine' element={
             <ProtectedRoute>
-              <Students />
+              <MyVacancies />
             </ProtectedRoute>
           } />
+          <Route path='/vacancies/applications/mine' element={
+            <ApprovedRoute>
+              <MyApplications />
+            </ApprovedRoute>
+          } />
+          <Route path='/vacancies/:id' element={
+            <ApprovedRoute>
+              <VacancyDetail />
+            </ApprovedRoute>
+          } />
+          <Route path='/students' element={
+            <ApprovedRoute>
+              <Students />
+            </ApprovedRoute>
+          } />
           <Route path='/studentsResume/:id' element={
-            <ProtectedRoute>
+            <ApprovedRoute>
               <Resume />
-            </ProtectedRoute>
+            </ApprovedRoute>
           } />
           <Route path='/settings' element={
             <ProtectedRoute>

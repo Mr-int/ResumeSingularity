@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      '/ws': {
+        target: 'https://api.singularity-resume.ru',
+        changeOrigin: true,
+        ws: true,
+        secure: true,
+      },
       '/api': {
         target: 'https://api.singularity-resume.ru',
         changeOrigin: true,

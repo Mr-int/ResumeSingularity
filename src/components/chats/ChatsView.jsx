@@ -15,6 +15,7 @@ import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
 import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
+import { disconnectChatWebSocket, subscribeChatTopic } from '../../services/chatWebSocket.js';
 
 const formatTime = (iso) => {
     if (!iso) return '';
@@ -307,6 +308,25 @@ const ChatsView = () => {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    useEffect(() => {
+        if (!selectedId) return undefined;
+
+        const unsub = subscribeChatTopic(selectedId, (message) => {
+            if (!message?.id) return;
+            mergeMessage(message);
+            const preview = message.body || message.attachmentStorageName || '';
+            updateChatPreview(selectedId, preview, message.createdAt);
+            if (!isMine(message) && message.id) {
+                markChatRead(selectedId, message.id).catch(() => {});
+                refreshSummary(selectedId);
+            }
+        });
+
+        return unsub;
+    }, [selectedId, isMine, refreshSummary]);
+
+    useEffect(() => () => disconnectChatWebSocket(), []);
 
     const filteredChats = useMemo(() => {
         const q = search.trim().toLowerCase();
