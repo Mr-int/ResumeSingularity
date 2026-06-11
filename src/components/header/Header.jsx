@@ -87,14 +87,15 @@ const Header = () => {
                             />
                         </div>
                     </Link>
-                    <button
-                        type="button"
-                        className="header__authBtn"
-                        onClick={handleAuthClick}
-                    >
-                        {authed ? 'выйти' : 'войти'}
-                    </button>
                 </div>
+
+                <button
+                    type="button"
+                    className="header__authBtn"
+                    onClick={handleAuthClick}
+                >
+                    {authed ? 'выйти' : 'войти'}
+                </button>
 
                 <button
                     className={`header__burger ${isMenuOpen ? 'active' : ''}`}
