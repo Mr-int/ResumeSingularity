@@ -11,25 +11,6 @@ import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
-const LoginIcon = () => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width="100%"
-        height="100%"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden
-    >
-        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-        <polyline points="10 17 15 12 10 7" />
-        <line x1="15" y1="12" x2="3" y2="12" />
-    </svg>
-);
-
 const Header = () => {
     const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -50,8 +31,13 @@ const Header = () => {
         setIsMenuOpen(false);
     };
 
-    const handleLoginClick = () => {
+    const handleAuthClick = async () => {
         handleMobileLinkClick();
+        if (authed) {
+            await logoutServer();
+            navigate('/');
+            return;
+        }
         requestLogin();
     };
 
@@ -75,21 +61,9 @@ const Header = () => {
 
                 <div className="header__rightCluster">
                     {authed ? (
-                        <>
-                            <Link to="/chats" className="header__navLink">
-                                чаты
-                            </Link>
-                            <button
-                                type="button"
-                                className="header__navLink header__navLink--btn"
-                                onClick={async () => {
-                                    await logoutServer();
-                                    navigate('/');
-                                }}
-                            >
-                                выйти
-                            </button>
-                        </>
+                        <Link to="/chats" className="header__navLink">
+                            чаты
+                        </Link>
                     ) : null}
                     <Link to="/students" className="header__search">
                         <span className="header__searchBtn">
@@ -113,19 +87,13 @@ const Header = () => {
                             />
                         </div>
                     </Link>
-                    {!authed ? (
-                        <button
-                            type="button"
-                            className="header__loginBtn"
-                            onClick={handleLoginClick}
-                            aria-label="Войти"
-                            title="Войти"
-                        >
-                            <span className="header__loginIcon">
-                                <LoginIcon />
-                            </span>
-                        </button>
-                    ) : null}
+                    <button
+                        type="button"
+                        className="header__authBtn"
+                        onClick={handleAuthClick}
+                    >
+                        {authed ? 'выйти' : 'войти'}
+                    </button>
                 </div>
 
                 <button
@@ -169,38 +137,21 @@ const Header = () => {
                     настройки
                 </Link>
                 {authed ? (
-                    <>
-                        <Link
-                            to="/chats"
-                            className="header__mobileBtn"
-                            onClick={handleMobileLinkClick}
-                        >
-                            чаты
-                        </Link>
-                        <button
-                            type="button"
-                            className="header__mobileBtn"
-                            onClick={async () => {
-                                handleMobileLinkClick();
-                                await logoutServer();
-                                navigate('/');
-                            }}
-                        >
-                            выйти
-                        </button>
-                    </>
-                ) : (
-                    <button
-                        type="button"
-                        className="header__mobileBtn header__mobileBtn--login"
-                        onClick={handleLoginClick}
+                    <Link
+                        to="/chats"
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
                     >
-                        <span className="header__mobileLoginIcon" aria-hidden>
-                            <LoginIcon />
-                        </span>
-                        войти
-                    </button>
-                )}
+                        чаты
+                    </Link>
+                ) : null}
+                <button
+                    type="button"
+                    className="header__mobileBtn"
+                    onClick={handleAuthClick}
+                >
+                    {authed ? 'выйти' : 'войти'}
+                </button>
             </div>
         </header>
     );
