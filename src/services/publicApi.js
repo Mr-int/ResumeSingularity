@@ -17,7 +17,7 @@ export const getPublicProject = (id) =>
 
 /** GET /public/students/{id} */
 export const getPublicStudentCard = (id) =>
-    apiClientJson(`public/students/${id}`, { method: 'GET' });
+    apiClientJson(`public/students/${id}`, { method: 'GET', credentials: 'omit' });
 
 /**
  * POST /public/students/cards

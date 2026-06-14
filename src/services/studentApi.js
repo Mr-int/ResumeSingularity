@@ -1,7 +1,7 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
 import { hasApprovedCatalogAccess, isAuthenticated } from './authApi.js';
-import { filterPublicStudentCards } from './publicApi.js';
+import { filterPublicStudentCards, getPublicStudentCard } from './publicApi.js';
 
 export const getAllStudents = async () => {
     try {
@@ -51,11 +51,31 @@ export const getAllStudents = async () => {
     }
 };
 
+export const fetchStudentForView = async (id) => {
+    if (hasApprovedCatalogAccess()) {
+        try {
+            const data = await apiClientJson(`student/${id}`, { method: 'GET' });
+            if (data?.id) return data;
+        } catch (e) {
+            if (e.status !== 403 && e.status !== 404) throw e;
+        }
+    }
+
+    try {
+        return await getPublicStudentCard(id);
+    } catch (e) {
+        if (e.status === 404) {
+            const err = new Error('Студент не найден');
+            err.status = 404;
+            throw err;
+        }
+        throw e;
+    }
+};
+
 export const getStudentById = async (id) => {
     try {
-        const data = await apiClientJson(`student/${id}`, {
-            method: 'GET',
-        });
+        const data = await fetchStudentForView(id);
         return data;
     } catch (error) {
         if (error.requiresAuth) {
@@ -352,29 +372,8 @@ export const getSkillById = async (id) => {
     }
 };
 
-export const getSkillsByStudentId = async (studentId) => {
-    try {
-        const data = await apiClientJson(`skill/filter`, {
-            method: 'POST',
-            body: JSON.stringify({
-                studentId: studentId,
-                page: 0,
-                size: 100
-            })
-        });
-
-        if (data && data.data) {
-            return data.data;
-        } else if (data && data.content) {
-            return data.content;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
-    } catch (error) {
-        return [];
-    }
-};
+/** Навыки приходят в DTO студента (`student.skills`); отдельный filter по studentId в API нет. */
+export const getSkillsByStudentId = async () => [];
 
 export const sendStudentRequest = async (requestData) => {
     try {

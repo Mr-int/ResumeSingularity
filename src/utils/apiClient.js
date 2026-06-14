@@ -7,6 +7,19 @@ const clearLocalAuthSilently = () => {
     localStorage.removeItem('isAuthenticated_time');
 };
 
+const isHtmlBody = (text) => {
+    const value = String(text || '').trim();
+    return value.startsWith('<') || value.includes('<html') || value.includes('<!DOCTYPE');
+};
+
+const buildHttpError = (status, errorText, responseBody) => {
+    const message = responseBody?.message || (isHtmlBody(errorText) ? '' : errorText);
+    const err = new Error(formatApiUserMessage({ status, message, responseBody }));
+    err.status = status;
+    err.responseBody = responseBody;
+    return err;
+};
+
 export const apiClientJson = async (endpoint, options = {}) => {
     const defaultHeaders = {
         'Content-Type': 'application/json',
@@ -78,11 +91,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
             } catch (_) {
                 responseBody = { message: errorText };
             }
-            const err = new Error(
-                formatApiUserMessage({ status: response.status, message: responseBody?.message, responseBody }),
-            );
-            err.status = response.status;
-            err.responseBody = responseBody;
+            const err = buildHttpError(response.status, errorText, responseBody);
             throw err;
         }
 

@@ -14,7 +14,6 @@ import {
     getPortfolioByStudentId,
     getExperienceDetailsByStudentId,
     getAllStudents,
-    getSkillsByStudentId,
     getEducationDetailsByStudentId
 } from "../../services/studentApi.js";
 import StudentSliderCard from "../studentSlider/studentSliderCard/StudentSliderCard.jsx";
@@ -27,7 +26,7 @@ import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.j
 import { buildSkillCatalogMap, getSkillDisplayName } from "../../utils/skills.js";
 import { fetchAllRegistrationSkills } from "../../services/registrationCatalogApi.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
-import { isAuthenticated, isRecruiterRole, requestLogin } from "../../services/authApi.js";
+import { isAuthenticated, isRecruiterRole, requestLogin, hasApprovedCatalogAccess } from "../../services/authApi.js";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -73,33 +72,29 @@ const StudentResume = () => {
                 if (!studentData || !studentData.id) {
                     throw new Error('Студент не найден');
                 }
-                if (!hasStudentProfilePhoto(studentData)) {
-                    throw new Error('Студент не найден');
-                }
 
+                setStudent(studentData);
+
+                const canLoadDetails = hasApprovedCatalogAccess();
                 const [
                     portfolioResult,
                     educationResult,
                     experienceResult,
-                    skillsResult,
                     catalogResult,
                     allStudentsResult
                 ] = await Promise.allSettled([
-                    getPortfolioByStudentId(id),
-                    getEducationDetailsByStudentId(id),
-                    getExperienceDetailsByStudentId(id),
-                    getSkillsByStudentId(id),
+                    canLoadDetails ? getPortfolioByStudentId(id) : Promise.resolve([]),
+                    canLoadDetails ? getEducationDetailsByStudentId(id) : Promise.resolve([]),
+                    canLoadDetails ? getExperienceDetailsByStudentId(id) : Promise.resolve([]),
                     fetchAllRegistrationSkills(),
-                    getAllStudents()
+                    canLoadDetails ? getAllStudents() : Promise.resolve([]),
                 ]);
 
                 if (catalogResult.status === 'fulfilled') {
                     setSkillCatalogMap(buildSkillCatalogMap(catalogResult.value));
                 }
 
-                if (skillsResult.status === 'fulfilled' && Array.isArray(skillsResult.value) && skillsResult.value.length > 0) {
-                    setSkills(skillsResult.value);
-                } else if (studentData.skills && Array.isArray(studentData.skills)) {
+                if (studentData.skills && Array.isArray(studentData.skills)) {
                     setSkills(studentData.skills);
                 }
 

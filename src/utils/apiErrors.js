@@ -26,6 +26,11 @@ const isPendingApprovalText = (text) => {
     );
 };
 
+const isHtmlErrorBody = (text) => {
+    const value = String(text || '').trim();
+    return value.startsWith('<') || value.includes('<html') || value.includes('<!DOCTYPE');
+};
+
 export function formatApiUserMessage(error) {
     if (!error) {
         return 'Не удалось выполнить запрос. Попробуйте обновить страницу.';
@@ -33,6 +38,10 @@ export function formatApiUserMessage(error) {
 
     const status = error.status;
     const raw = String(error.message || error.responseBody?.message || '').trim();
+
+    if (status === 502 || status === 503 || status === 504 || isHtmlErrorBody(raw)) {
+        return 'Сервер временно недоступен. Попробуйте обновить страницу чуть позже.';
+    }
 
     if (isPendingApprovalText(raw) || (status === 403 && isAccountPending())) {
         if (isPendingApprovalText(raw) && raw && !isAccessDeniedText(raw)) {
