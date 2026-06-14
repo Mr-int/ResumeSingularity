@@ -11,12 +11,65 @@ import {
     uploadStudentPhoto,
 } from '../services/accountApi.js';
 import { getStudentResumeForEdit, updateStudentResume } from '../services/onboardingApi.js';
-import { changePassword, getAuthMe, logoutServer } from '../services/authApi.js';
+import { changePassword, getAuthMe, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, AUTH_USERNAME_KEY } from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
 
 const COURSES = ['NEW', 'FIRST', 'SECOND', 'THIRD', 'FOURTH'];
 const BUSYNESS = ['FREE', 'FREELANCE', 'EMPLOYED'];
+
+const ROLE_LABELS = {
+    STUDENT: 'Студент',
+    RECRUITER: 'Рекрутер',
+    USER: 'Рекрутер',
+    ADMIN: 'Администратор',
+    GUEST: 'Гость',
+};
+
+const STATUS_LABELS = {
+    PENDING: 'На проверке',
+    APPROVED: 'Одобрен',
+    REJECTED: 'Отклонён',
+};
+
+const profileRoleToApiRole = (profileRole) => {
+    if (profileRole === 'student') return 'STUDENT';
+    if (profileRole === 'recruiter') return 'RECRUITER';
+    if (profileRole === 'recruiter_pending') return 'RECRUITER';
+    return null;
+};
+
+const roleBadgeClass = (apiRole, profileRole) => {
+    if (apiRole === 'ADMIN') return 'accountPage__roleBadge--admin';
+    if (apiRole === 'STUDENT' || profileRole === 'student') return 'accountPage__roleBadge--student';
+    if (profileRole === 'recruiter_pending') return 'accountPage__roleBadge--pending';
+    return 'accountPage__roleBadge--recruiter';
+};
+
+const resolveIdentity = (session, profileRole) => {
+    const apiRole =
+        session?.role ||
+        profileRoleToApiRole(profileRole) ||
+        getAuthRole() ||
+        null;
+    const username =
+        session?.username ||
+        (() => {
+            try {
+                return (localStorage.getItem(AUTH_USERNAME_KEY) || '').trim();
+            } catch {
+                return '';
+            }
+        })() ||
+        'Аккаунт';
+    const accountStatus = session?.accountStatus || getAccountStatus() || null;
+    let roleLabel = ROLE_LABELS[apiRole] || 'Пользователь';
+    if (profileRole === 'recruiter_pending') {
+        roleLabel = 'Рекрутер';
+    }
+    const statusLabel = accountStatus ? STATUS_LABELS[accountStatus] || accountStatus : null;
+    return { apiRole, username, roleLabel, statusLabel };
+};
 
 const studentToForm = (s) => ({
     firstName: s.firstName || '',
@@ -249,6 +302,9 @@ const SettingsPage = () => {
         navigate('/');
     };
 
+    const identity = resolveIdentity(session, role);
+    const showIdentity = !loading && (role || isAuthenticated());
+
     return (
         <>
             <Header />
@@ -256,16 +312,29 @@ const SettingsPage = () => {
                 <div className="accountPage__inner">
                     <h1 className="accountPage__title">Профиль</h1>
 
-                    {session ? (
-                        <section className="accountPage__section">
-                            <h2 className="accountPage__sectionTitle">Аккаунт</h2>
-                            <p className="accountPage__accountMeta">
-                                {session.username} · {session.role}
-                                {session.accountStatus ? ` · ${session.accountStatus}` : ''}
-                            </p>
+                    {showIdentity ? (
+                        <section className="accountPage__identity" aria-label="Роль и аккаунт">
+                            <div className="accountPage__identityMain">
+                                <span
+                                    className={`accountPage__roleBadge ${roleBadgeClass(identity.apiRole, role)}`}
+                                >
+                                    {identity.roleLabel}
+                                </span>
+                                <div className="accountPage__identityMeta">
+                                    <span className="accountPage__identityUsername">{identity.username}</span>
+                                    {identity.statusLabel ? (
+                                        <span className="accountPage__identityStatus">{identity.statusLabel}</span>
+                                    ) : null}
+                                    {role === 'recruiter_pending' ? (
+                                        <span className="accountPage__identityStatus accountPage__identityStatus--warn">
+                                            Профиль на модерации
+                                        </span>
+                                    ) : null}
+                                </div>
+                            </div>
                             <button
                                 type="button"
-                                className="accountPage__submit"
+                                className="accountPage__logoutBtn"
                                 onClick={handleLogout}
                             >
                                 Выйти
