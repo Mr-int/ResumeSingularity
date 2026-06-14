@@ -142,6 +142,62 @@
     overflow: hidden;
 }
 
+.studentProjectsPage__card--expanded {
+    min-height: auto;
+}
+
+.studentProjectsPage__gallery {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.studentProjectsPage__gallery--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 13px;
+}
+
+.studentProjectsPage__galleryImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.studentProjectsPage__galleryNav {
+    position: absolute;
+    inset: auto 12px 12px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+}
+
+.studentProjectsPage__galleryNav button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.studentProjectsPage__cardDescription--expanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
 .studentProjectsPage__cardMeta {
     font-size: 13px;
     color: #ffffff;

@@ -96,16 +96,54 @@
 
 .vacanciesPage__input,
 .vacanciesPage__textarea {
+    width: 100%;
     background: transparent;
     border: none;
+    border-bottom: 1px solid #ffffff;
     color: #ffffff;
+    padding: 10px 0;
+    font-size: 15px;
     font-family: inherit;
-    font-size: 16px;
-    line-height: 1.4;
     outline: none;
-    padding: 0;
-    width: 100%;
+}
+
+.vacanciesPage__textarea {
     resize: vertical;
+    min-height: 120px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.vacanciesPage__textarea::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.vacanciesPage__applications {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.vacanciesPage__applicationsTitle {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.vacanciesPage__applicationRow {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.vacanciesPage__applicationActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .vacanciesPage__input::placeholder,

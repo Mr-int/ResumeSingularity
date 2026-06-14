@@ -13,7 +13,15 @@ import {
     extractChatPageItems,
     dedupeChatsByPeer,
 } from '../../services/chatApi.js';
-import { filterMyRequests, postStudentDecision, buildStudentDecisionBody } from '../../services/requestApi.js';
+import { filterMyRequests, postStudentDecision, buildStudentDecisionBody, extractRequestRows, resolveRequestId, postRequestTuDecision } from '../../services/requestApi.js';
+import {
+    REQUEST_RESULT_LABELS,
+    canStudentDecideRequest,
+    canTuDecideRequest,
+    buildTuDecisionBody,
+    matchRequestToChat,
+    TU_REASON_CODES,
+} from '../../utils/requestFlow.js';
 import { formatApiUserMessage } from '../../utils/apiErrors.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
@@ -101,10 +109,6 @@ const ChatAvatar = ({ title, imageUrl, toneClass, size = 'md' }) => {
 
 const isMessageDeleted = (m) => Boolean(m.deletedAt || m.deletedByAdmin);
 
-const REQUEST_DECIDABLE = new Set(['WAITING', 'EXPECTATION', 'CREATION']);
-
-const canDecideRequest = (result) => REQUEST_DECIDABLE.has(result);
-
 async function resolveMe() {
     try {
         const profile = await getStudentMe();
@@ -141,10 +145,13 @@ const ChatsView = () => {
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editDraft, setEditDraft] = useState('');
     const [pendingRequest, setPendingRequest] = useState(null);
+    const [pendingMode, setPendingMode] = useState(null);
     const [pendingBusy, setPendingBusy] = useState(false);
     const [pendingComment, setPendingComment] = useState('');
+    const [tuReasonCode, setTuReasonCode] = useState('NOT_A_FIT');
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+    const draftInputRef = useRef(null);
     const titleCache = useRef(new Map());
     const subtitleCache = useRef(new Map());
     const avatarCache = useRef(new Map());
@@ -201,6 +208,18 @@ const ChatsView = () => {
         });
     };
 
+    const focusDraftInput = useCallback(() => {
+        requestAnimationFrame(() => {
+            const input = draftInputRef.current;
+            if (!input || input.disabled) return;
+            try {
+                input.focus({ preventScroll: true });
+            } catch {
+                input.focus();
+            }
+        });
+    }, []);
+
     const updateChatPreview = (chatId, text, at) => {
         setChats((prev) => {
             const i = prev.findIndex((c) => String(c.id) === String(chatId));
@@ -252,40 +271,66 @@ const ChatsView = () => {
 
     const enrichChatMeta = useCallback(async (chat, party) => {
         const key = chat.id;
-        if (titleCache.current.has(key)) {
+        const cachedTitle = titleCache.current.get(key);
+        if (cachedTitle && cachedTitle !== 'Диалог') {
             return {
-                title: titleCache.current.get(key),
+                title: cachedTitle,
                 subtitle: subtitleCache.current.get(key) || '',
                 avatarUrl: avatarCache.current.get(key) || null,
             };
         }
-        let title = 'Диалог';
+
+        let title = '';
         let subtitle = '';
         let avatarUrl = null;
+
+        const tryStudent = async (studentId) => {
+            if (!studentId) return false;
+            let s = studentCacheRef.current.get(studentId);
+            if (!s) {
+                s = await getStudentById(studentId);
+                studentCacheRef.current.set(studentId, s);
+            }
+            title = `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Студент';
+            subtitle = s.speciality || s.profession || '';
+            avatarUrl = getImageUrl(peerImagePath(s));
+            return true;
+        };
+
+        const tryRecruiter = async (recruiterId) => {
+            if (!recruiterId) return false;
+            let r = recruiterCacheRef.current.get(recruiterId);
+            if (!r) {
+                r = await getRecruiterById(recruiterId);
+                recruiterCacheRef.current.set(recruiterId, r);
+            }
+            const person = `${r.firstName || ''} ${r.lastName || ''}`.trim();
+            title = r.companyName || person || 'Работодатель';
+            subtitle = person && r.companyName ? person : '';
+            avatarUrl = getImageUrl(peerImagePath(r));
+            return true;
+        };
+
         try {
-            if (party?.role === 'recruiter' && chat.studentId) {
-                let s = studentCacheRef.current.get(chat.studentId);
-                if (!s) {
-                    s = await getStudentById(chat.studentId);
-                    studentCacheRef.current.set(chat.studentId, s);
+            if (party?.role === 'recruiter') {
+                await tryStudent(chat.studentId);
+            } else if (party?.role === 'student') {
+                await tryRecruiter(chat.recruiterId);
+            } else {
+                if (!(await tryStudent(chat.studentId))) {
+                    await tryRecruiter(chat.recruiterId);
                 }
-                title = `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Студент';
-                subtitle = s.speciality || s.profession || '';
-                avatarUrl = getImageUrl(peerImagePath(s));
-            } else if (party?.role === 'student' && chat.recruiterId) {
-                let r = recruiterCacheRef.current.get(chat.recruiterId);
-                if (!r) {
-                    r = await getRecruiterById(chat.recruiterId);
-                    recruiterCacheRef.current.set(chat.recruiterId, r);
-                }
-                const person = `${r.firstName || ''} ${r.lastName || ''}`.trim();
-                title = r.companyName || person || 'Работодатель';
-                subtitle = person && r.companyName ? person : '';
-                avatarUrl = getImageUrl(peerImagePath(r));
             }
         } catch {
-            title = 'Диалог';
+            /* пробуем запасной вариант ниже */
         }
+
+        if (!title) {
+            if (party?.role === 'student') title = 'Работодатель';
+            else if (party?.role === 'recruiter') title = 'Студент';
+            else title = chat.studentId ? 'Студент' : chat.recruiterId ? 'Работодатель' : 'Собеседник';
+        }
+
         titleCache.current.set(key, title);
         subtitleCache.current.set(key, subtitle);
         avatarCache.current.set(key, avatarUrl);
@@ -389,6 +434,7 @@ const ChatsView = () => {
         if (!selectedId) {
             setMessages([]);
             setPendingRequest(null);
+            setPendingMode(null);
             return;
         }
         const gen = ++messagesLoadGen.current;
@@ -402,8 +448,9 @@ const ChatsView = () => {
     }, [selectedId, loadMessages, refreshSummary]);
 
     useEffect(() => {
-        if (!selectedId || me?.role !== 'student') {
+        if (!selectedId) {
             setPendingRequest(null);
+            setPendingMode(null);
             setPendingComment('');
             return;
         }
@@ -412,25 +459,47 @@ const ChatsView = () => {
             selectedChat ||
             { id: selectedId };
         const chatIds = new Set(getChatIdList(chatRow, selectedId).map(String));
+        const peerRecruiterId = chatRow?.recruiterId ?? selectedChat?.recruiterId;
+        const peerStudentId = chatRow?.studentId ?? selectedChat?.studentId;
         let cancelled = false;
         (async () => {
             try {
                 const res = await filterMyRequests({}, 0, 100);
-                const items = Array.isArray(res?.data)
-                    ? res.data
-                    : Array.isArray(res?.content)
-                      ? res.content
-                      : [];
-                const match = items.find((r) => {
-                    const appChatId = r?.appChatId ?? r?.chatId;
-                    return appChatId != null && chatIds.has(String(appChatId));
-                });
+                const items = extractRequestRows(res);
+                const matched = items.filter((r) =>
+                    matchRequestToChat(r, chatRow, chatIds, peerRecruiterId, peerStudentId),
+                );
+                const studentAction =
+                    me?.role === 'student'
+                        ? matched.find((r) => canStudentDecideRequest(r.result) && resolveRequestId(r))
+                        : null;
+                const tuAction = matched.find(
+                    (r) => canTuDecideRequest(r.result) && resolveRequestId(r),
+                );
+                let request = null;
+                let mode = null;
+                if (studentAction) {
+                    request = studentAction;
+                    mode = 'student_decision';
+                } else if (tuAction) {
+                    request = tuAction;
+                    mode = 'tu_decision';
+                } else if (matched[0]) {
+                    request = matched[0];
+                }
                 if (!cancelled) {
-                    setPendingRequest(match && canDecideRequest(match.result) ? match : null);
-                    if (!match || !canDecideRequest(match.result)) setPendingComment('');
+                    setPendingRequest(request && resolveRequestId(request) ? request : null);
+                    setPendingMode(mode);
+                    if (!mode) {
+                        setPendingComment('');
+                        setTuReasonCode('NOT_A_FIT');
+                    }
                 }
             } catch {
-                if (!cancelled) setPendingRequest(null);
+                if (!cancelled) {
+                    setPendingRequest(null);
+                    setPendingMode(null);
+                }
             }
         })();
         return () => {
@@ -442,34 +511,59 @@ const ChatsView = () => {
         if (!selectedId) return undefined;
         const poll = window.setInterval(() => {
             refreshSummary(selectedId);
-        }, 8000);
+        }, 4000);
         return () => window.clearInterval(poll);
     }, [selectedId, refreshSummary]);
 
     useEffect(() => {
-        if (!selectedId) return undefined;
+        const ids = new Set();
+        for (const c of chatsRef.current) {
+            for (const id of getChatIdList(c, c.id)) ids.add(String(id));
+        }
+        if (!ids.size) return undefined;
 
-        const chatRow =
-            chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
-            { id: selectedId };
-        const chatIds = getChatIdList(chatRow, selectedId);
+        const handleWsMessage = (chatId, message) => {
+            if (!message?.id) return;
+            const canonical = chatAliasRef.current[String(chatId)] || String(chatId);
+            const isOpen = String(selectedIdRef.current) === String(canonical);
+            const preview = message.body || message.attachmentStorageName || 'Вложение';
 
-        const unsubscribes = chatIds.map((chatId) =>
-            subscribeChatTopic(chatId, (message) => {
-                if (!message?.id) return;
+            if (isOpen) {
                 mergeMessage(message);
-                const preview = message.body || message.attachmentStorageName || '';
-                updateChatPreview(selectedId, preview, message.createdAt);
+                updateChatPreview(canonical, preview, message.createdAt);
                 if (!isMine(message) && message.id) {
+                    const chatRow =
+                        chatsRef.current.find((c) => String(c.id) === String(canonical)) ||
+                        { id: canonical };
                     markPeerChatsRead(chatRow, message.id).catch(() => {});
-                    clearChatUnread(selectedId);
-                    refreshSummary(selectedId);
+                    clearChatUnread(canonical);
+                    refreshSummary(canonical);
                 }
-            }),
-        );
+            } else {
+                updateChatPreview(canonical, preview, message.createdAt);
+                if (!isMine(message)) {
+                    setChats((prev) =>
+                        prev.map((c) => {
+                            if (String(c.id) !== String(canonical)) return c;
+                            const key = String(canonical);
+                            if (readChatRowsRef.current.has(key)) return c;
+                            return {
+                                ...c,
+                                unreadCount: (Number(c.unreadCount) || 0) + 1,
+                                lastMessagePreview: preview,
+                                lastActivityAt: message.createdAt || c.lastActivityAt,
+                            };
+                        }),
+                    );
+                }
+            }
+        };
 
+        const unsubscribes = [...ids].map((chatId) =>
+            subscribeChatTopic(chatId, (message) => handleWsMessage(chatId, message)),
+        );
         return () => unsubscribes.forEach((fn) => fn?.());
-    }, [selectedId, isMine, refreshSummary, clearChatUnread]);
+    }, [chats, isMine, refreshSummary, clearChatUnread]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -506,6 +600,7 @@ const ChatsView = () => {
             setSendError(err.message || 'Не отправилось');
         } finally {
             setSending(false);
+            focusDraftInput();
         }
     };
 
@@ -560,19 +655,22 @@ const ChatsView = () => {
             setSendError(err.message || 'Не удалось отправить файл');
         } finally {
             setSending(false);
+            focusDraftInput();
         }
     };
 
     const handleRequestDecision = async (accepted) => {
-        if (!pendingRequest?.id || pendingBusy) return;
+        const requestId = resolveRequestId(pendingRequest);
+        if (requestId == null || pendingBusy || pendingMode !== 'student_decision') return;
         setPendingBusy(true);
         setSendError('');
         try {
             await postStudentDecision(
-                pendingRequest.id,
+                requestId,
                 buildStudentDecisionBody(accepted, pendingComment),
             );
             setPendingRequest(null);
+            setPendingMode(null);
             setPendingComment('');
             const chatRow = selectedChat || { id: selectedId };
             await loadMessages(chatRow, selectedId);
@@ -583,6 +681,36 @@ const ChatsView = () => {
             setPendingBusy(false);
         }
     };
+
+    const handleTuDecision = async (accepted) => {
+        const requestId = resolveRequestId(pendingRequest);
+        if (requestId == null || pendingBusy || pendingMode !== 'tu_decision') return;
+        setPendingBusy(true);
+        setSendError('');
+        try {
+            await postRequestTuDecision(
+                requestId,
+                buildTuDecisionBody(accepted, tuReasonCode, pendingComment),
+            );
+            setPendingRequest(null);
+            setPendingMode(null);
+            setPendingComment('');
+            setTuReasonCode('NOT_A_FIT');
+            const chatRow = selectedChat || { id: selectedId };
+            await loadMessages(chatRow, selectedId);
+            await loadChats();
+        } catch (err) {
+            setSendError(formatApiUserMessage(err, 'Не удалось обработать решение по ТУ'));
+        } finally {
+            setPendingBusy(false);
+        }
+    };
+
+    const composerLocked =
+        Boolean(pendingMode === 'student_decision' && me?.role === 'student');
+    const requestStatusLabel = pendingRequest?.result
+        ? REQUEST_RESULT_LABELS[pendingRequest.result] || pendingRequest.result
+        : '';
 
     const activeTitle = selectedId ? titles[selectedId] || '…' : 'Выберите чат';
     const activeSubtitle = selectedId ? subtitles[selectedId] : '';
@@ -693,7 +821,11 @@ const ChatsView = () => {
                             ) : null}
                             <div>
                                 <h3>{activeTitle}</h3>
-                                {activeSubtitle ? (
+                                {requestStatusLabel ? (
+                                    <div className="chatsView__headerStatus chatsView__headerStatus--request">
+                                        Заявка: {requestStatusLabel}
+                                    </div>
+                                ) : activeSubtitle ? (
                                     <div className="chatsView__headerStatus">{activeSubtitle}</div>
                                 ) : null}
                             </div>
@@ -713,7 +845,7 @@ const ChatsView = () => {
                     {!selectedId && (
                         <div className="chatsView__empty">Выберите чат, чтобы открыть переписку</div>
                     )}
-                    {selectedId && pendingRequest && me?.role === 'student' ? (
+                    {selectedId && pendingRequest && pendingMode === 'student_decision' && me?.role === 'student' ? (
                         <div className="chatsView__requestPanel" role="region" aria-label="Входящая заявка">
                             <p className="chatsView__requestPanelTitle">Работодатель отправил заявку</p>
                             <p className="chatsView__requestPanelHint">
@@ -743,6 +875,55 @@ const ChatsView = () => {
                                     onClick={() => handleRequestDecision(false)}
                                 >
                                     Отклонить
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
+                    {selectedId && pendingRequest && pendingMode === 'tu_decision' ? (
+                        <div className="chatsView__requestPanel" role="region" aria-label="Решение по ТУ">
+                            <p className="chatsView__requestPanelTitle">Техническое собеседование</p>
+                            <p className="chatsView__requestPanelHint">
+                                Подтвердите прохождение ТУ или укажите причину отказа.
+                            </p>
+                            <label className="chatsView__requestPanelField">
+                                <span>Причина отказа</span>
+                                <select
+                                    className="chatsView__requestPanelSelect"
+                                    value={tuReasonCode}
+                                    onChange={(e) => setTuReasonCode(e.target.value)}
+                                    disabled={pendingBusy}
+                                >
+                                    {TU_REASON_CODES.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <textarea
+                                className="chatsView__requestPanelComment"
+                                rows={2}
+                                placeholder="Комментарий (необязательно)"
+                                value={pendingComment}
+                                onChange={(e) => setPendingComment(e.target.value)}
+                                disabled={pendingBusy}
+                            />
+                            <div className="chatsView__requestPanelActions">
+                                <button
+                                    type="button"
+                                    className="chatsView__requestPanelBtn chatsView__requestPanelBtn--accept"
+                                    disabled={pendingBusy}
+                                    onClick={() => handleTuDecision(true)}
+                                >
+                                    Подтвердить ТУ
+                                </button>
+                                <button
+                                    type="button"
+                                    className="chatsView__requestPanelBtn chatsView__requestPanelBtn--reject"
+                                    disabled={pendingBusy}
+                                    onClick={() => handleTuDecision(false)}
+                                >
+                                    Отказ по ТУ
                                 </button>
                             </div>
                         </div>
@@ -881,19 +1062,20 @@ const ChatsView = () => {
                             <button
                                 type="button"
                                 className="chatsView__attachBtn"
-                                disabled={!selectedId || sending || Boolean(pendingRequest && me?.role === 'student')}
+                                disabled={!selectedId || sending || composerLocked}
                                 aria-label="Прикрепить файл"
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 ＋
                             </button>
                             <input
+                                ref={draftInputRef}
                                 type="text"
                                 className="chatsView__textInput"
                                 placeholder={selectedId ? 'Напишите сообщение...' : 'Сначала выберите чат'}
                                 value={draft}
                                 onChange={(e) => setDraft(e.target.value)}
-                                disabled={!selectedId || sending || Boolean(pendingRequest && me?.role === 'student')}
+                                disabled={!selectedId || composerLocked}
                                 maxLength={16000}
                                 autoComplete="off"
                             />
@@ -901,7 +1083,7 @@ const ChatsView = () => {
                         <button
                             type="submit"
                             className="chatsView__sendBtn"
-                            disabled={!selectedId || sending || !draft.trim() || Boolean(pendingRequest && me?.role === 'student')}
+                            disabled={!selectedId || sending || !draft.trim() || composerLocked}
                             aria-label="Отправить"
                         >
                             ↑

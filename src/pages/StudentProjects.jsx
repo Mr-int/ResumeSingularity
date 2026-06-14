@@ -7,6 +7,90 @@ import { getStudentById } from '../services/studentApi.js';
 import { formatApiUserMessage, isPendingApprovalError, PENDING_APPROVAL_MESSAGE } from '../utils/apiErrors.js';
 import './studentProjectsPage.css';
 
+const ProjectCard = ({ project, studentLabel }) => {
+    const [expanded, setExpanded] = useState(false);
+    const [photoIndex, setPhotoIndex] = useState(0);
+    const images = project.images || [];
+    const hasManyPhotos = images.length > 1;
+
+    const prevPhoto = () => setPhotoIndex((i) => (i <= 0 ? images.length - 1 : i - 1));
+    const nextPhoto = () => setPhotoIndex((i) => (i >= images.length - 1 ? 0 : i + 1));
+
+    return (
+        <li className={`studentProjectsPage__card${expanded ? ' studentProjectsPage__card--expanded' : ''}`}>
+            {images.length > 0 ? (
+                <div className="studentProjectsPage__gallery">
+                    <img
+                        src={images[photoIndex]}
+                        alt=""
+                        className="studentProjectsPage__galleryImage"
+                        loading="lazy"
+                    />
+                    {hasManyPhotos ? (
+                        <div className="studentProjectsPage__galleryNav">
+                            <button type="button" onClick={prevPhoto} aria-label="Предыдущее фото">
+                                ‹
+                            </button>
+                            <span>
+                                {photoIndex + 1} / {images.length}
+                            </span>
+                            <button type="button" onClick={nextPhoto} aria-label="Следующее фото">
+                                ›
+                            </button>
+                        </div>
+                    ) : null}
+                </div>
+            ) : (
+                <div className="studentProjectsPage__gallery studentProjectsPage__gallery--empty">Нет фото</div>
+            )}
+            <h2 className="studentProjectsPage__cardTitle">{project.title}</h2>
+            {project.description ? (
+                <p
+                    className={`studentProjectsPage__cardDescription${expanded ? ' studentProjectsPage__cardDescription--expanded' : ''}`}
+                >
+                    {project.description}
+                </p>
+            ) : (
+                <p className="studentProjectsPage__cardDescription">Описание не указано</p>
+            )}
+            {studentLabel || project.studentId ? (
+                <p className="studentProjectsPage__cardMeta">
+                    Автор:{' '}
+                    {project.studentId ? (
+                        <Link to={`/studentsResume/${project.studentId}`}>{studentLabel || 'Студент'}</Link>
+                    ) : (
+                        studentLabel
+                    )}
+                </p>
+            ) : null}
+            <div className="studentProjectsPage__cardActions">
+                <button
+                    type="button"
+                    className="studentProjectsPage__cardBtn"
+                    onClick={() => setExpanded((v) => !v)}
+                >
+                    {expanded ? 'Свернуть' : 'Подробнее'}
+                </button>
+                {project.link ? (
+                    <a
+                        href={project.link}
+                        className="studentProjectsPage__cardLink"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Открыть проект
+                    </a>
+                ) : null}
+                {project.studentId ? (
+                    <Link to={`/studentsResume/${project.studentId}`} className="studentProjectsPage__cardBtn">
+                        Резюме автора
+                    </Link>
+                ) : null}
+            </div>
+        </li>
+    );
+};
+
 const StudentProjects = () => {
     const [items, setItems] = useState([]);
     const [studentNames, setStudentNames] = useState({});
@@ -104,46 +188,11 @@ const StudentProjects = () => {
                                 (project.studentId ? studentNames[project.studentId] : '') ||
                                 null;
                             return (
-                                <li key={`${project.source}-${project.id}`} className="studentProjectsPage__card">
-                                    <h2 className="studentProjectsPage__cardTitle">{project.title}</h2>
-                                    {project.description ? (
-                                        <p className="studentProjectsPage__cardDescription">{project.description}</p>
-                                    ) : (
-                                        <p className="studentProjectsPage__cardDescription">Описание не указано</p>
-                                    )}
-                                    {studentLabel || project.studentId ? (
-                                        <p className="studentProjectsPage__cardMeta">
-                                            Автор:{' '}
-                                            {project.studentId ? (
-                                                <Link to={`/studentsResume/${project.studentId}`}>
-                                                    {studentLabel || 'Студент'}
-                                                </Link>
-                                            ) : (
-                                                studentLabel
-                                            )}
-                                        </p>
-                                    ) : null}
-                                    <div className="studentProjectsPage__cardActions">
-                                        {project.link ? (
-                                            <a
-                                                href={project.link}
-                                                className="studentProjectsPage__cardLink"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Открыть проект
-                                            </a>
-                                        ) : null}
-                                        {project.studentId ? (
-                                            <Link
-                                                to={`/studentsResume/${project.studentId}`}
-                                                className="studentProjectsPage__cardBtn"
-                                            >
-                                                Резюме автора
-                                            </Link>
-                                        ) : null}
-                                    </div>
-                                </li>
+                                <ProjectCard
+                                    key={`${project.source}-${project.id}`}
+                                    project={project}
+                                    studentLabel={studentLabel}
+                                />
                             );
                         })}
                     </ul>

@@ -15,6 +15,8 @@ const pickNewerChat = (a, b) => (activityTime(b) > activityTime(a) ? b : a);
 
 const mergeChatRow = (primary, secondary, mergedIds) => ({
     ...primary,
+    studentId: primary.studentId ?? secondary.studentId,
+    recruiterId: primary.recruiterId ?? secondary.recruiterId,
     unreadCount: (Number(primary.unreadCount) || 0) + (Number(secondary.unreadCount) || 0),
     _mergedCount: mergedIds.length,
     _mergedIds: mergedIds,

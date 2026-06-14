@@ -1,19 +1,46 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import { applyToVacancy, getVacancy } from '../services/vacancyApi.js';
-import { isStudentRole } from '../services/authApi.js';
+import {
+    applyToVacancy,
+    acceptApplication,
+    rejectApplication,
+    getVacancy,
+    listVacancyApplications,
+    vacancyPageRows,
+} from '../services/vacancyApi.js';
+import { isStudentRole, isRecruiterRole } from '../services/authApi.js';
 import './vacanciesPage.css';
 
 const VacancyDetail = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [vacancy, setVacancy] = useState(null);
+    const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [coverLetter, setCoverLetter] = useState('');
     const [applying, setApplying] = useState(false);
+    const [appChatId, setAppChatId] = useState(null);
     const isStudent = isStudentRole();
+    const isRecruiter = isRecruiterRole();
+
+    const loadVacancy = async () => {
+        const data = await getVacancy(id);
+        setVacancy(data);
+        return data;
+    };
+
+    const loadApplications = async () => {
+        if (!isRecruiter) return;
+        try {
+            const res = await listVacancyApplications(id, 0, 50);
+            setApplications(vacancyPageRows(res));
+        } catch {
+            setApplications([]);
+        }
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -21,8 +48,8 @@ const VacancyDetail = () => {
             setLoading(true);
             setError('');
             try {
-                const data = await getVacancy(id);
-                if (!cancelled) setVacancy(data);
+                await loadVacancy();
+                if (!cancelled && isRecruiter) await loadApplications();
             } catch (e) {
                 if (!cancelled) setError(e.message || 'Вакансия не найдена');
             } finally {
@@ -32,20 +59,33 @@ const VacancyDetail = () => {
         return () => {
             cancelled = true;
         };
-    }, [id]);
+    }, [id, isRecruiter]);
 
     const handleApply = async (e) => {
         e.preventDefault();
         setApplying(true);
         setError('');
         try {
-            await applyToVacancy(id, { coverLetter: coverLetter.trim() || undefined });
-            const refreshed = await getVacancy(id);
-            setVacancy(refreshed);
+            const result = await applyToVacancy(id, { coverLetter: coverLetter.trim() || undefined });
+            const chatId = result?.appChatId || result?.chatId || null;
+            setAppChatId(chatId);
+            await loadVacancy();
+            if (chatId) {
+                navigate(`/chats?chatId=${encodeURIComponent(chatId)}`);
+            }
         } catch (err) {
             setError(err.message || 'Не удалось откликнуться');
         } finally {
             setApplying(false);
+        }
+    };
+
+    const runApplicationAction = async (action) => {
+        try {
+            await action();
+            await loadApplications();
+        } catch (e) {
+            setError(e.message || 'Не удалось выполнить действие');
         }
     };
 
@@ -74,6 +114,14 @@ const VacancyDetail = () => {
                                 <div className="vacanciesPage__description">{vacancy.description}</div>
                             ) : null}
 
+                            {isRecruiter ? (
+                                <div className="vacanciesPage__cardActions">
+                                    <Link to={`/vacancies/${id}/edit`} className="vacanciesPage__linkBtn">
+                                        Редактировать
+                                    </Link>
+                                </div>
+                            ) : null}
+
                             {isStudent && !vacancy.hasApplied ? (
                                 <form className="vacanciesPage__applyForm" onSubmit={handleApply}>
                                     <div className="vacanciesPage__filterGroup">
@@ -96,7 +144,79 @@ const VacancyDetail = () => {
                             ) : null}
 
                             {vacancy.hasApplied ? (
-                                <p className="vacanciesPage__hint">Вы уже откликнулись на эту вакансию</p>
+                                <p className="vacanciesPage__hint">
+                                    Вы уже откликнулись на эту вакансию.{' '}
+                                    <Link to="/vacancies/applications/mine" className="vacanciesPage__navLink">
+                                        Мои отклики
+                                    </Link>
+                                </p>
+                            ) : null}
+
+                            {appChatId ? (
+                                <p className="vacanciesPage__hint">
+                                    <Link to={`/chats?chatId=${encodeURIComponent(appChatId)}`} className="vacanciesPage__navLink">
+                                        Перейти в чат с работодателем
+                                    </Link>
+                                </p>
+                            ) : null}
+
+                            {isRecruiter ? (
+                                <section className="vacanciesPage__applications">
+                                    <h2 className="vacanciesPage__applicationsTitle">Отклики</h2>
+                                    {applications.length === 0 ? (
+                                        <p className="vacanciesPage__hint">Пока нет откликов</p>
+                                    ) : (
+                                        applications.map((app) => (
+                                            <div key={app.id} className="vacanciesPage__applicationRow">
+                                                <div>
+                                                    <strong>{app.studentName || 'Студент'}</strong>
+                                                    <p className="vacanciesPage__meta">{app.status}</p>
+                                                    {app.coverLetter ? (
+                                                        <p className="vacanciesPage__description">{app.coverLetter}</p>
+                                                    ) : null}
+                                                </div>
+                                                <div className="vacanciesPage__applicationActions">
+                                                    {app.status === 'SUBMITTED' ? (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                className="vacanciesPage__linkBtn"
+                                                                onClick={() =>
+                                                                    runApplicationAction(() =>
+                                                                        acceptApplication(id, app.id),
+                                                                    )
+                                                                }
+                                                            >
+                                                                Принять
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="vacanciesPage__linkBtn"
+                                                                onClick={() =>
+                                                                    runApplicationAction(() =>
+                                                                        rejectApplication(id, app.id, {
+                                                                            rejectionReason: 'Не подходит',
+                                                                        }),
+                                                                    )
+                                                                }
+                                                            >
+                                                                Отклонить
+                                                            </button>
+                                                        </>
+                                                    ) : null}
+                                                    {app.appChatId ? (
+                                                        <Link
+                                                            to={`/chats?chatId=${encodeURIComponent(app.appChatId)}`}
+                                                            className="vacanciesPage__linkBtn"
+                                                        >
+                                                            Чат
+                                                        </Link>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </section>
                             ) : null}
 
                             {error && vacancy ? <p className="vacanciesPage__error">{error}</p> : null}

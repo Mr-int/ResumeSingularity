@@ -1,9 +1,38 @@
+import { getImageUrl } from '../config/api.js';
 import { apiClientJson } from '../utils/apiClient.js';
 import { extractPageRows, normalizePageResponse } from '../utils/pageable.js';
 import { listAuthProjects, getAuthProject } from './catalogApi.js';
 import { listPublicProjects, getPublicProject } from './publicApi.js';
 import { getPortfolioById } from './getApi.js';
 import { hasApprovedCatalogAccess, isAuthenticated } from './authApi.js';
+
+const toImageUrl = (value) => {
+    if (!value) return null;
+    const raw = typeof value === 'string' ? value : value?.imagePath || value?.path || value?.url;
+    return raw ? getImageUrl(raw) : null;
+};
+
+export const extractProjectImages = (item) => {
+    if (!item || typeof item !== 'object') return [];
+    const buckets = [
+        item.images,
+        item.imagePaths,
+        item.photos,
+        item.screenshots,
+        item.gallery,
+    ];
+    const paths = [];
+    for (const bucket of buckets) {
+        if (!Array.isArray(bucket)) continue;
+        for (const entry of bucket) {
+            const url = toImageUrl(entry);
+            if (url) paths.push(url);
+        }
+    }
+    const single = toImageUrl(item.imagePath || item.image || item.coverImage || item.photo);
+    if (single && !paths.includes(single)) paths.unshift(single);
+    return paths;
+};
 
 export const normalizeProjectCard = (item, source = 'catalog') => {
     if (!item || typeof item !== 'object') return null;
@@ -23,6 +52,7 @@ export const normalizeProjectCard = (item, source = 'catalog') => {
         title: title || 'Проект',
         description,
         link,
+        images: extractProjectImages(item),
         studentId: studentId != null ? String(studentId) : null,
         studentName,
         source,

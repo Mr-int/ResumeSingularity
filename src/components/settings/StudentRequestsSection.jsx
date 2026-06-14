@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { filterMyRequests, postStudentDecision, buildStudentDecisionBody } from '../../services/requestApi.js';
+import { filterMyRequests, postStudentDecision, buildStudentDecisionBody, extractRequestRows, resolveRequestId } from '../../services/requestApi.js';
 import { getRecruiterById } from '../../services/getApi.js';
 import { formatApiUserMessage, isPendingApprovalError } from '../../utils/apiErrors.js';
 
@@ -42,7 +42,7 @@ const StudentRequestsSection = ({ studentId }) => {
         setPendingNotice('');
         try {
             const res = await filterMyRequests({}, 0, 50);
-            const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
+            const rows = extractRequestRows(res);
             setRequests(rows);
             const recruiterMap = {};
             await Promise.all(
@@ -72,7 +72,12 @@ const StudentRequestsSection = ({ studentId }) => {
         load();
     }, [load]);
 
-    const handleDecision = async (requestId, accepted) => {
+    const handleDecision = async (requestRow, accepted) => {
+        const requestId = resolveRequestId(requestRow);
+        if (requestId == null) {
+            setError('Не удалось определить номер заявки');
+            return;
+        }
         setBusyId(requestId);
         setError('');
         try {
@@ -107,6 +112,7 @@ const StudentRequestsSection = ({ studentId }) => {
             )}
             <ul className="accountPage__listItems">
                 {requests.map((req) => {
+                    const requestId = resolveRequestId(req);
                     const recruiter = recruiters[req.recruiterId];
                     const recruiterLabel = recruiter
                         ? [recruiter.companyName, recruiter.firstName, recruiter.lastName]
@@ -114,9 +120,9 @@ const StudentRequestsSection = ({ studentId }) => {
                               .join(' · ')
                         : 'Работодатель';
                     const status = RESULT_LABELS[req.result] || req.result || '—';
-                    const showActions = canDecide(req.result);
+                    const showActions = canDecide(req.result) && requestId != null;
                     return (
-                        <li key={req.id}>
+                        <li key={requestId ?? req.appChatId ?? JSON.stringify(req)}>
                             <div className="accountPage__listItem">
                                 <div className="accountPage__listItemMain">
                                     <div className="accountPage__listItemName">{recruiterLabel}</div>
@@ -139,9 +145,9 @@ const StudentRequestsSection = ({ studentId }) => {
                                         <span>Комментарий (необязательно)</span>
                                         <textarea
                                             rows={2}
-                                            value={comments[req.id] || ''}
+                                            value={comments[requestId] || ''}
                                             onChange={(e) =>
-                                                setComments((prev) => ({ ...prev, [req.id]: e.target.value }))
+                                                setComments((prev) => ({ ...prev, [requestId]: e.target.value }))
                                             }
                                         />
                                     </label>
@@ -149,16 +155,16 @@ const StudentRequestsSection = ({ studentId }) => {
                                         <button
                                             type="button"
                                             className="accountPage__submit"
-                                            disabled={busyId === req.id}
-                                            onClick={() => handleDecision(req.id, true)}
+                                            disabled={busyId === requestId}
+                                            onClick={() => handleDecision(req, true)}
                                         >
                                             Принять
                                         </button>
                                         <button
                                             type="button"
                                             className="accountPage__submit accountPage__submit--secondary"
-                                            disabled={busyId === req.id}
-                                            onClick={() => handleDecision(req.id, false)}
+                                            disabled={busyId === requestId}
+                                            onClick={() => handleDecision(req, false)}
                                         >
                                             Отклонить
                                         </button>

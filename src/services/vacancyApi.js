@@ -15,6 +15,9 @@ export const listMyApplications = (page = 0, size = 20) => {
     return apiClientJson(`vacancies/applications/mine?${query}`, { method: 'GET' });
 };
 
+export const createVacancy = (body) =>
+    apiClientJson('vacancies', { method: 'POST', body: JSON.stringify(body) });
+
 export const updateVacancy = (id, body) =>
     apiClientJson(`vacancies/${id}`, { method: 'PUT', body: JSON.stringify(body) });
 
