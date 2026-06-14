@@ -12,11 +12,11 @@ COPY package*.json ./
 # Устанавливаем зависимости
 RUN npm ci --only=production=false
 
-# Копируем весь код
+# Копируем весь код (включая .env)
 COPY . .
 
-# Vite подставляет VITE_* на этапе сборки (из .env или build args)
-ARG VITE_API_URL
+# По умолчанию как в .env; родительский compose может переопределить через build.args
+ARG VITE_API_URL=https://test-api.singularity-resume.ru
 ARG VITE_API_BASE=/api/
 ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_API_BASE=${VITE_API_BASE}
