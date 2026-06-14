@@ -24,15 +24,6 @@
     color: #ffffff;
 }
 
-.vacanciesPage__sectionTitle {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #ffffff;
-    margin: 0 0 24px;
-    font-weight: 600;
-}
-
 .vacanciesPage__toolbar {
     display: flex;
     align-items: flex-start;
@@ -81,6 +72,7 @@
     gap: 0 24px;
     align-items: end;
     margin-bottom: 48px;
+    color: #ffffff;
 }
 
 .vacanciesPage__filterGroup {
@@ -88,6 +80,7 @@
     flex-direction: column;
     border-bottom: 1px solid #1a1a1a;
     padding: 14px 0;
+    color: #ffffff;
 }
 
 .vacanciesPage__filterGroup label {
@@ -112,7 +105,7 @@
 
 .vacanciesPage__input::placeholder,
 .vacanciesPage__textarea::placeholder {
-    color: #333333;
+    color: #888888;
 }
 
 .vacanciesPage__filters .vacanciesPage__filterGroup--full {
@@ -187,7 +180,8 @@
 }
 
 .vacanciesPage__itemLink:hover .vacanciesPage__itemName {
-    color: #cccccc;
+    color: #ffffff;
+    opacity: 0.85;
 }
 
 .vacanciesPage__itemMain {
@@ -205,14 +199,14 @@
 .vacanciesPage__itemMeta {
     margin: 0;
     font-size: 13px;
-    color: #555555;
+    color: #ffffff;
     line-height: 1.45;
 }
 
 .vacanciesPage__itemSummary {
     margin: 4px 0 0;
     font-size: 13px;
-    color: #666666;
+    color: #ffffff;
     line-height: 1.45;
 }
 
@@ -229,7 +223,7 @@
 }
 
 .vacanciesPage__itemStatus--muted {
-    color: #666666;
+    color: #ffffff;
 }
 
 .vacanciesPage__itemStatus--ok {
@@ -258,6 +252,7 @@
     margin: 0 0 4px;
     font-size: 15px;
     font-weight: 400;
+    color: #ffffff;
 }
 
 .vacanciesPage__cardHead {
@@ -278,7 +273,7 @@
 .vacanciesPage__meta {
     margin: 0 0 12px;
     font-size: 13px;
-    color: #555555;
+    color: #ffffff;
 }
 
 .vacanciesPage__cardActions {
@@ -297,12 +292,13 @@
     font-size: 24px;
     font-weight: 500;
     letter-spacing: -0.03em;
+    color: #ffffff;
 }
 
 .vacanciesPage__company {
     margin: 0 0 8px;
     font-size: 15px;
-    color: #888888;
+    color: #ffffff;
 }
 
 .vacanciesPage__description {
@@ -311,12 +307,13 @@
     border-top: 1px solid #1a1a1a;
     line-height: 1.65;
     white-space: pre-wrap;
-    color: #cccccc;
+    color: #ffffff;
     font-size: 15px;
 }
 
 .vacanciesPage__applyForm {
     margin-top: 48px;
+    color: #ffffff;
 }
 
 .vacanciesPage__applyForm .vacanciesPage__filterGroup {

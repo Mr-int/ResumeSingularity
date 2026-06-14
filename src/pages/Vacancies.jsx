@@ -69,7 +69,6 @@ const Vacancies = () => {
                         </div>
                     </div>
 
-                    <p className="vacanciesPage__sectionTitle">Поиск</p>
                     <form
                         className="vacanciesPage__filters"
                         onSubmit={(e) => {
@@ -111,7 +110,6 @@ const Vacancies = () => {
                         <p className="vacanciesPage__hint">Вакансий пока нет</p>
                     ) : null}
 
-                    <p className="vacanciesPage__sectionTitle">Список</p>
                     <ul className="vacanciesPage__list">
                         {items.map((v) => {
                             const meta = [v.companyName || 'Компания', v.city, WORK_LABELS[v.workFormat], EMP_LABELS[v.employmentType]]

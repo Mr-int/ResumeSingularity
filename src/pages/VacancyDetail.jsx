@@ -76,7 +76,6 @@ const VacancyDetail = () => {
 
                             {isStudent && !vacancy.hasApplied ? (
                                 <form className="vacanciesPage__applyForm" onSubmit={handleApply}>
-                                    <p className="vacanciesPage__sectionTitle">Отклик</p>
                                     <div className="vacanciesPage__filterGroup">
                                         <label htmlFor="cover-letter">Сопроводительное письмо</label>
                                         <textarea
