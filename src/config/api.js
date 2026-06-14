@@ -26,7 +26,7 @@ export function getApiOrigin() {
 
 /**
  * Публичное фото: GET /main/photo/{image_path}
- * Через /api/main/photo/… — nginx отдаёт storage (api.*), остальной /api/ — test-api.
+ * Напрямую на VITE_API_URL — storage на test-api; прокси test2-www может быть устаревшим.
  */
 export const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
@@ -37,5 +37,10 @@ export const getImageUrl = (imagePath) => {
 
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
     const encodedPath = cleanPath.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+
+    if (API_ORIGIN) {
+        return `${API_ORIGIN}/main/photo/${encodedPath}`;
+    }
+
     return `${API_BASE_URL}main/photo/${encodedPath}`;
 };
