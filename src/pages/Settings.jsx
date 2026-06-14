@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
@@ -11,7 +11,7 @@ import {
     uploadStudentPhoto,
 } from '../services/accountApi.js';
 import { getStudentResumeForEdit, updateStudentResume } from '../services/onboardingApi.js';
-import { changePassword, getAuthMe } from '../services/authApi.js';
+import { changePassword, getAuthMe, logoutServer } from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
 
@@ -49,6 +49,7 @@ const recruiterToForm = (r) => ({
 });
 
 const SettingsPage = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [okMsg, setOkMsg] = useState('');
@@ -243,14 +244,19 @@ const SettingsPage = () => {
     const setRecruiterField = (key, value) =>
         setRecruiterForm((prev) => ({ ...prev, [key]: value }));
 
+    const handleLogout = async () => {
+        await logoutServer();
+        navigate('/');
+    };
+
     return (
         <>
             <Header />
             <main className="accountPage">
                 <div className="accountPage__inner">
-                    <h1 className="accountPage__title">Настройки</h1>
+                    <h1 className="accountPage__title">Профиль</h1>
                     <p className="accountPage__lead">
-                        Редактирование профиля, резюме и параметров аккаунта.
+                        Личный кабинет: редактирование данных, резюме и параметров аккаунта.
                     </p>
                     <p className="accountPage__settingsNav">
                         <Link to="/chats" className="accountPage__settingsNavLink">
@@ -260,11 +266,18 @@ const SettingsPage = () => {
 
                     {session ? (
                         <section className="accountPage__card accountPage__card--muted">
-                            <h2 className="accountPage__cardTitle">Сессия</h2>
+                            <h2 className="accountPage__cardTitle">Аккаунт</h2>
                             <p className="accountPage__text">
                                 {session.username} · {session.role}
                                 {session.accountStatus ? ` · ${session.accountStatus}` : ''}
                             </p>
+                            <button
+                                type="button"
+                                className="accountPage__submit accountPage__submit--secondary"
+                                onClick={handleLogout}
+                            >
+                                Выйти
+                            </button>
                         </section>
                     ) : null}
 

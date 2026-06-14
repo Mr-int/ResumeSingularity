@@ -167,6 +167,11 @@
     opacity: 1;
 }
 
+a.header__authBtn {
+    text-decoration: none;
+    display: inline-block;
+}
+
 .header__authBtn {
     position: absolute;
     right: 40px;

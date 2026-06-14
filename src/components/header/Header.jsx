@@ -1,9 +1,8 @@
 import './header.css';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
     isAuthenticated,
-    logoutServer,
     requestLogin,
     AUTH_CHANGED_EVENT,
 } from '../../services/authApi.js';
@@ -12,7 +11,6 @@ import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
 const Header = () => {
-    const navigate = useNavigate();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [authed, setAuthed] = useState(() => isAuthenticated());
 
@@ -31,13 +29,8 @@ const Header = () => {
         setIsMenuOpen(false);
     };
 
-    const handleAuthClick = async () => {
+    const handleLoginClick = () => {
         handleMobileLinkClick();
-        if (authed) {
-            await logoutServer();
-            navigate('/');
-            return;
-        }
         requestLogin();
     };
 
@@ -89,13 +82,19 @@ const Header = () => {
                     </Link>
                 </div>
 
-                <button
-                    type="button"
-                    className="header__authBtn"
-                    onClick={handleAuthClick}
-                >
-                    {authed ? 'выйти' : 'войти'}
-                </button>
+                {authed ? (
+                    <Link to="/settings" className="header__authBtn">
+                        профиль
+                    </Link>
+                ) : (
+                    <button
+                        type="button"
+                        className="header__authBtn"
+                        onClick={handleLoginClick}
+                    >
+                        войти
+                    </button>
+                )}
 
                 <button
                     className={`header__burger ${isMenuOpen ? 'active' : ''}`}
@@ -135,7 +134,7 @@ const Header = () => {
                     className="header__mobileBtn"
                     onClick={handleMobileLinkClick}
                 >
-                    настройки
+                    профиль
                 </Link>
                 {authed ? (
                     <Link
@@ -146,13 +145,15 @@ const Header = () => {
                         чаты
                     </Link>
                 ) : null}
-                <button
-                    type="button"
-                    className="header__mobileBtn"
-                    onClick={handleAuthClick}
-                >
-                    {authed ? 'выйти' : 'войти'}
-                </button>
+                {!authed ? (
+                    <button
+                        type="button"
+                        className="header__mobileBtn"
+                        onClick={handleLoginClick}
+                    >
+                        войти
+                    </button>
+                ) : null}
             </div>
         </header>
     );
