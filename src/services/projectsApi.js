@@ -1,113 +1,121 @@
 import { getImageUrl } from '../config/api.js';
-import { apiClientJson } from '../utils/apiClient.js';
-import { extractPageRows, normalizePageResponse } from '../utils/pageable.js';
+import { extractPageRows } from '../utils/pageable.js';
 import { listAuthProjects, getAuthProject } from './catalogApi.js';
 import { listPublicProjects, getPublicProject } from './publicApi.js';
-import { getPortfolioById } from './getApi.js';
-import { hasApprovedCatalogAccess, isAuthenticated } from './authApi.js';
+import { isAuthenticated } from './authApi.js';
 
-const toImageUrl = (value) => {
-    if (!value) return null;
-    const raw = typeof value === 'string' ? value : value?.imagePath || value?.path || value?.url;
-    return raw ? getImageUrl(raw) : null;
+const normalizeSiteProjectImage = (img) => {
+    if (!img) return null;
+    if (typeof img === 'string') return getImageUrl(img);
+    const directUrl = img.imageUrl || img.url;
+    if (directUrl && /^https?:\/\//i.test(directUrl)) return directUrl;
+    if (img.imagePath) return getImageUrl(img.imagePath);
+    if (directUrl) return directUrl;
+    return null;
 };
 
+/** images[] из SiteProjectDTO, по sortOrder. */
 export const extractProjectImages = (item) => {
     if (!item || typeof item !== 'object') return [];
-    const buckets = [
-        item.images,
-        item.imagePaths,
-        item.photos,
-        item.screenshots,
-        item.gallery,
-    ];
-    const paths = [];
-    for (const bucket of buckets) {
-        if (!Array.isArray(bucket)) continue;
-        for (const entry of bucket) {
-            const url = toImageUrl(entry);
-            if (url) paths.push(url);
-        }
-    }
-    const single = toImageUrl(item.imagePath || item.image || item.coverImage || item.photo);
-    if (single && !paths.includes(single)) paths.unshift(single);
-    return paths;
+    const rows = Array.isArray(item.images) ? [...item.images] : [];
+    rows.sort((a, b) => (Number(a?.sortOrder) || 0) - (Number(b?.sortOrder) || 0));
+    const urls = rows.map(normalizeSiteProjectImage).filter(Boolean);
+    if (urls.length) return urls;
+    const fallback = normalizeSiteProjectImage(item.imagePath || item.image || item.coverImage);
+    return fallback ? [fallback] : [];
 };
 
-export const normalizeProjectCard = (item, source = 'catalog') => {
+const normalizeProjectParticipants = (item) => {
+    const students = item?.students;
+    if (!Array.isArray(students)) return [];
+    return students
+        .map((s) => {
+            const id = s?.id;
+            if (id == null) return null;
+            const firstName = s.firstName || '';
+            const lastName = s.lastName || '';
+            return {
+                id: String(id),
+                firstName,
+                lastName,
+                name: `${firstName} ${lastName}`.trim() || 'Студент',
+                speciality: s.speciality || '',
+                course: s.course || '',
+                imageUrl: s.imagePath ? getImageUrl(s.imagePath) : null,
+            };
+        })
+        .filter(Boolean);
+};
+
+/** SiteProjectDTO → карточка витрины. */
+export const normalizeProjectCard = (item, source = 'public') => {
     if (!item || typeof item !== 'object') return null;
 
-    const id = item.id ?? item.portfolioId ?? item.projectId;
-    const title = (item.title || item.name || '').toString().trim();
-    const description = (item.description || item.additionalInfo || item.summary || '').toString().trim();
-    const link = (item.link || item.url || item.website || '').toString().trim();
-    const studentId = item.studentId ?? item.student?.id ?? null;
-    let studentName = (item.studentName || item.authorName || '').toString().trim();
-    if (!studentName && item.student) {
-        studentName = `${item.student.firstName || ''} ${item.student.lastName || ''}`.trim();
-    }
+    const id = item.id ?? item.projectId;
+    const title = String(item.title || item.name || '').trim();
+    const summary = String(item.summary || '').trim();
+    const body = String(item.body || item.description || '').trim();
+    const section = String(item.section || '').trim();
+    const skills = Array.isArray(item.skills)
+        ? item.skills.map((s) => (typeof s === 'string' ? s : s?.name)).filter(Boolean)
+        : [];
+    const participants = normalizeProjectParticipants(item);
+    const firstParticipant = participants[0] || null;
 
     return {
         id,
         title: title || 'Проект',
-        description,
-        link,
+        summary,
+        body,
+        section,
+        skills,
         images: extractProjectImages(item),
-        studentId: studentId != null ? String(studentId) : null,
-        studentName,
+        participants,
+        studentId: firstParticipant?.id || null,
+        studentName: firstParticipant?.name || '',
         source,
     };
 };
 
-export const filterPortfoliosPage = async (filterReq = {}, page = 0, size = 50) => {
-    const resp = await apiClientJson('portfolio/filter', {
-        method: 'POST',
-        body: JSON.stringify({ ...filterReq, page, size }),
-    });
-    return normalizePageResponse(resp, page, size);
-};
+const mapProjectRows = (raw, source) =>
+    extractPageRows(raw)
+        .map((item) => normalizeProjectCard(item, source))
+        .filter((item) => item && item.id != null);
 
-const fetchCatalogProjects = async (q) => {
-    const query = q?.trim() || undefined;
-    if (isAuthenticated()) {
-        return listAuthProjects(query);
-    }
-    return listPublicProjects(query);
-};
-
-/** Каталог проектов студентов: /projects, при пустом ответе — portfolio/filter. */
+/**
+ * GET /public/projects (аноним) или GET /projects (авторизованный).
+ */
 export const listStudentProjectCards = async (q = '') => {
     const query = q.trim() || undefined;
 
-    try {
-        const raw = await fetchCatalogProjects(query);
-        const rows = extractPageRows(raw)
-            .map((item) => normalizeProjectCard(item, 'catalog'))
-            .filter((item) => item && item.id != null);
-        if (rows.length > 0) return rows;
-    } catch {
-        /* fallback ниже */
+    if (isAuthenticated()) {
+        try {
+            const raw = await listAuthProjects(query);
+            const rows = mapProjectRows(raw, 'auth');
+            if (rows.length > 0) return rows;
+        } catch (err) {
+            if (err?.status !== 401 && err?.status !== 403) throw err;
+        }
     }
 
-    const pageRes = await filterPortfoliosPage(query ? { name: query } : {}, 0, 200);
-    return pageRes.data
-        .map((item) => normalizeProjectCard(item, 'portfolio'))
-        .filter((item) => item && item.id != null);
+    const raw = await listPublicProjects(query);
+    return mapProjectRows(raw, 'public');
 };
 
-export const getStudentProject = async (id, source = 'catalog') => {
-    if (source === 'portfolio') {
-        return getPortfolioById(id);
-    }
+/** GET /projects/{id} или GET /public/projects/{id}. */
+export const getStudentProject = async (id, source = 'auth') => {
     try {
-        if (isAuthenticated() && hasApprovedCatalogAccess()) {
-            return getAuthProject(id);
+        if (source === 'auth' && isAuthenticated()) {
+            const data = await getAuthProject(id);
+            return normalizeProjectCard(data, 'auth') || data;
         }
-        if (isAuthenticated()) {
-            return getAuthProject(id);
+        const data = await getPublicProject(id);
+        return normalizeProjectCard(data, 'public') || data;
+    } catch (err) {
+        if (isAuthenticated() && source !== 'public') {
+            const data = await getPublicProject(id);
+            return normalizeProjectCard(data, 'public') || data;
         }
-        return getPublicProject(id);
-    } catch {
-        return getPortfolioById(id);
+        throw err;
     }
 };

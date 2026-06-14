@@ -71,11 +71,7 @@ const AppRoutes = () => {
               <VacancyDetail />
             </ApprovedRoute>
           } />
-          <Route path='/student-projects' element={
-            <ApprovedRoute>
-              <StudentProjects />
-            </ApprovedRoute>
-          } />
+          <Route path='/student-projects' element={<StudentProjects />} />
           <Route path='/students' element={
             <ApprovedRoute>
               <Students />
