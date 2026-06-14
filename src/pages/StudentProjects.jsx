@@ -42,7 +42,7 @@ const ProjectCard = ({ project }) => {
             aria-expanded={expanded}
         >
             {images.length > 0 ? (
-                <div className="studentProjectsPage__gallery" onClick={stopBubble}>
+                <div className="studentProjectsPage__gallery">
                     <img
                         src={images[photoIndex]}
                         alt=""
@@ -50,7 +50,7 @@ const ProjectCard = ({ project }) => {
                         loading="lazy"
                     />
                     {hasManyPhotos ? (
-                        <div className="studentProjectsPage__galleryNav">
+                        <div className="studentProjectsPage__galleryNav" onClick={stopBubble}>
                             <button type="button" onClick={prevPhoto} aria-label="Предыдущее фото">
                                 ‹
                             </button>
@@ -101,26 +101,12 @@ const ProjectCard = ({ project }) => {
             ) : null}
 
             {!expanded && project.participants?.length === 1 ? (
-                <p className="studentProjectsPage__cardMeta" onClick={stopBubble}>
+                <p className="studentProjectsPage__cardMeta">
                     Участник:{' '}
-                    <Link to={`/studentsResume/${project.participants[0].id}`}>
+                    <Link to={`/studentsResume/${project.participants[0].id}`} onClick={stopBubble}>
                         {project.participants[0].name}
                     </Link>
                 </p>
-            ) : null}
-
-            {expanded && project.participants?.length > 0 ? (
-                <div className="studentProjectsPage__cardActions" onClick={stopBubble}>
-                    {project.participants.map((p) => (
-                        <Link
-                            key={p.id}
-                            to={`/studentsResume/${p.id}`}
-                            className="studentProjectsPage__cardBtn"
-                        >
-                            Резюме: {p.name}
-                        </Link>
-                    ))}
-                </div>
             ) : null}
         </li>
     );
