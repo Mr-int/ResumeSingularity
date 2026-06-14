@@ -24,6 +24,8 @@ import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.js";
+import { buildSkillCatalogMap, getSkillDisplayName } from "../../utils/skills.js";
+import { fetchAllRegistrationSkills } from "../../services/registrationCatalogApi.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 import { isAuthenticated, isRecruiterRole, requestLogin } from "../../services/authApi.js";
 
@@ -39,6 +41,7 @@ const StudentResume = () => {
     const [educationDetails, setEducationDetails] = useState([]);
     const [experienceDetails, setExperienceDetails] = useState([]);
     const [skills, setSkills] = useState([]);
+    const [skillCatalogMap, setSkillCatalogMap] = useState(() => new Map());
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
     const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
@@ -74,23 +77,31 @@ const StudentResume = () => {
                     throw new Error('Студент не найден');
                 }
 
-                setStudent(studentData);
-
-                if (studentData.skills && Array.isArray(studentData.skills)) {
-                    setSkills(studentData.skills);
-                }
-
                 const [
                     portfolioResult,
                     educationResult,
                     experienceResult,
+                    skillsResult,
+                    catalogResult,
                     allStudentsResult
                 ] = await Promise.allSettled([
                     getPortfolioByStudentId(id),
                     getEducationDetailsByStudentId(id),
                     getExperienceDetailsByStudentId(id),
+                    getSkillsByStudentId(id),
+                    fetchAllRegistrationSkills(),
                     getAllStudents()
                 ]);
+
+                if (catalogResult.status === 'fulfilled') {
+                    setSkillCatalogMap(buildSkillCatalogMap(catalogResult.value));
+                }
+
+                if (skillsResult.status === 'fulfilled' && Array.isArray(skillsResult.value) && skillsResult.value.length > 0) {
+                    setSkills(skillsResult.value);
+                } else if (studentData.skills && Array.isArray(studentData.skills)) {
+                    setSkills(studentData.skills);
+                }
 
                 if (portfolioResult.status === 'fulfilled') {
                     const portfolioData = portfolioResult.value;
@@ -344,7 +355,7 @@ const StudentResume = () => {
                                     {displaySkills.length > 0 ? (
                                         displaySkills.map((skill, index) => (
                                             <span key={skill.id || index} className="StudentResume__skillCapsule">
-                                                {skill.name || skill.title || 'Навык'}
+                                                {getSkillDisplayName(skill, skillCatalogMap)}
                                             </span>
                                         ))
                                     ) : (

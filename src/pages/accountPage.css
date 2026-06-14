@@ -438,6 +438,39 @@
     border-bottom: 1px solid #1a1a1a;
 }
 
+.accountPage__skillsGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    padding: 10px 0 4px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.accountPage__skillOption {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+    color: #ffffff;
+    cursor: pointer;
+    min-width: calc(50% - 9px);
+    line-height: 1.35;
+}
+
+.accountPage__skillOption input {
+    width: auto;
+    margin-top: 3px;
+    accent-color: #ffffff;
+    flex-shrink: 0;
+}
+
+.accountPage__skillsEmpty {
+    margin: 0;
+    font-size: 14px;
+    color: #888888;
+}
+
 @media (max-width: 768px) {
     .accountPage {
         padding: 40px var(--page-padding-x, 20px) 80px;

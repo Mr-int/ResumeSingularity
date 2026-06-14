@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     isAuthenticated,
+    isStudentRole,
     requestLogin,
     AUTH_CHANGED_EVENT,
 } from '../../services/authApi.js';
@@ -16,9 +17,13 @@ const Header = () => {
     const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [authed, setAuthed] = useState(() => isAuthenticated());
+    const [isStudent, setIsStudent] = useState(() => isStudentRole());
 
     useEffect(() => {
-        const sync = () => setAuthed(isAuthenticated());
+        const sync = () => {
+            setAuthed(isAuthenticated());
+            setIsStudent(isStudentRole());
+        };
         sync();
         window.addEventListener(AUTH_CHANGED_EVENT, sync);
         return () => window.removeEventListener(AUTH_CHANGED_EVENT, sync);
@@ -37,7 +42,7 @@ const Header = () => {
         document.body.style.overflow = 'hidden';
 
         const handleResize = () => {
-            if (window.innerWidth > 768) {
+            if (window.innerWidth > 992) {
                 setIsMenuOpen(false);
             }
         };
@@ -65,6 +70,8 @@ const Header = () => {
     const closeMenu = () => {
         setIsMenuOpen(false);
     };
+
+    const studentsLinkLabel = isStudent ? 'студенты' : 'найти стажера';
 
     return (
         <header className="header">
@@ -114,8 +121,8 @@ const Header = () => {
                     ) : null}
                     <Link to="/students" className="header__search">
                         <span className="header__searchBtn">
-                            <span className="header__searchBtnWhite">найти стажера</span>
-                            <span className="header__searchBtnGradient" aria-hidden="true">найти стажера</span>
+                            <span className="header__searchBtnWhite">{studentsLinkLabel}</span>
+                            <span className="header__searchBtnGradient" aria-hidden="true">{studentsLinkLabel}</span>
                         </span>
                         <div className="header__searchIconContainer">
                             <img
@@ -176,17 +183,8 @@ const Header = () => {
                     className="header__mobileBtn"
                     onClick={handleMobileLinkClick}
                 >
-                    найти стажера
+                    {studentsLinkLabel}
                 </Link>
-                {authed ? (
-                    <Link
-                        to="/settings"
-                        className="header__mobileBtn"
-                        onClick={handleMobileLinkClick}
-                    >
-                        профиль
-                    </Link>
-                ) : null}
                 {authed ? (
                     <Link
                         to="/chats"
@@ -194,6 +192,15 @@ const Header = () => {
                         onClick={handleMobileLinkClick}
                     >
                         чаты
+                    </Link>
+                ) : null}
+                {authed ? (
+                    <Link
+                        to="/settings"
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
+                    >
+                        профиль
                     </Link>
                 ) : null}
                 {!authed ? (

@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { getImageUrl } from '../../../config/api.js';
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import { Link } from "react-router-dom";
+import { getSkillDisplayName } from '../../../utils/skills.js';
 import './studentsListCard.css';
 
-const StudentsListCard = ({ student }) => {
+const StudentsListCard = ({ student, skillCatalogMap }) => {
     const [showFullBio, setShowFullBio] = useState(false);
 
     if (!student) {
@@ -110,8 +111,10 @@ const StudentsListCard = ({ student }) => {
                     </div>
 
                     <div className="studentsCard__skills">
-                        {skills.map((skill) => (
-                            <span key={skill.id} className="skill-tag">{skill.name}</span>
+                        {skills.map((skill, index) => (
+                            <span key={skill.id ?? index} className="skill-tag">
+                                {getSkillDisplayName(skill, skillCatalogMap)}
+                            </span>
                         ))}
                         {hasMoreSkills && (
                             <span className="skill-more">... и еще ({student.skills.length - maxVisibleSkills})</span>

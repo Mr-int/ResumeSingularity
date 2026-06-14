@@ -13,6 +13,8 @@ import {
 import { getStudentResumeForEdit, updateStudentResume } from '../services/onboardingApi.js';
 import { changePassword, getAuthMe, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, AUTH_USERNAME_KEY } from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
+import { fetchAllRegistrationSkills } from '../services/registrationCatalogApi.js';
+import { extractSkillIds } from '../utils/skills.js';
 import './accountPage.css';
 
 const COURSES = ['NEW', 'FIRST', 'SECOND', 'THIRD', 'FOURTH'];
@@ -84,11 +86,7 @@ const studentToForm = (s) => ({
     phoneNumber: s.phoneNumber || '',
     telegramUsername: s.telegramUsername || '',
     specialityId: s.specialityId != null ? String(s.specialityId) : '',
-    skillsIdsText: Array.isArray(s.skillsIds)
-        ? s.skillsIds.join(', ')
-        : Array.isArray(s.skills)
-          ? s.skills.map((sk) => sk.id).filter(Boolean).join(', ')
-          : '',
+    skillsIds: extractSkillIds(s.skillsIds ?? s.skills),
 });
 
 const recruiterToForm = (r) => ({
@@ -117,6 +115,8 @@ const SettingsPage = () => {
     });
     const [pwdForm, setPwdForm] = useState({ currentPassword: '', newPassword: '' });
     const [saving, setSaving] = useState('');
+    const [skillsCatalog, setSkillsCatalog] = useState([]);
+    const [skillsCatalogLoading, setSkillsCatalogLoading] = useState(false);
 
     const flashOk = (msg) => {
         setOkMsg(msg);
@@ -181,13 +181,34 @@ const SettingsPage = () => {
         loadProfile();
     }, [loadProfile]);
 
+    useEffect(() => {
+        if (role !== 'student') return undefined;
+
+        let cancelled = false;
+        setSkillsCatalogLoading(true);
+
+        fetchAllRegistrationSkills()
+            .then((items) => {
+                if (!cancelled) setSkillsCatalog(items);
+            })
+            .catch(() => {
+                if (!cancelled) setSkillsCatalog([]);
+            })
+            .finally(() => {
+                if (!cancelled) setSkillsCatalogLoading(false);
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [role]);
+
     const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
 
     const buildResumeBody = () => {
-        const skillIds = studentForm.skillsIdsText
-            .split(/[,;\s]+/)
-            .map((s) => Number(s.trim()))
-            .filter((n) => Number.isFinite(n) && n > 0);
+        const skillIds = Array.isArray(studentForm.skillsIds)
+            ? studentForm.skillsIds.map(Number).filter((n) => Number.isFinite(n) && n > 0)
+            : [];
         const specId = Number(studentForm.specialityId);
         return {
             firstName: studentForm.firstName.trim(),
@@ -293,6 +314,20 @@ const SettingsPage = () => {
 
     const setStudentField = (key, value) =>
         setStudentForm((prev) => ({ ...prev, [key]: value }));
+
+    const toggleStudentSkill = (skillId) => {
+        const id = Number(skillId);
+        if (!Number.isFinite(id) || id <= 0) return;
+        setStudentForm((prev) => {
+            const selected = new Set(prev.skillsIds || []);
+            if (selected.has(id)) {
+                selected.delete(id);
+            } else {
+                selected.add(id);
+            }
+            return { ...prev, skillsIds: Array.from(selected) };
+        });
+    };
 
     const setRecruiterField = (key, value) =>
         setRecruiterForm((prev) => ({ ...prev, [key]: value }));
@@ -485,8 +520,30 @@ const SettingsPage = () => {
                                         <input type="number" min="1" value={studentForm.specialityId} onChange={(e) => setStudentField('specialityId', e.target.value)} />
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
-                                        <span>ID навыков (через запятую)</span>
-                                        <input value={studentForm.skillsIdsText} onChange={(e) => setStudentField('skillsIdsText', e.target.value)} />
+                                        <span>Навыки</span>
+                                        {skillsCatalogLoading ? (
+                                            <p className="accountPage__skillsEmpty">Загрузка списка навыков…</p>
+                                        ) : skillsCatalog.length === 0 ? (
+                                            <p className="accountPage__skillsEmpty">Список навыков временно недоступен</p>
+                                        ) : (
+                                            <div className="accountPage__skillsGrid" role="group" aria-label="Навыки">
+                                                {skillsCatalog.map((skill) => {
+                                                    const skillId = Number(skill.id);
+                                                    const skillName = skill.name || skill.title || `Навык ${skillId}`;
+                                                    const checked = (studentForm.skillsIds || []).includes(skillId);
+                                                    return (
+                                                        <label key={skillId} className="accountPage__skillOption">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={checked}
+                                                                onChange={() => toggleStudentSkill(skillId)}
+                                                            />
+                                                            <span>{skillName}</span>
+                                                        </label>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </label>
                                 </div>
                                 <div className="accountPage__btnContainer">

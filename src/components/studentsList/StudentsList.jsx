@@ -6,7 +6,9 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
 import { filterStudentsPage, getAllSpecialities } from "../../services/studentApi.js";
+import { fetchAllRegistrationSkills } from "../../services/registrationCatalogApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
+import { buildSkillCatalogMap } from "../../utils/skills.js";
 
 const STUDENTS_PER_PAGE = 5;
 const MAX_VISIBLE_PAGES = 5;
@@ -252,6 +254,7 @@ const StudentsList = () => {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [showFilters, setShowFilters] = useState(false);
     const [specialties, setSpecialties] = useState([]);
+    const [skillCatalogMap, setSkillCatalogMap] = useState(() => new Map());
     const [currentFilters, setCurrentFilters] = useState({
         course: [],
         adult: false,
@@ -327,6 +330,20 @@ const StudentsList = () => {
         };
 
         loadSpecialities();
+    }, []);
+
+    useEffect(() => {
+        const loadSkillsCatalog = async () => {
+            try {
+                const data = await fetchAllRegistrationSkills();
+                setSkillCatalogMap(buildSkillCatalogMap(data));
+            } catch (err) {
+                console.error('Failed to load skills catalog:', err);
+                setSkillCatalogMap(new Map());
+            }
+        };
+
+        loadSkillsCatalog();
     }, []);
 
     // Первоначальная загрузка данных
@@ -657,7 +674,7 @@ const StudentsList = () => {
                 <div className="studentsList__cardsWrapper">
                     {visibleStudents.length > 0 ? (
                         paginatedStudents.map((student) => (
-                            <StudentsListCard key={student.id} student={student} />
+                            <StudentsListCard key={student.id} student={student} skillCatalogMap={skillCatalogMap} />
                         ))
                     ) : (
                         <div className="no-results-message">
