@@ -281,46 +281,6 @@
     text-decoration: underline;
 }
 
-.studentProjectsPage__cardActions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: auto;
-}
-
-.studentProjectsPage__cardLink,
-.studentProjectsPage__cardBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 18px;
-    border-radius: 20px;
-    font-size: 13px;
-    text-decoration: none;
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.studentProjectsPage__cardLink {
-    border: 1px solid #ffffff;
-    color: #ffffff;
-    background: transparent;
-}
-
-.studentProjectsPage__cardLink:hover {
-    background: #ffffff;
-    color: #000000;
-}
-
-.studentProjectsPage__cardBtn {
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    color: #ffffff;
-    background: transparent;
-}
-
-.studentProjectsPage__cardBtn:hover {
-    border-color: #ffffff;
-}
-
 @media (max-width: 768px) {
     .studentProjectsPage {
         padding: 40px var(--page-padding-x, 20px) 64px;
