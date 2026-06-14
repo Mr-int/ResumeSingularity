@@ -441,18 +441,18 @@ const ChatsView = () => {
             <aside className="chatsView__dialogs">
                 <div className="chatsView__dialogsHeader">
                     <nav className="chatsView__pageNav" aria-label="Навигация">
-                        <Link to="/students" className="chatsView__pageNavLink">
-                            ← Каталог
+                        <Link to="/students" className="chatsView__glassBtn">
+                            ← Назад
                         </Link>
                         <span className="chatsView__pageNavTitle">Чаты</span>
-                        <Link to="/settings" className="chatsView__pageNavLink">
-                            Настройки
+                        <Link to="/settings" className="chatsView__glassBtn">
+                            Профиль
                         </Link>
                     </nav>
                     <input
                         type="search"
                         className="chatsView__searchInput"
-                        placeholder="Поиск диалогов..."
+                        placeholder="Поиск по диалогам"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         autoComplete="off"
@@ -515,7 +515,7 @@ const ChatsView = () => {
                             to={`/studentsResume/${selectedChat.studentId}`}
                             className="chatsView__resumeBtn"
                         >
-                            Смотреть резюме
+                            Резюме
                         </Link>
                     ) : null}
                 </header>
@@ -558,10 +558,10 @@ const ChatsView = () => {
                                 <React.Fragment key={m.id}>
                                     {showSep ? <div className="chatsView__dateSep">{day}</div> : null}
                                     <div
-                                        className={`chatsView__message${mine ? ' chatsView__message--out' : ' chatsView__message--in'}`}
+                                        className={`chatsView__messageRow${mine ? ' chatsView__messageRow--out' : ' chatsView__messageRow--in'}`}
                                     >
                                         <div
-                                            className={`chatsView__bubble${isMessageDeleted(m) ? ' chatsView__bubble--deleted' : ''}`}
+                                            className={`chatsView__bubble${isMessageDeleted(m) ? ' chatsView__bubble--deleted' : ''}${attachUrl && !m.body ? ' chatsView__bubble--file' : ''}`}
                                         >
                                             {isMessageDeleted(m) ? (
                                                 'Сообщение удалено'
@@ -597,29 +597,39 @@ const ChatsView = () => {
                                                     ) : null}
                                                 </>
                                             )}
-                                        </div>
-                                        <span className="chatsView__msgTime">
-                                            {formatTime(m.createdAt)}
-                                            {readStatus ? (
-                                                <span
-                                                    className={`chatsView__readStatus chatsView__readStatus--${readStatus}`}
-                                                    title={readStatusLabel(readStatus)}
-                                                    aria-label={readStatusLabel(readStatus)}
-                                                >
-                                                    {readStatus === 'read' ? '✓✓' : '✓'}
+                                            {mine && !isMessageDeleted(m) && !isEditing ? (
+                                                <span className="chatsView__messageStatus">
+                                                    {formatTime(m.createdAt)}
+                                                    {readStatus ? (
+                                                        <span
+                                                            className={`chatsView__readStatus chatsView__readStatus--${readStatus}`}
+                                                            title={readStatusLabel(readStatus)}
+                                                            aria-label={readStatusLabel(readStatus)}
+                                                        >
+                                                            {' '}
+                                                            {readStatus === 'read' ? '✓✓' : '✓'}
+                                                        </span>
+                                                    ) : null}
+                                                    {m.editedAt ? ' · изм.' : ''}
+                                                    {m.messageKind === 'USER' ? (
+                                                        <button
+                                                            type="button"
+                                                            className="chatsView__editBtn"
+                                                            onClick={() => startEditMessage(m)}
+                                                        >
+                                                            {' '}
+                                                            Изменить
+                                                        </button>
+                                                    ) : null}
                                                 </span>
                                             ) : null}
-                                            {m.editedAt && !isMessageDeleted(m) ? ' · изм.' : ''}
-                                            {mine && !isMessageDeleted(m) && !isEditing && m.messageKind === 'USER' ? (
-                                                <button
-                                                    type="button"
-                                                    className="chatsView__editBtn"
-                                                    onClick={() => startEditMessage(m)}
-                                                >
-                                                    Изменить
-                                                </button>
-                                            ) : null}
-                                        </span>
+                                        </div>
+                                        {!mine ? (
+                                            <span className="chatsView__msgTime">
+                                                {formatTime(m.createdAt)}
+                                                {m.editedAt && !isMessageDeleted(m) ? ' · изм.' : ''}
+                                            </span>
+                                        ) : null}
                                     </div>
                                 </React.Fragment>
                             );
@@ -629,39 +639,41 @@ const ChatsView = () => {
 
                 <footer className="chatsView__composer">
                     {sendError ? <div className="chatsView__composerError">{sendError}</div> : null}
-                    <form className="chatsView__inputWrap" onSubmit={handleSend}>
+                    <form className="chatsView__inputPanel" onSubmit={handleSend}>
                         <input
                             ref={fileInputRef}
                             type="file"
                             hidden
                             onChange={handleAttachment}
                         />
-                        <button
-                            type="button"
-                            className="chatsView__attachBtn"
-                            disabled={!selectedId || sending}
-                            aria-label="Прикрепить файл"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            📎
-                        </button>
-                        <input
-                            type="text"
-                            className="chatsView__textInput"
-                            placeholder={selectedId ? 'Написать сообщение...' : 'Сначала выберите чат'}
-                            value={draft}
-                            onChange={(e) => setDraft(e.target.value)}
-                            disabled={!selectedId || sending}
-                            maxLength={16000}
-                            autoComplete="off"
-                        />
+                        <div className="chatsView__inputWrapper">
+                            <button
+                                type="button"
+                                className="chatsView__attachBtn"
+                                disabled={!selectedId || sending}
+                                aria-label="Прикрепить файл"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                ＋
+                            </button>
+                            <input
+                                type="text"
+                                className="chatsView__textInput"
+                                placeholder={selectedId ? 'Напишите сообщение...' : 'Сначала выберите чат'}
+                                value={draft}
+                                onChange={(e) => setDraft(e.target.value)}
+                                disabled={!selectedId || sending}
+                                maxLength={16000}
+                                autoComplete="off"
+                            />
+                        </div>
                         <button
                             type="submit"
                             className="chatsView__sendBtn"
                             disabled={!selectedId || sending || !draft.trim()}
                             aria-label="Отправить"
                         >
-                            ➔
+                            ↑
                         </button>
                     </form>
                 </footer>
