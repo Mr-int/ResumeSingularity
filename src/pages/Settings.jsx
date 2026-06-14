@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
-import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
 import {
     patchStudentMe,
@@ -691,7 +689,6 @@ const SettingsPage = () => {
                                 </div>
                             </section>
 
-                            {profile?.id ? <StudentRequestsSection studentId={profile.id} /> : null}
                         </>
                     )}
 
@@ -740,7 +737,6 @@ const SettingsPage = () => {
                                     </button>
                                 </div>
                             </section>
-                            <RecruiterRequestsSection recruiterId={profile.id} />
                         </>
                     )}
 

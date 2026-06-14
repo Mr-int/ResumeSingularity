@@ -3,15 +3,18 @@ import { Link, useSearchParams } from 'react-router-dom';
 import './chatsView.css';
 import {
     getMyChats,
-    getChatMessages,
     getChatSummary,
-    postChatTextMessage,
-    postChatAttachment,
+    postChatTextMessageResilient,
+    postChatAttachmentResilient,
+    loadMergedChatMessages,
+    getChatIdList,
     markPeerChatsRead,
     patchChatMessage,
     extractChatPageItems,
     dedupeChatsByPeer,
 } from '../../services/chatApi.js';
+import { filterMyRequests, postStudentDecision } from '../../services/requestApi.js';
+import { formatApiUserMessage } from '../../utils/apiErrors.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
 import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
@@ -98,6 +101,10 @@ const ChatAvatar = ({ title, imageUrl, toneClass, size = 'md' }) => {
 
 const isMessageDeleted = (m) => Boolean(m.deletedAt || m.deletedByAdmin);
 
+const REQUEST_DECIDABLE = new Set(['WAITING', 'EXPECTATION', 'CREATION']);
+
+const canDecideRequest = (result) => REQUEST_DECIDABLE.has(result);
+
 async function resolveMe() {
     try {
         const profile = await getStudentMe();
@@ -133,6 +140,9 @@ const ChatsView = () => {
     const [sending, setSending] = useState(false);
     const [editingMessageId, setEditingMessageId] = useState(null);
     const [editDraft, setEditDraft] = useState('');
+    const [pendingRequest, setPendingRequest] = useState(null);
+    const [pendingBusy, setPendingBusy] = useState(false);
+    const [pendingComment, setPendingComment] = useState('');
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const titleCache = useRef(new Map());
@@ -322,21 +332,19 @@ const ChatsView = () => {
     }, [enrichChatMeta]);
 
     const loadMessages = useCallback(
-        async (chatId) => {
+        async (chatRow, fallbackId) => {
+            const chatId = chatRow?.id ?? fallbackId;
             if (!chatId) return;
             setLoadingMessages(true);
             setSendError('');
             try {
-                const res = await getChatMessages(chatId, 0, 50);
-                const rows = extractChatPageItems(res);
+                const rows = await loadMergedChatMessages(chatRow, fallbackId, 0, 50);
                 setMessages(rows);
                 const last = rows.filter((m) => !isMessageDeleted(m)).pop();
                 if (last?.id) {
                     try {
-                        const chatRow =
-                            chatsRef.current.find((c) => String(c.id) === String(chatId)) ||
-                            { id: chatId };
-                        await markPeerChatsRead(chatRow, last.id);
+                        const row = chatRow?.id ? chatRow : { id: chatId };
+                        await markPeerChatsRead(row, last.id);
                         clearChatUnread(chatId);
                         await refreshSummary(chatId);
                     } catch {
@@ -380,14 +388,55 @@ const ChatsView = () => {
     useEffect(() => {
         if (!selectedId) {
             setMessages([]);
+            setPendingRequest(null);
             return;
         }
         const gen = ++messagesLoadGen.current;
-        loadMessages(selectedId).then(() => {
+        const chatRow =
+            chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
+            { id: selectedId };
+        loadMessages(chatRow, selectedId).then(() => {
             if (messagesLoadGen.current !== gen) return;
             refreshSummary(selectedId);
         });
     }, [selectedId, loadMessages, refreshSummary]);
+
+    useEffect(() => {
+        if (!selectedId || me?.role !== 'student') {
+            setPendingRequest(null);
+            setPendingComment('');
+            return;
+        }
+        const chatRow =
+            chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
+            selectedChat ||
+            { id: selectedId };
+        const chatIds = new Set(getChatIdList(chatRow, selectedId).map(String));
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await filterMyRequests({}, 0, 100);
+                const items = Array.isArray(res?.data)
+                    ? res.data
+                    : Array.isArray(res?.content)
+                      ? res.content
+                      : [];
+                const match = items.find((r) => {
+                    const appChatId = r?.appChatId ?? r?.chatId;
+                    return appChatId != null && chatIds.has(String(appChatId));
+                });
+                if (!cancelled) {
+                    setPendingRequest(match && canDecideRequest(match.result) ? match : null);
+                    if (!match || !canDecideRequest(match.result)) setPendingComment('');
+                }
+            } catch {
+                if (!cancelled) setPendingRequest(null);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedId, selectedChat, me?.role]);
 
     useEffect(() => {
         if (!selectedId) return undefined;
@@ -400,22 +449,26 @@ const ChatsView = () => {
     useEffect(() => {
         if (!selectedId) return undefined;
 
-        const unsub = subscribeChatTopic(selectedId, (message) => {
-            if (!message?.id) return;
-            mergeMessage(message);
-            const preview = message.body || message.attachmentStorageName || '';
-            updateChatPreview(selectedId, preview, message.createdAt);
-            if (!isMine(message) && message.id) {
-                const chatRow =
-                    chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
-                    { id: selectedId };
-                markPeerChatsRead(chatRow, message.id).catch(() => {});
-                clearChatUnread(selectedId);
-                refreshSummary(selectedId);
-            }
-        });
+        const chatRow =
+            chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
+            { id: selectedId };
+        const chatIds = getChatIdList(chatRow, selectedId);
 
-        return unsub;
+        const unsubscribes = chatIds.map((chatId) =>
+            subscribeChatTopic(chatId, (message) => {
+                if (!message?.id) return;
+                mergeMessage(message);
+                const preview = message.body || message.attachmentStorageName || '';
+                updateChatPreview(selectedId, preview, message.createdAt);
+                if (!isMine(message) && message.id) {
+                    markPeerChatsRead(chatRow, message.id).catch(() => {});
+                    clearChatUnread(selectedId);
+                    refreshSummary(selectedId);
+                }
+            }),
+        );
+
+        return () => unsubscribes.forEach((fn) => fn?.());
     }, [selectedId, isMine, refreshSummary, clearChatUnread]);
 
     useEffect(() => {
@@ -442,11 +495,12 @@ const ChatsView = () => {
         setSending(true);
         setSendError('');
         try {
-            const created = await postChatTextMessage(selectedId, text);
+            const chatRow = selectedChat || { id: selectedId };
+            const created = await postChatTextMessageResilient(chatRow, selectedId, text);
             const message = created?.id ? created : created?.data ?? created;
             setDraft('');
             if (message?.id) mergeMessage(message);
-            else await loadMessages(selectedId);
+            else await loadMessages(chatRow, selectedId);
             updateChatPreview(selectedId, text, created?.createdAt);
         } catch (err) {
             setSendError(err.message || 'Не отправилось');
@@ -475,7 +529,10 @@ const ChatsView = () => {
             const updated = await patchChatMessage(selectedId, editingMessageId, text);
             const message = updated?.id ? updated : updated?.data ?? updated;
             if (message?.id) mergeMessage(message);
-            else await loadMessages(selectedId);
+            else {
+                const chatRow = selectedChat || { id: selectedId };
+                await loadMessages(chatRow, selectedId);
+            }
             cancelEditMessage();
         } catch (err) {
             setSendError(err.message || 'Не удалось изменить сообщение');
@@ -491,17 +548,39 @@ const ChatsView = () => {
         setSending(true);
         setSendError('');
         try {
-            const created = await postChatAttachment(selectedId, file, draft.trim());
+            const chatRow = selectedChat || { id: selectedId };
+            const created = await postChatAttachmentResilient(chatRow, selectedId, file, draft.trim());
             const message = created?.id ? created : created?.data ?? created;
             setDraft('');
             if (message?.id) mergeMessage(message);
-            else await loadMessages(selectedId);
+            else await loadMessages(chatRow, selectedId);
             const preview = (message?.body || created?.body) || file.name || 'Вложение';
             updateChatPreview(selectedId, preview, created?.createdAt);
         } catch (err) {
             setSendError(err.message || 'Не удалось отправить файл');
         } finally {
             setSending(false);
+        }
+    };
+
+    const handleRequestDecision = async (accepted) => {
+        if (!pendingRequest?.id || pendingBusy) return;
+        setPendingBusy(true);
+        setSendError('');
+        try {
+            await postStudentDecision(pendingRequest.id, {
+                accepted,
+                studentResponseText: pendingComment.trim() || undefined,
+            });
+            setPendingRequest(null);
+            setPendingComment('');
+            const chatRow = selectedChat || { id: selectedId };
+            await loadMessages(chatRow, selectedId);
+            await loadChats();
+        } catch (err) {
+            setSendError(formatApiUserMessage(err, 'Не удалось обработать заявку'));
+        } finally {
+            setPendingBusy(false);
         }
     };
 
@@ -634,6 +713,40 @@ const ChatsView = () => {
                     {!selectedId && (
                         <div className="chatsView__empty">Выберите чат, чтобы открыть переписку</div>
                     )}
+                    {selectedId && pendingRequest && me?.role === 'student' ? (
+                        <div className="chatsView__requestPanel" role="region" aria-label="Входящая заявка">
+                            <p className="chatsView__requestPanelTitle">Работодатель отправил заявку</p>
+                            <p className="chatsView__requestPanelHint">
+                                Примите заявку, чтобы начать переписку. Отклонение закроет этот диалог.
+                            </p>
+                            <textarea
+                                className="chatsView__requestPanelComment"
+                                rows={2}
+                                placeholder="Комментарий (необязательно)"
+                                value={pendingComment}
+                                onChange={(e) => setPendingComment(e.target.value)}
+                                disabled={pendingBusy}
+                            />
+                            <div className="chatsView__requestPanelActions">
+                                <button
+                                    type="button"
+                                    className="chatsView__requestPanelBtn chatsView__requestPanelBtn--accept"
+                                    disabled={pendingBusy}
+                                    onClick={() => handleRequestDecision(true)}
+                                >
+                                    Принять
+                                </button>
+                                <button
+                                    type="button"
+                                    className="chatsView__requestPanelBtn chatsView__requestPanelBtn--reject"
+                                    disabled={pendingBusy}
+                                    onClick={() => handleRequestDecision(false)}
+                                >
+                                    Отклонить
+                                </button>
+                            </div>
+                        </div>
+                    ) : null}
                     {selectedId && loadingMessages && (
                         <div className="chatsView__muted">Загрузка сообщений…</div>
                     )}
@@ -768,7 +881,7 @@ const ChatsView = () => {
                             <button
                                 type="button"
                                 className="chatsView__attachBtn"
-                                disabled={!selectedId || sending}
+                                disabled={!selectedId || sending || Boolean(pendingRequest && me?.role === 'student')}
                                 aria-label="Прикрепить файл"
                                 onClick={() => fileInputRef.current?.click()}
                             >
@@ -780,7 +893,7 @@ const ChatsView = () => {
                                 placeholder={selectedId ? 'Напишите сообщение...' : 'Сначала выберите чат'}
                                 value={draft}
                                 onChange={(e) => setDraft(e.target.value)}
-                                disabled={!selectedId || sending}
+                                disabled={!selectedId || sending || Boolean(pendingRequest && me?.role === 'student')}
                                 maxLength={16000}
                                 autoComplete="off"
                             />
@@ -788,7 +901,7 @@ const ChatsView = () => {
                         <button
                             type="submit"
                             className="chatsView__sendBtn"
-                            disabled={!selectedId || sending || !draft.trim()}
+                            disabled={!selectedId || sending || !draft.trim() || Boolean(pendingRequest && me?.role === 'student')}
                             aria-label="Отправить"
                         >
                             ↑

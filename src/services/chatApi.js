@@ -97,6 +97,76 @@ export const getChatMessages = async (chatId, page = 0, size = 50) => {
     }
 };
 
+/** ID всех чатов в объединённом диалоге (по заявкам). */
+export const getChatIdList = (chatRow, fallbackId = null) => {
+    const ids = Array.isArray(chatRow?._mergedIds) && chatRow._mergedIds.length
+        ? chatRow._mergedIds
+        : [chatRow?.id ?? fallbackId].filter(Boolean);
+    return [...new Set(ids.map((id) => String(id)))];
+};
+
+/** Сообщения из всех связанных чатов одной пары собеседников. */
+export const loadMergedChatMessages = async (chatRow, fallbackId, page = 0, size = 50) => {
+    const ids = getChatIdList(chatRow, fallbackId);
+    const batches = await Promise.all(
+        ids.map((id) =>
+            getChatMessages(id, page, size).catch(() => ({ data: [] })),
+        ),
+    );
+    const byId = new Map();
+    for (const res of batches) {
+        for (const m of extractChatPageItems(res)) {
+            if (m?.id) byId.set(String(m.id), m);
+        }
+    }
+    return [...byId.values()].sort(
+        (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0),
+    );
+};
+
+/** Отправка в активный чат; при 403 пробуем остальные id из merge-группы. */
+export const postChatTextMessageResilient = async (chatRow, fallbackId, body) => {
+    const ids = getChatIdList(chatRow, fallbackId);
+    const primary = chatRow?.id != null ? String(chatRow.id) : null;
+    const ordered = [
+        ...(primary ? [primary] : []),
+        ...ids.filter((id) => id !== primary),
+    ];
+    const unique = [...new Set(ordered.length ? ordered : ids)];
+
+    let lastErr = null;
+    for (const id of unique) {
+        try {
+            return await postChatTextMessage(id, body);
+        } catch (e) {
+            lastErr = e;
+            if (e.status !== 403 && e.status !== 404) throw e;
+        }
+    }
+    throw lastErr || new Error('Не удалось отправить сообщение');
+};
+
+export const postChatAttachmentResilient = async (chatRow, fallbackId, file, body = '') => {
+    const ids = getChatIdList(chatRow, fallbackId);
+    const primary = chatRow?.id != null ? String(chatRow.id) : null;
+    const ordered = [
+        ...(primary ? [primary] : []),
+        ...ids.filter((id) => id !== primary),
+    ];
+    const unique = [...new Set(ordered.length ? ordered : ids)];
+
+    let lastErr = null;
+    for (const id of unique) {
+        try {
+            return await postChatAttachment(id, file, body);
+        } catch (e) {
+            lastErr = e;
+            if (e.status !== 403 && e.status !== 404) throw e;
+        }
+    }
+    throw lastErr || new Error('Не удалось отправить файл');
+};
+
 /**
  * POST /chat/{chatId}/messages — текстовое сообщение.
  */
