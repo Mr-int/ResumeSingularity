@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { filterMyRequests, postStudentDecision } from '../../services/requestApi.js';
+import { filterMyRequests, postStudentDecision, buildStudentDecisionBody } from '../../services/requestApi.js';
 import { getRecruiterById } from '../../services/getApi.js';
 import { formatApiUserMessage, isPendingApprovalError } from '../../utils/apiErrors.js';
 
@@ -76,10 +76,10 @@ const StudentRequestsSection = ({ studentId }) => {
         setBusyId(requestId);
         setError('');
         try {
-            await postStudentDecision(requestId, {
-                accepted,
-                studentResponseText: (comments[requestId] || '').trim() || undefined,
-            });
+            await postStudentDecision(
+                requestId,
+                buildStudentDecisionBody(accepted, comments[requestId]),
+            );
             await load();
         } catch (e) {
             setError(formatApiUserMessage(e));

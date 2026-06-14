@@ -45,7 +45,16 @@ export const filterRequests = (filter = {}, page = 0, size = 50) =>
 
 /**
  * POST /request/{id}/student-decision
+ * Тело: { accept: boolean, comment?: string }
  */
+export const buildStudentDecisionBody = (accept, comment = '') => {
+    const text = String(comment ?? '').trim();
+    return {
+        accept: Boolean(accept),
+        ...(text ? { comment: text } : {}),
+    };
+};
+
 export const postStudentDecision = (requestId, payload) =>
     apiClientJson(`request/${requestId}/student-decision`, {
         method: 'POST',

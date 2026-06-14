@@ -13,7 +13,7 @@ import {
     extractChatPageItems,
     dedupeChatsByPeer,
 } from '../../services/chatApi.js';
-import { filterMyRequests, postStudentDecision } from '../../services/requestApi.js';
+import { filterMyRequests, postStudentDecision, buildStudentDecisionBody } from '../../services/requestApi.js';
 import { formatApiUserMessage } from '../../utils/apiErrors.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
@@ -568,10 +568,10 @@ const ChatsView = () => {
         setPendingBusy(true);
         setSendError('');
         try {
-            await postStudentDecision(pendingRequest.id, {
-                accepted,
-                studentResponseText: pendingComment.trim() || undefined,
-            });
+            await postStudentDecision(
+                pendingRequest.id,
+                buildStudentDecisionBody(accepted, pendingComment),
+            );
             setPendingRequest(null);
             setPendingComment('');
             const chatRow = selectedChat || { id: selectedId };
