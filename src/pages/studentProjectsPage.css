@@ -20,17 +20,8 @@
     font-size: 24px;
     font-weight: 500;
     letter-spacing: -0.03em;
-    margin: 0 0 16px;
+    margin: 0 0 48px;
     color: #ffffff;
-}
-
-.studentProjectsPage__subtitle {
-    margin: 0 0 40px;
-    font-size: 15px;
-    line-height: 1.55;
-    color: #ffffff;
-    opacity: 0.85;
-    max-width: 720px;
 }
 
 .studentProjectsPage__filters {

@@ -60,10 +60,6 @@ const StudentProjects = () => {
             <main className="studentProjectsPage">
                 <div className="studentProjectsPage__inner">
                     <h1 className="studentProjectsPage__title">Проекты студентов</h1>
-                    <p className="studentProjectsPage__subtitle">
-                        Работы из портфолио и каталога платформы. Это отдельный раздел — не путать с витриной
-                        «Лучшие проекты» на главной странице.
-                    </p>
 
                     <form
                         className="studentProjectsPage__filters"
