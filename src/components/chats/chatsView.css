@@ -337,7 +337,23 @@
     align-self: flex-end;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+}
+
+.chatsView__readStatus {
+    font-size: 12px;
+    line-height: 1;
+    letter-spacing: -0.08em;
+    color: #6b7088;
+    user-select: none;
+}
+
+.chatsView__readStatus--read {
+    color: #7eb8ff;
+}
+
+.chatsView__message--out .chatsView__readStatus--sent {
+    color: #8b8fa8;
 }
 
 .chatsView__editBtn {

@@ -17,6 +17,11 @@ import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/g
 import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
 import { disconnectChatWebSocket, subscribeChatTopic } from '../../services/chatWebSocket.js';
+import {
+    extractPeerReadMessageId,
+    getOutgoingReadStatus,
+    readStatusLabel,
+} from '../../utils/chatReadStatus.js';
 
 const formatTime = (iso) => {
     if (!iso) return '';
@@ -282,6 +287,11 @@ const ChatsView = () => {
         [chats, selectedId],
     );
 
+    const peerReadMessageId = useMemo(
+        () => extractPeerReadMessageId(selectedChat, me?.role),
+        [selectedChat, me?.role],
+    );
+
     useEffect(() => {
         loadChats();
     }, [loadChats]);
@@ -309,8 +319,12 @@ const ChatsView = () => {
     }, [selectedId, loadMessages, refreshSummary]);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+        if (!selectedId) return undefined;
+        const poll = window.setInterval(() => {
+            refreshSummary(selectedId);
+        }, 8000);
+        return () => window.clearInterval(poll);
+    }, [selectedId, refreshSummary]);
 
     useEffect(() => {
         if (!selectedId) return undefined;
@@ -328,6 +342,10 @@ const ChatsView = () => {
 
         return unsub;
     }, [selectedId, isMine, refreshSummary]);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     useEffect(() => () => disconnectChatWebSocket(), []);
 
@@ -526,6 +544,12 @@ const ChatsView = () => {
                                 );
                             }
                             const mine = isMine(m);
+                            const readStatus = getOutgoingReadStatus(
+                                m,
+                                messages,
+                                peerReadMessageId,
+                                isMine,
+                            );
                             const attachUrl = !isMessageDeleted(m)
                                 ? getImageUrl(m.attachmentStorageName)
                                 : null;
@@ -576,6 +600,15 @@ const ChatsView = () => {
                                         </div>
                                         <span className="chatsView__msgTime">
                                             {formatTime(m.createdAt)}
+                                            {readStatus ? (
+                                                <span
+                                                    className={`chatsView__readStatus chatsView__readStatus--${readStatus}`}
+                                                    title={readStatusLabel(readStatus)}
+                                                    aria-label={readStatusLabel(readStatus)}
+                                                >
+                                                    {readStatus === 'read' ? '✓✓' : '✓'}
+                                                </span>
+                                            ) : null}
                                             {m.editedAt && !isMessageDeleted(m) ? ' · изм.' : ''}
                                             {mine && !isMessageDeleted(m) && !isEditing && m.messageKind === 'USER' ? (
                                                 <button
