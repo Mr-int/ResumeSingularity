@@ -16,10 +16,11 @@ import { formatApiUserMessage } from '../utils/apiErrors.js';
 import { getImageUrl } from '../config/api.js';
 import { fetchAllRegistrationSkills, fetchAllRegistrationSpecialities } from '../services/registrationCatalogApi.js';
 import { extractSkillIds } from '../utils/skills.js';
+import { COURSE_OPTIONS, BUSYNESS_OPTIONS, COURSE_LABELS, BUSYNESS_LABELS } from '../utils/studentEnums.js';
 import './accountPage.css';
 
-const COURSES = ['NEW', 'FIRST', 'SECOND', 'THIRD', 'FOURTH'];
-const BUSYNESS = ['FREE', 'FREELANCE', 'EMPLOYED'];
+const COURSES = COURSE_OPTIONS;
+const BUSYNESS = BUSYNESS_OPTIONS;
 
 const ROLE_LABELS = {
     STUDENT: 'Студент',
@@ -458,7 +459,7 @@ const SettingsPage = () => {
                         <>
                             {studentForm.course === 'NEW' && (
                                 <div className="accountPage__banner" role="status">
-                                    Профиль с курсом NEW не показывается рекрутерам до модерации.
+                                    Профиль с курсом «Новый» не показывается рекрутерам до модерации.
                                 </div>
                             )}
 
@@ -560,13 +561,17 @@ const SettingsPage = () => {
                                     <label className="accountPage__formGroup">
                                         <span>Курс</span>
                                         <select value={studentForm.course} onChange={(e) => setStudentField('course', e.target.value)}>
-                                            {COURSES.map((c) => <option key={c} value={c}>{c}</option>)}
+                                            {COURSES.map((c) => (
+                                                <option key={c} value={c}>{COURSE_LABELS[c] || c}</option>
+                                            ))}
                                         </select>
                                     </label>
                                     <label className="accountPage__formGroup">
                                         <span>Занятость</span>
                                         <select value={studentForm.busyness} onChange={(e) => setStudentField('busyness', e.target.value)}>
-                                            {BUSYNESS.map((b) => <option key={b} value={b}>{b}</option>)}
+                                            {BUSYNESS.map((b) => (
+                                                <option key={b} value={b}>{BUSYNESS_LABELS[b] || b}</option>
+                                            ))}
                                         </select>
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">

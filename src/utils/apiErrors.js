@@ -1,3 +1,5 @@
+import { getAccountStatus } from '../services/authApi.js';
+
 export const PENDING_APPROVAL_MESSAGE =
     'Ваш аккаунт ещё на проверке. После одобрения администратором откроется полный доступ к каталогу и профилю.';
 
@@ -25,6 +27,11 @@ const isPendingApprovalText = (text) => {
     );
 };
 
+const isAccountPending = () => {
+    const status = getAccountStatus();
+    return status === 'PENDING' || status === 'PENDING_APPROVAL';
+};
+
 export function formatApiUserMessage(error) {
     if (!error) {
         return 'Не удалось выполнить запрос. Попробуйте обновить страницу.';
@@ -33,7 +40,7 @@ export function formatApiUserMessage(error) {
     const status = error.status;
     const raw = String(error.message || error.responseBody?.message || '').trim();
 
-    if (status === 403 || isAccessDeniedText(raw) || isPendingApprovalText(raw)) {
+    if (isPendingApprovalText(raw) || (status === 403 && isAccountPending())) {
         if (isPendingApprovalText(raw) && raw && !isAccessDeniedText(raw)) {
             return raw.endsWith('.') ? raw : `${raw}.`;
         }
@@ -42,6 +49,11 @@ export function formatApiUserMessage(error) {
 
     if (status === 404 && isPendingApprovalText(raw)) {
         return PENDING_APPROVAL_MESSAGE;
+    }
+
+    if (status === 403) {
+        if (raw && !isAccessDeniedText(raw)) return raw;
+        return 'Недостаточно прав для выполнения действия.';
     }
 
     if (status === 401) {
@@ -57,7 +69,8 @@ export function formatApiUserMessage(error) {
 
 export function isPendingApprovalError(error) {
     if (!error) return false;
-    if (error.status === 403) return true;
     const raw = String(error.message || error.responseBody?.message || '');
-    return isAccessDeniedText(raw) || isPendingApprovalText(raw);
+    if (isPendingApprovalText(raw)) return true;
+    if (error.status === 403 && isAccountPending()) return true;
+    return false;
 }

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { filterRequests } from '../../services/requestApi.js';
+import { filterMyRequests } from '../../services/requestApi.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { formatApiUserMessage, isPendingApprovalError } from '../../utils/apiErrors.js';
 
@@ -39,7 +39,7 @@ const RecruiterRequestsSection = ({ recruiterId }) => {
         setError('');
         setPendingNotice('');
         try {
-            const res = await filterRequests({ recruiterId }, 0, 50);
+            const res = await filterMyRequests({}, 0, 50);
             const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
             setRequests(rows);
             const map = {};
