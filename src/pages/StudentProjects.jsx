@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
@@ -6,109 +7,156 @@ import { listStudentProjectCards } from '../services/projectsApi.js';
 import { formatApiUserMessage } from '../utils/apiErrors.js';
 import './studentProjectsPage.css';
 
-const stopBubble = (e) => e.stopPropagation();
-
-const ProjectCard = ({ project }) => {
-    const [expanded, setExpanded] = useState(false);
+const ProjectGallery = ({ images, className = '' }) => {
     const [photoIndex, setPhotoIndex] = useState(0);
-    const images = project.images || [];
     const hasManyPhotos = images.length > 1;
 
-    const toggleExpanded = () => setExpanded((v) => !v);
-    const prevPhoto = (e) => {
-        stopBubble(e);
-        setPhotoIndex((i) => (i <= 0 ? images.length - 1 : i - 1));
-    };
-    const nextPhoto = (e) => {
-        stopBubble(e);
-        setPhotoIndex((i) => (i >= images.length - 1 ? 0 : i + 1));
-    };
+    useEffect(() => {
+        setPhotoIndex(0);
+    }, [images]);
 
+    if (!images.length) {
+        return <div className={`studentProjectsPage__gallery studentProjectsPage__gallery--empty ${className}`.trim()}>Нет фото</div>;
+    }
+
+    return (
+        <div className={`studentProjectsPage__gallery ${className}`.trim()}>
+            <img
+                src={images[photoIndex]}
+                alt=""
+                className="studentProjectsPage__galleryImage"
+                loading="lazy"
+            />
+            {hasManyPhotos ? (
+                <div className="studentProjectsPage__galleryNav">
+                    <button
+                        type="button"
+                        onClick={() => setPhotoIndex((i) => (i <= 0 ? images.length - 1 : i - 1))}
+                        aria-label="Предыдущее фото"
+                    >
+                        ‹
+                    </button>
+                    <span>
+                        {photoIndex + 1} / {images.length}
+                    </span>
+                    <button
+                        type="button"
+                        onClick={() => setPhotoIndex((i) => (i >= images.length - 1 ? 0 : i + 1))}
+                        aria-label="Следующее фото"
+                    >
+                        ›
+                    </button>
+                </div>
+            ) : null}
+        </div>
+    );
+};
+
+const ProjectCard = ({ project, onOpen }) => {
     const previewText = project.summary || project.body || 'Описание не указано';
-    const fullText = project.body || project.summary || 'Описание не указано';
 
     return (
         <li
-            className={`studentProjectsPage__card${expanded ? ' studentProjectsPage__card--expanded' : ''}`}
-            onClick={toggleExpanded}
+            className="studentProjectsPage__card"
+            onClick={() => onOpen(project)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    toggleExpanded();
+                    onOpen(project);
                 }
             }}
             role="button"
             tabIndex={0}
-            aria-expanded={expanded}
+            aria-haspopup="dialog"
         >
-            {images.length > 0 ? (
-                <div className="studentProjectsPage__gallery">
-                    <img
-                        src={images[photoIndex]}
-                        alt=""
-                        className="studentProjectsPage__galleryImage"
-                        loading="lazy"
-                    />
-                    {hasManyPhotos ? (
-                        <div className="studentProjectsPage__galleryNav" onClick={stopBubble}>
-                            <button type="button" onClick={prevPhoto} aria-label="Предыдущее фото">
-                                ‹
-                            </button>
-                            <span>
-                                {photoIndex + 1} / {images.length}
-                            </span>
-                            <button type="button" onClick={nextPhoto} aria-label="Следующее фото">
-                                ›
-                            </button>
-                        </div>
-                    ) : null}
-                </div>
-            ) : (
-                <div className="studentProjectsPage__gallery studentProjectsPage__gallery--empty">Нет фото</div>
-            )}
-
-            {project.section ? (
-                <p className="studentProjectsPage__cardSection">{project.section}</p>
-            ) : null}
-
+            <ProjectGallery images={project.images || []} />
+            {project.section ? <p className="studentProjectsPage__cardSection">{project.section}</p> : null}
             <h2 className="studentProjectsPage__cardTitle">{project.title}</h2>
-
-            <p
-                className={`studentProjectsPage__cardDescription${expanded ? ' studentProjectsPage__cardDescription--expanded' : ''}`}
-            >
-                {expanded ? fullText : previewText}
-            </p>
-
-            {expanded && project.skills?.length > 0 ? (
-                <ul className="studentProjectsPage__skills" onClick={stopBubble}>
-                    {project.skills.map((skill) => (
-                        <li key={skill}>{skill}</li>
-                    ))}
-                </ul>
-            ) : null}
-
-            {expanded && project.participants?.length > 0 ? (
-                <div className="studentProjectsPage__participants" onClick={stopBubble}>
-                    <span className="studentProjectsPage__participantsLabel">Участники:</span>
-                    <div className="studentProjectsPage__participantsList">
-                        {project.participants.map((p) => (
-                            <Link key={p.id} to={`/studentsResume/${p.id}`} className="studentProjectsPage__participant">
-                                {p.name}
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            ) : null}
-
-            {!expanded && project.participants?.length === 1 ? (
+            <p className="studentProjectsPage__cardDescription">{previewText}</p>
+            {project.participants?.length === 1 ? (
                 <p className="studentProjectsPage__cardMeta">
-                    Участник:{' '}
-                    <Link to={`/studentsResume/${project.participants[0].id}`} onClick={stopBubble}>
-                        {project.participants[0].name}
-                    </Link>
+                    Участник: {project.participants[0].name}
                 </p>
             ) : null}
         </li>
+    );
+};
+
+const ProjectModal = ({ project, onClose }) => {
+    const fullText = project.body || project.summary || 'Описание не указано';
+
+    useEffect(() => {
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.body.style.overflow = prevOverflow;
+            window.removeEventListener('keydown', onKeyDown);
+        };
+    }, [onClose]);
+
+    return createPortal(
+        <div className="studentProjectsPage__modal" role="presentation" onClick={onClose}>
+            <div
+                className="studentProjectsPage__modalDialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="project-modal-title"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <button
+                    type="button"
+                    className="studentProjectsPage__modalClose"
+                    onClick={onClose}
+                    aria-label="Закрыть"
+                >
+                    ×
+                </button>
+
+                <div className="studentProjectsPage__modalBody">
+                    <ProjectGallery images={project.images || []} className="studentProjectsPage__gallery--modal" />
+
+                    {project.section ? (
+                        <p className="studentProjectsPage__cardSection">{project.section}</p>
+                    ) : null}
+
+                    <h2 id="project-modal-title" className="studentProjectsPage__modalTitle">
+                        {project.title}
+                    </h2>
+
+                    <p className="studentProjectsPage__modalDescription">{fullText}</p>
+
+                    {project.skills?.length > 0 ? (
+                        <ul className="studentProjectsPage__skills">
+                            {project.skills.map((skill) => (
+                                <li key={skill}>{skill}</li>
+                            ))}
+                        </ul>
+                    ) : null}
+
+                    {project.participants?.length > 0 ? (
+                        <div className="studentProjectsPage__participants">
+                            <span className="studentProjectsPage__participantsLabel">Участники</span>
+                            <div className="studentProjectsPage__participantsList">
+                                {project.participants.map((p) => (
+                                    <Link
+                                        key={p.id}
+                                        to={`/studentsResume/${p.id}`}
+                                        className="studentProjectsPage__participant"
+                                    >
+                                        {p.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
+                </div>
+            </div>
+        </div>,
+        document.body,
     );
 };
 
@@ -117,6 +165,7 @@ const StudentProjects = () => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [openProject, setOpenProject] = useState(null);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -176,12 +225,19 @@ const StudentProjects = () => {
 
                     <ul className="studentProjectsPage__grid">
                         {items.map((project) => (
-                            <ProjectCard key={`${project.source}-${project.id}`} project={project} />
+                            <ProjectCard
+                                key={`${project.source}-${project.id}`}
+                                project={project}
+                                onOpen={setOpenProject}
+                            />
                         ))}
                     </ul>
                 </div>
             </main>
             <Footer />
+            {openProject ? (
+                <ProjectModal project={openProject} onClose={() => setOpenProject(null)} />
+            ) : null}
         </>
     );
 };
