@@ -30,7 +30,7 @@
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
-    margin-bottom: 0;
+    margin-bottom: 32px;
 }
 
 .vacanciesPage__toolbar .vacanciesPage__title {
@@ -45,8 +45,8 @@
 }
 
 .vacanciesPage__navLink {
-    color: #0066cc;
-    font-size: 13px;
+    color: #80acff;
+    font-size: 14px;
     text-decoration: none;
 }
 
@@ -69,25 +69,29 @@
 .vacanciesPage__filters {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
-    gap: 0 24px;
+    gap: 20px 24px;
     align-items: end;
-    margin-bottom: 48px;
+    margin: 0 0 28px;
+    padding: 0;
     color: #ffffff;
 }
 
 .vacanciesPage__filterGroup {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #1a1a1a;
-    padding: 14px 0;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 0 0 10px;
+    margin: 0;
     color: #ffffff;
 }
 
 .vacanciesPage__filterGroup label {
-    font-size: 11px;
+    font-size: 14px;
     color: #ffffff;
-    margin-bottom: 4px;
+    margin: 0;
     font-weight: 500;
+    line-height: 1.3;
 }
 
 .vacanciesPage__input,
@@ -96,16 +100,17 @@
     border: none;
     color: #ffffff;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 16px;
+    line-height: 1.4;
     outline: none;
-    padding: 2px 0;
+    padding: 0;
     width: 100%;
     resize: vertical;
 }
 
 .vacanciesPage__input::placeholder,
 .vacanciesPage__textarea::placeholder {
-    color: #888888;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .vacanciesPage__filters .vacanciesPage__filterGroup--full {
@@ -115,7 +120,8 @@
 .vacanciesPage__btnContainer {
     margin: 0;
     grid-column: auto;
-    padding-bottom: 14px;
+    padding: 0 0 10px;
+    align-self: end;
 }
 
 .vacanciesPage__submit,
@@ -125,7 +131,7 @@
     border: 1px solid #ffffff;
     padding: 12px 24px;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
@@ -332,19 +338,18 @@
     .vacanciesPage__toolbar {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .vacanciesPage__toolbar .vacanciesPage__title {
-        font-size: 20px;
+        margin-bottom: 24px;
     }
 
     .vacanciesPage__filters {
         grid-template-columns: 1fr 1fr;
+        gap: 16px 20px;
+        margin-bottom: 24px;
     }
 
     .vacanciesPage__btnContainer {
         grid-column: span 2;
-        margin-top: 8px;
+        margin-top: 0;
         padding-bottom: 0;
     }
 }
@@ -354,8 +359,13 @@
         padding: 40px var(--page-padding-x, 20px) 100px;
     }
 
+    .vacanciesPage__toolbar .vacanciesPage__title {
+        font-size: 20px;
+    }
+
     .vacanciesPage__filters {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .vacanciesPage__filters .vacanciesPage__filterGroup--full,
