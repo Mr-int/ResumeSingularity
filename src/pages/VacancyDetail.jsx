@@ -53,50 +53,57 @@ const VacancyDetail = () => {
         <>
             <Header />
             <main className="vacanciesPage vacanciesPage--detail">
-                <Link to="/vacancies" className="vacanciesPage__back">
-                    ← К списку
-                </Link>
+                <div className="vacanciesPage__inner">
+                    <Link to="/vacancies" className="vacanciesPage__back">
+                        ← К списку
+                    </Link>
 
-                {loading ? <p className="vacanciesPage__hint">Загрузка…</p> : null}
-                {error && !vacancy ? <p className="vacanciesPage__error">{error}</p> : null}
+                    {loading ? <p className="vacanciesPage__hint">Загрузка…</p> : null}
+                    {error && !vacancy ? <p className="vacanciesPage__error">{error}</p> : null}
 
-                {vacancy ? (
-                    <article className="vacanciesPage__detail">
-                        <h1>{vacancy.title}</h1>
-                        <p className="vacanciesPage__company">{vacancy.companyName}</p>
-                        <p className="vacanciesPage__meta">
-                            {[vacancy.city, vacancy.workFormat, vacancy.employmentType, vacancy.status]
-                                .filter(Boolean)
-                                .join(' · ')}
-                        </p>
-                        {vacancy.description ? (
-                            <div className="vacanciesPage__description">{vacancy.description}</div>
-                        ) : null}
+                    {vacancy ? (
+                        <article className="vacanciesPage__detail">
+                            <h1>{vacancy.title}</h1>
+                            <p className="vacanciesPage__company">{vacancy.companyName}</p>
+                            <p className="vacanciesPage__meta">
+                                {[vacancy.city, vacancy.workFormat, vacancy.employmentType, vacancy.status]
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                            </p>
+                            {vacancy.description ? (
+                                <div className="vacanciesPage__description">{vacancy.description}</div>
+                            ) : null}
 
-                        {isStudent && !vacancy.hasApplied ? (
-                            <form className="vacanciesPage__applyForm" onSubmit={handleApply}>
-                                <label>
-                                    Сопроводительное письмо
-                                    <textarea
-                                        className="vacanciesPage__textarea"
-                                        value={coverLetter}
-                                        onChange={(e) => setCoverLetter(e.target.value)}
-                                        rows={4}
-                                    />
-                                </label>
-                                <button type="submit" className="vacanciesPage__submit" disabled={applying}>
-                                    {applying ? 'Отправка…' : 'Откликнуться'}
-                                </button>
-                            </form>
-                        ) : null}
+                            {isStudent && !vacancy.hasApplied ? (
+                                <form className="vacanciesPage__applyForm" onSubmit={handleApply}>
+                                    <p className="vacanciesPage__sectionTitle">Отклик</p>
+                                    <div className="vacanciesPage__filterGroup">
+                                        <label htmlFor="cover-letter">Сопроводительное письмо</label>
+                                        <textarea
+                                            id="cover-letter"
+                                            className="vacanciesPage__textarea"
+                                            value={coverLetter}
+                                            onChange={(e) => setCoverLetter(e.target.value)}
+                                            rows={4}
+                                            placeholder="Кратко о себе и мотивации"
+                                        />
+                                    </div>
+                                    <div className="vacanciesPage__btnContainer">
+                                        <button type="submit" className="vacanciesPage__submit" disabled={applying}>
+                                            {applying ? 'Отправка…' : 'Откликнуться'}
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : null}
 
-                        {vacancy.hasApplied ? (
-                            <p className="vacanciesPage__hint">Вы уже откликнулись на эту вакансию</p>
-                        ) : null}
+                            {vacancy.hasApplied ? (
+                                <p className="vacanciesPage__hint">Вы уже откликнулись на эту вакансию</p>
+                            ) : null}
 
-                        {error && vacancy ? <p className="vacanciesPage__error">{error}</p> : null}
-                    </article>
-                ) : null}
+                            {error && vacancy ? <p className="vacanciesPage__error">{error}</p> : null}
+                        </article>
+                    ) : null}
+                </div>
             </main>
             <Footer />
         </>

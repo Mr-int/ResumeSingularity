@@ -17,6 +17,14 @@ const RESULT_LABELS = {
 const canDecide = (result) =>
     result === 'WAITING' || result === 'EXPECTATION' || result === 'CREATION';
 
+const statusClass = (result) => {
+    if (result === 'SUCCESS' || result === 'STUDENT_CONFIRMED' || result === 'RECRUITER_CONFIRMED') {
+        return 'accountPage__listItemStatus--ok';
+    }
+    if (result === 'REFUSAL') return '';
+    return 'accountPage__listItemStatus--muted';
+};
+
 const StudentRequestsSection = ({ studentId }) => {
     const [requests, setRequests] = useState([]);
     const [recruiters, setRecruiters] = useState({});
@@ -73,8 +81,8 @@ const StudentRequestsSection = ({ studentId }) => {
     };
 
     return (
-        <section className="accountPage__card">
-            <h2 className="accountPage__cardTitle">Заявки от работодателей</h2>
+        <section className="accountPage__section">
+            <h2 className="accountPage__sectionTitle">Заявки от работодателей</h2>
             {loading && <p className="accountPage__muted">Загрузка…</p>}
             {error ? (
                 <div className="accountPage__error" role="alert">
@@ -84,31 +92,37 @@ const StudentRequestsSection = ({ studentId }) => {
             {!loading && requests.length === 0 && (
                 <p className="accountPage__text">Пока нет входящих заявок.</p>
             )}
-            <ul className="accountPage__requestList">
+            <ul className="accountPage__listItems">
                 {requests.map((req) => {
                     const recruiter = recruiters[req.recruiterId];
                     const recruiterLabel = recruiter
-                        ? [recruiter.companyName, recruiter.firstName, recruiter.lastName].filter(Boolean).join(' · ')
+                        ? [recruiter.companyName, recruiter.firstName, recruiter.lastName]
+                              .filter(Boolean)
+                              .join(' · ')
                         : 'Рекрутер';
                     const status = RESULT_LABELS[req.result] || req.result || '—';
                     const showActions = canDecide(req.result);
                     return (
-                        <li key={req.id} className="accountPage__requestItem">
-                            <div className="accountPage__requestHead">
-                                <strong>{recruiterLabel}</strong>
-                                <span className="accountPage__requestStatus">{status}</span>
+                        <li key={req.id}>
+                            <div className="accountPage__listItem">
+                                <div className="accountPage__listItemMain">
+                                    <div className="accountPage__listItemName">{recruiterLabel}</div>
+                                    {req.appChatId ? (
+                                        <Link
+                                            to={`/chats?chatId=${encodeURIComponent(req.appChatId)}`}
+                                            className="accountPage__linkChat"
+                                        >
+                                            Чат
+                                        </Link>
+                                    ) : null}
+                                </div>
+                                <span className={`accountPage__listItemStatus ${statusClass(req.result)}`}>
+                                    {status}
+                                </span>
                             </div>
-                            {req.createdAt ? (
-                                <p className="accountPage__hint">
-                                    {new Date(req.createdAt).toLocaleString('ru-RU')}
-                                </p>
-                            ) : null}
-                            {req.studentResponseText ? (
-                                <p className="accountPage__text">Ваш ответ: {req.studentResponseText}</p>
-                            ) : null}
                             {showActions ? (
-                                <>
-                                    <label className="accountPage__field">
+                                <div className="accountPage__requestExtra">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Комментарий (необязательно)</span>
                                         <textarea
                                             rows={2}
@@ -136,15 +150,7 @@ const StudentRequestsSection = ({ studentId }) => {
                                             Отклонить
                                         </button>
                                     </div>
-                                </>
-                            ) : null}
-                            {req.appChatId ? (
-                                <Link
-                                    to={`/chats?chatId=${encodeURIComponent(req.appChatId)}`}
-                                    className="accountPage__settingsNavLink"
-                                >
-                                    Открыть чат
-                                </Link>
+                                </div>
                             ) : null}
                         </li>
                     );

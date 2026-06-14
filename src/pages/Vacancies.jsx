@@ -52,72 +52,92 @@ const Vacancies = () => {
         <>
             <Header />
             <main className="vacanciesPage">
-                <div className="vacanciesPage__toolbar">
-                    <h1 className="vacanciesPage__title">Вакансии</h1>
-                    <div className="vacanciesPage__actions">
-                        {isStudent ? (
-                            <Link to="/vacancies/applications/mine" className="vacanciesPage__linkBtn">
-                                Мои отклики
-                            </Link>
-                        ) : null}
-                        {isRecruiter ? (
-                            <Link to="/vacancies/mine" className="vacanciesPage__linkBtn">
-                                Мои вакансии
-                            </Link>
-                        ) : null}
+                <div className="vacanciesPage__inner">
+                    <div className="vacanciesPage__toolbar">
+                        <h1 className="vacanciesPage__title">Вакансии</h1>
+                        <div className="vacanciesPage__actions">
+                            {isStudent ? (
+                                <Link to="/vacancies/applications/mine" className="vacanciesPage__navLink">
+                                    Мои отклики
+                                </Link>
+                            ) : null}
+                            {isRecruiter ? (
+                                <Link to="/vacancies/mine" className="vacanciesPage__navLink">
+                                    Мои вакансии
+                                </Link>
+                            ) : null}
+                        </div>
                     </div>
+
+                    <p className="vacanciesPage__sectionTitle">Поиск</p>
+                    <form
+                        className="vacanciesPage__filters"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            load();
+                        }}
+                    >
+                        <div className="vacanciesPage__filterGroup">
+                            <label htmlFor="vacancy-search">Поиск</label>
+                            <input
+                                id="vacancy-search"
+                                className="vacanciesPage__input"
+                                placeholder="Название или описание"
+                                value={findString}
+                                onChange={(e) => setFindString(e.target.value)}
+                            />
+                        </div>
+                        <div className="vacanciesPage__filterGroup">
+                            <label htmlFor="vacancy-city">Город</label>
+                            <input
+                                id="vacancy-city"
+                                className="vacanciesPage__input"
+                                placeholder="Не указан"
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                            />
+                        </div>
+                        <div className="vacanciesPage__btnContainer">
+                            <button type="submit" className="vacanciesPage__submit">
+                                Найти
+                            </button>
+                        </div>
+                    </form>
+
+                    {loading ? <p className="vacanciesPage__hint">Загрузка…</p> : null}
+                    {error ? <p className="vacanciesPage__error">{error}</p> : null}
+
+                    {!loading && !error && items.length === 0 ? (
+                        <p className="vacanciesPage__hint">Вакансий пока нет</p>
+                    ) : null}
+
+                    <p className="vacanciesPage__sectionTitle">Список</p>
+                    <ul className="vacanciesPage__list">
+                        {items.map((v) => {
+                            const meta = [v.companyName || 'Компания', v.city, WORK_LABELS[v.workFormat], EMP_LABELS[v.employmentType]]
+                                .filter(Boolean)
+                                .join(' · ');
+                            return (
+                                <li key={v.id} className="vacanciesPage__item">
+                                    <Link to={`/vacancies/${v.id}`} className="vacanciesPage__itemLink">
+                                        <div className="vacanciesPage__itemMain">
+                                            <h2 className="vacanciesPage__itemName">{v.title}</h2>
+                                            <p className="vacanciesPage__itemMeta">{meta}</p>
+                                            {v.summary ? (
+                                                <p className="vacanciesPage__itemSummary">{v.summary}</p>
+                                            ) : null}
+                                        </div>
+                                        {v.hasApplied ? (
+                                            <span className="vacanciesPage__itemStatus vacanciesPage__itemStatus--applied">
+                                                Откликнулись
+                                            </span>
+                                        ) : null}
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
                 </div>
-
-                <form
-                    className="vacanciesPage__filters"
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        load();
-                    }}
-                >
-                    <input
-                        className="vacanciesPage__input"
-                        placeholder="Поиск"
-                        value={findString}
-                        onChange={(e) => setFindString(e.target.value)}
-                    />
-                    <input
-                        className="vacanciesPage__input"
-                        placeholder="Город"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                    />
-                    <button type="submit" className="vacanciesPage__submit">
-                        Найти
-                    </button>
-                </form>
-
-                {loading ? <p className="vacanciesPage__hint">Загрузка…</p> : null}
-                {error ? <p className="vacanciesPage__error">{error}</p> : null}
-
-                {!loading && !error && items.length === 0 ? (
-                    <p className="vacanciesPage__hint">Вакансий пока нет</p>
-                ) : null}
-
-                <ul className="vacanciesPage__list">
-                    {items.map((v) => (
-                        <li key={v.id}>
-                            <Link to={`/vacancies/${v.id}`} className="vacanciesPage__card">
-                                <div className="vacanciesPage__cardHead">
-                                    <h2>{v.title}</h2>
-                                    {v.hasApplied ? <span className="vacanciesPage__badge">Откликнулись</span> : null}
-                                </div>
-                                <p className="vacanciesPage__company">{v.companyName || 'Компания'}</p>
-                                <p className="vacanciesPage__meta">
-                                    {[v.city, WORK_LABELS[v.workFormat], EMP_LABELS[v.employmentType]]
-                                        .filter(Boolean)
-                                        .join(' · ')}
-                                </p>
-                                {v.summary ? <p className="vacanciesPage__summary">{v.summary}</p> : null}
-                            </Link>
-                        </li>
-                    ))}
-                </ul>
             </main>
             <Footer />
         </>

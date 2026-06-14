@@ -1,135 +1,280 @@
 .accountPage {
     min-height: calc(100vh - 120px);
-    background: #050508;
-    color: #e4e4e7;
-    padding: 40px 20px 80px;
+    background: #000000;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    padding: 60px 20px 80px;
     box-sizing: border-box;
 }
 
 .accountPage__inner {
-    max-width: 720px;
+    width: 100%;
+    max-width: 540px;
     margin: 0 auto;
 }
 
 .accountPage__title {
-    font-family: 'StratosSkyeng', 'StratosLight', sans-serif;
-    font-size: clamp(28px, 4vw, 36px);
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    margin: 0 0 48px;
+    color: #ffffff;
+}
+
+.accountPage__section {
+    margin-bottom: 64px;
+}
+
+.accountPage__sectionTitle {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #444444;
+    margin: 0 0 24px;
     font-weight: 600;
-    margin: 0 0 12px;
-    color: #fff;
 }
 
-.accountPage__lead {
-    margin: 0 0 12px;
+.accountPage__accountMeta {
+    margin: 0 0 20px;
     font-size: 15px;
-    line-height: 1.55;
-    color: #a1a1aa;
+    color: #888888;
+    line-height: 1.5;
 }
 
-.accountPage__settingsNav {
-    margin: 0 0 28px;
+.accountPage__formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 24px;
 }
 
-.accountPage__settingsNavLink {
-    display: inline-flex;
+.accountPage__formGroup {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #1a1a1a;
+    padding: 14px 0;
+    margin: 0;
+    font-size: 11px;
+    color: #555555;
+}
+
+.accountPage__formGroup > span {
+    margin-bottom: 4px;
+    font-weight: 400;
+}
+
+.accountPage__fullWidth {
+    grid-column: span 2;
+}
+
+.accountPage__formGroup input,
+.accountPage__formGroup select,
+.accountPage__formGroup textarea {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
+    padding: 2px 0;
+    width: 100%;
+    resize: vertical;
+}
+
+.accountPage__formGroup input::placeholder,
+.accountPage__formGroup textarea::placeholder {
+    color: #333333;
+}
+
+.accountPage__formGroup select {
+    cursor: pointer;
+    appearance: none;
+}
+
+.accountPage__formGroup select option {
+    background: #111111;
+    color: #ffffff;
+}
+
+.accountPage__formGroup--checkbox {
+    border-bottom: none;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    color: #aaaaaa;
+    padding: 10px 0;
+}
+
+.accountPage__formGroup--checkbox input {
+    width: auto;
+    margin-top: 2px;
+    accent-color: #ffffff;
+}
+
+.accountPage__btnContainer {
+    margin: 40px 0 0;
+}
+
+.accountPage__submit {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.accountPage__submit:hover:not(:disabled) {
+    background: #ffffff;
+    color: #000000;
+}
+
+.accountPage__submit:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.accountPage__submit--secondary {
+    margin-top: 8px;
+}
+
+.accountPage__listItems {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.accountPage__listItem {
+    border-bottom: 1px solid #1a1a1a;
+    padding: 16px 0;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
+    gap: 16px;
+}
+
+.accountPage__listItemMain {
+    min-width: 0;
+}
+
+.accountPage__listItemName {
     font-size: 15px;
-    color: #c4b5fd;
+    font-weight: 400;
+    margin-bottom: 4px;
+    color: #ffffff;
+}
+
+.accountPage__linkChat {
+    color: #0066cc;
+    font-size: 13px;
     text-decoration: none;
-    border-bottom: 1px solid rgba(196, 181, 253, 0.45);
-    padding-bottom: 2px;
 }
 
-.accountPage__settingsNavLink:hover {
-    color: #fff;
-    border-bottom-color: rgba(255, 255, 255, 0.5);
+.accountPage__linkChat:hover {
+    text-decoration: underline;
 }
 
-.accountPage__code {
-    font-size: 0.88em;
-    padding: 2px 6px;
-    border-radius: 6px;
-    background: #171721;
-    border: 1px solid #232335;
-    color: #c4b5fd;
+.accountPage__listItemStatus {
+    font-size: 12px;
+    color: #ff3b30;
+    font-weight: 500;
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.accountPage__listItemStatus--muted {
+    color: #666666;
+}
+
+.accountPage__listItemStatus--ok {
+    color: #34c759;
 }
 
 .accountPage__muted {
-    color: #8f8f9d;
-    font-size: 15px;
-}
-
-.accountPage__card {
-    background: #111118;
-    border: 1px solid #232335;
-    border-radius: 20px;
-    padding: 24px 22px 28px;
-    margin-bottom: 20px;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-}
-
-.accountPage__card--muted {
-    border-style: dashed;
-    opacity: 0.95;
-}
-
-.accountPage__cardTitle {
-    margin: 0 0 18px;
-    font-size: 20px;
-    font-weight: 600;
-    color: #fff;
+    color: #555555;
+    font-size: 14px;
+    margin: 0 0 16px;
 }
 
 .accountPage__text {
     margin: 0 0 12px;
     font-size: 15px;
     line-height: 1.55;
-    color: #d4d4d8;
+    color: #888888;
 }
 
-.accountPage__list {
-    margin: 12px 0 0;
-    padding-left: 20px;
-    color: #a1a1aa;
-    line-height: 1.6;
-    font-size: 14px;
+.accountPage__hint {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #555555;
+}
+
+.accountPage__error {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: #ff3b30;
+}
+
+.accountPage__ok {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: #34c759;
+}
+
+.accountPage__banner {
+    margin-bottom: 32px;
+    padding: 14px 0;
+    border-bottom: 1px solid #1a1a1a;
+    color: #ff9f0a;
+    font-size: 13px;
+    line-height: 1.45;
 }
 
 .accountPage__avatarRow {
     display: flex;
     align-items: center;
     gap: 20px;
-    margin-bottom: 22px;
+    padding: 14px 0;
+    border-bottom: 1px solid #1a1a1a;
 }
 
 .accountPage__avatar {
-    width: 96px;
-    height: 96px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #2d2d3d;
+    border: 1px solid #1a1a1a;
 }
 
 .accountPage__avatar--placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #232335;
-    color: #8f8f9d;
-    font-size: 28px;
-    font-weight: 600;
+    background: #111111;
+    color: #555555;
+    font-size: 22px;
 }
 
 .accountPage__fileLabel {
     display: inline-block;
     cursor: pointer;
-    padding: 10px 18px;
-    border-radius: 100px;
-    background: linear-gradient(90deg, #e95a57 0%, #e53bcf 49.5%, #3e8eff 100%);
-    color: #fff;
-    font-size: 14px;
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 12px 24px;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 500;
+    transition: background 0.2s ease, color 0.2s ease;
     position: relative;
+}
+
+.accountPage__fileLabel:hover {
+    background: #ffffff;
+    color: #000000;
 }
 
 .accountPage__fileInput {
@@ -143,173 +288,31 @@
 }
 
 .accountPage__fileLabelText {
-    position: relative;
-    z-index: 0;
     pointer-events: none;
-}
-
-.accountPage__form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-.accountPage__grid2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
-@media (max-width: 600px) {
-    .accountPage__grid2 {
-        grid-template-columns: 1fr;
-    }
-}
-
-.accountPage__field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    font-size: 13px;
-    color: #a1a1aa;
-}
-
-.accountPage__field span {
-    font-weight: 500;
-}
-
-.accountPage__field input,
-.accountPage__field select,
-.accountPage__field textarea {
-    background: #09090d;
-    border: 1px solid #1f1f2e;
-    border-radius: 12px;
-    padding: 11px 14px;
-    color: #fff;
-    font-size: 15px;
-    font-family: inherit;
-    outline: none;
-}
-
-.accountPage__field input:focus,
-.accountPage__field select:focus,
-.accountPage__field textarea:focus {
-    border-color: #6366f1;
-}
-
-.accountPage__hint {
-    margin: 0;
-    font-size: 12px;
-    color: #71717a;
-    line-height: 1.45;
-}
-
-.accountPage__error {
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(248, 113, 113, 0.12);
-    border: 1px solid rgba(248, 113, 113, 0.35);
-    color: #fecaca;
-    font-size: 14px;
-}
-
-.accountPage__ok {
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px solid rgba(34, 197, 94, 0.35);
-    color: #bbf7d0;
-    font-size: 14px;
-}
-
-.accountPage__submit {
-    margin-top: 6px;
-    align-self: flex-start;
-    padding: 12px 28px;
-    border-radius: 100px;
-    border: 2px solid transparent;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: 600;
-    color: #fff;
-    background: linear-gradient(90deg, #e95a57 0%, #e53bcf 49.5%, #3e8eff 100%) border-box;
-    font-family: inherit;
-}
-
-.accountPage__submit:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-.accountPage__submit:hover:not(:disabled) {
-    filter: brightness(1.05);
-}
-
-.accountPage__submit--secondary {
-    background: transparent;
-    border: 2px solid #3f3f50;
-}
-
-.accountPage__banner {
-    margin-bottom: 20px;
-    padding: 14px 16px;
-    border-radius: 12px;
-    background: rgba(234, 179, 8, 0.12);
-    border: 1px solid rgba(234, 179, 8, 0.35);
-    color: #fef08a;
-    font-size: 14px;
-    line-height: 1.45;
-}
-
-.accountPage__inputReadonly,
-.accountPage__form--readonly input,
-.accountPage__form--readonly textarea,
-.accountPage__form--readonly select {
-    opacity: 0.95;
-    cursor: default;
-    background: #0c0c12;
-}
-
-.accountPage__readonlyMeta {
-    margin-bottom: 16px;
-    font-size: 14px;
-    color: #a1a1aa;
-}
-
-.accountPage__readonlyMeta p {
-    margin: 0 0 6px;
-}
-
-.accountPage__requestList {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.accountPage__requestItem {
-    padding: 14px 0;
-    border-top: 1px solid #232335;
-}
-
-.accountPage__requestHead {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-}
-
-.accountPage__requestStatus {
-    font-size: 13px;
-    color: #a78bfa;
 }
 
 .accountPage__requestActions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 12px;
+}
+
+.accountPage__requestExtra {
+    padding: 16px 0;
+    border-bottom: 1px solid #1a1a1a;
+}
+
+@media (max-width: 500px) {
+    .accountPage__formRow {
+        grid-template-columns: 1fr;
+    }
+
+    .accountPage__fullWidth {
+        grid-column: span 1;
+    }
+
+    .accountPage {
+        padding-top: 40px;
+    }
 }

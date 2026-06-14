@@ -14,6 +14,17 @@ const RESULT_LABELS = {
     REFUSAL: 'Отклонена',
 };
 
+const statusClass = (result) => {
+    if (result === 'SUCCESS' || result === 'STUDENT_CONFIRMED' || result === 'RECRUITER_CONFIRMED') {
+        return 'accountPage__listItemStatus--ok';
+    }
+    if (result === 'WAITING' || result === 'EXPECTATION' || result === 'CREATION') {
+        return '';
+    }
+    if (result === 'REFUSAL') return '';
+    return 'accountPage__listItemStatus--muted';
+};
+
 const RecruiterRequestsSection = ({ recruiterId }) => {
     const [requests, setRequests] = useState([]);
     const [students, setStudents] = useState({});
@@ -52,8 +63,8 @@ const RecruiterRequestsSection = ({ recruiterId }) => {
     }, [load]);
 
     return (
-        <section className="accountPage__card">
-            <h2 className="accountPage__cardTitle">Мои заявки студентам</h2>
+        <section className="accountPage__section">
+            <h2 className="accountPage__sectionTitle">Мои заявки студентам</h2>
             {loading && <p className="accountPage__muted">Загрузка…</p>}
             {error ? (
                 <div className="accountPage__error" role="alert">
@@ -63,28 +74,29 @@ const RecruiterRequestsSection = ({ recruiterId }) => {
             {!loading && requests.length === 0 && (
                 <p className="accountPage__text">Заявок пока нет.</p>
             )}
-            <ul className="accountPage__requestList">
+            <ul className="accountPage__listItems">
                 {requests.map((req) => {
                     const s = students[req.studentId];
                     const name = s
                         ? `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Студент'
                         : 'Студент';
+                    const status = RESULT_LABELS[req.result] || req.result || '—';
                     return (
-                        <li key={req.id} className="accountPage__requestItem">
-                            <div className="accountPage__requestHead">
-                                <strong>{name}</strong>
-                                <span className="accountPage__requestStatus">
-                                    {RESULT_LABELS[req.result] || req.result || '—'}
-                                </span>
+                        <li key={req.id} className="accountPage__listItem">
+                            <div className="accountPage__listItemMain">
+                                <div className="accountPage__listItemName">{name}</div>
+                                {req.appChatId ? (
+                                    <Link
+                                        to={`/chats?chatId=${encodeURIComponent(req.appChatId)}`}
+                                        className="accountPage__linkChat"
+                                    >
+                                        Чат
+                                    </Link>
+                                ) : null}
                             </div>
-                            {req.appChatId ? (
-                                <Link
-                                    to={`/chats?chatId=${encodeURIComponent(req.appChatId)}`}
-                                    className="accountPage__settingsNavLink"
-                                >
-                                    Открыть чат
-                                </Link>
-                            ) : null}
+                            <span className={`accountPage__listItemStatus ${statusClass(req.result)}`}>
+                                {status}
+                            </span>
                         </li>
                     );
                 })}

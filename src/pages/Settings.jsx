@@ -257,15 +257,15 @@ const SettingsPage = () => {
                     <h1 className="accountPage__title">Профиль</h1>
 
                     {session ? (
-                        <section className="accountPage__card accountPage__card--muted">
-                            <h2 className="accountPage__cardTitle">Аккаунт</h2>
-                            <p className="accountPage__text">
+                        <section className="accountPage__section">
+                            <h2 className="accountPage__sectionTitle">Аккаунт</h2>
+                            <p className="accountPage__accountMeta">
                                 {session.username} · {session.role}
                                 {session.accountStatus ? ` · ${session.accountStatus}` : ''}
                             </p>
                             <button
                                 type="button"
-                                className="accountPage__submit accountPage__submit--secondary"
+                                className="accountPage__submit"
                                 onClick={handleLogout}
                             >
                                 Выйти
@@ -278,8 +278,8 @@ const SettingsPage = () => {
                     {okMsg ? <div className="accountPage__ok" role="status">{okMsg}</div> : null}
 
                     {!loading && role === 'recruiter_pending' && (
-                        <section className="accountPage__card">
-                            <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
+                        <section className="accountPage__section">
+                            <h2 className="accountPage__sectionTitle">Профиль рекрутера</h2>
                             <p className="accountPage__text">
                                 Профиль ещё не привязан. Оставьте заявку на сайте — после одобрения
                                 данные появятся здесь.
@@ -295,39 +295,37 @@ const SettingsPage = () => {
                                 </div>
                             )}
 
-                            <section className="accountPage__card">
-                                <h2 className="accountPage__cardTitle">Настройки витрины</h2>
-                                <div className="accountPage__form">
-                                    <label className="accountPage__field">
-                                        <span>
-                                            <input
-                                                type="checkbox"
-                                                checked={studentSettings.publicProfileConsent}
-                                                onChange={(e) =>
-                                                    setStudentSettings((p) => ({
-                                                        ...p,
-                                                        publicProfileConsent: e.target.checked,
-                                                    }))
-                                                }
-                                            />{' '}
-                                            Показывать карточку анонимам на публичной витрине
-                                        </span>
+                            <section className="accountPage__section">
+                                <h2 className="accountPage__sectionTitle">Настройки витрины</h2>
+                                <div className="accountPage__formRow">
+                                    <label className="accountPage__formGroup accountPage__formGroup--checkbox accountPage__fullWidth">
+                                        <input
+                                            type="checkbox"
+                                            checked={studentSettings.publicProfileConsent}
+                                            onChange={(e) =>
+                                                setStudentSettings((p) => ({
+                                                    ...p,
+                                                    publicProfileConsent: e.target.checked,
+                                                }))
+                                            }
+                                        />
+                                        <span>Показывать карточку анонимам на публичной витрине</span>
                                     </label>
-                                    <label className="accountPage__field">
-                                        <span>
-                                            <input
-                                                type="checkbox"
-                                                checked={studentSettings.hintsDisabled}
-                                                onChange={(e) =>
-                                                    setStudentSettings((p) => ({
-                                                        ...p,
-                                                        hintsDisabled: e.target.checked,
-                                                    }))
-                                                }
-                                            />{' '}
-                                            Отключить подсказки
-                                        </span>
+                                    <label className="accountPage__formGroup accountPage__formGroup--checkbox accountPage__fullWidth">
+                                        <input
+                                            type="checkbox"
+                                            checked={studentSettings.hintsDisabled}
+                                            onChange={(e) =>
+                                                setStudentSettings((p) => ({
+                                                    ...p,
+                                                    hintsDisabled: e.target.checked,
+                                                }))
+                                            }
+                                        />
+                                        <span>Отключить подсказки</span>
                                     </label>
+                                </div>
+                                <div className="accountPage__btnContainer">
                                     <button
                                         type="button"
                                         className="accountPage__submit"
@@ -339,8 +337,8 @@ const SettingsPage = () => {
                                 </div>
                             </section>
 
-                            <section className="accountPage__card">
-                                <h2 className="accountPage__cardTitle">Фото профиля</h2>
+                            <section className="accountPage__section">
+                                <h2 className="accountPage__sectionTitle">Фото профиля</h2>
                                 <div className="accountPage__avatarRow">
                                     {avatarUrl ? (
                                         <img src={avatarUrl} alt="" className="accountPage__avatar" width={96} height={96} />
@@ -362,80 +360,74 @@ const SettingsPage = () => {
                                 </div>
                             </section>
 
-                            <section className="accountPage__card">
-                                <h2 className="accountPage__cardTitle">Резюме</h2>
-                                <div className="accountPage__form">
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Имя</span>
-                                            <input value={studentForm.firstName} onChange={(e) => setStudentField('firstName', e.target.value)} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Фамилия</span>
-                                            <input value={studentForm.lastName} onChange={(e) => setStudentField('lastName', e.target.value)} />
-                                        </label>
-                                    </div>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Город</span>
-                                            <input value={studentForm.city} onChange={(e) => setStudentField('city', e.target.value)} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Дата рождения</span>
-                                            <input type="date" value={studentForm.birthDate} onChange={(e) => setStudentField('birthDate', e.target.value)} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
+                            <section className="accountPage__section">
+                                <h2 className="accountPage__sectionTitle">Резюме</h2>
+                                <div className="accountPage__formRow">
+                                    <label className="accountPage__formGroup">
+                                        <span>Имя</span>
+                                        <input value={studentForm.firstName} onChange={(e) => setStudentField('firstName', e.target.value)} />
+                                    </label>
+                                    <label className="accountPage__formGroup">
+                                        <span>Фамилия</span>
+                                        <input value={studentForm.lastName} onChange={(e) => setStudentField('lastName', e.target.value)} />
+                                    </label>
+                                    <label className="accountPage__formGroup">
+                                        <span>Город</span>
+                                        <input value={studentForm.city} onChange={(e) => setStudentField('city', e.target.value)} placeholder="Не указан" />
+                                    </label>
+                                    <label className="accountPage__formGroup">
+                                        <span>Дата рождения</span>
+                                        <input type="date" value={studentForm.birthDate} onChange={(e) => setStudentField('birthDate', e.target.value)} />
+                                    </label>
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Ссылка на HH</span>
                                         <input value={studentForm.hhLink} onChange={(e) => setStudentField('hhLink', e.target.value)} />
                                     </label>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>О себе</span>
                                         <textarea rows={4} value={studentForm.bio} onChange={(e) => setStudentField('bio', e.target.value)} />
                                     </label>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Курс</span>
-                                            <select value={studentForm.course} onChange={(e) => setStudentField('course', e.target.value)}>
-                                                {COURSES.map((c) => <option key={c} value={c}>{c}</option>)}
-                                            </select>
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Занятость</span>
-                                            <select value={studentForm.busyness} onChange={(e) => setStudentField('busyness', e.target.value)}>
-                                                {BUSYNESS.map((b) => <option key={b} value={b}>{b}</option>)}
-                                            </select>
-                                        </label>
-                                    </div>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Email</span>
-                                            <input type="email" value={studentForm.email} onChange={(e) => setStudentField('email', e.target.value)} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Телефон</span>
-                                            <input value={studentForm.phoneNumber} onChange={(e) => setStudentField('phoneNumber', e.target.value)} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup">
+                                        <span>Курс</span>
+                                        <select value={studentForm.course} onChange={(e) => setStudentField('course', e.target.value)}>
+                                            {COURSES.map((c) => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </label>
+                                    <label className="accountPage__formGroup">
+                                        <span>Занятость</span>
+                                        <select value={studentForm.busyness} onChange={(e) => setStudentField('busyness', e.target.value)}>
+                                            {BUSYNESS.map((b) => <option key={b} value={b}>{b}</option>)}
+                                        </select>
+                                    </label>
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
+                                        <span>Email</span>
+                                        <input type="email" value={studentForm.email} onChange={(e) => setStudentField('email', e.target.value)} />
+                                    </label>
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
+                                        <span>Телефон</span>
+                                        <input value={studentForm.phoneNumber} onChange={(e) => setStudentField('phoneNumber', e.target.value)} />
+                                    </label>
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Telegram</span>
                                         <input value={studentForm.telegramUsername} onChange={(e) => setStudentField('telegramUsername', e.target.value)} />
                                     </label>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>ID специальности</span>
                                         <input type="number" min="1" value={studentForm.specialityId} onChange={(e) => setStudentField('specialityId', e.target.value)} />
                                     </label>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>ID навыков (через запятую)</span>
                                         <input value={studentForm.skillsIdsText} onChange={(e) => setStudentField('skillsIdsText', e.target.value)} />
                                     </label>
+                                </div>
+                                <div className="accountPage__btnContainer">
                                     <button
                                         type="button"
                                         className="accountPage__submit"
                                         disabled={saving === 'resume'}
                                         onClick={saveStudentResume}
                                     >
-                                        {saving === 'resume' ? 'Сохранение…' : 'Сохранить резюме'}
+                                        {saving === 'resume' ? 'Сохранение…' : 'Сохранить изменения'}
                                     </button>
                                 </div>
                             </section>
@@ -446,46 +438,46 @@ const SettingsPage = () => {
 
                     {!loading && role === 'recruiter' && profile && (
                         <>
-                            <section className="accountPage__card">
-                                <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
-                                <div className="accountPage__form">
-                                    <label className="accountPage__field">
+                            <section className="accountPage__section">
+                                <h2 className="accountPage__sectionTitle">Профиль рекрутера</h2>
+                                <div className="accountPage__formRow">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Компания</span>
                                         <input value={recruiterForm.companyName} onChange={(e) => setRecruiterField('companyName', e.target.value)} />
                                     </label>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Город</span>
-                                        <input value={recruiterForm.city} onChange={(e) => setRecruiterField('city', e.target.value)} />
+                                        <input value={recruiterForm.city} onChange={(e) => setRecruiterField('city', e.target.value)} placeholder="Не указан" />
                                     </label>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Имя</span>
-                                            <input value={recruiterForm.firstName} onChange={(e) => setRecruiterField('firstName', e.target.value)} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Фамилия</span>
-                                            <input value={recruiterForm.lastName} onChange={(e) => setRecruiterField('lastName', e.target.value)} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup">
+                                        <span>Имя</span>
+                                        <input value={recruiterForm.firstName} onChange={(e) => setRecruiterField('firstName', e.target.value)} />
+                                    </label>
+                                    <label className="accountPage__formGroup">
+                                        <span>Фамилия</span>
+                                        <input value={recruiterForm.lastName} onChange={(e) => setRecruiterField('lastName', e.target.value)} />
+                                    </label>
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Email</span>
                                         <input type="email" value={recruiterForm.email} onChange={(e) => setRecruiterField('email', e.target.value)} />
                                     </label>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Телефон</span>
                                         <input value={recruiterForm.phoneNumber} onChange={(e) => setRecruiterField('phoneNumber', e.target.value)} />
                                     </label>
-                                    <label className="accountPage__field">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Telegram</span>
                                         <input value={recruiterForm.telegramUsername} onChange={(e) => setRecruiterField('telegramUsername', e.target.value)} />
                                     </label>
+                                </div>
+                                <div className="accountPage__btnContainer">
                                     <button
                                         type="button"
                                         className="accountPage__submit"
                                         disabled={saving === 'recruiter'}
                                         onClick={saveRecruiter}
                                     >
-                                        {saving === 'recruiter' ? 'Сохранение…' : 'Сохранить профиль'}
+                                        {saving === 'recruiter' ? 'Сохранение…' : 'Сохранить изменения'}
                                     </button>
                                 </div>
                             </section>
@@ -494,30 +486,34 @@ const SettingsPage = () => {
                     )}
 
                     {!loading && role && role !== 'recruiter_pending' && (
-                        <section className="accountPage__card">
-                            <h2 className="accountPage__cardTitle">Смена пароля</h2>
-                            <form className="accountPage__form" onSubmit={savePassword}>
-                                <label className="accountPage__field">
-                                    <span>Текущий пароль</span>
-                                    <input
-                                        type="password"
-                                        value={pwdForm.currentPassword}
-                                        onChange={(e) => setPwdForm((p) => ({ ...p, currentPassword: e.target.value }))}
-                                        required
-                                    />
-                                </label>
-                                <label className="accountPage__field">
-                                    <span>Новый пароль</span>
-                                    <input
-                                        type="password"
-                                        value={pwdForm.newPassword}
-                                        onChange={(e) => setPwdForm((p) => ({ ...p, newPassword: e.target.value }))}
-                                        required
-                                    />
-                                </label>
-                                <button type="submit" className="accountPage__submit" disabled={saving === 'password'}>
-                                    {saving === 'password' ? 'Сохранение…' : 'Сменить пароль'}
-                                </button>
+                        <section className="accountPage__section">
+                            <h2 className="accountPage__sectionTitle">Смена пароля</h2>
+                            <form onSubmit={savePassword}>
+                                <div className="accountPage__formRow">
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
+                                        <span>Текущий пароль</span>
+                                        <input
+                                            type="password"
+                                            value={pwdForm.currentPassword}
+                                            onChange={(e) => setPwdForm((p) => ({ ...p, currentPassword: e.target.value }))}
+                                            required
+                                        />
+                                    </label>
+                                    <label className="accountPage__formGroup accountPage__fullWidth">
+                                        <span>Новый пароль</span>
+                                        <input
+                                            type="password"
+                                            value={pwdForm.newPassword}
+                                            onChange={(e) => setPwdForm((p) => ({ ...p, newPassword: e.target.value }))}
+                                            required
+                                        />
+                                    </label>
+                                </div>
+                                <div className="accountPage__btnContainer">
+                                    <button type="submit" className="accountPage__submit" disabled={saving === 'password'}>
+                                        {saving === 'password' ? 'Сохранение…' : 'Сменить пароль'}
+                                    </button>
+                                </div>
                             </form>
                         </section>
                     )}
