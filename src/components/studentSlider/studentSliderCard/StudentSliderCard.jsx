@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { getImageUrl } from '../../../config/api.js';
 import './studentSliderCard.css';
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
@@ -127,6 +127,7 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
     };
 
     const imageSrc = getStudentImageUrl(student);
+    const [photoSrc, setPhotoSrc] = useState(imageSrc);
     const courseNumber = getCourseNumber(student.course);
     const skillIcon = getSkillIcon(student.speciality);
     const specialityName = student.speciality || 'Специальность не указана';
@@ -145,7 +146,14 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
             style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <div className="student-slider-card__photoWrapper">
-                <img src={imageSrc} alt={`Фото ${fullName}`} className="student-slider-card__photo"/>
+                <img
+                    src={photoSrc}
+                    alt={`Фото ${fullName}`}
+                    className="student-slider-card__photo"
+                    loading="lazy"
+                    decoding="async"
+                    onError={() => setPhotoSrc(PLACEHOLDER_AVATAR)}
+                />
 
                 <div className="student-slider-card__course">
                     <span className={`student-slider-card__courseBadge student-slider-card__courseBadge--${courseNumber}`}>{courseNumber}</span>

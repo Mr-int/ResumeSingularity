@@ -14,10 +14,10 @@ function parseApiOrigin(raw) {
 
 const apiBaseRaw = import.meta.env.VITE_API_BASE || '/api/';
 
-/** Origin JSON API из .env (для dev-прокси и WebSocket в dev). */
+/** Origin JSON API из .env (для dev-прокси). */
 export const API_ORIGIN = parseApiOrigin(import.meta.env.VITE_API_URL);
 
-/** База для запросов: same-origin /api/ → nginx/vite проксирует на бэкенд. */
+/** База для запросов: same-origin /api/ → nginx/vite проксирует на test-api. */
 export const API_BASE_URL = apiBaseRaw.endsWith('/') ? apiBaseRaw : `${apiBaseRaw}/`;
 
 export function getApiOrigin() {
@@ -25,8 +25,8 @@ export function getApiOrigin() {
 }
 
 /**
- * Публичное фото: GET /main/photo/{image_path}
- * Напрямую на VITE_API_URL — storage на test-api; прокси test2-www может быть устаревшим.
+ * Публичное фото: GET /main/photo/{image_path} (OpenAPI, permitAll).
+ * Через /api/main/photo/ на домене фронта — браузер не ходит на test-api напрямую.
  */
 export const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
@@ -36,11 +36,5 @@ export const getImageUrl = (imagePath) => {
     }
 
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-    const encodedPath = cleanPath.split('/').map((segment) => encodeURIComponent(segment)).join('/');
-
-    if (API_ORIGIN) {
-        return `${API_ORIGIN}/main/photo/${encodedPath}`;
-    }
-
-    return `${API_BASE_URL}main/photo/${encodedPath}`;
+    return `${API_BASE_URL}main/photo/${cleanPath}`;
 };

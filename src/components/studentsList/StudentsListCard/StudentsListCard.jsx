@@ -44,6 +44,7 @@ const StudentsListCard = ({ student }) => {
     const firstName = student.firstName || fullName.split(' ')[0] || fullName;
     const lastName = student.lastName || fullName.slice(firstName.length).trim() || '';
     const imageSrc = getStudentImageUrl(student);
+    const [photoSrc, setPhotoSrc] = useState(imageSrc);
     const courseNumber = getCourseNumber(student.course);
 
     // ~3 строки в блоке описания (line-clamp: 3, ~70–80 символов на строку)
@@ -78,7 +79,14 @@ const StudentsListCard = ({ student }) => {
 
     return (
         <div className="studentsCard">
-            <img className="studentsCard__image" src={imageSrc} alt={`Фото ${fullName}`} />
+            <img
+                className="studentsCard__image"
+                src={photoSrc}
+                alt={`Фото ${fullName}`}
+                loading="lazy"
+                decoding="async"
+                onError={() => setPhotoSrc(PLACEHOLDER_AVATAR)}
+            />
             <div className="studentsCard__content">
                 <div className="studentsCard__side">
                     <div className="studentsCard__header">
