@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { getImageUrl } from "../../config/api.js";
 import "./studentResume.css";
 // Плейсхолдер аватара, когда у студента нет фото
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
@@ -244,13 +245,7 @@ const StudentResume = () => {
 
         if (!imagePath) return PLACEHOLDER_AVATAR;
 
-        if (imagePath.startsWith('http')) {
-            return imagePath;
-        }
-
-        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
-        const studentId = id;
-        return `${baseUrl}/${studentId}.jpg`;
+        return getImageUrl(imagePath) || PLACEHOLDER_AVATAR;
     };
 
     if (loading) {

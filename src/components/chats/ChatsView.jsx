@@ -70,6 +70,31 @@ const initials = (name) => {
 
 const avatarTone = (index) => `chatsView__avatar--tone${index % 3}`;
 
+const peerImagePath = (entity) =>
+    entity?.imagePath || entity?.image || entity?.photo || entity?.avatar || null;
+
+const ChatAvatar = ({ title, imageUrl, toneClass, size = 'md' }) => {
+    const [broken, setBroken] = useState(false);
+
+    useEffect(() => {
+        setBroken(false);
+    }, [imageUrl]);
+
+    const sizeClass = size === 'sm' ? ' chatsView__avatar--sm' : size === 'lg' ? ' chatsView__avatar--lg' : '';
+    if (imageUrl && !broken) {
+        return (
+            <div className={`chatsView__avatar chatsView__avatar--photo${sizeClass}`} aria-hidden>
+                <img src={imageUrl} alt="" loading="lazy" decoding="async" onError={() => setBroken(true)} />
+            </div>
+        );
+    }
+    return (
+        <div className={`chatsView__avatar ${toneClass}${sizeClass}`} aria-hidden>
+            {initials(title)}
+        </div>
+    );
+};
+
 const isMessageDeleted = (m) => Boolean(m.deletedAt || m.deletedByAdmin);
 
 async function resolveMe() {
@@ -95,6 +120,7 @@ const ChatsView = () => {
     const [chats, setChats] = useState([]);
     const [titles, setTitles] = useState({});
     const [subtitles, setSubtitles] = useState({});
+    const [avatars, setAvatars] = useState({});
     const [me, setMe] = useState(null);
     const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState(null);
@@ -109,6 +135,7 @@ const ChatsView = () => {
     const fileInputRef = useRef(null);
     const titleCache = useRef(new Map());
     const subtitleCache = useRef(new Map());
+    const avatarCache = useRef(new Map());
     const deepLinkApplied = useRef(false);
     const messagesLoadGen = useRef(0);
     const chatAliasRef = useRef({});
@@ -217,10 +244,12 @@ const ChatsView = () => {
             return {
                 title: titleCache.current.get(key),
                 subtitle: subtitleCache.current.get(key) || '',
+                avatarUrl: avatarCache.current.get(key) || null,
             };
         }
         let title = 'Диалог';
         let subtitle = '';
+        let avatarUrl = null;
         try {
             if (party?.role === 'recruiter' && chat.studentId) {
                 let s = studentCacheRef.current.get(chat.studentId);
@@ -230,6 +259,7 @@ const ChatsView = () => {
                 }
                 title = `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Студент';
                 subtitle = s.speciality || s.profession || '';
+                avatarUrl = getImageUrl(peerImagePath(s));
             } else if (party?.role === 'student' && chat.recruiterId) {
                 let r = recruiterCacheRef.current.get(chat.recruiterId);
                 if (!r) {
@@ -239,13 +269,15 @@ const ChatsView = () => {
                 const person = `${r.firstName || ''} ${r.lastName || ''}`.trim();
                 title = r.companyName || person || 'Рекрутер';
                 subtitle = person && r.companyName ? person : '';
+                avatarUrl = getImageUrl(peerImagePath(r));
             }
         } catch {
             title = 'Диалог';
         }
         titleCache.current.set(key, title);
         subtitleCache.current.set(key, subtitle);
-        return { title, subtitle };
+        avatarCache.current.set(key, avatarUrl);
+        return { title, subtitle, avatarUrl };
     }, []);
 
     const loadChats = useCallback(async () => {
@@ -253,6 +285,7 @@ const ChatsView = () => {
         setListError('');
         titleCache.current.clear();
         subtitleCache.current.clear();
+        avatarCache.current.clear();
         studentCacheRef.current.clear();
         recruiterCacheRef.current.clear();
         try {
@@ -266,15 +299,18 @@ const ChatsView = () => {
             setChats(deduped);
             const nextTitles = {};
             const nextSubtitles = {};
+            const nextAvatars = {};
             await Promise.all(
                 deduped.map(async (c) => {
-                    const { title, subtitle } = await enrichChatMeta(c, party);
+                    const { title, subtitle, avatarUrl } = await enrichChatMeta(c, party);
                     nextTitles[c.id] = title;
                     nextSubtitles[c.id] = subtitle;
+                    if (avatarUrl) nextAvatars[c.id] = avatarUrl;
                 }),
             );
             setTitles(nextTitles);
             setSubtitles(nextSubtitles);
+            setAvatars(nextAvatars);
         } catch (e) {
             setListError(e.message || 'Не удалось загрузить чаты');
             setChats([]);
@@ -473,6 +509,8 @@ const ChatsView = () => {
     const showResumeBtn =
         me?.role === 'recruiter' && selectedChat?.studentId != null && selectedChat.studentId !== '';
 
+    const activeAvatarUrl = selectedId ? avatars[selectedId] : null;
+
     return (
         <div className="chatsView__container" role="application" aria-label="Чаты">
             <aside className="chatsView__dialogs">
@@ -520,9 +558,11 @@ const ChatsView = () => {
                                 onClick={() => setSelectedId(c.id)}
                             >
                                 <div className="chatsView__avatarWrap">
-                                    <div className={`chatsView__avatar ${avatarTone(index)}`} aria-hidden>
-                                        {initials(title)}
-                                    </div>
+                                    <ChatAvatar
+                                        title={title}
+                                        imageUrl={avatars[c.id]}
+                                        toneClass={avatarTone(index)}
+                                    />
                                 </div>
                                 <div className="chatsView__dialogInfo">
                                     <div className="chatsView__dialogNameRow">
@@ -547,10 +587,22 @@ const ChatsView = () => {
             <main className="chatsView__main">
                 <header className="chatsView__chatHeader">
                     <div className="chatsView__headerUser">
-                        <h3>{activeTitle}</h3>
-                        {activeSubtitle ? (
-                            <div className="chatsView__headerStatus">{activeSubtitle}</div>
-                        ) : null}
+                        <div className="chatsView__headerUserRow">
+                            {selectedId ? (
+                                <ChatAvatar
+                                    title={activeTitle}
+                                    imageUrl={activeAvatarUrl}
+                                    toneClass={avatarTone(0)}
+                                    size="sm"
+                                />
+                            ) : null}
+                            <div>
+                                <h3>{activeTitle}</h3>
+                                {activeSubtitle ? (
+                                    <div className="chatsView__headerStatus">{activeSubtitle}</div>
+                                ) : null}
+                            </div>
+                        </div>
                     </div>
                     {showResumeBtn ? (
                         <Link
@@ -602,6 +654,16 @@ const ChatsView = () => {
                                     <div
                                         className={`chatsView__messageRow${mine ? ' chatsView__messageRow--out' : ' chatsView__messageRow--in'}`}
                                     >
+                                        {!mine ? (
+                                            <div className="chatsView__msgAvatarWrap">
+                                                <ChatAvatar
+                                                    title={activeTitle}
+                                                    imageUrl={activeAvatarUrl}
+                                                    toneClass={avatarTone(0)}
+                                                    size="sm"
+                                                />
+                                            </div>
+                                        ) : null}
                                         <div className="chatsView__messageStack">
                                             <div
                                                 className={`chatsView__bubble${isMessageDeleted(m) ? ' chatsView__bubble--deleted' : ''}${attachUrl && !m.body ? ' chatsView__bubble--file' : ''}`}

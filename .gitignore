@@ -15,8 +15,7 @@ dist
 dist-ssr
 build
 
-# Environment variables
-.env
+# Environment variables (локальные переопределения)
 .env.local
 .env.*.local
 

@@ -15,6 +15,12 @@ RUN npm ci --only=production=false
 # Копируем весь код
 COPY . .
 
+# Vite подставляет VITE_* на этапе сборки (из .env или build args)
+ARG VITE_API_URL
+ARG VITE_API_BASE=/api/
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_API_BASE=${VITE_API_BASE}
+
 # Собираем приложение для production
 RUN npm run build
 

@@ -16,12 +16,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
     const headers = { ...defaultHeaders, ...options.headers };
     const body = options.body;
 
-    console.log('[API Client] Base URL:', API_BASE_URL);
-    console.log('[API Client] Endpoint:', endpoint);
-
     const url = `${API_BASE_URL}${endpoint}`;
-    console.log('[API Client] Full URL:', url);
-    console.log('[API Client] Request Body:', body);
 
     try {
         const response = await fetch(url, {

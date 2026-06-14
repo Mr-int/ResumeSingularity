@@ -8,6 +8,9 @@ export const AUTH_REQUIRED_EVENT = 'resume:auth-required';
 let authSessionEpoch = 0;
 /** Один in-flight syncAuthSession на всех потребителей. */
 let syncInFlight = null;
+/** Не дёргать auth/me сразу после 5xx — бэкенд может быть недоступен. */
+let authMeServerErrorUntil = 0;
+const AUTH_ME_SERVER_ERROR_COOLDOWN_MS = 30_000;
 
 export function notifyAuthChanged() {
     window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
@@ -347,6 +350,10 @@ export const logout = () => {
 async function syncAuthSessionInternal() {
     const epochAtStart = authSessionEpoch;
 
+    if (Date.now() < authMeServerErrorUntil) {
+        return null;
+    }
+
     const fetchMe = async () => {
         const response = await fetch(`${API_BASE_URL}auth/me`, {
             method: 'GET',
@@ -424,6 +431,12 @@ async function syncAuthSessionInternal() {
                 return null;
             }
             console.warn('[AUTH] auth/me still unauthorized after refresh — keeping local session');
+            return null;
+        }
+
+        if (result.status >= 500) {
+            authMeServerErrorUntil = Date.now() + AUTH_ME_SERVER_ERROR_COOLDOWN_MS;
+            console.warn(`[AUTH] auth/me server error (${result.status}) — keeping local session`);
             return null;
         }
 

@@ -1,5 +1,6 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { getApiOrigin } from '../config/api.js';
 
 /** @type {Client | null} */
 let client = null;
@@ -8,14 +9,9 @@ let connected = false;
 const topicSubscriptions = new Map();
 
 export function getChatWebSocketUrl() {
-    const viteApi = import.meta.env.VITE_API_URL;
-    if (viteApi) {
-        const raw = String(viteApi).replace(/\/$/, '');
-        try {
-            return `${new URL(raw).origin}/ws`;
-        } catch {
-            return `${raw}/ws`;
-        }
+    const origin = getApiOrigin();
+    if (origin) {
+        return `${origin}/ws`;
     }
     return `${window.location.origin}/ws`;
 }

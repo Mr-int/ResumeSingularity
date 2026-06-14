@@ -150,6 +150,27 @@
     font-weight: 600;
     font-size: 15px;
     color: #ffffff;
+    flex-shrink: 0;
+}
+
+.chatsView__avatar--sm {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.chatsView__avatar--photo {
+    overflow: hidden;
+    padding: 0;
+    background: #12121a;
+}
+
+.chatsView__avatar--photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .chatsView__avatar--tone0 {
@@ -253,6 +274,12 @@
     margin: 0;
 }
 
+.chatsView__headerUserRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .chatsView__headerStatus {
     font-size: 12px;
     color: #636366;
@@ -323,6 +350,14 @@
 
 .chatsView__messageRow--in {
     justify-content: flex-start;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.chatsView__msgAvatarWrap {
+    flex-shrink: 0;
+    margin-bottom: 2px;
 }
 
 .chatsView__messageStack {

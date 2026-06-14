@@ -1,5 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
-import { API_BASE_URL, getImageUrl } from '../config/api.js';
+import { getImageUrl } from '../config/api.js';
 
 const withPageParams = (endpoint, pageable) => {
     if (!pageable) return endpoint;
@@ -59,9 +59,9 @@ export const fetchMainPhotoBlob = async (imagePath) => {
     const url = getImageUrl(imagePath);
     if (!url) return null;
 
-    const response = await fetch(url.startsWith('/api/') ? url : `${API_BASE_URL}${url}`, {
+    const response = await fetch(url, {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'omit',
     });
 
     if (!response.ok) {
