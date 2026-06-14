@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { login } from '../../services/authApi.js';
-import { startPhoneVerification, getPhoneVerificationStatus, isValidVerificationEmail } from '../../services/verificationApi.js';
+import {
+    startPhoneVerification,
+    getPhoneVerificationStatus,
+    isValidVerificationEmail,
+    isVerificationMailDeliveryError,
+} from '../../services/verificationApi.js';
 import RegistrationWizard from './RegistrationWizard.jsx';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { validateRegistrationPassword } from '../../utils/passwordPolicy.js';
@@ -213,15 +218,29 @@ const LoginModal = ({ onClose, onSuccess }) => {
         }
         setLoading(true);
         try {
-            const res = await startPhoneVerification({
-                phoneNumber: phone,
-                ...(forgotTab === 'email' ? { email: emailTrim } : {}),
-            });
+            let res;
+            let effectiveChannel = forgotTab;
+            try {
+                res = await startPhoneVerification({
+                    phoneNumber: phone,
+                    ...(forgotTab === 'email' ? { email: emailTrim } : {}),
+                });
+            } catch (err) {
+                if (forgotTab === 'email' && isVerificationMailDeliveryError(err)) {
+                    res = await startPhoneVerification({ phoneNumber: phone });
+                    effectiveChannel = 'phone';
+                    setError(
+                        'Сейчас не удаётся отправить код на почту. Подтвердите номер в Telegram.',
+                    );
+                } else {
+                    throw err;
+                }
+            }
             setVerification({
                 ...res,
                 phoneNumber: phone,
                 email: emailTrim || null,
-                channel: forgotTab,
+                channel: effectiveChannel,
                 mode: 'forgot',
             });
             switchView('forgot-telegram');

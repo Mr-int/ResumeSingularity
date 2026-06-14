@@ -7,14 +7,24 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const isValidVerificationEmail = (value) => EMAIL_REGEX.test(String(value || '').trim());
 
+/** Бэкенд вернул 400, когда SMTP/почта недоступна при старте с email. */
+export const isVerificationMailDeliveryError = (err) =>
+    err?.status === 400 &&
+    /почт|mail|email|smtp/i.test(String(err?.message || ''));
+
 /**
  * Тело POST /verification/phone/start
- * @param {string} phoneNumber
- * @param {string} [email] — при включённой почте на бэкенде OTP уходит на email
+ * @param {string} phoneNumber — E.164, например +79991234567
+ * @param {string} [email] — при app.mail.enabled=true OTP уходит на почту
  */
 export const buildVerificationStartBody = (phoneNumber, email) => {
-    const body = { phoneNumber: String(phoneNumber || '').trim() };
-    const mail = String(email || '').trim();
+    const digits = String(phoneNumber || '').replace(/\D/g, '');
+    const normalized =
+        digits.length === 11 && digits.startsWith('7')
+            ? `+${digits}`
+            : String(phoneNumber || '').trim();
+    const body = { phoneNumber: normalized };
+    const mail = String(email || '').trim().toLowerCase();
     if (mail) body.email = mail;
     return body;
 };
@@ -24,7 +34,13 @@ const parseError = async (response) => {
     let msg = text;
     try {
         const parsed = JSON.parse(text);
-        msg = parsed.message || parsed.error || text;
+        if (parsed && typeof parsed === 'object') {
+            msg =
+                parsed.message ||
+                parsed.error ||
+                (Array.isArray(parsed.errors) ? parsed.errors.join('; ') : null) ||
+                text;
+        }
     } catch {
         /* empty */
     }

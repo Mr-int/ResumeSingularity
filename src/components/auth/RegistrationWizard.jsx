@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerStudent, registerRecruiter, notifyAuthChanged } from '../../services/authApi.js';
-import { startPhoneVerification, getPhoneVerificationStatus, isValidVerificationEmail } from '../../services/verificationApi.js';
+import {
+    startPhoneVerification,
+    getPhoneVerificationStatus,
+    isValidVerificationEmail,
+    isVerificationMailDeliveryError,
+} from '../../services/verificationApi.js';
 import logo from '../../assets/logos/Logo.png';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { MIN_REGISTRATION_PASSWORD_LENGTH, validateRegistrationPassword } from '../../utils/passwordPolicy.js';
@@ -116,15 +121,29 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
         }
         setLoading(true);
         try {
-            const res = await startPhoneVerification({
-                phoneNumber: phone,
-                ...(channel === 'email' ? { email: emailTrim } : {}),
-            });
+            let res;
+            let effectiveChannel = channel;
+            try {
+                res = await startPhoneVerification({
+                    phoneNumber: phone,
+                    ...(channel === 'email' ? { email: emailTrim } : {}),
+                });
+            } catch (err) {
+                if (channel === 'email' && isVerificationMailDeliveryError(err)) {
+                    res = await startPhoneVerification({ phoneNumber: phone });
+                    effectiveChannel = 'phone';
+                    showError(
+                        'Сейчас не удаётся отправить код на почту. Подтвердите номер в Telegram — регистрацию можно продолжить.',
+                    );
+                } else {
+                    throw err;
+                }
+            }
             setVerification({
                 ...res,
                 phoneNumber: phone,
                 email: emailTrim || null,
-                channel,
+                channel: effectiveChannel,
                 role,
             });
             setView('telegram');
