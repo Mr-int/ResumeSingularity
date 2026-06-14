@@ -1,8 +1,15 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
+import { hasApprovedCatalogAccess } from './authApi.js';
+import { filterPublicStudentCards } from './publicApi.js';
 
 export const getAllStudents = async () => {
     try {
+        if (!hasApprovedCatalogAccess()) {
+            const pageRes = await filterPublicStudentCards({}, 0, 200);
+            return Array.isArray(pageRes.data) ? pageRes.data : [];
+        }
+
         const pageSize = 200;
         const maxPages = 200;
         const byId = new Map();
@@ -26,6 +33,14 @@ export const getAllStudents = async () => {
 
         return Array.from(byId.values());
     } catch (error) {
+        if (error.status === 403 && !hasApprovedCatalogAccess()) {
+            try {
+                const pageRes = await filterPublicStudentCards({}, 0, 200);
+                return Array.isArray(pageRes.data) ? pageRes.data : [];
+            } catch {
+                return [];
+            }
+        }
         if (error.requiresAuth) {
             throw error;
         }

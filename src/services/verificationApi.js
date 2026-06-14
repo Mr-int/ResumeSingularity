@@ -1,12 +1,19 @@
 import { API_BASE_URL } from '../config/api.js';
 
+const VERIFICATION_FORBIDDEN_MSG =
+    'Сейчас нельзя подтвердить телефон — сервер регистрации временно недоступен. Попробуйте позже или напишите в поддержку.';
+
 const parseError = async (response) => {
     const text = await response.text();
     let msg = text;
     try {
-        msg = JSON.parse(text).message || text;
+        const parsed = JSON.parse(text);
+        msg = parsed.message || parsed.error || text;
     } catch {
         /* empty */
+    }
+    if (response.status === 403) {
+        msg = VERIFICATION_FORBIDDEN_MSG;
     }
     const err = new Error(msg || `Ошибка ${response.status}`);
     err.status = response.status;
