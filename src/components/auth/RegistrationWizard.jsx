@@ -334,21 +334,26 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                         </div>
                         <form onSubmit={handleContactNext} className="loginModal__form">
                             {contactTab === 'phone' ? (
-                                <div className="loginModal__phoneRow">
-                                    <div className="loginModal__phonePrefix">
-                                        <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
-                                        +7
+                                <>
+                                    <div className="loginModal__phoneRow">
+                                        <div className="loginModal__phonePrefix">
+                                            <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
+                                            +7
+                                        </div>
+                                        <input
+                                            className="loginModal__phoneInput"
+                                            type="tel"
+                                            inputMode="tel"
+                                            value={formatPhoneDisplay(phoneLocal)}
+                                            onChange={(e) => setPhoneLocal(e.target.value.replace(/\D/g, ''))}
+                                            required
+                                            placeholder="952 312-94-90"
+                                        />
                                     </div>
-                                    <input
-                                        className="loginModal__phoneInput"
-                                        type="tel"
-                                        inputMode="tel"
-                                        value={formatPhoneDisplay(phoneLocal)}
-                                        onChange={(e) => setPhoneLocal(e.target.value.replace(/\D/g, ''))}
-                                        required
-                                        placeholder="952 312-94-90"
-                                    />
-                                </div>
+                                    <p className="loginModal__fieldHint">
+                                        СМС не отправляем — подтвердите номер в Telegram-боте.
+                                    </p>
+                                </>
                             ) : (
                                 <>
                                     <div className="loginModal__emailRow">
@@ -403,22 +408,24 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                         heading={
                             verification.channel === 'email'
                                 ? 'Введите код из письма'
-                                : 'Введите код из СМС'
+                                : 'Подтвердите номер в Telegram'
                         }
                         subheading={
                             verification.channel === 'email'
                                 ? `Мы отправили код на ${verification.email}. Номер аккаунта: ${verification.phoneNumber}`
-                                : `Подтвердите номер ${verification.phoneNumber} в Telegram @${verification.botUsername} или введите код из сообщения`
+                                : `Откройте бота @${verification.botUsername} и подтвердите номер ${verification.phoneNumber}. СМС не отправляем.`
                         }
                     >
                         <p className="loginModal__infoText loginModal__infoText--link">
-                            {verification.channel === 'email' ? 'Подтверждение по почте' : 'Подтверждение номера'}
+                            {verification.channel === 'email' ? 'Подтверждение по почте' : 'Подтверждение через Telegram'}
                         </p>
-                        <PhoneOtpConfirm
-                            verificationId={verification.verificationId}
-                            onConfirmed={() => setView('password')}
-                            onError={showError}
-                        />
+                        {verification.channel === 'email' ? (
+                            <PhoneOtpConfirm
+                                verificationId={verification.verificationId}
+                                onConfirmed={() => setView('password')}
+                                onError={showError}
+                            />
+                        ) : null}
                         {verification.channel === 'email' ? (
                             <p className="loginModal__infoText">
                                 Не пришло письмо? Проверьте «Спам» или подтвердите номер через Telegram.
@@ -426,7 +433,7 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                         ) : (
                             <div className="loginModal__telegramWait">
                                 <div className="loginModal__spinner loginModal__spinner--inline" aria-hidden="true" />
-                                <p className="loginModal__infoText">Или откройте Telegram-бота…</p>
+                                <p className="loginModal__infoText">Ожидаем подтверждение в Telegram…</p>
                             </div>
                         )}
                         <a
