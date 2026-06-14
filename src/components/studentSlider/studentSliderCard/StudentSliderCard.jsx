@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getImageUrl } from '../../../config/api.js';
 import './studentSliderCard.css';
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
@@ -128,6 +128,10 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
 
     const imageSrc = getStudentImageUrl(student);
     const [photoSrc, setPhotoSrc] = useState(imageSrc);
+
+    useEffect(() => {
+        setPhotoSrc(getStudentImageUrl(student));
+    }, [student?.id, student?.imagePath, student?.image, student?.photo]);
     const courseNumber = getCourseNumber(student.course);
     const skillIcon = getSkillIcon(student.speciality);
     const specialityName = student.speciality || 'Специальность не указана';

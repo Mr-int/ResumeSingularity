@@ -184,7 +184,9 @@ const StudentSlider = () => {
                         </div>
 
                         <div className="studentSlider__listInfo">
-                            {activeStudent && <StudentsListCard student={activeStudent} />}
+                            {activeStudent && (
+                                <StudentsListCard key={activeStudent.id} student={activeStudent} />
+                            )}
                         </div>
 
                         <GradientButton

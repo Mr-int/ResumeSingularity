@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getImageUrl } from '../../../config/api.js';
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import { Link } from "react-router-dom";
@@ -46,6 +46,11 @@ const StudentsListCard = ({ student, skillCatalogMap }) => {
     const lastName = student.lastName || fullName.slice(firstName.length).trim() || '';
     const imageSrc = getStudentImageUrl(student);
     const [photoSrc, setPhotoSrc] = useState(imageSrc);
+
+    useEffect(() => {
+        setPhotoSrc(getStudentImageUrl(student));
+        setShowFullBio(false);
+    }, [student?.id, student?.imagePath, student?.image, student?.photo]);
     const courseNumber = getCourseNumber(student.course);
 
     // ~3 строки в блоке описания (line-clamp: 3, ~70–80 символов на строку)
