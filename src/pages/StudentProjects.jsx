@@ -167,11 +167,11 @@ const StudentProjects = () => {
     const [error, setError] = useState('');
     const [openProject, setOpenProject] = useState(null);
 
-    const load = useCallback(async () => {
+    const load = useCallback(async (query = '') => {
         setLoading(true);
         setError('');
         try {
-            const rows = await listStudentProjectCards(search);
+            const rows = await listStudentProjectCards(query);
             setItems(rows);
         } catch (e) {
             setError(formatApiUserMessage(e));
@@ -179,10 +179,10 @@ const StudentProjects = () => {
         } finally {
             setLoading(false);
         }
-    }, [search]);
+    }, []);
 
     useEffect(() => {
-        load();
+        load('');
     }, [load]);
 
     return (
@@ -196,7 +196,7 @@ const StudentProjects = () => {
                         className="studentProjectsPage__filters"
                         onSubmit={(e) => {
                             e.preventDefault();
-                            load();
+                            load(search.trim());
                         }}
                     >
                         <div className="studentProjectsPage__filterGroup">
@@ -216,14 +216,15 @@ const StudentProjects = () => {
                         </div>
                     </form>
 
-                    {loading ? <p className="studentProjectsPage__hint">Загрузка…</p> : null}
-                    {error ? <p className="studentProjectsPage__error">{error}</p> : null}
+                    <div className="studentProjectsPage__status" aria-live="polite">
+                        {loading ? <p className="studentProjectsPage__hint">Загрузка…</p> : null}
+                        {error ? <p className="studentProjectsPage__error">{error}</p> : null}
+                        {!loading && !error && items.length === 0 ? (
+                            <p className="studentProjectsPage__hint">Проектов пока нет</p>
+                        ) : null}
+                    </div>
 
-                    {!loading && !error && items.length === 0 ? (
-                        <p className="studentProjectsPage__hint">Проектов пока нет</p>
-                    ) : null}
-
-                    <ul className="studentProjectsPage__grid">
+                    <ul className={`studentProjectsPage__grid${loading ? ' studentProjectsPage__grid--loading' : ''}`}>
                         {items.map((project) => (
                             <ProjectCard
                                 key={`${project.source}-${project.id}`}
