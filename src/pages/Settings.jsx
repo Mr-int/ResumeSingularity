@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
@@ -255,14 +255,6 @@ const SettingsPage = () => {
             <main className="accountPage">
                 <div className="accountPage__inner">
                     <h1 className="accountPage__title">Профиль</h1>
-                    <p className="accountPage__lead">
-                        Личный кабинет: редактирование данных, резюме и параметров аккаунта.
-                    </p>
-                    <p className="accountPage__settingsNav">
-                        <Link to="/chats" className="accountPage__settingsNavLink">
-                            Перейти к чатам
-                        </Link>
-                    </p>
 
                     {session ? (
                         <section className="accountPage__card accountPage__card--muted">
