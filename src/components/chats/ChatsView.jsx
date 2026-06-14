@@ -7,7 +7,7 @@ import {
     getChatSummary,
     postChatTextMessage,
     postChatAttachment,
-    markChatRead,
+    markPeerChatsRead,
     patchChatMessage,
     extractChatPageItems,
     dedupeChatsByPeer,
@@ -114,6 +114,25 @@ const ChatsView = () => {
     const chatAliasRef = useRef({});
     const studentCacheRef = useRef(new Map());
     const recruiterCacheRef = useRef(new Map());
+    const chatsRef = useRef([]);
+    const selectedIdRef = useRef(null);
+    const readChatRowsRef = useRef(new Set());
+
+    useEffect(() => {
+        chatsRef.current = chats;
+    }, [chats]);
+
+    useEffect(() => {
+        selectedIdRef.current = selectedId;
+    }, [selectedId]);
+
+    const clearChatUnread = useCallback((chatId) => {
+        const key = String(chatId);
+        readChatRowsRef.current.add(key);
+        setChats((prev) =>
+            prev.map((c) => (String(c.id) === key ? { ...c, unreadCount: 0 } : c)),
+        );
+    }, []);
 
     const myUsername = useMemo(() => {
         try {
@@ -162,12 +181,22 @@ const ChatsView = () => {
         if (!chatId) return;
         try {
             const summary = await getChatSummary(chatId);
-            if (!summary?.id) return;
+            if (!summary || (summary.id == null && summary.unreadCount == null)) return;
             setChats((prev) => {
                 const i = prev.findIndex((c) => String(c.id) === String(chatId));
                 if (i < 0) return prev;
                 const prevRow = prev[i];
                 const merged = { ...prevRow, ...summary };
+                const key = String(chatId);
+                const isOpen = String(selectedIdRef.current) === key;
+                const wasRead = readChatRowsRef.current.has(key);
+                if (isOpen || wasRead) {
+                    if (!isOpen && Number(summary.unreadCount) > 0) {
+                        readChatRowsRef.current.delete(key);
+                    } else {
+                        merged.unreadCount = 0;
+                    }
+                }
                 const same =
                     prevRow.unreadCount === merged.unreadCount &&
                     prevRow.lastMessagePreview === merged.lastMessagePreview &&
@@ -266,7 +295,11 @@ const ChatsView = () => {
                 const last = rows.filter((m) => !isMessageDeleted(m)).pop();
                 if (last?.id) {
                     try {
-                        await markChatRead(chatId, last.id);
+                        const chatRow =
+                            chatsRef.current.find((c) => String(c.id) === String(chatId)) ||
+                            { id: chatId };
+                        await markPeerChatsRead(chatRow, last.id);
+                        clearChatUnread(chatId);
                         await refreshSummary(chatId);
                     } catch {
                         /* не критично */
@@ -279,7 +312,7 @@ const ChatsView = () => {
                 setLoadingMessages(false);
             }
         },
-        [refreshSummary],
+        [refreshSummary, clearChatUnread],
     );
 
     const selectedChat = useMemo(
@@ -335,13 +368,17 @@ const ChatsView = () => {
             const preview = message.body || message.attachmentStorageName || '';
             updateChatPreview(selectedId, preview, message.createdAt);
             if (!isMine(message) && message.id) {
-                markChatRead(selectedId, message.id).catch(() => {});
+                const chatRow =
+                    chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
+                    { id: selectedId };
+                markPeerChatsRead(chatRow, message.id).catch(() => {});
+                clearChatUnread(selectedId);
                 refreshSummary(selectedId);
             }
         });
 
         return unsub;
-    }, [selectedId, isMine, refreshSummary]);
+    }, [selectedId, isMine, refreshSummary, clearChatUnread]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -467,7 +504,10 @@ const ChatsView = () => {
                     {filteredChats.map((c, index) => {
                         const active = String(c.id) === String(selectedId);
                         const title = titles[c.id] || '…';
-                        let meta = subtitles[c.id] || c.lastMessagePreview || '';
+                        const subtitle = subtitles[c.id] || '';
+                        const preview = c.lastMessagePreview || '';
+                        const hasUnread = c.unreadCount > 0;
+                        let meta = hasUnread && preview ? preview : subtitle || preview;
                         if (c._mergedCount > 1) {
                             const suffix = ` · ${c._mergedCount} заявки`;
                             meta = meta ? `${meta}${suffix}` : suffix.trim();
@@ -476,7 +516,7 @@ const ChatsView = () => {
                             <button
                                 key={c.id}
                                 type="button"
-                                className={`chatsView__dialogItem${active ? ' chatsView__dialogItem--active' : ''}`}
+                                className={`chatsView__dialogItem${active ? ' chatsView__dialogItem--active' : ''}${hasUnread ? ' chatsView__dialogItem--unread' : ''}`}
                                 onClick={() => setSelectedId(c.id)}
                             >
                                 <div className="chatsView__avatarWrap">
@@ -489,12 +529,14 @@ const ChatsView = () => {
                                         <span className="chatsView__dialogName">{title}</span>
                                         <span className="chatsView__dialogTime">
                                             {formatListTime(c.lastActivityAt)}
-                                            {c.unreadCount > 0 ? (
-                                                <span className="chatsView__unread">{c.unreadCount}</span>
-                                            ) : null}
                                         </span>
                                     </div>
-                                    <div className="chatsView__dialogMeta">{meta}</div>
+                                    <div className="chatsView__dialogMetaRow">
+                                        <span className="chatsView__dialogMeta">{meta}</span>
+                                        {hasUnread ? (
+                                            <span className="chatsView__unread">{c.unreadCount}</span>
+                                        ) : null}
+                                    </div>
                                 </div>
                             </button>
                         );
@@ -560,76 +602,74 @@ const ChatsView = () => {
                                     <div
                                         className={`chatsView__messageRow${mine ? ' chatsView__messageRow--out' : ' chatsView__messageRow--in'}`}
                                     >
-                                        <div
-                                            className={`chatsView__bubble${isMessageDeleted(m) ? ' chatsView__bubble--deleted' : ''}${attachUrl && !m.body ? ' chatsView__bubble--file' : ''}`}
-                                        >
-                                            {isMessageDeleted(m) ? (
-                                                'Сообщение удалено'
-                                            ) : isEditing ? (
-                                                <div className="chatsView__editBox">
-                                                    <textarea
-                                                        className="chatsView__editInput"
-                                                        value={editDraft}
-                                                        onChange={(e) => setEditDraft(e.target.value)}
-                                                        rows={3}
-                                                    />
-                                                    <div className="chatsView__editActions">
-                                                        <button type="button" onClick={saveEditMessage} disabled={sending}>
-                                                            Сохранить
-                                                        </button>
-                                                        <button type="button" onClick={cancelEditMessage}>
-                                                            Отмена
-                                                        </button>
+                                        <div className="chatsView__messageStack">
+                                            <div
+                                                className={`chatsView__bubble${isMessageDeleted(m) ? ' chatsView__bubble--deleted' : ''}${attachUrl && !m.body ? ' chatsView__bubble--file' : ''}`}
+                                            >
+                                                {isMessageDeleted(m) ? (
+                                                    'Сообщение удалено'
+                                                ) : isEditing ? (
+                                                    <div className="chatsView__editBox">
+                                                        <textarea
+                                                            className="chatsView__editInput"
+                                                            value={editDraft}
+                                                            onChange={(e) => setEditDraft(e.target.value)}
+                                                            rows={3}
+                                                        />
+                                                        <div className="chatsView__editActions">
+                                                            <button type="button" onClick={saveEditMessage} disabled={sending}>
+                                                                Сохранить
+                                                            </button>
+                                                            <button type="button" onClick={cancelEditMessage}>
+                                                                Отмена
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    {m.body}
-                                                    {attachUrl ? (
-                                                        <a
-                                                            href={attachUrl}
-                                                            className="chatsView__attachment"
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                        >
-                                                            {m.attachmentStorageName || 'Вложение'}
-                                                        </a>
-                                                    ) : null}
-                                                </>
-                                            )}
-                                            {mine && !isMessageDeleted(m) && !isEditing ? (
-                                                <span className="chatsView__messageStatus">
-                                                    {formatTime(m.createdAt)}
-                                                    {readStatus ? (
+                                                ) : (
+                                                    <>
+                                                        {m.body}
+                                                        {attachUrl ? (
+                                                            <a
+                                                                href={attachUrl}
+                                                                className="chatsView__attachment"
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                            >
+                                                                {m.attachmentStorageName || 'Вложение'}
+                                                            </a>
+                                                        ) : null}
+                                                    </>
+                                                )}
+                                            </div>
+                                            {!isMessageDeleted(m) && !isEditing ? (
+                                                <div className="chatsView__messageStatus">
+                                                    <span className="chatsView__messageTime">
+                                                        {formatTime(m.createdAt)}
+                                                    </span>
+                                                    {mine && readStatus ? (
                                                         <span
                                                             className={`chatsView__readStatus chatsView__readStatus--${readStatus}`}
                                                             title={readStatusLabel(readStatus)}
                                                             aria-label={readStatusLabel(readStatus)}
                                                         >
-                                                            {' '}
                                                             {readStatus === 'read' ? '✓✓' : '✓'}
                                                         </span>
                                                     ) : null}
-                                                    {m.editedAt ? ' · изм.' : ''}
-                                                    {m.messageKind === 'USER' ? (
+                                                    {m.editedAt ? (
+                                                        <span className="chatsView__editedTag">изменено</span>
+                                                    ) : null}
+                                                    {mine && m.messageKind === 'USER' ? (
                                                         <button
                                                             type="button"
                                                             className="chatsView__editBtn"
                                                             onClick={() => startEditMessage(m)}
                                                         >
-                                                            {' '}
                                                             Изменить
                                                         </button>
                                                     ) : null}
-                                                </span>
+                                                </div>
                                             ) : null}
                                         </div>
-                                        {!mine ? (
-                                            <span className="chatsView__msgTime">
-                                                {formatTime(m.createdAt)}
-                                                {m.editedAt && !isMessageDeleted(m) ? ' · изм.' : ''}
-                                            </span>
-                                        ) : null}
                                     </div>
                                 </React.Fragment>
                             );

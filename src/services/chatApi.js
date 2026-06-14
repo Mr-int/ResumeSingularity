@@ -115,11 +115,63 @@ export const markChatRead = (chatId, messageId) =>
         body: JSON.stringify({ messageId }),
     });
 
+/** Один объект чата / summary (не постраничный список). */
+export const normalizeChatEntity = (res) => {
+    if (!res || typeof res !== 'object') return null;
+    if (res.id != null || res.unreadCount != null || res.lastMessagePreview != null) return res;
+    if (res.data && typeof res.data === 'object' && !Array.isArray(res.data)) return res.data;
+    return res;
+};
+
+const isActiveMessage = (m) => m && !m.deletedAt && !m.deletedByAdmin;
+
+/**
+ * Помечает прочитанным один чат — до последнего сообщения в ленте.
+ */
+export const markChatFullyRead = async (chatId, knownLastMessageId = null) => {
+    if (!chatId) return false;
+    let messageId = knownLastMessageId;
+    if (!messageId) {
+        const res = await getChatMessages(chatId, 0, 50);
+        const rows = extractChatPageItems(res);
+        const last = rows.filter(isActiveMessage).pop();
+        messageId = last?.id;
+    }
+    if (!messageId) return false;
+    await markChatRead(chatId, messageId);
+    return true;
+};
+
+/**
+ * У одного собеседника может быть несколько chatId (по заявкам).
+ * Чтобы бейдж не залипал, читаем все связанные диалоги.
+ */
+export const markPeerChatsRead = async (chatRow, knownLastMessageId = null) => {
+    const ids = Array.isArray(chatRow?._mergedIds) && chatRow._mergedIds.length
+        ? chatRow._mergedIds
+        : [chatRow?.id].filter(Boolean);
+    const canonicalId = chatRow?.id != null ? String(chatRow.id) : null;
+    await Promise.all(
+        ids.map(async (id) => {
+            const lastId =
+                canonicalId && String(id) === canonicalId ? knownLastMessageId : null;
+            try {
+                await markChatFullyRead(id, lastId);
+            } catch {
+                /* отдельный чат мог быть недоступен */
+            }
+        }),
+    );
+};
+
+
 /**
  * GET /chat/{chatId}/summary
  */
-export const getChatSummary = (chatId) =>
-    apiClientJson(`chat/${chatId}/summary`, { method: 'GET' });
+export const getChatSummary = async (chatId) => {
+    const res = await apiClientJson(`chat/${chatId}/summary`, { method: 'GET' });
+    return normalizeChatEntity(res);
+};
 
 /**
  * POST /chat/{chatId}/messages/attachment — multipart
