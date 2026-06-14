@@ -668,10 +668,6 @@
     font: inherit;
 }
 
-.chatsView__headerStatus--request {
-    color: #fbbf24;
-}
-
 .chatsView__inputPanel {
     display: flex;
     align-items: center;

@@ -15,7 +15,6 @@ import {
 } from '../../services/chatApi.js';
 import { filterMyRequests, postStudentDecision, buildStudentDecisionBody, extractRequestRows, resolveRequestId, postRequestTuDecision } from '../../services/requestApi.js';
 import {
-    REQUEST_RESULT_LABELS,
     canStudentDecideRequest,
     canTuDecideRequest,
     buildTuDecisionBody,
@@ -736,9 +735,6 @@ const ChatsView = () => {
         Boolean(pendingMode === 'student_decision' && me?.role === 'student');
     const requestPanelJumpLabel =
         pendingMode === 'tu_decision' ? '↑ К решению по ТУ' : '↑ К заявке';
-    const requestStatusLabel = pendingRequest?.result
-        ? REQUEST_RESULT_LABELS[pendingRequest.result] || pendingRequest.result
-        : '';
 
     const activeTitle = selectedId ? titles[selectedId] || '…' : 'Выберите чат';
     const activeSubtitle = selectedId ? subtitles[selectedId] : '';
@@ -849,11 +845,7 @@ const ChatsView = () => {
                             ) : null}
                             <div>
                                 <h3>{activeTitle}</h3>
-                                {requestStatusLabel ? (
-                                    <div className="chatsView__headerStatus chatsView__headerStatus--request">
-                                        Заявка: {requestStatusLabel}
-                                    </div>
-                                ) : activeSubtitle ? (
+                                {activeSubtitle ? (
                                     <div className="chatsView__headerStatus">{activeSubtitle}</div>
                                 ) : null}
                             </div>
