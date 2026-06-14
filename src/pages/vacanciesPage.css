@@ -1,9 +1,9 @@
 .vacanciesPage {
-    min-height: calc(100vh - 120px);
+    min-height: calc(100vh - var(--header-height, 120px));
     background: #000000;
     color: #ffffff;
     font-family: 'Inter', sans-serif;
-    padding: 60px 40px 80px;
+    padding: 60px var(--page-padding-x, 40px) 80px;
     box-sizing: border-box;
     width: 100%;
     display: flex;
@@ -28,7 +28,7 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #444444;
+    color: #ffffff;
     margin: 0 0 24px;
     font-weight: 600;
 }
@@ -92,8 +92,9 @@
 
 .vacanciesPage__filterGroup label {
     font-size: 11px;
-    color: #555555;
+    color: #ffffff;
     margin-bottom: 4px;
+    font-weight: 500;
 }
 
 .vacanciesPage__input,
@@ -154,7 +155,7 @@
 
 .vacanciesPage__hint {
     margin: 0 0 16px;
-    color: #555555;
+    color: #ffffff;
     font-size: 14px;
     line-height: 1.55;
 }
@@ -326,7 +327,20 @@
     margin-top: 40px;
 }
 
-@media (max-width: 800px) {
+@media (max-width: 768px) {
+    .vacanciesPage {
+        padding-bottom: 100px;
+    }
+
+    .vacanciesPage__toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .vacanciesPage__toolbar .vacanciesPage__title {
+        font-size: 20px;
+    }
+
     .vacanciesPage__filters {
         grid-template-columns: 1fr 1fr;
     }
@@ -338,9 +352,9 @@
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
     .vacanciesPage {
-        padding: 40px 20px 80px;
+        padding: 40px var(--page-padding-x, 20px) 100px;
     }
 
     .vacanciesPage__filters {
@@ -350,5 +364,25 @@
     .vacanciesPage__filters .vacanciesPage__filterGroup--full,
     .vacanciesPage__btnContainer {
         grid-column: span 1;
+    }
+
+    .vacanciesPage__itemLink,
+    .vacanciesPage__itemRow--static {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .vacanciesPage__itemStatus {
+        align-self: flex-start;
+        text-align: left;
+    }
+
+    .vacanciesPage__cardHead {
+        flex-wrap: wrap;
+    }
+
+    .vacanciesPage__detail h1 {
+        font-size: 20px;
     }
 }

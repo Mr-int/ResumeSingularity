@@ -1,6 +1,6 @@
 import './header.css';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
     isAuthenticated,
     requestLogin,
@@ -10,7 +10,10 @@ import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
 
+const MOBILE_MENU_ID = 'header-mobile-menu';
+
 const Header = () => {
+    const location = useLocation();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [authed, setAuthed] = useState(() => isAuthenticated());
 
@@ -21,8 +24,33 @@ const Header = () => {
         return () => window.removeEventListener(AUTH_CHANGED_EVENT, sync);
     }, []);
 
+    useEffect(() => {
+        setIsMenuOpen(false);
+    }, [location.pathname]);
+
+    useEffect(() => {
+        if (!isMenuOpen) {
+            document.body.style.overflow = '';
+            return undefined;
+        }
+
+        document.body.style.overflow = 'hidden';
+
+        const handleResize = () => {
+            if (window.innerWidth > 768) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            document.body.style.overflow = '';
+            window.removeEventListener('resize', handleResize);
+        };
+    }, [isMenuOpen]);
+
     const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+        setIsMenuOpen((open) => !open);
     };
 
     const handleMobileLinkClick = () => {
@@ -34,13 +62,39 @@ const Header = () => {
         requestLogin();
     };
 
+    const closeMenu = () => {
+        setIsMenuOpen(false);
+    };
+
     return (
         <header className="header">
+            {isMenuOpen ? (
+                <button
+                    type="button"
+                    className="header__overlay"
+                    aria-label="Закрыть меню"
+                    onClick={closeMenu}
+                />
+            ) : null}
+
             <div className="header__inner">
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
                     <Link to="/vacancies" className="header__navLink">вакансии</Link>
                 </div>
+
+                <button
+                    type="button"
+                    className={`header__burger ${isMenuOpen ? 'active' : ''}`}
+                    onClick={toggleMenu}
+                    aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
+                    aria-expanded={isMenuOpen}
+                    aria-controls={MOBILE_MENU_ID}
+                >
+                    <span className="header__burgerLine"></span>
+                    <span className="header__burgerLine"></span>
+                    <span className="header__burgerLine"></span>
+                </button>
 
                 <Link to="/" className="header__logoLink">
                     <img
@@ -82,6 +136,8 @@ const Header = () => {
                     </Link>
                 </div>
 
+                <div className="header__mobileSpacer" aria-hidden="true" />
+
                 {authed ? (
                     <Link to="/settings" className="header__authBtn">
                         профиль
@@ -95,19 +151,12 @@ const Header = () => {
                         войти
                     </button>
                 )}
-
-                <button
-                    className={`header__burger ${isMenuOpen ? 'active' : ''}`}
-                    onClick={toggleMenu}
-                    aria-label="Открыть меню"
-                >
-                    <span className="header__burgerLine"></span>
-                    <span className="header__burgerLine"></span>
-                    <span className="header__burgerLine"></span>
-                </button>
             </div>
 
-            <div className={`header__mobileMenu ${isMenuOpen ? 'active' : ''}`}>
+            <div
+                id={MOBILE_MENU_ID}
+                className={`header__mobileMenu ${isMenuOpen ? 'active' : ''}`}
+            >
                 <Link
                     to="/"
                     className="header__mobileBtn"
@@ -129,13 +178,15 @@ const Header = () => {
                 >
                     найти стажера
                 </Link>
-                <Link
-                    to="/settings"
-                    className="header__mobileBtn"
-                    onClick={handleMobileLinkClick}
-                >
-                    профиль
-                </Link>
+                {authed ? (
+                    <Link
+                        to="/settings"
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
+                    >
+                        профиль
+                    </Link>
+                ) : null}
                 {authed ? (
                     <Link
                         to="/chats"

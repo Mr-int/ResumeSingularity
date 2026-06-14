@@ -1,9 +1,9 @@
 .accountPage {
-    min-height: calc(100vh - 120px);
+    min-height: calc(100vh - var(--header-height, 120px));
     background: #000000;
     color: #ffffff;
     font-family: 'Inter', sans-serif;
-    padding: 60px 40px 80px;
+    padding: 60px var(--page-padding-x, 40px) 80px;
     box-sizing: border-box;
     display: flex;
     justify-content: center;
@@ -125,7 +125,7 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #444444;
+    color: #ffffff;
     margin: 0 0 24px;
     font-weight: 600;
 }
@@ -133,7 +133,7 @@
 .accountPage__accountMeta {
     margin: 0 0 20px;
     font-size: 15px;
-    color: #888888;
+    color: #ffffff;
     line-height: 1.5;
 }
 
@@ -150,7 +150,7 @@
     padding: 16px 0;
     margin: 0;
     font-size: 11px;
-    color: #777777;
+    color: #ffffff;
     transition: border-color 0.2s ease;
 }
 
@@ -162,7 +162,7 @@
     margin-bottom: 8px;
     font-weight: 500;
     letter-spacing: 0.02em;
-    color: #888888;
+    color: #ffffff;
 }
 
 .accountPage__fullWidth {
@@ -221,7 +221,7 @@
     align-items: flex-start;
     gap: 10px;
     font-size: 14px;
-    color: #aaaaaa;
+    color: #ffffff;
     padding: 10px 0;
 }
 
@@ -329,7 +329,7 @@
 }
 
 .accountPage__muted {
-    color: #555555;
+    color: #e8e8e8;
     font-size: 14px;
     margin: 0 0 16px;
 }
@@ -338,7 +338,7 @@
     margin: 0 0 12px;
     font-size: 15px;
     line-height: 1.55;
-    color: #888888;
+    color: #ffffff;
 }
 
 .accountPage__hint {
@@ -438,9 +438,9 @@
     border-bottom: 1px solid #1a1a1a;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .accountPage {
-        padding: 40px 20px 80px;
+        padding: 40px var(--page-padding-x, 20px) 80px;
     }
 
     .accountPage__identity {
@@ -459,5 +459,27 @@
 
     .accountPage__fullWidth {
         grid-column: span 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .accountPage__listItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .accountPage__listItemStatus {
+        text-align: left;
+        align-self: flex-start;
+    }
+
+    .accountPage__avatarRow {
+        flex-wrap: wrap;
+    }
+
+    .accountPage__identityMain {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

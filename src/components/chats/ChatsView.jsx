@@ -22,6 +22,7 @@ import {
     getOutgoingReadStatus,
     readStatusLabel,
 } from '../../utils/chatReadStatus.js';
+import { useMediaQuery } from '../../utils/useMediaQuery.js';
 
 const formatTime = (iso) => {
     if (!iso) return '';
@@ -115,6 +116,7 @@ async function resolveMe() {
 
 const ChatsView = () => {
     const [searchParams] = useSearchParams();
+    const isMobile = useMediaQuery('(max-width: 768px)');
     const [loadingList, setLoadingList] = useState(false);
     const [listError, setListError] = useState('');
     const [chats, setChats] = useState([]);
@@ -510,9 +512,14 @@ const ChatsView = () => {
         me?.role === 'recruiter' && selectedChat?.studentId != null && selectedChat.studentId !== '';
 
     const activeAvatarUrl = selectedId ? avatars[selectedId] : null;
+    const isChatOpen = isMobile && Boolean(selectedId);
 
     return (
-        <div className="chatsView__container" role="application" aria-label="Чаты">
+        <div
+            className={`chatsView__container${isChatOpen ? ' chatsView__container--chatOpen' : ''}`}
+            role="application"
+            aria-label="Чаты"
+        >
             <aside className="chatsView__dialogs">
                 <div className="chatsView__dialogsHeader">
                     <nav className="chatsView__pageNav" aria-label="Навигация">
@@ -586,6 +593,15 @@ const ChatsView = () => {
 
             <main className="chatsView__main">
                 <header className="chatsView__chatHeader">
+                    {isMobile && selectedId ? (
+                        <button
+                            type="button"
+                            className="chatsView__backBtn"
+                            onClick={() => setSelectedId(null)}
+                        >
+                            ← Чаты
+                        </button>
+                    ) : null}
                     <div className="chatsView__headerUser">
                         <div className="chatsView__headerUserRow">
                             {selectedId ? (

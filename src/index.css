@@ -1,5 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
 
+:root {
+  --header-height: 120px;
+  --bp-tablet: 768px;
+  --bp-mobile: 480px;
+  --page-padding-x: 40px;
+  --page-padding-x-mobile: 20px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --header-height: 80px;
+    --page-padding-x: 20px;
+  }
+}
+
 * {
   padding: 0;
   margin: 0;

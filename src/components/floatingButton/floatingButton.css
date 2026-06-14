@@ -184,3 +184,14 @@
 .floatingButton__close {
     position: relative;
 }
+
+@media (max-width: 768px) {
+    .floatingButton__wrapper {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .floatingButton__pill_expanded {
+        width: min(206px, calc(100vw - 80px));
+    }
+}
