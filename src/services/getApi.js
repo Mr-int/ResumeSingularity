@@ -19,6 +19,17 @@ export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { metho
 export const getRecruiterMe = () =>
     apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true });
 
+/** 200 — профиль привязан; 404 — нужны полные данные при первой заявке. */
+export const checkRecruiterProfile = async () => {
+    try {
+        const profile = await getRecruiterMe();
+        return { linked: true, profile };
+    } catch (e) {
+        if (e.status === 404) return { linked: false, profile: null };
+        throw e;
+    }
+};
+
 // ---- Dictionaries / entities ----
 export const getSpecialityById = (id) => apiClientJson(`speciality/${id}`, { method: 'GET' });
 export const getSkillById = (id) => apiClientJson(`skill/${id}`, { method: 'GET' });

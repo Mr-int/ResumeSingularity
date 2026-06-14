@@ -7,6 +7,18 @@ const pageQuery = (page, size) => {
     return p.toString();
 };
 
+/** Тело POST /request: только studentId или studentId + поля рекрутера. */
+export const buildCreateRequestBody = (studentId, fields) => {
+    if (!fields) return { studentId };
+    return { studentId, ...fields };
+};
+
+/** @ в UI → username для API (ivan_petrov). */
+export const normalizeTelegramForApi = (value) => {
+    const pure = String(value ?? '').trim().replace(/^@+/, '');
+    return pure || undefined;
+};
+
 /**
  * POST /request — заявка рекрутера студенту
  */

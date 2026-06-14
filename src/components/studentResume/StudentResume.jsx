@@ -24,6 +24,7 @@ import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import { isAuthenticated, isRecruiterRole, requestLogin } from "../../services/authApi.js";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -41,6 +42,14 @@ const StudentResume = () => {
     const [showApplicationForm, setShowApplicationForm] = useState(false);
     const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
     const experienceItemRefs = useRef([]);
+
+    const openApplicationForm = () => {
+        if (!isAuthenticated() || !isRecruiterRole()) {
+            requestLogin();
+            return;
+        }
+        setShowApplicationForm(true);
+    };
 
     const portfolioBackgrounds = [BehindOrange, BehindPink, BehindBlue];
 
@@ -543,7 +552,7 @@ const StudentResume = () => {
                             <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
                             <div className="StudentResume__contactWrapper">
                                 <p>Студент готов проходить стажировку в вашей компании!</p>
-                                <button onClick={() => setShowApplicationForm(true)}>
+                                <button onClick={openApplicationForm}>
                                     Связаться
                                     <img src={mailIcon} alt="Mail icon"/>
                                 </button>

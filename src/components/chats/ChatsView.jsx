@@ -8,6 +8,7 @@ import {
     postChatTextMessage,
     postChatAttachment,
     markChatRead,
+    patchChatMessage,
     extractChatPageItems,
     dedupeChatsByPeer,
 } from '../../services/chatApi.js';
@@ -97,6 +98,8 @@ const ChatsView = () => {
     const [sendError, setSendError] = useState('');
     const [draft, setDraft] = useState('');
     const [sending, setSending] = useState(false);
+    const [editingMessageId, setEditingMessageId] = useState(null);
+    const [editDraft, setEditDraft] = useState('');
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const titleCache = useRef(new Map());
@@ -359,6 +362,35 @@ const ChatsView = () => {
         }
     };
 
+    const startEditMessage = (message) => {
+        setEditingMessageId(message.id);
+        setEditDraft(message.body || '');
+    };
+
+    const cancelEditMessage = () => {
+        setEditingMessageId(null);
+        setEditDraft('');
+    };
+
+    const saveEditMessage = async () => {
+        if (!selectedId || !editingMessageId || sending) return;
+        const text = editDraft.trim();
+        if (!text) return;
+        setSending(true);
+        setSendError('');
+        try {
+            const updated = await patchChatMessage(selectedId, editingMessageId, text);
+            const message = updated?.id ? updated : updated?.data ?? updated;
+            if (message?.id) mergeMessage(message);
+            else await loadMessages(selectedId);
+            cancelEditMessage();
+        } catch (err) {
+            setSendError(err.message || 'Не удалось изменить сообщение');
+        } finally {
+            setSending(false);
+        }
+    };
+
     const handleAttachment = async (e) => {
         const file = e.target.files?.[0];
         e.target.value = '';
@@ -497,6 +529,7 @@ const ChatsView = () => {
                             const attachUrl = !isMessageDeleted(m)
                                 ? getImageUrl(m.attachmentStorageName)
                                 : null;
+                            const isEditing = editingMessageId === m.id;
                             return (
                                 <React.Fragment key={m.id}>
                                     {showSep ? <div className="chatsView__dateSep">{day}</div> : null}
@@ -508,6 +541,23 @@ const ChatsView = () => {
                                         >
                                             {isMessageDeleted(m) ? (
                                                 'Сообщение удалено'
+                                            ) : isEditing ? (
+                                                <div className="chatsView__editBox">
+                                                    <textarea
+                                                        className="chatsView__editInput"
+                                                        value={editDraft}
+                                                        onChange={(e) => setEditDraft(e.target.value)}
+                                                        rows={3}
+                                                    />
+                                                    <div className="chatsView__editActions">
+                                                        <button type="button" onClick={saveEditMessage} disabled={sending}>
+                                                            Сохранить
+                                                        </button>
+                                                        <button type="button" onClick={cancelEditMessage}>
+                                                            Отмена
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             ) : (
                                                 <>
                                                     {m.body}
@@ -527,6 +577,15 @@ const ChatsView = () => {
                                         <span className="chatsView__msgTime">
                                             {formatTime(m.createdAt)}
                                             {m.editedAt && !isMessageDeleted(m) ? ' · изм.' : ''}
+                                            {mine && !isMessageDeleted(m) && !isEditing && m.messageKind === 'USER' ? (
+                                                <button
+                                                    type="button"
+                                                    className="chatsView__editBtn"
+                                                    onClick={() => startEditMessage(m)}
+                                                >
+                                                    Изменить
+                                                </button>
+                                            ) : null}
                                         </span>
                                     </div>
                                 </React.Fragment>

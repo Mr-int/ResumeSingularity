@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ApplicationForm from '../applicationForm/ApplicationForm.jsx';
 import { getStudentById } from '../../services/studentApi.js';
+import { isAuthenticated, isRecruiterRole, requestLogin } from '../../services/authApi.js';
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import './floatingButton.css';
 
@@ -66,9 +67,17 @@ const FloatingButton = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isExpanded, showForm, isClosing]);
 
+    const openApplicationForm = () => {
+        if (!isAuthenticated() || !isRecruiterRole()) {
+            requestLogin();
+            return;
+        }
+        setShowForm(true);
+    };
+
     const handleMainClick = () => {
         if (isExpanded) {
-            setShowForm(true);
+            openApplicationForm();
         } else {
             setIsExpanded(true);
         }

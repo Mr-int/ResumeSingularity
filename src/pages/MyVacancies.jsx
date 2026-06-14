@@ -48,9 +48,11 @@ const MyVacancies = () => {
             <main className="vacanciesPage">
                 <div className="vacanciesPage__toolbar">
                     <h1 className="vacanciesPage__title">Мои вакансии</h1>
-                    <Link to="/vacancies" className="vacanciesPage__linkBtn">
-                        Каталог
-                    </Link>
+                    <div className="vacanciesPage__actions">
+                        <Link to="/vacancies" className="vacanciesPage__linkBtn">
+                            Каталог
+                        </Link>
+                    </div>
                 </div>
 
                 {loading ? <p className="vacanciesPage__hint">Загрузка…</p> : null}

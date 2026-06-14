@@ -434,6 +434,9 @@ async function syncAuthSessionInternal() {
     }
 }
 
+/** GET /auth/me — текущая сессия без побочных эффектов на клиенте. */
+export const getAuthMe = () => apiClientJson('auth/me', { method: 'GET' });
+
 export async function syncAuthSession() {
     if (syncInFlight) {
         return syncInFlight;

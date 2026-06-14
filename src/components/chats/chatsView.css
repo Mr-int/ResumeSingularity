@@ -335,6 +335,56 @@
     color: #5c5f73;
     margin-top: 5px;
     align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chatsView__editBtn {
+    background: none;
+    border: none;
+    color: #8b8fa8;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.chatsView__editBtn:hover {
+    color: #c4b5fd;
+}
+
+.chatsView__editBox {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.chatsView__editInput {
+    width: 100%;
+    resize: vertical;
+    border-radius: 8px;
+    border: 1px solid #3a3d52;
+    background: #12141f;
+    color: #fff;
+    padding: 8px 10px;
+    font: inherit;
+}
+
+.chatsView__editActions {
+    display: flex;
+    gap: 8px;
+}
+
+.chatsView__editActions button {
+    background: #23263a;
+    border: 1px solid #3a3d52;
+    color: #e4e4e7;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 12px;
+    cursor: pointer;
 }
 
 .chatsView__attachment {

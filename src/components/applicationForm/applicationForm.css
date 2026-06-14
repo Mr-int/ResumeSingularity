@@ -529,6 +529,93 @@
     object-fit: contain;
 }
 
+.applicationForm__content--compact {
+    min-height: min(520px, calc(100vh - 40px));
+    padding: 40px 80px;
+}
+
+.applicationForm__compactTitle {
+    margin: 0 0 16px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+}
+
+.applicationForm__loading,
+.applicationForm__blocked {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    min-height: 240px;
+    color: #fff;
+    text-align: center;
+}
+
+.applicationForm__profileCard {
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.applicationForm__profileCard-title {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.85;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.applicationForm__profileCard-list {
+    margin: 0;
+    padding: 0 0 0 18px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.applicationForm__profileCard-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 14px;
+    color: #a8c7ff;
+    text-decoration: underline;
+}
+
+.applicationForm__profileCard-link:hover {
+    color: #d4e4ff;
+}
+
+.applicationForm__textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 14px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    font-size: 16px;
+    font-family: inherit;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.applicationForm__textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+.applicationForm__taskHint {
+    margin: 6px 0 0;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.65);
+}
+
 .applicationForm__sunIcon {
     position: absolute;
     top: -131px;
@@ -610,6 +697,16 @@
         max-height: calc(100vh - 16px);
         padding: 14px 14px 22px;
         justify-content: flex-start;
+    }
+
+    .applicationForm__content--compact {
+        min-height: unset;
+        padding: 14px 14px 22px;
+    }
+
+    .applicationForm__compactTitle {
+        font-size: 20px;
+        margin-bottom: 12px;
     }
 
     .applicationForm__contentInner {

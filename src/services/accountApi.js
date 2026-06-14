@@ -1,6 +1,20 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { API_BASE_URL } from '../config/api.js';
 
+/** PATCH /student/me — настройки текущего студента */
+export const patchStudentMe = (body) =>
+    apiClientJson('student/me', {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+    });
+
+/** PUT /recruiter/{id} */
+export const putRecruiter = (recruiterId, body) =>
+    apiClientJson(`recruiter/${recruiterId}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });
+
 /** PATCH /student/{id} — частичное обновление профиля студента */
 export const patchStudent = (studentId, body) =>
     apiClientJson(`student/${studentId}`, {
