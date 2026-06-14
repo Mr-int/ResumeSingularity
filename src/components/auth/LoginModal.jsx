@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { login } from '../../services/authApi.js';
-import { startPhoneVerification, getPhoneVerificationStatus } from '../../services/verificationApi.js';
+import { startPhoneVerification, getPhoneVerificationStatus, isValidVerificationEmail } from '../../services/verificationApi.js';
 import RegistrationWizard from './RegistrationWizard.jsx';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { validateRegistrationPassword } from '../../utils/passwordPolicy.js';
@@ -195,19 +195,35 @@ const LoginModal = ({ onClose, onSuccess }) => {
     const handleForgotSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        if (forgotTab === 'email') {
-            setError('Подтверждение по почте появится позже');
-            return;
-        }
         const phone = normalizePhone(forgotPhoneLocal);
         if (phone.replace(/\D/g, '').length < 11) {
             setError('Укажите корректный номер телефона');
             return;
         }
+        const emailTrim = forgotEmail.trim();
+        if (forgotTab === 'email') {
+            if (!emailTrim) {
+                setError('Укажите email');
+                return;
+            }
+            if (!isValidVerificationEmail(emailTrim)) {
+                setError('Укажите корректный email');
+                return;
+            }
+        }
         setLoading(true);
         try {
-            const res = await startPhoneVerification({ phoneNumber: phone });
-            setVerification({ ...res, phoneNumber: phone, mode: 'forgot' });
+            const res = await startPhoneVerification({
+                phoneNumber: phone,
+                ...(forgotTab === 'email' ? { email: emailTrim } : {}),
+            });
+            setVerification({
+                ...res,
+                phoneNumber: phone,
+                email: emailTrim || null,
+                channel: forgotTab,
+                mode: 'forgot',
+            });
             switchView('forgot-telegram');
             startVerificationPolling(
                 res.verificationId,
@@ -245,8 +261,18 @@ const LoginModal = ({ onClose, onSuccess }) => {
         if (!phone) return;
         setLoading(true);
         try {
-            const res = await startPhoneVerification({ phoneNumber: phone });
-            setVerification((prev) => ({ ...prev, ...res, phoneNumber: phone, mode: 'forgot' }));
+            const res = await startPhoneVerification({
+                phoneNumber: phone,
+                ...(verification?.channel === 'email' && verification?.email
+                    ? { email: verification.email }
+                    : {}),
+            });
+            setVerification((prev) => ({
+                ...prev,
+                ...res,
+                phoneNumber: phone,
+                mode: 'forgot',
+            }));
             startVerificationPolling(
                 res.verificationId,
                 () => switchView('forgot-new-password'),
@@ -387,7 +413,6 @@ const LoginModal = ({ onClose, onSuccess }) => {
                                 onClick={() => setForgotTab('email')}
                             >
                                 Почта
-                                <span className="loginModal__tabBadge">скоро</span>
                             </button>
                         </div>
                         <form onSubmit={handleForgotSubmit} className="loginModal__form">
@@ -407,12 +432,40 @@ const LoginModal = ({ onClose, onSuccess }) => {
                                     />
                                 </div>
                             ) : (
-                                <div className="loginModal__emailRow">
-                                    <div className="loginModal__emailIcon">
-                                        <MailIcon />
+                                <>
+                                    <div className="loginModal__emailRow">
+                                        <div className="loginModal__emailIcon">
+                                            <MailIcon />
+                                        </div>
+                                        <input
+                                            type="email"
+                                            className="loginModal__phoneInput"
+                                            value={forgotEmail}
+                                            onChange={(e) => setForgotEmail(e.target.value.replace(/\s/g, ''))}
+                                            placeholder="youremail@example.com"
+                                            required
+                                            autoComplete="email"
+                                        />
                                     </div>
-                                    <input type="email" disabled placeholder="youremail@example.com" />
-                                </div>
+                                    <div className="loginModal__phoneRow">
+                                        <div className="loginModal__phonePrefix">
+                                            <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
+                                            +7
+                                        </div>
+                                        <input
+                                            className="loginModal__phoneInput"
+                                            type="tel"
+                                            value={formatPhoneDisplay(forgotPhoneLocal)}
+                                            onChange={(e) => setForgotPhoneLocal(e.target.value.replace(/\D/g, ''))}
+                                            required
+                                            placeholder="952 312-94-90"
+                                            aria-label="Номер телефона аккаунта"
+                                        />
+                                    </div>
+                                    <p className="loginModal__fieldHint">
+                                        Код придёт на почту. Номер должен совпадать с аккаунтом.
+                                    </p>
+                                </>
                             )}
                             <button type="submit" className="loginModal__primaryBtn">
                                 Отправить код
@@ -424,28 +477,42 @@ const LoginModal = ({ onClose, onSuccess }) => {
                 {view === 'forgot-telegram' && verification && (
                     <AuthShell
                         onBack={handleBack}
-                        heading="Введите код из СМС"
-                        subheading={`Для тестов: 7890. Или Telegram @${verification.botUsername}, ${verification.phoneNumber}`}
+                        heading={
+                            verification.channel === 'email'
+                                ? 'Введите код из письма'
+                                : 'Введите код из СМС'
+                        }
+                        subheading={
+                            verification.channel === 'email'
+                                ? `Код отправлен на ${verification.email}. Для тестов: 7890. Телефон: ${verification.phoneNumber}`
+                                : `Для тестов: 7890. Или Telegram @${verification.botUsername}, ${verification.phoneNumber}`
+                        }
                     >
                         <PhoneOtpConfirm
                             verificationId={verification.verificationId}
                             onConfirmed={() => switchView('forgot-new-password')}
                             onError={setError}
                         />
-                        <div className="loginModal__telegramWait">
-                            <div className="loginModal__spinner loginModal__spinner--inline" aria-hidden="true" />
-                            <p className="loginModal__infoText">Или подтвердите в Telegram…</p>
-                        </div>
+                        {verification.channel === 'email' ? (
+                            <p className="loginModal__infoText">
+                                Не пришло письмо? Проверьте «Спам» или подтвердите через Telegram.
+                            </p>
+                        ) : (
+                            <div className="loginModal__telegramWait">
+                                <div className="loginModal__spinner loginModal__spinner--inline" aria-hidden="true" />
+                                <p className="loginModal__infoText">Или подтвердите в Telegram…</p>
+                            </div>
+                        )}
                         <a
                             href={verification.botDeepLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="loginModal__primaryBtn loginModal__linkBtn"
                         >
-                            Открыть Telegram
+                            {verification.channel === 'email' ? 'Подтвердить в Telegram' : 'Открыть Telegram'}
                         </a>
                         <button type="button" className="loginModal__ghostBtn" onClick={restartTelegramVerification}>
-                            Запросить снова
+                            Отправить код снова
                         </button>
                     </AuthShell>
                 )}

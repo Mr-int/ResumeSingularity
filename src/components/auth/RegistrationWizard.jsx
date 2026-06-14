@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { registerStudent, registerRecruiter, notifyAuthChanged } from '../../services/authApi.js';
-import { startPhoneVerification, getPhoneVerificationStatus } from '../../services/verificationApi.js';
+import { startPhoneVerification, getPhoneVerificationStatus, isValidVerificationEmail } from '../../services/verificationApi.js';
 import logo from '../../assets/logos/Logo.png';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { MIN_REGISTRATION_PASSWORD_LENGTH, validateRegistrationPassword } from '../../utils/passwordPolicy.js';
@@ -96,17 +96,37 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
         }, 2500);
     };
 
-    const beginTelegramVerification = async () => {
+    const beginVerification = async ({ phoneNumber, email, channel }) => {
         clearError();
-        const phone = normalizePhone(phoneLocal);
+        const phone = normalizePhone(phoneNumber);
         if (phone.replace(/\D/g, '').length < 11) {
             showError('Укажите корректный номер телефона');
             return;
         }
+        const emailTrim = String(email || '').trim();
+        if (channel === 'email') {
+            if (!emailTrim) {
+                showError('Укажите email');
+                return;
+            }
+            if (!isValidVerificationEmail(emailTrim)) {
+                showError('Укажите корректный email');
+                return;
+            }
+        }
         setLoading(true);
         try {
-            const res = await startPhoneVerification({ phoneNumber: phone });
-            setVerification({ ...res, phoneNumber: phone, role });
+            const res = await startPhoneVerification({
+                phoneNumber: phone,
+                ...(channel === 'email' ? { email: emailTrim } : {}),
+            });
+            setVerification({
+                ...res,
+                phoneNumber: phone,
+                email: emailTrim || null,
+                channel,
+                role,
+            });
             setView('telegram');
             startPolling(
                 res.verificationId,
@@ -123,10 +143,16 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
         }
     };
 
+    const beginTelegramVerification = () =>
+        beginVerification({ phoneNumber: phoneLocal, channel: 'phone' });
+
+    const beginEmailVerification = () =>
+        beginVerification({ phoneNumber: phoneLocal, email, channel: 'email' });
+
     const handleContactNext = (e) => {
         e.preventDefault();
         if (contactTab === 'email') {
-            showError('Подтверждение по почте появится позже — используйте телефон и Telegram');
+            beginEmailVerification();
             return;
         }
         beginTelegramVerification();
@@ -135,7 +161,7 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
     const openTelegramDirect = () => {
         clearError();
         if (contactTab === 'email') {
-            showError('Вход через Telegram доступен после указания телефона');
+            beginEmailVerification();
             return;
         }
         beginTelegramVerification();
@@ -304,7 +330,6 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                                 onClick={() => setContactTab('email')}
                             >
                                 Почта
-                                <span className="loginModal__tabBadge">скоро</span>
                             </button>
                         </div>
                         <form onSubmit={handleContactNext} className="loginModal__form">
@@ -325,48 +350,95 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                                     />
                                 </div>
                             ) : (
-                                <div className="loginModal__emailRow">
-                                    <div className="loginModal__emailIcon">✉</div>
-                                    <input type="email" disabled placeholder="youremail@example.com" className="loginModal__phoneInput" />
-                                </div>
+                                <>
+                                    <div className="loginModal__emailRow">
+                                        <div className="loginModal__emailIcon">✉</div>
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value.replace(/\s/g, ''))}
+                                            placeholder="youremail@example.com"
+                                            className="loginModal__phoneInput"
+                                            required
+                                            autoComplete="email"
+                                        />
+                                    </div>
+                                    <div className="loginModal__phoneRow">
+                                        <div className="loginModal__phonePrefix">
+                                            <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
+                                            +7
+                                        </div>
+                                        <input
+                                            className="loginModal__phoneInput"
+                                            type="tel"
+                                            inputMode="tel"
+                                            value={formatPhoneDisplay(phoneLocal)}
+                                            onChange={(e) => setPhoneLocal(e.target.value.replace(/\D/g, ''))}
+                                            required
+                                            placeholder="952 312-94-90"
+                                            aria-label="Номер телефона для аккаунта"
+                                        />
+                                    </div>
+                                    <p className="loginModal__fieldHint">
+                                        Код придёт на почту. Номер телефона нужен для аккаунта.
+                                    </p>
+                                </>
                             )}
-                            <button type="submit" className="loginModal__primaryBtn">
-                                Дальше
-                            </button>
-                        </form>
+                        <button type="submit" className="loginModal__primaryBtn">
+                            Дальше
+                        </button>
+                    </form>
+                    {contactTab === 'phone' ? (
                         <button type="button" className="loginModal__telegramBtn" onClick={openTelegramDirect}>
                             <span>Войти через Telegram</span>
                             <TelegramPlaneIcon />
                         </button>
+                    ) : null}
                     </Shell>
                 )}
 
                 {view === 'telegram' && verification && (
                     <Shell
                         onBack={handleBack}
-                        heading="Введите код из СМС"
-                        subheading={`Для тестов введите код 7890 или подтвердите в Telegram @${verification.botUsername}, номер ${verification.phoneNumber}`}
+                        heading={
+                            verification.channel === 'email'
+                                ? 'Введите код из письма'
+                                : 'Введите код из СМС'
+                        }
+                        subheading={
+                            verification.channel === 'email'
+                                ? `Мы отправили код на ${verification.email}. Номер аккаунта: ${verification.phoneNumber}`
+                                : `Подтвердите номер ${verification.phoneNumber} в Telegram @${verification.botUsername} или введите код из сообщения`
+                        }
                     >
-                        <p className="loginModal__infoText loginModal__infoText--link">Подтверждение номера</p>
+                        <p className="loginModal__infoText loginModal__infoText--link">
+                            {verification.channel === 'email' ? 'Подтверждение по почте' : 'Подтверждение номера'}
+                        </p>
                         <PhoneOtpConfirm
                             verificationId={verification.verificationId}
                             onConfirmed={() => setView('password')}
                             onError={showError}
                         />
-                        <div className="loginModal__telegramWait">
-                            <div className="loginModal__spinner loginModal__spinner--inline" aria-hidden="true" />
-                            <p className="loginModal__infoText">Или откройте Telegram-бота…</p>
-                        </div>
+                        {verification.channel === 'email' ? (
+                            <p className="loginModal__infoText">
+                                Не пришло письмо? Проверьте «Спам» или подтвердите номер через Telegram.
+                            </p>
+                        ) : (
+                            <div className="loginModal__telegramWait">
+                                <div className="loginModal__spinner loginModal__spinner--inline" aria-hidden="true" />
+                                <p className="loginModal__infoText">Или откройте Telegram-бота…</p>
+                            </div>
+                        )}
                         <a
                             href={verification.botDeepLink}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="loginModal__primaryBtn loginModal__linkBtn"
                         >
-                            Открыть Telegram
+                            {verification.channel === 'email' ? 'Подтвердить в Telegram' : 'Открыть Telegram'}
                         </a>
                         <button type="button" className="loginModal__ghostBtn" onClick={() => setView('contact')}>
-                            Изменить номер
+                            {verification.channel === 'email' ? 'Изменить почту' : 'Изменить номер'}
                         </button>
                     </Shell>
                 )}
@@ -384,6 +456,9 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                                 if (isStudent) {
                                     submitRegistration();
                                 } else {
+                                    if (!recruiterEmail.trim() && verification?.email) {
+                                        setRecruiterEmail(verification.email);
+                                    }
                                     setView('recruiter-profile');
                                 }
                             }}

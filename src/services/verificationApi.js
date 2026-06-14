@@ -1,7 +1,23 @@
 import { API_BASE_URL } from '../config/api.js';
 
 const VERIFICATION_FORBIDDEN_MSG =
-    'Сейчас нельзя подтвердить телефон — сервер регистрации временно недоступен. Попробуйте позже или напишите в поддержку.';
+    'Сейчас нельзя подтвердить контакт — сервер регистрации временно недоступен. Попробуйте позже или напишите в поддержку.';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export const isValidVerificationEmail = (value) => EMAIL_REGEX.test(String(value || '').trim());
+
+/**
+ * Тело POST /verification/phone/start
+ * @param {string} phoneNumber
+ * @param {string} [email] — при включённой почте на бэкенде OTP уходит на email
+ */
+export const buildVerificationStartBody = (phoneNumber, email) => {
+    const body = { phoneNumber: String(phoneNumber || '').trim() };
+    const mail = String(email || '').trim();
+    if (mail) body.email = mail;
+    return body;
+};
 
 const parseError = async (response) => {
     const text = await response.text();
@@ -22,14 +38,17 @@ const parseError = async (response) => {
 
 /**
  * POST /verification/phone/start
- * @param {{ phoneNumber: string }} body
  */
 export const startPhoneVerification = async (body) => {
+    const payload =
+        body?.phoneNumber != null
+            ? buildVerificationStartBody(body.phoneNumber, body.email)
+            : body;
     const response = await fetch(`${API_BASE_URL}verification/phone/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
     });
     if (!response.ok) await parseError(response);
     return response.json();
