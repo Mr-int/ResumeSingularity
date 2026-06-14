@@ -3,18 +3,15 @@
     background: #000000;
     color: #ffffff;
     font-family: 'Inter', sans-serif;
-    padding: 60px 20px 80px;
+    padding: 60px 40px 80px;
     box-sizing: border-box;
-}
-
-.vacanciesPage--detail .vacanciesPage__inner {
-    max-width: 540px;
+    width: 100%;
 }
 
 .vacanciesPage__inner {
     width: 100%;
-    max-width: 540px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
 }
 
 .vacanciesPage__title {
@@ -78,8 +75,9 @@
 
 .vacanciesPage__filters {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr auto;
     gap: 0 24px;
+    align-items: end;
     margin-bottom: 48px;
 }
 
@@ -119,8 +117,9 @@
 }
 
 .vacanciesPage__btnContainer {
-    margin: 24px 0 0;
-    grid-column: span 2;
+    margin: 0;
+    grid-column: auto;
+    padding-bottom: 14px;
 }
 
 .vacanciesPage__submit,
@@ -325,7 +324,23 @@
     margin-top: 40px;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 800px) {
+    .vacanciesPage__filters {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .vacanciesPage__btnContainer {
+        grid-column: span 2;
+        margin-top: 8px;
+        padding-bottom: 0;
+    }
+}
+
+@media (max-width: 600px) {
+    .vacanciesPage {
+        padding: 40px 20px 80px;
+    }
+
     .vacanciesPage__filters {
         grid-template-columns: 1fr;
     }
@@ -333,9 +348,5 @@
     .vacanciesPage__filters .vacanciesPage__filterGroup--full,
     .vacanciesPage__btnContainer {
         grid-column: span 1;
-    }
-
-    .vacanciesPage {
-        padding-top: 40px;
     }
 }

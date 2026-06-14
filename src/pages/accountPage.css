@@ -3,13 +3,15 @@
     background: #000000;
     color: #ffffff;
     font-family: 'Inter', sans-serif;
-    padding: 60px 20px 80px;
+    padding: 60px 40px 80px;
     box-sizing: border-box;
+    display: flex;
+    justify-content: center;
 }
 
 .accountPage__inner {
     width: 100%;
-    max-width: 540px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -50,16 +52,23 @@
 .accountPage__formGroup {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid #1a1a1a;
-    padding: 14px 0;
+    border-bottom: 1px solid #2a2a2a;
+    padding: 16px 0;
     margin: 0;
     font-size: 11px;
-    color: #555555;
+    color: #777777;
+    transition: border-color 0.2s ease;
+}
+
+.accountPage__formGroup:focus-within {
+    border-bottom-color: #555555;
 }
 
 .accountPage__formGroup > span {
-    margin-bottom: 4px;
-    font-weight: 400;
+    margin-bottom: 8px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #888888;
 }
 
 .accountPage__fullWidth {
@@ -69,20 +78,37 @@
 .accountPage__formGroup input,
 .accountPage__formGroup select,
 .accountPage__formGroup textarea {
-    background: transparent;
-    border: none;
+    background: #0a0a0a;
+    border: 1px solid #222222;
+    border-radius: 4px;
     color: #ffffff;
     font-family: inherit;
     font-size: 15px;
     outline: none;
-    padding: 2px 0;
+    padding: 11px 14px;
     width: 100%;
     resize: vertical;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.accountPage__formGroup input:hover,
+.accountPage__formGroup select:hover,
+.accountPage__formGroup textarea:hover {
+    border-color: #333333;
+    background: #0f0f0f;
+}
+
+.accountPage__formGroup input:focus,
+.accountPage__formGroup select:focus,
+.accountPage__formGroup textarea:focus {
+    border-color: #666666;
+    background: #111111;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .accountPage__formGroup input::placeholder,
 .accountPage__formGroup textarea::placeholder {
-    color: #333333;
+    color: #444444;
 }
 
 .accountPage__formGroup select {
@@ -105,10 +131,25 @@
     padding: 10px 0;
 }
 
+.accountPage__formGroup--checkbox:focus-within {
+    border-bottom-color: transparent;
+}
+
 .accountPage__formGroup--checkbox input {
     width: auto;
     margin-top: 2px;
     accent-color: #ffffff;
+    background: transparent;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+}
+
+.accountPage__formGroup--checkbox input:hover,
+.accountPage__formGroup--checkbox input:focus {
+    background: transparent;
+    border: none;
+    box-shadow: none;
 }
 
 .accountPage__btnContainer {
@@ -303,16 +344,16 @@
     border-bottom: 1px solid #1a1a1a;
 }
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
+    .accountPage {
+        padding: 40px 20px 80px;
+    }
+
     .accountPage__formRow {
         grid-template-columns: 1fr;
     }
 
     .accountPage__fullWidth {
         grid-column: span 1;
-    }
-
-    .accountPage {
-        padding-top: 40px;
     }
 }
