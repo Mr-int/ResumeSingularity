@@ -6,6 +6,10 @@ import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
 import { getAllStudents } from "../../services/studentApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
+import { hasApprovedCatalogAccess, isAuthenticated } from "../../services/authApi.js";
+import { PENDING_APPROVAL_MESSAGE } from "../../utils/apiErrors.js";
+import { fetchAllRegistrationSkills } from "../../services/registrationCatalogApi.js";
+import { buildSkillCatalogMap } from "../../utils/skills.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
 const StudentSlider = () => {
@@ -14,6 +18,8 @@ const StudentSlider = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+    const [emptyReason, setEmptyReason] = useState(null);
+    const [skillCatalogMap, setSkillCatalogMap] = useState(() => new Map());
 
     const searchInputRef = useRef(null);
 
@@ -31,6 +37,13 @@ const StudentSlider = () => {
                 if (visible.length > 0) {
                     const middleIndex = Math.floor(visible.length / 2);
                     setActiveCardIndex(middleIndex);
+                    setEmptyReason(null);
+                } else if (!isAuthenticated()) {
+                    setEmptyReason('guest');
+                } else if (!hasApprovedCatalogAccess()) {
+                    setEmptyReason('pending');
+                } else {
+                    setEmptyReason('empty');
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
@@ -39,6 +52,20 @@ const StudentSlider = () => {
             }
         };
         fetchStudents();
+    }, []);
+
+    useEffect(() => {
+        const loadSkillsCatalog = async () => {
+            try {
+                const data = await fetchAllRegistrationSkills();
+                setSkillCatalogMap(buildSkillCatalogMap(data));
+            } catch (err) {
+                console.error('Failed to load skills catalog:', err);
+                setSkillCatalogMap(new Map());
+            }
+        };
+
+        loadSkillsCatalog();
     }, []);
 
     const handleSearchChange = (e) => {
@@ -185,7 +212,11 @@ const StudentSlider = () => {
 
                         <div className="studentSlider__listInfo">
                             {activeStudent && (
-                                <StudentsListCard key={activeStudent.id} student={activeStudent} />
+                                <StudentsListCard
+                                    key={activeStudent.id}
+                                    student={activeStudent}
+                                    skillCatalogMap={skillCatalogMap}
+                                />
                             )}
                         </div>
 
@@ -204,7 +235,20 @@ const StudentSlider = () => {
                         </GradientButton>
                     </>
                 ) : (
-                    <p style={{ color: '#fff' }}>Для показа студентов ты должен быть авторизован :(</p>
+                    <div className="studentSlider__empty">
+                        {emptyReason === 'pending' ? (
+                            <>
+                                <p className="studentSlider__emptyTitle">Аккаунт на проверке</p>
+                                <p className="studentSlider__emptyText">{PENDING_APPROVAL_MESSAGE}</p>
+                            </>
+                        ) : emptyReason === 'guest' ? (
+                            <p className="studentSlider__emptyText">
+                                Войдите в аккаунт, чтобы увидеть каталог студентов.
+                            </p>
+                        ) : (
+                            <p className="studentSlider__emptyText">Пока нет студентов для показа.</p>
+                        )}
+                    </div>
                 )}
             </div>
         </section>

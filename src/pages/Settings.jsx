@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
@@ -12,8 +12,9 @@ import {
 } from '../services/accountApi.js';
 import { getStudentResumeForEdit, updateStudentResume } from '../services/onboardingApi.js';
 import { changePassword, getAuthMe, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, AUTH_USERNAME_KEY } from '../services/authApi.js';
+import { formatApiUserMessage } from '../utils/apiErrors.js';
 import { getImageUrl } from '../config/api.js';
-import { fetchAllRegistrationSkills } from '../services/registrationCatalogApi.js';
+import { fetchAllRegistrationSkills, fetchAllRegistrationSpecialities } from '../services/registrationCatalogApi.js';
 import { extractSkillIds } from '../utils/skills.js';
 import './accountPage.css';
 
@@ -43,8 +44,10 @@ const profileRoleToApiRole = (profileRole) => {
 
 const roleBadgeClass = (apiRole, profileRole) => {
     if (apiRole === 'ADMIN') return 'accountPage__roleBadge--admin';
+    if (profileRole === 'student_pending' || profileRole === 'recruiter_pending') {
+        return 'accountPage__roleBadge--pending';
+    }
     if (apiRole === 'STUDENT' || profileRole === 'student') return 'accountPage__roleBadge--student';
-    if (profileRole === 'recruiter_pending') return 'accountPage__roleBadge--pending';
     return 'accountPage__roleBadge--recruiter';
 };
 
@@ -78,7 +81,6 @@ const studentToForm = (s) => ({
     lastName: s.lastName || '',
     city: s.city || '',
     bio: s.bio || '',
-    hhLink: s.hhLink || '',
     birthDate: s.birthDate || '',
     course: s.course || 'FIRST',
     busyness: s.busyness || 'FREE',
@@ -117,6 +119,10 @@ const SettingsPage = () => {
     const [saving, setSaving] = useState('');
     const [skillsCatalog, setSkillsCatalog] = useState([]);
     const [skillsCatalogLoading, setSkillsCatalogLoading] = useState(false);
+    const [specialitiesCatalog, setSpecialitiesCatalog] = useState([]);
+    const [specialitiesCatalogLoading, setSpecialitiesCatalogLoading] = useState(false);
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const [avatarVersion, setAvatarVersion] = useState(0);
 
     const flashOk = (msg) => {
         setOkMsg(msg);
@@ -161,8 +167,9 @@ const SettingsPage = () => {
                 setProfile(r);
                 setRecruiterForm(recruiterToForm(r));
             } catch (e2) {
-                if (e2.status === 404) {
-                    setRole('recruiter_pending');
+                if (e2.status === 404 || e2.status === 403) {
+                    const apiRole = getAuthRole();
+                    setRole(apiRole === 'STUDENT' ? 'student_pending' : 'recruiter_pending');
                     setProfile(null);
                     return;
                 }
@@ -171,7 +178,7 @@ const SettingsPage = () => {
         } catch (err) {
             setRole(null);
             setProfile(null);
-            setError(err.message || 'Не удалось загрузить профиль');
+            setError(formatApiUserMessage(err));
         } finally {
             setLoading(false);
         }
@@ -186,16 +193,26 @@ const SettingsPage = () => {
 
         let cancelled = false;
         setSkillsCatalogLoading(true);
+        setSpecialitiesCatalogLoading(true);
 
-        fetchAllRegistrationSkills()
-            .then((items) => {
-                if (!cancelled) setSkillsCatalog(items);
+        Promise.all([fetchAllRegistrationSkills(), fetchAllRegistrationSpecialities()])
+            .then(([skills, specialities]) => {
+                if (!cancelled) {
+                    setSkillsCatalog(skills);
+                    setSpecialitiesCatalog(specialities);
+                }
             })
             .catch(() => {
-                if (!cancelled) setSkillsCatalog([]);
+                if (!cancelled) {
+                    setSkillsCatalog([]);
+                    setSpecialitiesCatalog([]);
+                }
             })
             .finally(() => {
-                if (!cancelled) setSkillsCatalogLoading(false);
+                if (!cancelled) {
+                    setSkillsCatalogLoading(false);
+                    setSpecialitiesCatalogLoading(false);
+                }
             });
 
         return () => {
@@ -203,7 +220,20 @@ const SettingsPage = () => {
         };
     }, [role]);
 
-    const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
+    useEffect(() => {
+        return () => {
+            if (avatarPreview) {
+                URL.revokeObjectURL(avatarPreview);
+            }
+        };
+    }, [avatarPreview]);
+
+    const avatarUrl = useMemo(() => {
+        if (avatarPreview) return avatarPreview;
+        if (!profile?.imagePath) return null;
+        const base = getImageUrl(profile.imagePath);
+        return avatarVersion > 0 ? `${base}?v=${avatarVersion}` : base;
+    }, [avatarPreview, profile?.imagePath, avatarVersion]);
 
     const buildResumeBody = () => {
         const skillIds = Array.isArray(studentForm.skillsIds)
@@ -215,7 +245,6 @@ const SettingsPage = () => {
             lastName: studentForm.lastName.trim(),
             city: studentForm.city.trim() || undefined,
             bio: studentForm.bio,
-            hhLink: studentForm.hhLink.trim() || undefined,
             birthDate: studentForm.birthDate,
             course: studentForm.course,
             busyness: studentForm.busyness,
@@ -299,13 +328,29 @@ const SettingsPage = () => {
         const file = e.target.files?.[0];
         e.target.value = '';
         if (!file || !profile?.id) return;
+
+        const previewUrl = URL.createObjectURL(file);
+        setAvatarPreview((prev) => {
+            if (prev) URL.revokeObjectURL(prev);
+            return previewUrl;
+        });
+
         setSaving('photo');
         setError('');
         try {
             await uploadStudentPhoto(profile.id, file);
             await loadProfile();
+            setAvatarVersion(Date.now());
+            setAvatarPreview((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return null;
+            });
             flashOk('Фото обновлено');
         } catch (err) {
+            setAvatarPreview((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return null;
+            });
             setError(err.message || 'Не удалось загрузить фото');
         } finally {
             setSaving('');
@@ -360,9 +405,9 @@ const SettingsPage = () => {
                                     {identity.statusLabel ? (
                                         <span className="accountPage__identityStatus">{identity.statusLabel}</span>
                                     ) : null}
-                                    {role === 'recruiter_pending' ? (
+                                    {role === 'recruiter_pending' || role === 'student_pending' ? (
                                         <span className="accountPage__identityStatus accountPage__identityStatus--warn">
-                                            Профиль на модерации
+                                            Аккаунт на проверке
                                         </span>
                                     ) : null}
                                 </div>
@@ -384,9 +429,27 @@ const SettingsPage = () => {
                     {!loading && role === 'recruiter_pending' && (
                         <section className="accountPage__section">
                             <h2 className="accountPage__sectionTitle">Профиль рекрутера</h2>
+                            <div className="accountPage__banner" role="status">
+                                Ваш аккаунт ещё на проверке. После одобрения администратором откроется
+                                доступ к каталогу студентов и настройкам профиля.
+                            </div>
                             <p className="accountPage__text">
-                                Профиль ещё не привязан. Оставьте заявку на сайте — после одобрения
-                                данные появятся здесь.
+                                Если вы уже оставляли заявку, дождитесь решения модератора. Обычно это
+                                занимает немного времени.
+                            </p>
+                        </section>
+                    )}
+
+                    {!loading && role === 'student_pending' && (
+                        <section className="accountPage__section">
+                            <h2 className="accountPage__sectionTitle">Профиль студента</h2>
+                            <div className="accountPage__banner" role="status">
+                                Ваш аккаунт ещё на проверке. После одобрения администратором откроется
+                                полный доступ к вакансиям, каталогу и редактированию резюме.
+                            </div>
+                            <p className="accountPage__text">
+                                Пока модерация не завершена, часть разделов сайта может быть недоступна.
+                                Это нормально — вам не нужно ничего делать дополнительно.
                             </p>
                         </section>
                     )}
@@ -445,7 +508,14 @@ const SettingsPage = () => {
                                 <h2 className="accountPage__sectionTitle">Фото профиля</h2>
                                 <div className="accountPage__avatarRow">
                                     {avatarUrl ? (
-                                        <img src={avatarUrl} alt="" className="accountPage__avatar" width={96} height={96} />
+                                        <img
+                                            key={avatarUrl}
+                                            src={avatarUrl}
+                                            alt=""
+                                            className="accountPage__avatar"
+                                            width={96}
+                                            height={96}
+                                        />
                                     ) : (
                                         <div className="accountPage__avatar accountPage__avatar--placeholder" aria-hidden>?</div>
                                     )}
@@ -484,10 +554,6 @@ const SettingsPage = () => {
                                         <input type="date" value={studentForm.birthDate} onChange={(e) => setStudentField('birthDate', e.target.value)} />
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
-                                        <span>Ссылка на HH</span>
-                                        <input value={studentForm.hhLink} onChange={(e) => setStudentField('hhLink', e.target.value)} />
-                                    </label>
-                                    <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>О себе</span>
                                         <textarea rows={4} value={studentForm.bio} onChange={(e) => setStudentField('bio', e.target.value)} />
                                     </label>
@@ -516,8 +582,32 @@ const SettingsPage = () => {
                                         <input value={studentForm.telegramUsername} onChange={(e) => setStudentField('telegramUsername', e.target.value)} />
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
-                                        <span>ID специальности</span>
-                                        <input type="number" min="1" value={studentForm.specialityId} onChange={(e) => setStudentField('specialityId', e.target.value)} />
+                                        <span>Специальность</span>
+                                        {specialitiesCatalogLoading ? (
+                                            <p className="accountPage__skillsEmpty">Загрузка списка специальностей…</p>
+                                        ) : specialitiesCatalog.length === 0 ? (
+                                            <p className="accountPage__skillsEmpty">Список специальностей временно недоступен</p>
+                                        ) : (
+                                            <select
+                                                value={studentForm.specialityId}
+                                                onChange={(e) => setStudentField('specialityId', e.target.value)}
+                                            >
+                                                <option value="">Не выбрана</option>
+                                                {specialitiesCatalog.map((speciality) => {
+                                                    const specId = Number(speciality.id);
+                                                    const specName =
+                                                        speciality.name ||
+                                                        speciality.specialityName ||
+                                                        speciality.title ||
+                                                        `Специальность ${specId}`;
+                                                    return (
+                                                        <option key={specId} value={String(specId)}>
+                                                            {specName}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
+                                        )}
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Навыки</span>

@@ -1218,6 +1218,55 @@
     width: 100%;
 }
 
+.no-results-message--pending {
+    opacity: 1;
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+.no-results-message__hint {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 15px;
+    opacity: 0.75;
+}
+
+.studentsList__notice {
+    margin: 0 0 24px;
+    padding: 18px 22px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 159, 10, 0.35);
+    background: rgba(255, 159, 10, 0.08);
+    text-align: center;
+}
+
+.studentsList__notice--pending {
+    border-color: rgba(255, 159, 10, 0.35);
+    background: rgba(255, 159, 10, 0.08);
+}
+
+.studentsList__notice--error {
+    border-color: rgba(255, 59, 48, 0.35);
+    background: rgba(255, 59, 48, 0.08);
+    color: #ff6b6b;
+}
+
+.studentsList__noticeTitle {
+    margin: 0 0 8px;
+    font-family: StratosSemiLight;
+    font-size: 18px;
+    font-weight: 600;
+    color: #ff9f0a;
+}
+
+.studentsList__noticeText {
+    margin: 0;
+    font-family: StratosSemiLight;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #ffffff;
+}
+
 .clear-search {
     position: absolute;
     right: 20px;

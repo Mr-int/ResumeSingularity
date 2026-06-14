@@ -11,6 +11,34 @@ const fetchPaged = async (endpoint, page = 0, size = 20) => {
 export const listRegistrationSpecialities = (page = 0, size = 20) =>
     fetchPaged('public/registration/specialities', page, size);
 
+/** Все специальности из справочника регистрации (для выбора по имени). */
+export const fetchAllRegistrationSpecialities = async () => {
+    const pageSize = 200;
+    const maxPages = 50;
+    const byId = new Map();
+
+    for (let page = 0; page < maxPages; page += 1) {
+        const res = await listRegistrationSpecialities(page, pageSize);
+        const items = Array.isArray(res?.data) ? res.data : [];
+        for (const speciality of items) {
+            if (speciality?.id != null) {
+                byId.set(Number(speciality.id), speciality);
+            }
+        }
+        const totalPages = typeof res?.totalPages === 'number' ? res.totalPages : 1;
+        if (page + 1 >= totalPages || items.length === 0) {
+            break;
+        }
+    }
+
+    return Array.from(byId.values()).sort((a, b) =>
+        String(a.name || a.specialityName || a.title || '').localeCompare(
+            String(b.name || b.specialityName || b.title || ''),
+            'ru',
+        ),
+    );
+};
+
 /** GET /public/registration/skills */
 export const listRegistrationSkills = (page = 0, size = 20) =>
     fetchPaged('public/registration/skills', page, size);

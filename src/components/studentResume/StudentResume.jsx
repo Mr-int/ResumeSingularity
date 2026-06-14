@@ -324,13 +324,6 @@ const StudentResume = () => {
                             <div className="StudentResume__flexInfo">
                                 {ageText && <span>{ageText}</span>}
                                 {student.city && <span>г. {student.city}</span>}
-                                {student.hhLink && (
-                                    <span>
-                                        <a href={student.hhLink} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-                                            Анкета hh.ru
-                                        </a>
-                                    </span>
-                                )}
                                 {student.email && (
                                     <span>
                                         <a href={`mailto:${student.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>

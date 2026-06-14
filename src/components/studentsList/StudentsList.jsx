@@ -9,6 +9,7 @@ import { filterStudentsPage, getAllSpecialities } from "../../services/studentAp
 import { fetchAllRegistrationSkills } from "../../services/registrationCatalogApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import { buildSkillCatalogMap } from "../../utils/skills.js";
+import { formatApiUserMessage, isPendingApprovalError, PENDING_APPROVAL_MESSAGE } from "../../utils/apiErrors.js";
 
 const STUDENTS_PER_PAGE = 5;
 const MAX_VISIBLE_PAGES = 5;
@@ -249,6 +250,7 @@ const StudentsList = () => {
     const [allStudents, setAllStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [pendingNotice, setPendingNotice] = useState(null);
     const [searchExpanded, setSearchExpanded] = useState(false);
     const [filterExpanded, setFilterExpanded] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
@@ -299,11 +301,14 @@ const StudentsList = () => {
 
             const all = Array.from(byId.values());
             console.log('[API] Received filtered students (all pages, deduped):', all);
+            setPendingNotice(null);
             return all;
         } catch (err) {
-            console.error('Failed to fetch filtered students:', err);
-            if (err?.status !== 403) {
-                setError(err.message);
+            if (isPendingApprovalError(err)) {
+                setPendingNotice(PENDING_APPROVAL_MESSAGE);
+                setError(null);
+            } else if (err?.status !== 403) {
+                setError(formatApiUserMessage(err));
             }
             return [];
         } finally {
@@ -359,8 +364,11 @@ const StudentsList = () => {
                 });
                 setAllStudents(data);
             } catch (err) {
-                if (err?.status !== 403) {
-                    setError(err.message);
+                if (isPendingApprovalError(err)) {
+                    setPendingNotice(PENDING_APPROVAL_MESSAGE);
+                    setError(null);
+                } else if (err?.status !== 403) {
+                    setError(formatApiUserMessage(err));
                 }
             } finally {
                 setLoading(false);
@@ -520,7 +528,9 @@ const StudentsList = () => {
         return (
             <section className="studentsList-section">
                 <div className="studentsList">
-                    <p style={{color: '#fff', textAlign: 'center', fontFamily: 'StratosSemiLight'}}>Ошибка загрузки: {error}</p>
+                    <div className="studentsList__notice studentsList__notice--error" role="alert">
+                        <p className="studentsList__noticeText">{error}</p>
+                    </div>
                 </div>
             </section>
         );
@@ -671,14 +681,29 @@ const StudentsList = () => {
                     )}
                 </header>
 
+                {pendingNotice ? (
+                    <div className="studentsList__notice studentsList__notice--pending" role="status">
+                        <p className="studentsList__noticeTitle">Аккаунт на проверке</p>
+                        <p className="studentsList__noticeText">{pendingNotice}</p>
+                    </div>
+                ) : null}
+
                 <div className="studentsList__cardsWrapper">
                     {visibleStudents.length > 0 ? (
                         paginatedStudents.map((student) => (
                             <StudentsListCard key={student.id} student={student} skillCatalogMap={skillCatalogMap} />
                         ))
                     ) : (
-                        <div className="no-results-message">
-                            {hasActiveFilters
+                        <div className={`no-results-message ${pendingNotice ? 'no-results-message--pending' : ''}`}>
+                            {pendingNotice && !hasActiveFilters ? (
+                                <>
+                                    Каталог пока недоступен — дождитесь одобрения аккаунта.
+                                    <br />
+                                    <span className="no-results-message__hint">
+                                        Статус можно посмотреть в профиле.
+                                    </span>
+                                </>
+                            ) : hasActiveFilters
                                 ? "Студенты по заданным критериям не найдены"
                                 : "Студенты не найдены"}
                             <br />

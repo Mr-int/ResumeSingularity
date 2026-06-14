@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api.js';
 import { refreshSession } from '../services/authApi.js';
+import { formatApiUserMessage, isPendingApprovalError } from './apiErrors.js';
 
 const clearLocalAuthSilently = () => {
     localStorage.removeItem('isAuthenticated');
@@ -12,6 +13,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
     };
 
     const skipSessionClearOn403 = options.skipSessionClearOn403 === true;
+    const quiet = options.quiet === true;
     const method = options.method || 'GET';
     const headers = { ...defaultHeaders, ...options.headers };
     const body = options.body;
@@ -52,12 +54,14 @@ export const apiClientJson = async (endpoint, options = {}) => {
             } catch (_) {
                 responseBody = { message: errorText };
             }
-            if (!skipSessionClearOn403) {
+            if (!skipSessionClearOn403 && !quiet) {
                 console.log('[API] 403 Forbidden — access denied');
-            } else {
+            } else if (!quiet) {
                 console.log('[API] 403 Forbidden (soft probe)');
             }
-            const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
+            const error = new Error(
+                formatApiUserMessage({ status: 403, message: responseBody?.message, responseBody }),
+            );
             error.status = 403;
             error.responseBody = responseBody;
             throw error;
@@ -65,14 +69,18 @@ export const apiClientJson = async (endpoint, options = {}) => {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error(`[API] HTTP error! status: ${response.status}, endpoint: ${endpoint}`, errorText);
+            if (!quiet) {
+                console.error(`[API] HTTP error! status: ${response.status}, endpoint: ${endpoint}`, errorText);
+            }
             let responseBody = null;
             try {
                 responseBody = errorText ? JSON.parse(errorText) : null;
             } catch (_) {
                 responseBody = { message: errorText };
             }
-            const err = new Error(responseBody?.message || `Ошибка ${response.status}`);
+            const err = new Error(
+                formatApiUserMessage({ status: response.status, message: responseBody?.message, responseBody }),
+            );
             err.status = response.status;
             err.responseBody = responseBody;
             throw err;
@@ -93,8 +101,10 @@ export const apiClientJson = async (endpoint, options = {}) => {
             return {};
         }
     } catch (error) {
-        console.error(`[API] Error for endpoint ${endpoint}:`, error);
-        console.error('[API] Full URL was:', url);
+        if (!quiet && !isPendingApprovalError(error)) {
+            console.error(`[API] Error for endpoint ${endpoint}:`, error);
+            console.error('[API] Full URL was:', url);
+        }
 
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${window.location.origin}/api/`);

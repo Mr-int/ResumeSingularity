@@ -88,6 +88,7 @@ const Header = () => {
                 <div className="header__nav">
                     <Link to="/" className="header__homeBtn">главная</Link>
                     <Link to="/vacancies" className="header__navLink">вакансии</Link>
+                    <Link to="/student-projects" className="header__navLink">проекты</Link>
                 </div>
 
                 <button
@@ -177,6 +178,13 @@ const Header = () => {
                     onClick={handleMobileLinkClick}
                 >
                     вакансии
+                </Link>
+                <Link
+                    to="/student-projects"
+                    className="header__mobileBtn"
+                    onClick={handleMobileLinkClick}
+                >
+                    проекты
                 </Link>
                 <Link
                     to="/students"

@@ -14,6 +14,7 @@ import {
 } from '../../services/requestApi.js';
 import { createRecruiterRequest } from '../../services/studentApi.js';
 import { isAuthenticated, isRecruiterRole, requestLogin } from '../../services/authApi.js';
+import { formatApiUserMessage } from '../../utils/apiErrors.js';
 
 const getInputNumbersValue = (value) => String(value ?? '').replace(/\D/g, '');
 
@@ -132,7 +133,7 @@ const getFriendlyError = (err) => {
     const body = err?.responseBody;
     const msg = (body?.message || err?.message || '').toLowerCase();
     if (err?.status === 401) return 'Ошибка авторизации. Пожалуйста, войдите в систему.';
-    if (err?.status === 403) return 'Доступ запрещён.';
+    if (err?.status === 403) return formatApiUserMessage(err);
     if (msg.includes('last name') || msg.includes('255') || msg.includes('characters')) {
         return 'Вы должны вписать имя и фамилию через пробел.';
     }

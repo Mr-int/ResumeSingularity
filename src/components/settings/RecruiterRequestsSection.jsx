@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { filterRequests } from '../../services/requestApi.js';
 import { getStudentById } from '../../services/studentApi.js';
+import { formatApiUserMessage, isPendingApprovalError } from '../../utils/apiErrors.js';
 
 const RESULT_LABELS = {
     CREATION: 'Создана',
@@ -30,11 +31,13 @@ const RecruiterRequestsSection = ({ recruiterId }) => {
     const [students, setStudents] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [pendingNotice, setPendingNotice] = useState('');
 
     const load = useCallback(async () => {
         if (!recruiterId) return;
         setLoading(true);
         setError('');
+        setPendingNotice('');
         try {
             const res = await filterRequests({ recruiterId }, 0, 50);
             const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
@@ -51,7 +54,12 @@ const RecruiterRequestsSection = ({ recruiterId }) => {
             );
             setStudents(map);
         } catch (e) {
-            setError(e.message || 'Не удалось загрузить заявки');
+            if (isPendingApprovalError(e)) {
+                setPendingNotice(formatApiUserMessage(e));
+                setError('');
+            } else {
+                setError(formatApiUserMessage(e));
+            }
             setRequests([]);
         } finally {
             setLoading(false);
@@ -66,6 +74,11 @@ const RecruiterRequestsSection = ({ recruiterId }) => {
         <section className="accountPage__section">
             <h2 className="accountPage__sectionTitle">Мои заявки студентам</h2>
             {loading && <p className="accountPage__muted">Загрузка…</p>}
+            {pendingNotice ? (
+                <div className="accountPage__banner" role="status">
+                    {pendingNotice}
+                </div>
+            ) : null}
             {error ? (
                 <div className="accountPage__error" role="alert">
                     {error}

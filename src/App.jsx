@@ -7,6 +7,7 @@ import Settings from "./pages/Settings.jsx";
 import Chats from "./pages/Chats.jsx";
 import Vacancies from './pages/Vacancies.jsx';
 import VacancyDetail from './pages/VacancyDetail.jsx';
+import StudentProjects from './pages/StudentProjects.jsx';
 import MyVacancies from './pages/MyVacancies.jsx';
 import MyApplications from './pages/MyApplications.jsx';
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
@@ -57,6 +58,11 @@ const AppRoutes = () => {
           <Route path='/vacancies/:id' element={
             <ApprovedRoute>
               <VacancyDetail />
+            </ApprovedRoute>
+          } />
+          <Route path='/student-projects' element={
+            <ApprovedRoute>
+              <StudentProjects />
             </ApprovedRoute>
           } />
           <Route path='/students' element={

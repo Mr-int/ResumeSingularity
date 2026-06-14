@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { filterRequests, postStudentDecision } from '../../services/requestApi.js';
 import { getRecruiterById } from '../../services/getApi.js';
+import { formatApiUserMessage, isPendingApprovalError } from '../../utils/apiErrors.js';
 
 const RESULT_LABELS = {
     CREATION: 'Создана',
@@ -30,6 +31,7 @@ const StudentRequestsSection = ({ studentId }) => {
     const [recruiters, setRecruiters] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [pendingNotice, setPendingNotice] = useState('');
     const [busyId, setBusyId] = useState(null);
     const [comments, setComments] = useState({});
 
@@ -37,6 +39,7 @@ const StudentRequestsSection = ({ studentId }) => {
         if (!studentId) return;
         setLoading(true);
         setError('');
+        setPendingNotice('');
         try {
             const res = await filterRequests({ studentId }, 0, 50);
             const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
@@ -53,7 +56,12 @@ const StudentRequestsSection = ({ studentId }) => {
             );
             setRecruiters(recruiterMap);
         } catch (e) {
-            setError(e.message || 'Не удалось загрузить заявки');
+            if (isPendingApprovalError(e)) {
+                setPendingNotice(formatApiUserMessage(e));
+                setError('');
+            } else {
+                setError(formatApiUserMessage(e));
+            }
             setRequests([]);
         } finally {
             setLoading(false);
@@ -74,7 +82,7 @@ const StudentRequestsSection = ({ studentId }) => {
             });
             await load();
         } catch (e) {
-            setError(e.message || 'Не удалось отправить ответ');
+            setError(formatApiUserMessage(e));
         } finally {
             setBusyId(null);
         }
@@ -84,6 +92,11 @@ const StudentRequestsSection = ({ studentId }) => {
         <section className="accountPage__section">
             <h2 className="accountPage__sectionTitle">Заявки от работодателей</h2>
             {loading && <p className="accountPage__muted">Загрузка…</p>}
+            {pendingNotice ? (
+                <div className="accountPage__banner" role="status">
+                    {pendingNotice}
+                </div>
+            ) : null}
             {error ? (
                 <div className="accountPage__error" role="alert">
                     {error}

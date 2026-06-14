@@ -1,0 +1,222 @@
+.studentProjectsPage {
+    min-height: calc(100vh - var(--header-height, 120px));
+    background: #000000;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    padding: 60px var(--page-padding-x, 40px) 80px;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.studentProjectsPage__inner {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.studentProjectsPage__title {
+    font-size: 24px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    margin: 0 0 16px;
+    color: #ffffff;
+}
+
+.studentProjectsPage__subtitle {
+    margin: 0 0 40px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #ffffff;
+    opacity: 0.85;
+    max-width: 720px;
+}
+
+.studentProjectsPage__filters {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0 24px;
+    align-items: end;
+    margin-bottom: 40px;
+}
+
+.studentProjectsPage__filterGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.studentProjectsPage__filterGroup label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+}
+
+.studentProjectsPage__input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #ffffff;
+    color: #ffffff;
+    padding: 10px 0;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+}
+
+.studentProjectsPage__input::placeholder {
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.studentProjectsPage__submit {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 12px 28px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+}
+
+.studentProjectsPage__submit:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+.studentProjectsPage__hint,
+.studentProjectsPage__error {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.studentProjectsPage__error {
+    color: #ff6b6b;
+}
+
+.studentProjectsPage__notice {
+    margin: 0 0 32px;
+    padding: 18px 22px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 159, 10, 0.35);
+    background: rgba(255, 159, 10, 0.08);
+    font-size: 15px;
+    line-height: 1.55;
+    color: #ffffff;
+}
+
+.studentProjectsPage__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.studentProjectsPage__card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    min-height: 220px;
+}
+
+.studentProjectsPage__cardTitle {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #ffffff;
+}
+
+.studentProjectsPage__cardDescription {
+    margin: 0;
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.55;
+    color: #ffffff;
+    opacity: 0.9;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.studentProjectsPage__cardMeta {
+    font-size: 13px;
+    color: #ffffff;
+    opacity: 0.8;
+}
+
+.studentProjectsPage__cardMeta a {
+    color: #80acff;
+    text-decoration: none;
+}
+
+.studentProjectsPage__cardMeta a:hover {
+    text-decoration: underline;
+}
+
+.studentProjectsPage__cardActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.studentProjectsPage__cardLink,
+.studentProjectsPage__cardBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.studentProjectsPage__cardLink {
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    background: transparent;
+}
+
+.studentProjectsPage__cardLink:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+.studentProjectsPage__cardBtn {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+    background: transparent;
+}
+
+.studentProjectsPage__cardBtn:hover {
+    border-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .studentProjectsPage {
+        padding: 40px var(--page-padding-x, 20px) 64px;
+    }
+
+    .studentProjectsPage__filters {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .studentProjectsPage__grid {
+        grid-template-columns: 1fr;
+    }
+}

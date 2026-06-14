@@ -1010,3 +1010,31 @@
         stroke: #4b4d5a !important;
     }
 }
+
+.studentSlider__empty {
+    position: relative;
+    z-index: 2;
+    max-width: 520px;
+    margin: 24px auto 8px;
+    padding: 24px 28px;
+    text-align: center;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 159, 10, 0.35);
+    background: rgba(255, 159, 10, 0.08);
+}
+
+.studentSlider__emptyTitle {
+    margin: 0 0 10px;
+    font-family: StratosSemiLight, sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #ff9f0a;
+}
+
+.studentSlider__emptyText {
+    margin: 0;
+    font-family: StratosSemiLight, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    color: #ffffff;
+}

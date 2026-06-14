@@ -490,8 +490,10 @@ export function isStudentRole() {
 export function hasApprovedCatalogAccess() {
     if (!isAuthenticated()) return false;
     if (isAdmin()) return true;
+    const status = getAccountStatus();
+    if (status === 'PENDING' || status === 'REJECTED') return false;
     if (isStudentRole()) return true;
-    return getAccountStatus() === 'APPROVED';
+    return status === 'APPROVED';
 }
 
 /** Полный каталог студентов (/student/*) — одобренные пользователи. */

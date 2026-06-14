@@ -13,11 +13,11 @@ const withPageParams = (endpoint, pageable) => {
 export const getStudentById = (id) => apiClientJson(`student/${id}`, { method: 'GET' });
 /** 403 не сбрасывает сессию — иначе рекрутёр теряет вход при проверке «не студент». */
 export const getStudentMe = () =>
-    apiClientJson('student/me', { method: 'GET', skipSessionClearOn403: true });
+    apiClientJson('student/me', { method: 'GET', skipSessionClearOn403: true, quiet: true });
 
 export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { method: 'GET' });
 export const getRecruiterMe = () =>
-    apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true });
+    apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true, quiet: true });
 
 /** 200 — профиль привязан; 404 — нужны полные данные при первой заявке. */
 export const checkRecruiterProfile = async () => {
