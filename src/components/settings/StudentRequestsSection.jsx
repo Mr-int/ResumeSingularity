@@ -10,7 +10,7 @@ const RESULT_LABELS = {
     WAITING: 'Ожидание',
     EXPECTATION: 'Ожидает ответа студента',
     STUDENT_CONFIRMED: 'Подтверждена студентом',
-    RECRUITER_CONFIRMED: 'Подтверждена рекрутером',
+    RECRUITER_CONFIRMED: 'Подтверждена работодателем',
     SUCCESS: 'Успешно',
     REFUSAL: 'Отклонена',
 };
@@ -112,7 +112,7 @@ const StudentRequestsSection = ({ studentId }) => {
                         ? [recruiter.companyName, recruiter.firstName, recruiter.lastName]
                               .filter(Boolean)
                               .join(' · ')
-                        : 'Рекрутер';
+                        : 'Работодатель';
                     const status = RESULT_LABELS[req.result] || req.result || '—';
                     const showActions = canDecide(req.result);
                     return (

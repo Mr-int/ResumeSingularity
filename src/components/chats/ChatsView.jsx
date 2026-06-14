@@ -269,7 +269,7 @@ const ChatsView = () => {
                     recruiterCacheRef.current.set(chat.recruiterId, r);
                 }
                 const person = `${r.firstName || ''} ${r.lastName || ''}`.trim();
-                title = r.companyName || person || 'Рекрутер';
+                title = r.companyName || person || 'Работодатель';
                 subtitle = person && r.companyName ? person : '';
                 avatarUrl = getImageUrl(peerImagePath(r));
             }

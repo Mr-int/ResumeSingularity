@@ -1,4 +1,4 @@
-import { getAccountStatus } from '../services/authApi.js';
+import { isAccountPending } from '../services/authApi.js';
 
 export const PENDING_APPROVAL_MESSAGE =
     'Ваш аккаунт ещё на проверке. После одобрения администратором откроется полный доступ к каталогу и профилю.';
@@ -23,13 +23,7 @@ const isPendingApprovalText = (text) => {
         || lower.includes('pending_approval')
         || lower.includes('pending approval')
         || lower.includes('на проверке')
-        || lower.includes('не привязана карточка')
     );
-};
-
-const isAccountPending = () => {
-    const status = getAccountStatus();
-    return status === 'PENDING' || status === 'PENDING_APPROVAL';
 };
 
 export function formatApiUserMessage(error) {

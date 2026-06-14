@@ -10,7 +10,7 @@ const RESULT_LABELS = {
     WAITING: 'Ожидание',
     EXPECTATION: 'Ожидает ответа',
     STUDENT_CONFIRMED: 'Подтверждена студентом',
-    RECRUITER_CONFIRMED: 'Подтверждена рекрутером',
+    RECRUITER_CONFIRMED: 'Подтверждена работодателем',
     SUCCESS: 'Успешно',
     REFUSAL: 'Отклонена',
 };

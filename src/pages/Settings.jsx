@@ -10,8 +10,8 @@ import {
     patchRecruiter,
     uploadStudentPhoto,
 } from '../services/accountApi.js';
-import { getStudentResumeForEdit, updateStudentResume } from '../services/onboardingApi.js';
-import { changePassword, getAuthMe, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, AUTH_USERNAME_KEY } from '../services/authApi.js';
+import { getStudentResumeForEdit, updateStudentResume, completeStudentResume } from '../services/onboardingApi.js';
+import { changePassword, getAuthMe, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, isAccountPending, syncAuthSession, AUTH_USERNAME_KEY } from '../services/authApi.js';
 import { formatApiUserMessage } from '../utils/apiErrors.js';
 import { getImageUrl } from '../config/api.js';
 import { fetchAllRegistrationSkills, fetchAllRegistrationSpecialities } from '../services/registrationCatalogApi.js';
@@ -24,14 +24,15 @@ const BUSYNESS = BUSYNESS_OPTIONS;
 
 const ROLE_LABELS = {
     STUDENT: 'Студент',
-    RECRUITER: 'Рекрутер',
-    USER: 'Рекрутер',
+    RECRUITER: 'Работодатель',
+    USER: 'Работодатель',
     ADMIN: 'Администратор',
     GUEST: 'Гость',
 };
 
 const STATUS_LABELS = {
     PENDING: 'На проверке',
+    PENDING_APPROVAL: 'На проверке',
     APPROVED: 'Одобрен',
     REJECTED: 'Отклонён',
 };
@@ -71,7 +72,7 @@ const resolveIdentity = (session, profileRole) => {
     const accountStatus = session?.accountStatus || getAccountStatus() || null;
     let roleLabel = ROLE_LABELS[apiRole] || 'Пользователь';
     if (profileRole === 'recruiter_pending') {
-        roleLabel = 'Рекрутер';
+        roleLabel = 'Работодатель';
     }
     const statusLabel = accountStatus ? STATUS_LABELS[accountStatus] || accountStatus : null;
     return { apiRole, username, roleLabel, statusLabel };
@@ -135,9 +136,11 @@ const SettingsPage = () => {
         setLoading(true);
         setError('');
         try {
+            let currentSession = null;
             try {
-                const me = await getAuthMe();
-                setSession(me);
+                await syncAuthSession();
+                currentSession = await getAuthMe();
+                setSession(currentSession);
             } catch {
                 setSession(null);
             }
@@ -169,8 +172,29 @@ const SettingsPage = () => {
                 setRecruiterForm(recruiterToForm(r));
             } catch (e2) {
                 if (e2.status === 404 || e2.status === 403) {
-                    const apiRole = getAuthRole();
-                    setRole(apiRole === 'STUDENT' ? 'student_pending' : 'recruiter_pending');
+                    const apiRole = currentSession?.role || getAuthRole();
+                    const accountStatus = currentSession?.accountStatus || getAccountStatus();
+
+                    if (apiRole === 'STUDENT') {
+                        if (isAccountPending(accountStatus)) {
+                            setRole('student_pending');
+                            setProfile(null);
+                        } else {
+                            setRole('student');
+                            setProfile(null);
+                        }
+                        return;
+                    }
+                    if (apiRole === 'RECRUITER' || apiRole === 'USER') {
+                        if (isAccountPending(accountStatus)) {
+                            setRole('recruiter_pending');
+                        } else {
+                            setRole('recruiter');
+                        }
+                        setProfile(null);
+                        return;
+                    }
+                    setRole(null);
                     setProfile(null);
                     return;
                 }
@@ -278,12 +302,16 @@ const SettingsPage = () => {
         setSaving('resume');
         setError('');
         try {
-            const updated = await updateStudentResume(buildResumeBody());
+            const body = buildResumeBody();
+            const hadProfile = Boolean(profile?.id);
+            const updated = hadProfile
+                ? await updateStudentResume(body)
+                : await completeStudentResume(body);
             setProfile(updated);
             setStudentForm(studentToForm(updated));
-            flashOk('Резюме обновлено');
+            flashOk(hadProfile ? 'Резюме обновлено' : 'Резюме создано');
         } catch (e) {
-            setError(e.message || 'Не удалось обновить резюме');
+            setError(formatApiUserMessage(e) || 'Не удалось сохранить резюме');
         } finally {
             setSaving('');
         }
@@ -302,7 +330,7 @@ const SettingsPage = () => {
             const updated = await patchRecruiter(profile.id, body);
             setProfile(updated);
             setRecruiterForm(recruiterToForm(updated));
-            flashOk('Профиль рекрутера сохранён');
+            flashOk('Профиль работодателя сохранён');
         } catch (e) {
             setError(e.message || 'Не удалось сохранить профиль');
         } finally {
@@ -429,7 +457,7 @@ const SettingsPage = () => {
 
                     {!loading && role === 'recruiter_pending' && (
                         <section className="accountPage__section">
-                            <h2 className="accountPage__sectionTitle">Профиль рекрутера</h2>
+                            <h2 className="accountPage__sectionTitle">Профиль работодателя</h2>
                             <div className="accountPage__banner" role="status">
                                 Ваш аккаунт ещё на проверке. После одобрения администратором откроется
                                 доступ к каталогу студентов и настройкам профиля.
@@ -455,14 +483,22 @@ const SettingsPage = () => {
                         </section>
                     )}
 
-                    {!loading && role === 'student' && profile && (
+                    {!loading && role === 'student' && (
                         <>
-                            {studentForm.course === 'NEW' && (
+                            {!profile && (
                                 <div className="accountPage__banner" role="status">
-                                    Профиль с курсом «Новый» не показывается рекрутерам до модерации.
+                                    Заполните резюме, чтобы создать карточку студента и открыть полный доступ к каталогу.
                                 </div>
                             )}
 
+                            {profile && studentForm.course === 'NEW' && (
+                                <div className="accountPage__banner" role="status">
+                                    Профиль с курсом «Новый» не показывается работодателям до модерации.
+                                </div>
+                            )}
+
+                            {profile ? (
+                            <>
                             <section className="accountPage__section">
                                 <h2 className="accountPage__sectionTitle">Настройки витрины</h2>
                                 <div className="accountPage__formRow">
@@ -534,6 +570,8 @@ const SettingsPage = () => {
                                     </label>
                                 </div>
                             </section>
+                            </>
+                            ) : null}
 
                             <section className="accountPage__section">
                                 <h2 className="accountPage__sectionTitle">Резюме</h2>
@@ -648,19 +686,19 @@ const SettingsPage = () => {
                                         disabled={saving === 'resume'}
                                         onClick={saveStudentResume}
                                     >
-                                        {saving === 'resume' ? 'Сохранение…' : 'Сохранить изменения'}
+                                        {saving === 'resume' ? 'Сохранение…' : profile ? 'Сохранить изменения' : 'Создать резюме'}
                                     </button>
                                 </div>
                             </section>
 
-                            <StudentRequestsSection studentId={profile.id} />
+                            {profile?.id ? <StudentRequestsSection studentId={profile.id} /> : null}
                         </>
                     )}
 
                     {!loading && role === 'recruiter' && profile && (
                         <>
                             <section className="accountPage__section">
-                                <h2 className="accountPage__sectionTitle">Профиль рекрутера</h2>
+                                <h2 className="accountPage__sectionTitle">Профиль работодателя</h2>
                                 <div className="accountPage__formRow">
                                     <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Компания</span>

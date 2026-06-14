@@ -1,13 +1,16 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
-import { hasApprovedCatalogAccess } from './authApi.js';
+import { hasApprovedCatalogAccess, isAuthenticated } from './authApi.js';
 import { filterPublicStudentCards } from './publicApi.js';
 
 export const getAllStudents = async () => {
     try {
         if (!hasApprovedCatalogAccess()) {
-            const pageRes = await filterPublicStudentCards({}, 0, 200);
-            return Array.isArray(pageRes.data) ? pageRes.data : [];
+            if (!isAuthenticated()) {
+                const pageRes = await filterPublicStudentCards({}, 0, 200);
+                return Array.isArray(pageRes.data) ? pageRes.data : [];
+            }
+            return [];
         }
 
         const pageSize = 200;

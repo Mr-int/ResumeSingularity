@@ -25,7 +25,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
             method,
             headers,
             body,
-            credentials: 'include',
+            credentials: options.credentials ?? 'include',
             signal: options.signal,
         });
 

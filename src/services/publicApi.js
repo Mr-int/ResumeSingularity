@@ -28,6 +28,7 @@ export const filterPublicStudentCards = async (filterReq = {}, page = 0, size = 
     const resp = await apiClientJson(`public/students/cards?${query}`, {
         method: 'POST',
         body: JSON.stringify(filterReq ?? {}),
+        credentials: 'omit',
     });
     return normalizePageResponse(resp, page, size);
 };

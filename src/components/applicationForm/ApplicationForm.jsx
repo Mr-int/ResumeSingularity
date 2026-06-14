@@ -192,7 +192,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
             if (!isRecruiterRole()) {
                 if (!cancelled) {
                     setProfileMode('blocked');
-                    setBlockedReason('Заявки доступны только рекрутерам.');
+                    setBlockedReason('Заявки доступны только работодателям.');
                 }
                 return;
             }
@@ -570,7 +570,7 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
 
     const infoText = () => {
         if (showLinkedStudent) {
-            return `Отправьте заявку студенту${studentName ? ` ${studentName}` : ''}. Данные рекрутера возьмём из вашего профиля.`;
+            return `Отправьте заявку студенту${studentName ? ` ${studentName}` : ''}. Данные работодателя возьмём из вашего профиля.`;
         }
         if (showLinkedGeneral) {
             return 'Свяжемся с вами по контактам из профиля. Кратко опишите задачу — так мы быстрее подберём студентов.';

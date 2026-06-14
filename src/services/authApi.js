@@ -472,6 +472,15 @@ export function getAccountStatus() {
     return localStorage.getItem(AUTH_ACCOUNT_STATUS_KEY);
 }
 
+export function isAccountPending(status = getAccountStatus()) {
+    return status === 'PENDING_APPROVAL' || status === 'PENDING';
+}
+
+export function isAccountApproved(status = getAccountStatus()) {
+    if (isAdmin()) return true;
+    return status === 'APPROVED';
+}
+
 export function isHintsDisabled() {
     if (localStorage.getItem('resumeHintsDisabledLocal') === '1') return true;
     return localStorage.getItem(AUTH_HINTS_DISABLED_KEY) === '1';
@@ -491,9 +500,9 @@ export function hasApprovedCatalogAccess() {
     if (!isAuthenticated()) return false;
     if (isAdmin()) return true;
     const status = getAccountStatus();
-    if (status === 'PENDING' || status === 'REJECTED') return false;
-    if (isStudentRole()) return true;
-    return status === 'APPROVED';
+    if (isAccountPending(status) || status === 'REJECTED') return false;
+    if (isStudentRole()) return isAccountApproved(status) || status == null;
+    return isAccountApproved(status);
 }
 
 /** Полный каталог студентов (/student/*) — одобренные пользователи. */
