@@ -1,5 +1,5 @@
 /**
- * Парсит VITE_API_URL из .env в origin (https://host без слэша).
+ * Парсит URL из .env в origin (https://host без слэша).
  * @returns {string | null}
  */
 function parseApiOrigin(raw) {
@@ -14,25 +14,19 @@ function parseApiOrigin(raw) {
 
 const apiBaseRaw = import.meta.env.VITE_API_BASE || '/api/';
 
-/** Origin бэкенда из .env (VITE_API_URL). */
+/** Origin JSON API из .env (для dev-прокси и WebSocket в dev). */
 export const API_ORIGIN = parseApiOrigin(import.meta.env.VITE_API_URL);
 
-/** База для JSON-запросов: прокси на фронте (VITE_API_BASE, по умолчанию /api/). */
+/** База для запросов: same-origin /api/ → nginx/vite проксирует на бэкенд. */
 export const API_BASE_URL = apiBaseRaw.endsWith('/') ? apiBaseRaw : `${apiBaseRaw}/`;
 
 export function getApiOrigin() {
     return API_ORIGIN;
 }
 
-/** Origin для фото и других прямых ссылок на API. */
-export function getPhotoApiOrigin() {
-    return API_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : '');
-}
-
 /**
- * Получить URL изображения через эндпоинт /main/photo/{image_path}
- * @param {string} imagePath - Путь к изображению из поля imagePath в теле ответа
- * @returns {string | null} Полный URL изображения
+ * Публичное фото: GET /main/photo/{image_path}
+ * Через /api/main/photo/… — nginx отдаёт storage (api.*), остальной /api/ — test-api.
  */
 export const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
@@ -41,9 +35,7 @@ export const getImageUrl = (imagePath) => {
         return imagePath;
     }
 
-    const origin = getPhotoApiOrigin();
-    if (!origin) return null;
-
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
-    return `${origin}/main/photo/${cleanPath}`;
+    const encodedPath = cleanPath.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+    return `${API_BASE_URL}main/photo/${encodedPath}`;
 };

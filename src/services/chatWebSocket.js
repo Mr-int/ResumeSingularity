@@ -1,6 +1,5 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { getApiOrigin } from '../config/api.js';
 
 /** @type {Client | null} */
 let client = null;
@@ -9,10 +8,6 @@ let connected = false;
 const topicSubscriptions = new Map();
 
 export function getChatWebSocketUrl() {
-    const origin = getApiOrigin();
-    if (origin) {
-        return `${origin}/ws`;
-    }
     return `${window.location.origin}/ws`;
 }
 

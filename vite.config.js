@@ -5,12 +5,12 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const apiTarget = (env.VITE_API_URL || process.env.VITE_API_URL || '').replace(/\/$/, '')
+  const photoStorage = (env.VITE_PHOTO_STORAGE_URL || 'https://api.singularity-resume.ru').replace(/\/$/, '')
 
   const config = {
     plugins: [react()],
   }
 
-  // Прокси нужен только для npm run dev; vite build не использует server
   if (command === 'serve') {
     if (!apiTarget) {
       throw new Error('VITE_API_URL не задан в .env')
@@ -18,6 +18,12 @@ export default defineConfig(({ mode, command }) => {
 
     config.server = {
       proxy: {
+        '/api/main/photo': {
+          target: photoStorage,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+          secure: true,
+        },
         '/ws': {
           target: apiTarget,
           changeOrigin: true,
