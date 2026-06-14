@@ -152,6 +152,9 @@ const ChatsView = () => {
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const draftInputRef = useRef(null);
+    const messagesScrollRef = useRef(null);
+    const requestPanelRef = useRef(null);
+    const [requestPanelOffScreen, setRequestPanelOffScreen] = useState(false);
     const titleCache = useRef(new Map());
     const subtitleCache = useRef(new Map());
     const avatarCache = useRef(new Map());
@@ -569,6 +572,29 @@ const ChatsView = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
+    useEffect(() => {
+        const panel = requestPanelRef.current;
+        const root = messagesScrollRef.current;
+        if (!panel || !root || !pendingMode) {
+            setRequestPanelOffScreen(false);
+            return undefined;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => setRequestPanelOffScreen(!entry.isIntersecting),
+            { root, threshold: 0.15, rootMargin: '0px' },
+        );
+        observer.observe(panel);
+        return () => {
+            observer.disconnect();
+            setRequestPanelOffScreen(false);
+        };
+    }, [selectedId, pendingMode, pendingRequest?.id, messages.length, loadingMessages]);
+
+    const scrollToRequestPanel = useCallback(() => {
+        requestPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, []);
+
     useEffect(() => () => disconnectChatWebSocket(), []);
 
     const filteredChats = useMemo(() => {
@@ -708,6 +734,8 @@ const ChatsView = () => {
 
     const composerLocked =
         Boolean(pendingMode === 'student_decision' && me?.role === 'student');
+    const requestPanelJumpLabel =
+        pendingMode === 'tu_decision' ? '↑ К решению по ТУ' : '↑ К заявке';
     const requestStatusLabel = pendingRequest?.result
         ? REQUEST_RESULT_LABELS[pendingRequest.result] || pendingRequest.result
         : '';
@@ -841,12 +869,27 @@ const ChatsView = () => {
                     ) : null}
                 </header>
 
-                <div className="chatsView__messages">
+                <div className="chatsView__messages" ref={messagesScrollRef}>
                     {!selectedId && (
                         <div className="chatsView__empty">Выберите чат, чтобы открыть переписку</div>
                     )}
+                    {selectedId && pendingMode && requestPanelOffScreen ? (
+                        <button
+                            type="button"
+                            className="chatsView__requestPanelJump"
+                            onClick={scrollToRequestPanel}
+                            aria-label={requestPanelJumpLabel}
+                        >
+                            {requestPanelJumpLabel}
+                        </button>
+                    ) : null}
                     {selectedId && pendingRequest && pendingMode === 'student_decision' && me?.role === 'student' ? (
-                        <div className="chatsView__requestPanel" role="region" aria-label="Входящая заявка">
+                        <div
+                            ref={requestPanelRef}
+                            className="chatsView__requestPanel"
+                            role="region"
+                            aria-label="Входящая заявка"
+                        >
                             <p className="chatsView__requestPanelTitle">Работодатель отправил заявку</p>
                             <p className="chatsView__requestPanelHint">
                                 Примите заявку, чтобы начать переписку. Отклонение закроет этот диалог.
@@ -880,7 +923,12 @@ const ChatsView = () => {
                         </div>
                     ) : null}
                     {selectedId && pendingRequest && pendingMode === 'tu_decision' ? (
-                        <div className="chatsView__requestPanel" role="region" aria-label="Решение по ТУ">
+                        <div
+                            ref={requestPanelRef}
+                            className="chatsView__requestPanel"
+                            role="region"
+                            aria-label="Решение по ТУ"
+                        >
                             <p className="chatsView__requestPanelTitle">Техническое собеседование</p>
                             <p className="chatsView__requestPanelHint">
                                 Подтвердите прохождение ТУ или укажите причину отказа.

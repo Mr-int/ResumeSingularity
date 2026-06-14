@@ -549,11 +549,44 @@
 }
 
 .chatsView__requestPanel {
-    margin: 12px 16px;
+    margin: 0;
+    flex-shrink: 0;
     padding: 14px 16px;
     border-radius: 12px;
     background: rgba(255, 200, 80, 0.08);
     border: 1px solid rgba(255, 200, 80, 0.25);
+}
+
+.chatsView__requestPanelJump {
+    position: sticky;
+    top: 8px;
+    align-self: center;
+    z-index: 4;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 auto 4px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 200, 80, 0.5);
+    background: rgba(18, 18, 20, 0.94);
+    color: #f5d78e;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.chatsView__requestPanelJump:hover {
+    background: rgba(255, 200, 80, 0.14);
+    border-color: rgba(255, 200, 80, 0.75);
+}
+
+.chatsView__requestPanelJump:active {
+    transform: scale(0.98);
 }
 
 .chatsView__requestPanelTitle {
