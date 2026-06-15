@@ -557,6 +557,19 @@
     border: 1px solid rgba(255, 200, 80, 0.25);
 }
 
+.chatsView__requestPanel--waiting {
+    background: rgba(94, 92, 230, 0.1);
+    border-color: rgba(94, 92, 230, 0.35);
+}
+
+.chatsView__requestPanel--waiting .chatsView__requestPanelTitle {
+    color: #a5b4fc;
+}
+
+.chatsView__requestPanel--waiting .chatsView__requestPanelHint {
+    margin-bottom: 0;
+}
+
 .chatsView__requestPanelJump {
     position: sticky;
     top: 8px;

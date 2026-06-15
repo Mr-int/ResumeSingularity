@@ -1,11 +1,7 @@
 import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './applicationForm.css';
-import exclamationIcon from '../../assets/icons/exclamationIcon.svg';
-import mailIcon from '../../assets/icons/mailIcon.svg';
 import successIcon from '../../assets/icons/success.svg';
-import sunIcon from '../../assets/other/sun.png';
-import cloudMailIcon from '../../assets/other/cloudMail.png';
 import { checkRecruiterProfile } from '../../services/getApi.js';
 import {
     buildCreateRequestBody,
@@ -564,27 +560,33 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
     const showFullForm = profileMode === 'unlinked';
     const showLinkedStudent = profileMode === 'linked' && hasStudent;
     const showLinkedGeneral = profileMode === 'linked' && !hasStudent;
-    const isCompact = showLinkedStudent || showLinkedGeneral;
     const showLoading = profileMode === 'loading';
     const showBlocked = profileMode === 'blocked';
 
-    const infoText = () => {
-        if (showLinkedStudent) {
-            return `Отправьте заявку студенту${studentName ? ` ${studentName}` : ''}. Данные работодателя возьмём из вашего профиля.`;
-        }
-        if (showLinkedGeneral) {
-            return 'Свяжемся с вами по контактам из профиля. Кратко опишите задачу — так мы быстрее подберём студентов.';
-        }
-        if (hasStudent && profileMode === 'unlinked') {
-            return 'При первой заявке сохраним ваши данные в профиль. После этого достаточно будет только выбрать студента.';
-        }
-        return 'Отправьте заявку — мы свяжемся с вами в течение 24 часов, уточним задачу и подберём студентов, которые лучше всего подойдут.';
+    const formTitle = () => {
+        if (showLinkedStudent && studentName) return `Связаться с ${studentName}`;
+        if (showLinkedGeneral) return 'Оставить заявку';
+        if (hasStudent && studentName) return `Заявка студенту`;
+        return 'Связаться с нами';
     };
 
-    const renderProfileCard = () => {
-        if (!recruiterProfile) return null;
+    const infoText = () => {
+        if (showLinkedStudent) {
+            return 'Отправим заявку студенту. Ваши контакты возьмём из профиля.';
+        }
+        if (showLinkedGeneral) {
+            return 'Кратко опишите задачу — подберём подходящих студентов.';
+        }
+        if (hasStudent && profileMode === 'unlinked') {
+            return 'При первой заявке сохраним ваши данные. Дальше достаточно выбрать студента.';
+        }
+        return 'Заполните форму — свяжемся в течение суток и подберём студентов.';
+    };
+
+    const renderProfileLine = () => {
+        if (!recruiterProfile || !(showLinkedStudent || showLinkedGeneral)) return null;
         const name = profileDisplayName(recruiterProfile);
-        const contacts = [
+        const parts = [
             recruiterProfile.companyName,
             name,
             recruiterProfile.email,
@@ -594,339 +596,213 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
                 : null,
         ].filter(Boolean);
         return (
-            <div className="applicationForm__profileCard">
-                <p className="applicationForm__profileCard-title">Ваш профиль</p>
-                <ul className="applicationForm__profileCard-list">
-                    {contacts.map((line) => (
-                        <li key={line}>{line}</li>
-                    ))}
-                </ul>
-                <Link to="/settings" className="applicationForm__profileCard-link" onClick={onClose}>
-                    Изменить данные в настройках
+            <div className="applicationForm__profileLine">
+                <strong>Профиль работодателя</strong>
+                {parts.join(' · ')}
+                <Link to="/settings" className="applicationForm__profileLink" onClick={onClose}>
+                    Изменить в настройках
                 </Link>
             </div>
         );
     };
 
-    const showMailIcon = () => !loading && !success;
-
     return (
         <div className="applicationForm__overlay" onClick={onClose}>
             {success ? (
-                <div
-                    className="applicationForm__successWindow"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <button className="applicationForm__close" onClick={onClose}>×</button>
-                    <div className="applicationForm__successWindow-inner">
-<div className="applicationForm__successWindow-body">
-                                <div className="applicationForm__successWindow-titleRow">
-                                    <h2 className="applicationForm__successWindow-title">Заявка оставлена</h2>
-                                    <img src={successIcon} alt="" className="applicationForm__successWindow-titleIcon" width={40} height={40} />
-                                </div>
-                            <p className="appвlicationForm__successWindow-text">
-                                Мы свяжемся с вами в течении 24 часов.
-                            </p>
-                            {typeof onGoToChats === 'function' ? (
-                                <div className="applicationForm__successWindow-tgBlock">
-                                    <a
-                                        href="#chats"
-                                        className="applicationForm__successWindow-tgLink"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            onGoToChats(createdChatId);
-                                        }}
-                                    >
-                                        <div className="applicationForm__successWindow-tgLink-textBlock">
-                                            <span className="applicationForm__successWindow-tgLink-text">
-                                                Перейти в чаты
-                                            </span>
-                                            <span className="applicationForm__successWindow-tgLink-arrow">Открыть →</span>
-                                        </div>
-                                        <span className="applicationForm__successWindow-tgLink-telegramIcon" aria-hidden>
-                                            <svg width="72" height="72" viewBox="0 0 24 24">
-                                                <path
-                                                    fill="currentColor"
-                                                    d="M9.8 15.2 9.4 20c.5 0 .7-.2 1-.4l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6v-.1c.3-1.2-.4-1.7-1.2-1.4L2.9 10.1c-1.2.5-1.2 1.1-.2 1.4l4.7 1.5L18.4 6c.5-.3 1-.1.6.2"
-                                                />
-                                            </svg>
-                                        </span>
-                                    </a>
-                                </div>
-                            ) : null}
-                        </div>
-                    </div>
+                <div className="applicationForm__successWindow" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="applicationForm__close" onClick={onClose} aria-label="Закрыть">
+                        ×
+                    </button>
+                    <img src={successIcon} alt="" className="applicationForm__successIcon" width={48} height={48} />
+                    <h2 className="applicationForm__successTitle">Заявка отправлена</h2>
+                    <p className="applicationForm__successText">
+                        {showLinkedStudent
+                            ? 'Студент получит уведомление. Переписка откроется в чатах.'
+                            : 'Мы свяжемся с вами в ближайшее время.'}
+                    </p>
+                    {typeof onGoToChats === 'function' ? (
+                        <button
+                            type="button"
+                            className="applicationForm__successBtn applicationForm__successBtn--primary"
+                            onClick={() => onGoToChats(createdChatId)}
+                        >
+                            Перейти в чаты
+                        </button>
+                    ) : null}
+                    <button type="button" className="applicationForm__successBtn" onClick={onClose}>
+                        Закрыть
+                    </button>
                 </div>
             ) : (
-                <div
-                    className={`applicationForm__content${isCompact ? ' applicationForm__content--compact' : ''}`}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="applicationForm__contentInner">
-                        <img src={sunIcon} alt="" className="applicationForm__sunIcon"/>
-                        <button className="applicationForm__close" onClick={onClose}>×</button>
+                <div className="applicationForm__card" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" className="applicationForm__close" onClick={onClose} aria-label="Закрыть">
+                        ×
+                    </button>
 
-                        {showLoading ? (
-                            <div className="applicationForm__loading">
-                                <p>Проверяем профиль…</p>
-                            </div>
-                        ) : showBlocked ? (
-                            <div className="applicationForm__blocked">
-                                <p>{blockedReason}</p>
-                                <button type="button" className="applicationForm__submit" onClick={onClose}>
-                                    Закрыть
-                                </button>
-                            </div>
-                        ) : (
-                            <>
-                                {showLinkedStudent && studentName ? (
-                                    <h2 className="applicationForm__compactTitle">
-                                        Связаться с {studentName}?
-                                    </h2>
-                                ) : null}
-
-                                <div className="applicationForm__info">
-                                    <img
-                                        src={exclamationIcon}
-                                        alt="info"
-                                        className="applicationForm__info-icon"
-                                    />
-                                    {infoText()}
-                                </div>
-
-                                {(showLinkedStudent || showLinkedGeneral) && renderProfileCard()}
-
-                                <form onSubmit={handleSubmit} className="applicationForm__form">
-                                    {showLinkedGeneral ? (
-                                        <>
-                                            <div className="applicationForm__field">
-                                                <label htmlFor="taskDescription">Кратко опишите задачу</label>
-                                                <textarea
-                                                    id="taskDescription"
-                                                    name="taskDescription"
-                                                    className="applicationForm__textarea"
-                                                    value={taskDescription}
-                                                    onChange={(e) => {
-                                                        setTaskDescription(e.target.value);
-                                                        setError('');
-                                                    }}
-                                                    disabled={loading}
-                                                    placeholder="Например: ищем frontend-стажёра на 3 месяца для внутреннего портала…"
-                                                    rows={5}
-                                                    maxLength={TASK_MAX}
-                                                />
-                                                <p className="applicationForm__taskHint">
-                                                    {taskDescription.trim().length}/{TASK_MAX} (минимум {TASK_MIN})
-                                                </p>
-                                            </div>
-                                            {profileNeedsTelegram(recruiterProfile) ? (
-                                                <div className="applicationForm__field">
-                                                    <label htmlFor="telegram">Телеграмм для связи</label>
-                                                    <div className="applicationForm__telegramWrapper">
-                                                        <input
-                                                            id="telegram"
-                                                            name="telegram"
-                                                            type="text"
-                                                            value={formData.telegram}
-                                                            onChange={handleTelegramInput}
-                                                            onKeyDown={handleTelegramKeyDown}
-                                                            onPaste={handleTelegramPaste}
-                                                            disabled={loading}
-                                                            placeholder="@username"
-                                                            spellCheck={false}
-                                                            autoComplete="off"
-                                                            className={`applicationForm__telegramInput${
-                                                                telegramInvalid ? ' applicationForm__inputInvalid' : ''
-                                                            }`}
-                                                            aria-invalid={telegramInvalid}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ) : null}
-                                        </>
-                                    ) : null}
-
-                                    {showFullForm ? (
-                                        <>
-                        <div className="applicationForm__field">
-                            <label htmlFor="name">Имя Фамилия</label>
-                            <input
-                                ref={nameInputRef}
-                                id="name"
-                                name="name"
-                                type="text"
-                                value={formData.name}
-                                onChange={handleNameInput}
-                                onBlur={handleNameBlur}
-                                disabled={loading}
-                                placeholder="Иван Иванов"
-                                spellCheck={false}
-                                autoComplete="name"
-                                className={nameInvalid ? 'applicationForm__inputInvalid' : undefined}
-                                aria-invalid={nameInvalid}
-                            />
-                            <div
-                                className={
-                                    nameInvalid
-                                        ? 'applicationForm__phoneFieldError applicationForm__phoneFieldError--visible'
-                                        : 'applicationForm__phoneFieldError'
-                                }
-                                role="alert"
-                            >
-                                Введите имя и фамилию через пробел
-                            </div>
+                    {showLoading ? (
+                        <div className="applicationForm__loading">
+                            <p>Проверяем профиль…</p>
                         </div>
-
-                        <div className="applicationForm__field">
-                            <label htmlFor="company">Компания или проект</label>
-                            <input
-                                id="company"
-                                name="company"
-                                type="text"
-                                value={formData.company}
-                                onChange={handleChange}
-                                required
-                                disabled={loading}
-                                placeholder='ООО "Компания"'
-                            />
-                        </div>
-
-                        <div className="applicationForm__field">
-                            <label htmlFor="telegram">Телеграмм для связи</label>
-                            <div className="applicationForm__telegramWrapper">
-                                <input
-                                    id="telegram"
-                                    name="telegram"
-                                    type="text"
-                                    value={formData.telegram}
-                                    onChange={handleTelegramInput}
-                                    onKeyDown={handleTelegramKeyDown}
-                                    onPaste={handleTelegramPaste}
-                                    disabled={loading}
-                                    placeholder="@username"
-                                    spellCheck={false}
-                                    autoComplete="off"
-                                    className={`applicationForm__telegramInput${
-                                        telegramInvalid ? ' applicationForm__inputInvalid' : ''
-                                    }`}
-                                    aria-invalid={telegramInvalid}
-                                />
-                                <div
-                                    className={
-                                        telegramInvalid
-                                            ? 'applicationForm__telegramFieldError applicationForm__telegramFieldError--visible'
-                                            : 'applicationForm__telegramFieldError'
-                                    }
-                                    role="alert"
-                                >
-                                    Максимум {TG_USERNAME_MAX} символов (a-z, 0-9, _)
-                                </div>
-                                <p className="applicationForm__telegramHint">
-                                    {`Имя пользователя 1–${TG_USERNAME_MAX} символов: латиница, цифры, _`}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="applicationForm__field">
-                            <label htmlFor="email">Ваша почта</label>
-                            <div className="applicationForm__emailWrapper">
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={handleEmailInput}
-                                    onBlur={handleEmailBlur}
-                                    onPaste={handleEmailPaste}
-                                    disabled={loading}
-                                    placeholder="example@mail.com"
-                                    spellCheck={false}
-                                    autoComplete="email"
-                                    className={
-                                        emailValidation === 'valid'
-                                            ? 'applicationForm__inputValid'
-                                            : emailValidation === 'invalid'
-                                              ? 'applicationForm__inputInvalid'
-                                              : undefined
-                                    }
-                                    aria-invalid={emailValidation === 'invalid'}
-                                />
-                                <div
-                                    className={
-                                        emailValidation === 'invalid'
-                                            ? 'applicationForm__emailHint applicationForm__emailHint--error applicationForm__emailHint--visible'
-                                            : 'applicationForm__emailHint applicationForm__emailHint--error'
-                                    }
-                                    role="alert"
-                                >
-                                    Введите корректный адрес (например, name@domain.com)
-                                </div>
-                                <div
-                                    className={
-                                        emailValidation === 'valid'
-                                            ? 'applicationForm__emailHint applicationForm__emailHint--success applicationForm__emailHint--visible'
-                                            : 'applicationForm__emailHint applicationForm__emailHint--success'
-                                    }
-                                >
-                                    Отличный email!
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="applicationForm__field">
-                            <label htmlFor="phone">Номер телефона</label>
-                            <input
-                                id="phone"
-                                name="phone"
-                                type="tel"
-                                inputMode="tel"
-                                autoComplete="tel"
-                                value={formData.phone}
-                                onChange={handlePhoneInput}
-                                onKeyDown={handlePhoneKeyDown}
-                                onPaste={handlePhonePaste}
-                                disabled={loading}
-                                placeholder="+7 (___) ___-__-__"
-                                className={phoneInvalid ? 'applicationForm__inputInvalid' : undefined}
-                                aria-invalid={phoneInvalid}
-                            />
-                            <div
-                                className={
-                                    phoneInvalid
-                                        ? 'applicationForm__phoneFieldError applicationForm__phoneFieldError--visible'
-                                        : 'applicationForm__phoneFieldError'
-                                }
-                                role="alert"
-                            >
-                                Проверьте номер: РФ 11 цифр (7/8/9…) или международный 10–15 цифр
-                            </div>
-                        </div>
-                                        </>
-                                    ) : null}
-
-                        {error && <div className="applicationForm__error">{error}</div>}
-
-                        <div className="applicationForm__button-container">
-                            <button
-                                type="submit"
-                                className="applicationForm__submit"
-                                disabled={loading || success || showLoading || showBlocked}
-                            >
-                                {getButtonText()}
-                                {showMailIcon() && (
-                                    <img
-                                        src={mailIcon}
-                                        alt="mail"
-                                        className="applicationForm__submit-icon"
-                                    />
-                                )}
+                    ) : showBlocked ? (
+                        <div className="applicationForm__blocked">
+                            <p>{blockedReason}</p>
+                            <button type="button" className="applicationForm__submit" onClick={onClose}>
+                                Закрыть
                             </button>
                         </div>
-                        </form>
-                            </>
-                        )}
-                        <img src={cloudMailIcon} alt="" className="applicationForm__cloudMailIcon"/>
-                    </div>
+                    ) : (
+                        <>
+                            <h2 className="applicationForm__title">{formTitle()}</h2>
+                            <p className="applicationForm__lead">{infoText()}</p>
+                            {renderProfileLine()}
+
+                            <form onSubmit={handleSubmit} className="applicationForm__form">
+                                {showLinkedGeneral ? (
+                                    <>
+                                        <div className="applicationForm__field">
+                                            <label htmlFor="taskDescription">Задача</label>
+                                            <textarea
+                                                id="taskDescription"
+                                                name="taskDescription"
+                                                className="applicationForm__textarea"
+                                                value={taskDescription}
+                                                onChange={(e) => {
+                                                    setTaskDescription(e.target.value);
+                                                    setError('');
+                                                }}
+                                                disabled={loading}
+                                                placeholder="Кого ищете, сроки, стек…"
+                                                rows={4}
+                                                maxLength={TASK_MAX}
+                                            />
+                                            <p className="applicationForm__hint">
+                                                {taskDescription.trim().length}/{TASK_MAX} · минимум {TASK_MIN}
+                                            </p>
+                                        </div>
+                                        {profileNeedsTelegram(recruiterProfile) ? (
+                                            <div className="applicationForm__field">
+                                                <label htmlFor="telegram">Telegram</label>
+                                                <input
+                                                    id="telegram"
+                                                    name="telegram"
+                                                    type="text"
+                                                    value={formData.telegram}
+                                                    onChange={handleTelegramInput}
+                                                    onKeyDown={handleTelegramKeyDown}
+                                                    onPaste={handleTelegramPaste}
+                                                    disabled={loading}
+                                                    placeholder="@username"
+                                                    spellCheck={false}
+                                                    autoComplete="off"
+                                                    className={telegramInvalid ? 'applicationForm__inputInvalid' : undefined}
+                                                />
+                                            </div>
+                                        ) : null}
+                                    </>
+                                ) : null}
+
+                                {showFullForm ? (
+                                    <>
+                                        <div className="applicationForm__field">
+                                            <label htmlFor="name">Имя и фамилия</label>
+                                            <input
+                                                ref={nameInputRef}
+                                                id="name"
+                                                name="name"
+                                                type="text"
+                                                value={formData.name}
+                                                onChange={handleNameInput}
+                                                onBlur={handleNameBlur}
+                                                disabled={loading}
+                                                placeholder="Иван Иванов"
+                                                autoComplete="name"
+                                                className={nameInvalid ? 'applicationForm__inputInvalid' : undefined}
+                                            />
+                                        </div>
+                                        <div className="applicationForm__field">
+                                            <label htmlFor="company">Компания</label>
+                                            <input
+                                                id="company"
+                                                name="company"
+                                                type="text"
+                                                value={formData.company}
+                                                onChange={handleChange}
+                                                disabled={loading}
+                                                placeholder="ООО Пример"
+                                            />
+                                        </div>
+                                        <div className="applicationForm__field">
+                                            <label htmlFor="telegram">Telegram</label>
+                                            <input
+                                                id="telegram"
+                                                name="telegram"
+                                                type="text"
+                                                value={formData.telegram}
+                                                onChange={handleTelegramInput}
+                                                onKeyDown={handleTelegramKeyDown}
+                                                onPaste={handleTelegramPaste}
+                                                disabled={loading}
+                                                placeholder="@username"
+                                                spellCheck={false}
+                                                autoComplete="off"
+                                                className={telegramInvalid ? 'applicationForm__inputInvalid' : undefined}
+                                            />
+                                        </div>
+                                        <div className="applicationForm__field">
+                                            <label htmlFor="email">Email</label>
+                                            <input
+                                                id="email"
+                                                name="email"
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={handleEmailInput}
+                                                onBlur={handleEmailBlur}
+                                                onPaste={handleEmailPaste}
+                                                disabled={loading}
+                                                placeholder="you@company.ru"
+                                                autoComplete="email"
+                                                className={
+                                                    emailValidation === 'invalid'
+                                                        ? 'applicationForm__inputInvalid'
+                                                        : undefined
+                                                }
+                                            />
+                                        </div>
+                                        <div className="applicationForm__field">
+                                            <label htmlFor="phone">Телефон</label>
+                                            <input
+                                                id="phone"
+                                                name="phone"
+                                                type="tel"
+                                                inputMode="tel"
+                                                autoComplete="tel"
+                                                value={formData.phone}
+                                                onChange={handlePhoneInput}
+                                                onKeyDown={handlePhoneKeyDown}
+                                                onPaste={handlePhonePaste}
+                                                disabled={loading}
+                                                placeholder="+7 (999) 000-00-00"
+                                                className={phoneInvalid ? 'applicationForm__inputInvalid' : undefined}
+                                            />
+                                            <p className="applicationForm__hint">
+                                                Укажите Telegram, email или телефон — хотя бы один способ связи.
+                                            </p>
+                                        </div>
+                                    </>
+                                ) : null}
+
+                                {error ? <div className="applicationForm__error" role="alert">{error}</div> : null}
+
+                                <button
+                                    type="submit"
+                                    className="applicationForm__submit"
+                                    disabled={loading || success || showLoading || showBlocked}
+                                >
+                                    {getButtonText()}
+                                </button>
+                            </form>
+                        </>
+                    )}
                 </div>
             )}
         </div>

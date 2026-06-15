@@ -104,7 +104,13 @@ const MyApplications = () => {
                                             </div>
                                         ) : null}
                                     </div>
-                                    <span className="vacanciesPage__itemStatus vacanciesPage__itemStatus--muted">
+                                    <span
+                                        className={`vacanciesPage__itemStatus vacanciesPage__itemStatus--muted${
+                                            a.status === 'ACCEPTED' || a.status === 'TU_APPROVED'
+                                                ? ' vacanciesPage__itemStatus--ok'
+                                                : ''
+                                        }`}
+                                    >
                                         {getApplicationStatusLabel(a.status)}
                                     </span>
                                 </div>

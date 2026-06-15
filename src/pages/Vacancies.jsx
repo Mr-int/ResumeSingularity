@@ -4,7 +4,7 @@ import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { listVacancies, vacancyPageRows } from '../services/vacancyApi.js';
 import { isStudentRole, isRecruiterRole } from '../services/authApi.js';
-import { buildVacancyMetaLine } from '../utils/vacancyEnums.js';
+import { buildVacancyMetaParts } from '../utils/vacancyEnums.js';
 import './vacanciesPage.css';
 
 const Vacancies = () => {
@@ -105,22 +105,35 @@ const Vacancies = () => {
 
                     <ul className="vacanciesPage__list">
                         {items.map((v) => {
-                            const meta = buildVacancyMetaLine(v);
+                            const metaParts = buildVacancyMetaParts(v);
                             return (
                                 <li key={v.id} className="vacanciesPage__item">
                                     <Link to={`/vacancies/${v.id}`} className="vacanciesPage__itemLink">
                                         <div className="vacanciesPage__itemMain">
                                             <h2 className="vacanciesPage__itemName">{v.title}</h2>
-                                            <p className="vacanciesPage__itemMeta">{meta}</p>
+                                            {metaParts.length > 0 ? (
+                                                <div className="vacanciesPage__itemTags">
+                                                    {metaParts.map((part) => (
+                                                        <span key={part} className="vacanciesPage__itemTag">
+                                                            {part}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : null}
                                             {v.summary ? (
                                                 <p className="vacanciesPage__itemSummary">{v.summary}</p>
                                             ) : null}
                                         </div>
-                                        {v.hasApplied ? (
-                                            <span className="vacanciesPage__itemStatus vacanciesPage__itemStatus--applied">
-                                                Откликнулись
+                                        <div className="vacanciesPage__itemAside">
+                                            {v.hasApplied ? (
+                                                <span className="vacanciesPage__itemStatus vacanciesPage__itemStatus--applied">
+                                                    Откликнулись
+                                                </span>
+                                            ) : null}
+                                            <span className="vacanciesPage__itemArrow" aria-hidden="true">
+                                                →
                                             </span>
-                                        ) : null}
+                                        </div>
                                     </Link>
                                 </li>
                             );

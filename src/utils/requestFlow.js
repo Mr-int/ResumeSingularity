@@ -21,17 +21,71 @@ export const TU_REASON_CODES = [
 
 export const canStudentDecideRequest = (result) => STUDENT_DECIDABLE_RESULTS.has(result);
 
-/** Студент подтверждает ТУ после согласия работодателя. */
-export const canStudentTuDecideRequest = (result) => result === 'RECRUITER_CONFIRMED';
-
-/** Работодатель подтверждает ТУ после согласия студента. */
-export const canRecruiterTuDecideRequest = (result) => result === 'STUDENT_CONFIRMED';
-
+/**
+ * Кто может нажать «Подтвердить ТУ»:
+ * - STUDENT_CONFIRMED: обе стороны (студент принял заявку, этап ТУ открыт)
+ * - RECRUITER_CONFIRMED: только студент (финальное подтверждение после работодателя)
+ */
 export const canTuDecideRequest = (result, role) => {
     if (!result || !role) return false;
-    if (role === 'student') return canStudentTuDecideRequest(result);
-    if (role === 'recruiter') return canRecruiterTuDecideRequest(result);
+    if (result === 'STUDENT_CONFIRMED') return true;
+    if (result === 'RECRUITER_CONFIRMED') return role === 'student';
     return false;
+};
+
+/** Ожидание решения второй стороны на этапе ТУ. */
+export const getTuWaitingHint = (result, role) => {
+    if (result === 'RECRUITER_CONFIRMED' && role === 'recruiter') {
+        return 'Вы подтвердили ТУ. Ожидаем финальное подтверждение от студента.';
+    }
+    return null;
+};
+
+const requestSortKey = (request) =>
+    Date.parse(request?.updatedAt || request?.createdAt || 0) || 0;
+
+/**
+ * Выбирает актуальную заявку для чата и режим UI.
+ * @param {object[]} matched
+ * @param {'student'|'recruiter'} role
+ * @param {(request: object) => number|null} resolveId
+ */
+export const resolveRequestAction = (matched, role, resolveId) => {
+    if (!Array.isArray(matched) || !matched.length || !role) {
+        return { request: null, mode: null };
+    }
+
+    const sorted = [...matched]
+        .filter((r) => resolveId(r) != null)
+        .sort((a, b) => requestSortKey(b) - requestSortKey(a));
+
+    if (!sorted.length) {
+        return { request: null, mode: null };
+    }
+
+    if (role === 'student') {
+        const studentAction = sorted.find((r) => canStudentDecideRequest(r.result));
+        if (studentAction) {
+            return { request: studentAction, mode: 'student_decision' };
+        }
+    }
+
+    const tuAction = sorted.find((r) => canTuDecideRequest(r.result, role));
+    if (tuAction) {
+        return { request: tuAction, mode: 'tu_decision' };
+    }
+
+    const tuWaiting = sorted.find((r) => TU_DECIDABLE_RESULTS.has(r.result));
+    if (tuWaiting && getTuWaitingHint(tuWaiting.result, role)) {
+        return { request: tuWaiting, mode: 'tu_waiting' };
+    }
+
+    const success = sorted.find((r) => r.result === 'SUCCESS');
+    if (success) {
+        return { request: success, mode: 'success' };
+    }
+
+    return { request: sorted[0], mode: null };
 };
 
 export const buildTuDecisionBody = (accept, reasonCode = '', comment = '') => {
