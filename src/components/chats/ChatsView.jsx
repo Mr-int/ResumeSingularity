@@ -133,23 +133,29 @@ async function resolveMe() {
     return null;
 }
 
-const tuCongratsStorageKey = (requestId) => `resume:tu-congrats:${requestId}`;
+const tuCongratsStorageKey = (chatId, requestId) =>
+    `resume:tu-congrats:${String(chatId)}:${String(requestId)}`;
 
-const hasSeenTuCongrats = (requestId) => {
+const hasSeenTuCongrats = (chatId, requestId) => {
+    if (!chatId || requestId == null) return true;
     try {
-        return sessionStorage.getItem(tuCongratsStorageKey(requestId)) === '1';
+        return sessionStorage.getItem(tuCongratsStorageKey(chatId, requestId)) === '1';
     } catch {
         return false;
     }
 };
 
-const markTuCongratsSeen = (requestId) => {
+const markTuCongratsSeen = (chatId, requestId) => {
+    if (!chatId || requestId == null) return;
     try {
-        sessionStorage.setItem(tuCongratsStorageKey(requestId), '1');
+        sessionStorage.setItem(tuCongratsStorageKey(chatId, requestId), '1');
     } catch {
         /* empty */
     }
 };
+
+const REQUESTS_CACHE_MS = 15_000;
+const CHAT_POLL_MS = 15_000;
 
 const ChatsView = () => {
     const [searchParams] = useSearchParams();
@@ -195,6 +201,7 @@ const ChatsView = () => {
     const selectedIdRef = useRef(null);
     const readChatRowsRef = useRef(new Set());
     const pendingModeRef = useRef(null);
+    const lastRequestsFetchAt = useRef(0);
 
     useEffect(() => {
         chatsRef.current = chats;
@@ -377,14 +384,19 @@ const ChatsView = () => {
         return { title, subtitle, avatarUrl };
     }, []);
 
-    const loadChats = useCallback(async () => {
-        setLoadingList(true);
+    const loadChats = useCallback(async (options = {}) => {
+        const silent = options.silent === true;
+        if (!silent) {
+            setLoadingList(true);
+        }
         setListError('');
-        titleCache.current.clear();
-        subtitleCache.current.clear();
-        avatarCache.current.clear();
-        studentCacheRef.current.clear();
-        recruiterCacheRef.current.clear();
+        if (!silent) {
+            titleCache.current.clear();
+            subtitleCache.current.clear();
+            avatarCache.current.clear();
+            studentCacheRef.current.clear();
+            recruiterCacheRef.current.clear();
+        }
         try {
             const party = await resolveMe();
             setMe(party);
@@ -395,6 +407,7 @@ const ChatsView = () => {
                 const reqRes = await filterMyRequests({}, 0, 100);
                 myRequests = extractRequestRows(reqRes);
                 myRequestsRef.current = myRequests;
+                lastRequestsFetchAt.current = Date.now();
                 if (role === 'student') {
                     const recruiterIds = [
                         ...new Set(myRequests.map((r) => r.recruiterId).filter(Boolean)),
@@ -438,7 +451,9 @@ const ChatsView = () => {
             setListError(e.message || 'Не удалось загрузить чаты');
             setChats([]);
         } finally {
-            setLoadingList(false);
+            if (!silent) {
+                setLoadingList(false);
+            }
         }
     }, [enrichChatMeta]);
 
@@ -457,11 +472,30 @@ const ChatsView = () => {
         [isMine, me?.role, titles],
     );
 
+    const refreshMyRequests = useCallback(async (force = false) => {
+        const now = Date.now();
+        if (
+            !force
+            && myRequestsRef.current.length
+            && now - lastRequestsFetchAt.current < REQUESTS_CACHE_MS
+        ) {
+            return myRequestsRef.current;
+        }
+        const res = await filterMyRequests({}, 0, 100);
+        const items = extractRequestRows(res);
+        myRequestsRef.current = items;
+        lastRequestsFetchAt.current = now;
+        return items;
+    }, []);
+
     const loadMessages = useCallback(
-        async (chatRow, fallbackId) => {
+        async (chatRow, fallbackId, options = {}) => {
+            const silent = options.silent === true;
             const chatId = chatRow?.id ?? fallbackId;
             if (!chatId) return;
-            setLoadingMessages(true);
+            if (!silent) {
+                setLoadingMessages(true);
+            }
             setSendError('');
             try {
                 const rows = await loadMergedChatMessages(chatRow, fallbackId, 0, 50);
@@ -482,7 +516,9 @@ const ChatsView = () => {
                 setSendError(e.message || 'Не удалось загрузить сообщения');
                 setMessages([]);
             } finally {
-                setLoadingMessages(false);
+                if (!silent) {
+                    setLoadingMessages(false);
+                }
             }
         },
         [refreshSummary, clearChatUnread, applyPeerMetaFromMessages],
@@ -502,52 +538,55 @@ const ChatsView = () => {
         }
         const chatRow =
             chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
-            selectedChat ||
             { id: selectedId };
         const chatIds = new Set(getChatIdList(chatRow, selectedId).map(String));
-        let peerRecruiterId = chatRow?.recruiterId ?? selectedChat?.recruiterId;
-        let peerStudentId = chatRow?.studentId ?? selectedChat?.studentId;
 
-        for (const r of myRequestsRef.current) {
-            const appChatId = r?.appChatId ?? r?.chatId;
-            if (!appChatId || !chatIds.has(String(appChatId))) continue;
-            if (!peerRecruiterId && r.recruiterId) peerRecruiterId = r.recruiterId;
-            if (!peerStudentId && r.studentId) peerStudentId = r.studentId;
-        }
-
-        const res = await filterMyRequests({}, 0, 100);
-        const items = extractRequestRows(res);
-        myRequestsRef.current = items;
-        const matched = items.filter((r) =>
-            matchRequestToChat(r, chatRow, chatIds, peerRecruiterId, peerStudentId),
+        const items = await refreshMyRequests();
+        const matched = items.filter((r) => matchRequestToChat(r, chatRow, chatIds));
+        const { request, mode } = resolveRequestAction(
+            matched,
+            me.role,
+            resolveRequestId,
+            selectedId,
+            chatIds,
         );
-        const { request, mode } = resolveRequestAction(matched, me.role, resolveRequestId);
         const resolvedId = request ? resolveRequestId(request) : null;
+        const reqChatId = request?.appChatId ?? request?.chatId;
+        const belongsToOpenChat = !reqChatId || chatIds.has(String(reqChatId));
 
-        setPendingRequest(resolvedId ? request : null);
-        setPendingMode(mode);
-        pendingModeRef.current = mode;
+        setPendingRequest(resolvedId && belongsToOpenChat ? request : null);
+        const effectiveMode = resolvedId && belongsToOpenChat ? mode : null;
+        setPendingMode(effectiveMode);
+        pendingModeRef.current = effectiveMode;
 
-        if (!mode || mode === 'success') {
+        if (!effectiveMode || effectiveMode === 'success') {
             setPendingComment('');
             setTuReasonCode('NOT_A_FIT');
         }
 
-        if (mode === 'success' && resolvedId && !hasSeenTuCongrats(resolvedId)) {
-            setTuCongrats({ variant: 'success', requestId: resolvedId });
+        if (
+            effectiveMode === 'success'
+            && resolvedId
+            && belongsToOpenChat
+            && !hasSeenTuCongrats(selectedId, resolvedId)
+        ) {
+            setTuCongrats({ variant: 'success', requestId: resolvedId, chatId: selectedId });
         }
 
-        if (resolvedId && request?.result) {
+        if (resolvedId && belongsToOpenChat && request?.result) {
             const statusText = REQUEST_RESULT_LABELS[request.result] || request.result;
-            setSubtitles((prev) => ({ ...prev, [selectedId]: statusText }));
+            setSubtitles((prev) => {
+                if (prev[selectedId] === statusText) return prev;
+                return { ...prev, [selectedId]: statusText };
+            });
         }
 
-        return { request: resolvedId ? request : null, mode };
-    }, [selectedId, selectedChat, me?.role]);
+        return { request: resolvedId && belongsToOpenChat ? request : null, mode: effectiveMode };
+    }, [selectedId, me?.role, refreshMyRequests]);
 
     const closeTuCongrats = () => {
-        if (tuCongrats?.requestId) {
-            markTuCongratsSeen(tuCongrats.requestId);
+        if (tuCongrats?.chatId && tuCongrats?.requestId) {
+            markTuCongratsSeen(tuCongrats.chatId, tuCongrats.requestId);
         }
         setTuCongrats(null);
     };
@@ -556,6 +595,14 @@ const ChatsView = () => {
         () => extractPeerReadMessageId(selectedChat, me?.role),
         [selectedChat, me?.role],
     );
+
+    const wsTopicKey = useMemo(() => {
+        const ids = new Set();
+        for (const c of chats) {
+            for (const id of getChatIdList(c, c.id)) ids.add(String(id));
+        }
+        return [...ids].sort().join(',');
+    }, [chats]);
 
     useEffect(() => {
         loadChats();
@@ -605,58 +652,28 @@ const ChatsView = () => {
     }, [selectedId, loadMessages, loadPendingRequest, refreshSummary, me?.role]);
 
     useEffect(() => {
-        if (!selectedId) {
-            setPendingRequest(null);
-            setPendingMode(null);
-            setPendingComment('');
-            return;
-        }
-        let cancelled = false;
-        (async () => {
-            try {
-                await loadPendingRequest();
-            } catch {
-                if (!cancelled) {
-                    setPendingRequest(null);
-                    setPendingMode(null);
-                }
-            }
-        })();
-        return () => {
-            cancelled = true;
-        };
-    }, [selectedId, loadPendingRequest]);
-
-    useEffect(() => {
         if (!selectedId) return undefined;
         const poll = window.setInterval(async () => {
             refreshSummary(selectedId);
             const prevMode = pendingModeRef.current;
             try {
                 const { mode } = await loadPendingRequest();
-                if (
-                    prevMode !== mode
-                    && (mode === 'tu_decision' || mode === null || mode === 'success')
-                    && !(prevMode === 'student_decision' && me?.role === 'student')
-                ) {
+                if (prevMode !== mode && mode === 'tu_decision') {
                     const chatRow =
                         chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
                         { id: selectedId };
-                    await loadMessages(chatRow, selectedId);
+                    await loadMessages(chatRow, selectedId, { silent: true });
                 }
             } catch {
                 /* polling */
             }
-        }, 4000);
+        }, CHAT_POLL_MS);
         return () => window.clearInterval(poll);
-    }, [selectedId, refreshSummary, loadPendingRequest, loadMessages, me?.role]);
+    }, [selectedId, refreshSummary, loadPendingRequest, loadMessages]);
 
     useEffect(() => {
-        const ids = new Set();
-        for (const c of chatsRef.current) {
-            for (const id of getChatIdList(c, c.id)) ids.add(String(id));
-        }
-        if (!ids.size) return undefined;
+        const ids = wsTopicKey ? wsTopicKey.split(',').filter(Boolean) : [];
+        if (!ids.length) return undefined;
 
         const handleWsMessage = (chatId, message) => {
             if (!message?.id) return;
@@ -695,11 +712,11 @@ const ChatsView = () => {
             }
         };
 
-        const unsubscribes = [...ids].map((chatId) =>
+        const unsubscribes = ids.map((chatId) =>
             subscribeChatTopic(chatId, (message) => handleWsMessage(chatId, message)),
         );
         return () => unsubscribes.forEach((fn) => fn?.());
-    }, [chats, isMine, refreshSummary, clearChatUnread]);
+    }, [wsTopicKey, isMine, refreshSummary, clearChatUnread]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -833,7 +850,7 @@ const ChatsView = () => {
             setPendingComment('');
             const chatRow = selectedChat || { id: selectedId };
             await loadMessages(chatRow, selectedId);
-            await loadChats();
+            await loadChats({ silent: true });
         } catch (err) {
             setSendError(formatApiUserMessage(err) || 'Не удалось обработать заявку');
         } finally {
@@ -855,13 +872,12 @@ const ChatsView = () => {
             setTuReasonCode('NOT_A_FIT');
             const chatRow = selectedChat || { id: selectedId };
             await loadMessages(chatRow, selectedId);
-            await loadChats();
+            await loadChats({ silent: true });
             if (accepted) {
-                const res = await filterMyRequests({}, 0, 100);
-                const items = extractRequestRows(res);
+                const items = await refreshMyRequests(true);
                 const updated = items.find((r) => resolveRequestId(r) === requestId);
                 const variant = updated?.result === 'SUCCESS' ? 'success' : 'confirmed';
-                setTuCongrats({ variant, requestId });
+                setTuCongrats({ variant, requestId, chatId: selectedId });
             } else {
                 setPendingRequest(null);
                 setPendingMode(null);

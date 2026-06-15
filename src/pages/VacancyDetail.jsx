@@ -19,6 +19,7 @@ import {
     getAccountStatus,
 } from '../services/authApi.js';
 import { buildVacancyMetaLine, getApplicationStatusLabel } from '../utils/vacancyEnums.js';
+import { checkVacancyOwnership } from '../utils/vacancyOwnership.js';
 import { formatApiUserMessage, PENDING_APPROVAL_MESSAGE } from '../utils/apiErrors.js';
 import './vacanciesPage.css';
 
@@ -33,6 +34,7 @@ const VacancyDetail = () => {
     const [applying, setApplying] = useState(false);
     const [appChatId, setAppChatId] = useState(null);
     const [canApply, setCanApply] = useState(false);
+    const [canManageVacancy, setCanManageVacancy] = useState(false);
     const isStudent = isStudentRole();
     const isRecruiter = isRecruiterRole();
 
@@ -62,8 +64,14 @@ const VacancyDetail = () => {
                 if (!cancelled) {
                     setCanApply(canStudentApplyToVacancies());
                 }
-                await loadVacancy();
-                if (!cancelled && isRecruiter) await loadApplications();
+                const data = await loadVacancy();
+                if (!cancelled && isRecruiter && data) {
+                    const owned = await checkVacancyOwnership(data);
+                    if (!cancelled) setCanManageVacancy(owned);
+                    if (owned) await loadApplications();
+                } else if (!cancelled) {
+                    setCanManageVacancy(false);
+                }
             } catch (e) {
                 if (!cancelled) setError(formatApiUserMessage(e) || 'Вакансия не найдена');
             } finally {
@@ -129,7 +137,7 @@ const VacancyDetail = () => {
                                 <div className="vacanciesPage__description">{vacancy.description}</div>
                             ) : null}
 
-                            {isRecruiter ? (
+                            {isRecruiter && canManageVacancy ? (
                                 <div className="vacanciesPage__cardActions">
                                     <Link to={`/vacancies/${id}/edit`} className="vacanciesPage__linkBtn">
                                         Редактировать
@@ -183,7 +191,7 @@ const VacancyDetail = () => {
                                 </p>
                             ) : null}
 
-                            {isRecruiter ? (
+                            {isRecruiter && canManageVacancy ? (
                                 <section className="vacanciesPage__applications">
                                     <h2 className="vacanciesPage__applicationsTitle">Отклики</h2>
                                     {applications.length === 0 ? (

@@ -3,8 +3,8 @@ export const REQUEST_RESULT_LABELS = {
     SYNC: 'Синхронизация',
     WAITING: 'Ожидание ответа',
     EXPECTATION: 'Ожидает решения',
-    STUDENT_CONFIRMED: 'Подтверждена студентом',
-    RECRUITER_CONFIRMED: 'Подтверждена работодателем',
+    STUDENT_CONFIRMED: 'Этап ТУ',
+    RECRUITER_CONFIRMED: 'ТУ: ждём студента',
     SUCCESS: 'Успешно',
     REFUSAL: 'Отказ',
 };
@@ -44,20 +44,38 @@ export const getTuWaitingHint = (result, role) => {
 const requestSortKey = (request) =>
     Date.parse(request?.updatedAt || request?.createdAt || 0) || 0;
 
+/** Приоритет заявки в объединённом диалоге: сначала привязанная к открытому chatId. */
+const requestFocusScore = (request, focusChatId, chatIds) => {
+    const cid = request?.appChatId ?? request?.chatId;
+    if (cid == null) return 0;
+    const key = String(cid);
+    if (focusChatId != null && key === String(focusChatId)) return 2;
+    if (chatIds?.has?.(key)) return 1;
+    return 0;
+};
+
 /**
  * Выбирает актуальную заявку для чата и режим UI.
  * @param {object[]} matched
  * @param {'student'|'recruiter'} role
  * @param {(request: object) => number|null} resolveId
+ * @param {string|number|null} [focusChatId] — id открытого чата (канонический в merge-группе)
+ * @param {Set<string>|null} [chatIds] — все id чатов в объединённом диалоге
  */
-export const resolveRequestAction = (matched, role, resolveId) => {
+export const resolveRequestAction = (matched, role, resolveId, focusChatId = null, chatIds = null) => {
     if (!Array.isArray(matched) || !matched.length || !role) {
         return { request: null, mode: null };
     }
 
     const sorted = [...matched]
         .filter((r) => resolveId(r) != null)
-        .sort((a, b) => requestSortKey(b) - requestSortKey(a));
+        .sort((a, b) => {
+            const focusDiff =
+                requestFocusScore(b, focusChatId, chatIds) -
+                requestFocusScore(a, focusChatId, chatIds);
+            if (focusDiff !== 0) return focusDiff;
+            return requestSortKey(b) - requestSortKey(a);
+        });
 
     if (!sorted.length) {
         return { request: null, mode: null };
@@ -99,10 +117,8 @@ export const buildTuDecisionBody = (accept, reasonCode = '', comment = '') => {
     return body;
 };
 
-export const matchRequestToChat = (request, chatRow, chatIds, peerRecruiterId, peerStudentId) => {
+export const matchRequestToChat = (request, _chatRow, chatIds) => {
     const appChatId = request?.appChatId ?? request?.chatId;
-    if (appChatId != null && chatIds.has(String(appChatId))) return true;
-    if (peerRecruiterId != null && String(request.recruiterId) === String(peerRecruiterId)) return true;
-    if (peerStudentId != null && String(request.studentId) === String(peerStudentId)) return true;
-    return false;
+    if (appChatId == null) return false;
+    return chatIds.has(String(appChatId));
 };

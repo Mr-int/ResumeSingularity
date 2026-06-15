@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import { createVacancy, getVacancy, updateVacancy } from '../services/vacancyApi.js';
+import { createVacancy, updateVacancy } from '../services/vacancyApi.js';
+import { isRecruiterRole } from '../services/authApi.js';
+import { assertVacancyOwnership } from '../utils/vacancyOwnership.js';
 import {
     WORK_FORMAT_OPTIONS,
     EMPLOYMENT_TYPE_OPTIONS,
@@ -33,6 +35,13 @@ const VacancyForm = () => {
     const [loading, setLoading] = useState(isEdit);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
+    const [accessDenied, setAccessDenied] = useState(false);
+
+    useEffect(() => {
+        if (!isRecruiterRole()) {
+            navigate('/vacancies', { replace: true });
+        }
+    }, [navigate]);
 
     useEffect(() => {
         if (!isEdit) return undefined;
@@ -40,8 +49,9 @@ const VacancyForm = () => {
         (async () => {
             setLoading(true);
             setError('');
+            setAccessDenied(false);
             try {
-                const data = await getVacancy(id);
+                const { vacancy: data } = await assertVacancyOwnership(id, { forceMineList: true });
                 if (!cancelled) {
                     const workFormats = extractWorkFormats(data);
                     const employmentTypes = extractEmploymentTypes(data);
@@ -55,7 +65,14 @@ const VacancyForm = () => {
                     });
                 }
             } catch (e) {
-                if (!cancelled) setError(e.message || 'Не удалось загрузить вакансию');
+                if (!cancelled) {
+                    if (e.status === 403) {
+                        setAccessDenied(true);
+                        setError(e.message || 'Нет доступа к этой вакансии');
+                    } else {
+                        setError(e.message || 'Не удалось загрузить вакансию');
+                    }
+                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -107,9 +124,16 @@ const VacancyForm = () => {
                         ← Мои вакансии
                     </Link>
                     <h1 className="vacanciesPage__title">{isEdit ? 'Редактирование вакансии' : 'Новая вакансия'}</h1>
-                    {loading ? <p className="vacanciesPage__hint">Загрузка…</p> : null}
-                    {error ? <p className="vacanciesPage__error">{error}</p> : null}
-                    {!loading ? (
+            {loading ? <p className="vacanciesPage__hint">Загрузка…</p> : null}
+            {error ? <p className="vacanciesPage__error">{error}</p> : null}
+            {accessDenied ? (
+                <p className="vacanciesPage__hint">
+                    <Link to="/vacancies" className="vacanciesPage__navLink">
+                        Вернуться к каталогу
+                    </Link>
+                </p>
+            ) : null}
+            {!loading && !accessDenied ? (
                         <form className="vacanciesPage__applyForm" onSubmit={handleSubmit}>
                             <div className="vacanciesPage__filterGroup">
                                 <label htmlFor="vacancy-title">Название</label>
