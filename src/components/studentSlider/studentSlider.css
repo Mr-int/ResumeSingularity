@@ -1011,6 +1011,26 @@
     }
 }
 
+.studentSlider__loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 320px;
+}
+
+.studentSlider__spinner {
+    width: 56px;
+    height: 56px;
+}
+
+.studentSlider__spinner::after {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+}
+
 .studentSlider__empty {
     position: relative;
     z-index: 4;

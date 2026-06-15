@@ -137,7 +137,9 @@ const StudentSlider = () => {
                 </div>
 
                 {loading ? (
-                    <p style={{ color: '#fff' }}>Загрузка студентов...</p>
+                    <div className="studentSlider__loading" role="status" aria-label="Загрузка">
+                        <div className="appRouteLoader__spinner studentSlider__spinner" aria-hidden="true" />
+                    </div>
                 ) : total > 0 ? (
                     <>
                         <div className="studentSlider__container">
