@@ -501,8 +501,14 @@ export function hasApprovedCatalogAccess() {
     if (isAdmin()) return true;
     const status = getAccountStatus();
     if (isAccountPending(status) || status === 'REJECTED') return false;
-    if (isStudentRole()) return isAccountApproved(status) || status == null;
+    if (isStudentRole()) return isAccountApproved(status);
     return isAccountApproved(status);
+}
+
+/** Отклик на вакансию — только одобренный студент (как на бэкенде). */
+export function canStudentApplyToVacancies() {
+    if (!isAuthenticated() || !isStudentRole()) return false;
+    return isAccountApproved(getAccountStatus());
 }
 
 /** Полный каталог студентов (/student/*) — одобренные пользователи. */

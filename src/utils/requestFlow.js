@@ -21,12 +21,23 @@ export const TU_REASON_CODES = [
 
 export const canStudentDecideRequest = (result) => STUDENT_DECIDABLE_RESULTS.has(result);
 
-export const canTuDecideRequest = (result) => TU_DECIDABLE_RESULTS.has(result);
+/** Студент подтверждает ТУ после согласия работодателя. */
+export const canStudentTuDecideRequest = (result) => result === 'RECRUITER_CONFIRMED';
+
+/** Работодатель подтверждает ТУ после согласия студента. */
+export const canRecruiterTuDecideRequest = (result) => result === 'STUDENT_CONFIRMED';
+
+export const canTuDecideRequest = (result, role) => {
+    if (!result || !role) return false;
+    if (role === 'student') return canStudentTuDecideRequest(result);
+    if (role === 'recruiter') return canRecruiterTuDecideRequest(result);
+    return false;
+};
 
 export const buildTuDecisionBody = (accept, reasonCode = '', comment = '') => {
     const body = {
         accept: accept === true,
-        comment: String(comment ?? '').trim().slice(0, 4000),
+        comment: String(comment ?? '').trim().slice(0, 2000),
     };
     if (!accept) {
         body.reasonCode = String(reasonCode || 'NOT_A_FIT').trim();

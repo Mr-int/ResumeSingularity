@@ -100,7 +100,13 @@ export const postRequestTuDecision = (requestId, payload) => {
     }
     return apiClientJson(`request/${id}/tu-decision`, {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+            accept: payload.accept === true,
+            comment: String(payload.comment ?? ''),
+            ...(payload.accept === true
+                ? {}
+                : { reasonCode: String(payload.reasonCode || 'NOT_A_FIT') }),
+        }),
     });
 };
 

@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { listMyApplications, vacancyPageRows, withdrawApplication } from '../services/vacancyApi.js';
+import {
+    syncAuthSession,
+    canStudentApplyToVacancies,
+    isAccountPending,
+    getAccountStatus,
+} from '../services/authApi.js';
+import { formatApiUserMessage, PENDING_APPROVAL_MESSAGE } from '../utils/apiErrors.js';
 import { getApplicationStatusLabel } from '../utils/vacancyEnums.js';
 import './vacanciesPage.css';
 
@@ -15,10 +22,20 @@ const MyApplications = () => {
         setLoading(true);
         setError('');
         try {
+            await syncAuthSession();
+            if (!canStudentApplyToVacancies()) {
+                setItems([]);
+                setError(
+                    isAccountPending(getAccountStatus())
+                        ? PENDING_APPROVAL_MESSAGE
+                        : 'Отклики доступны только студентам с одобренным аккаунтом.',
+                );
+                return;
+            }
             const res = await listMyApplications(0, 50);
             setItems(vacancyPageRows(res));
         } catch (e) {
-            setError(e.message || 'Не удалось загрузить отклики');
+            setError(formatApiUserMessage(e) || 'Не удалось загрузить отклики');
             setItems([]);
         } finally {
             setLoading(false);
@@ -78,7 +95,7 @@ const MyApplications = () => {
                                                             await withdrawApplication(a.id);
                                                             await reload();
                                                         } catch (e) {
-                                                            setError(e.message || 'Не удалось отозвать');
+                                                            setError(formatApiUserMessage(e) || 'Не удалось отозвать');
                                                         }
                                                     }}
                                                 >

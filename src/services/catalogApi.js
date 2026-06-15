@@ -1,6 +1,7 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { buildPageQuery, normalizePageResponse } from '../utils/pageable.js';
 import { hasApprovedCatalogAccess } from './authApi.js';
+import { getPublicVacancyById, listPublicVacancies } from './publicApi.js';
 
 const withDefaultStudentSort = (filterReq = {}) => ({
     useDefaultRanking: true,
@@ -43,9 +44,11 @@ export const getStudentById = async (id) => {
     return apiClientJson(`student/${id}`, { method: 'GET' });
 };
 
-/** GET /vacancies — лента для авторизованных одобренных пользователей. */
+/** GET /vacancies — лента для одобренных; иначе публичная витрина. */
 export const listVacanciesPage = async (filter = {}, page = 0, size = 20) => {
-    requireApprovedCatalog();
+    if (!hasApprovedCatalogAccess()) {
+        return listPublicVacancies(filter, page, size);
+    }
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('size', String(size));
@@ -53,9 +56,11 @@ export const listVacanciesPage = async (filter = {}, page = 0, size = 20) => {
     return apiClientJson(`vacancies?${params.toString()}`, { method: 'GET' });
 };
 
-/** GET /vacancies/{id} */
+/** GET /vacancies/{id} — полная карточка для одобренных; иначе публичная витрина. */
 export const getVacancyById = async (id) => {
-    requireApprovedCatalog();
+    if (!hasApprovedCatalogAccess()) {
+        return getPublicVacancyById(id);
+    }
     return apiClientJson(`vacancies/${id}`, { method: 'GET' });
 };
 

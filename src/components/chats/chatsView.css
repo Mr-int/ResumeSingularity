@@ -821,3 +821,91 @@
         padding: 6px 10px;
     }
 }
+
+.chatsView__tuCongratsOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(6px);
+    animation: chatsViewTuOverlayIn 0.2s ease;
+}
+
+.chatsView__tuCongratsModal {
+    width: min(100%, 340px);
+    padding: 28px 24px 22px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 200, 120, 0.45);
+    background: linear-gradient(165deg, rgba(28, 22, 14, 0.98) 0%, rgba(12, 12, 12, 0.98) 100%);
+    box-shadow:
+        0 0 0 1px rgba(255, 159, 10, 0.1) inset,
+        0 20px 50px rgba(0, 0, 0, 0.55);
+    text-align: center;
+    animation: chatsViewTuModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chatsView__tuCongratsIcon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 14px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 28px;
+    line-height: 1;
+    background: rgba(255, 159, 10, 0.14);
+    border: 1px solid rgba(255, 200, 120, 0.35);
+}
+
+.chatsView__tuCongratsTitle {
+    margin: 0 0 10px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #ffc766;
+}
+
+.chatsView__tuCongratsText {
+    margin: 0 0 20px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.chatsView__tuCongratsBtn {
+    min-width: 140px;
+    padding: 11px 20px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffb347 0%, #ff8c1a 100%);
+    color: #1a1000;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.chatsView__tuCongratsBtn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(255, 140, 26, 0.35);
+}
+
+@keyframes chatsViewTuOverlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes chatsViewTuModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

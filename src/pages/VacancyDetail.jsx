@@ -10,8 +10,16 @@ import {
     listVacancyApplications,
     vacancyPageRows,
 } from '../services/vacancyApi.js';
-import { isStudentRole, isRecruiterRole } from '../services/authApi.js';
+import {
+    syncAuthSession,
+    isStudentRole,
+    isRecruiterRole,
+    canStudentApplyToVacancies,
+    isAccountPending,
+    getAccountStatus,
+} from '../services/authApi.js';
 import { buildVacancyMetaLine, getApplicationStatusLabel } from '../utils/vacancyEnums.js';
+import { formatApiUserMessage, PENDING_APPROVAL_MESSAGE } from '../utils/apiErrors.js';
 import './vacanciesPage.css';
 
 const VacancyDetail = () => {
@@ -24,6 +32,7 @@ const VacancyDetail = () => {
     const [coverLetter, setCoverLetter] = useState('');
     const [applying, setApplying] = useState(false);
     const [appChatId, setAppChatId] = useState(null);
+    const [canApply, setCanApply] = useState(false);
     const isStudent = isStudentRole();
     const isRecruiter = isRecruiterRole();
 
@@ -49,10 +58,14 @@ const VacancyDetail = () => {
             setLoading(true);
             setError('');
             try {
+                await syncAuthSession();
+                if (!cancelled) {
+                    setCanApply(canStudentApplyToVacancies());
+                }
                 await loadVacancy();
                 if (!cancelled && isRecruiter) await loadApplications();
             } catch (e) {
-                if (!cancelled) setError(e.message || 'Вакансия не найдена');
+                if (!cancelled) setError(formatApiUserMessage(e) || 'Вакансия не найдена');
             } finally {
                 if (!cancelled) setLoading(false);
             }
@@ -67,6 +80,11 @@ const VacancyDetail = () => {
         setApplying(true);
         setError('');
         try {
+            await syncAuthSession();
+            if (!canStudentApplyToVacancies()) {
+                setError(PENDING_APPROVAL_MESSAGE);
+                return;
+            }
             const result = await applyToVacancy(id, { coverLetter: coverLetter.trim() || undefined });
             const chatId = result?.appChatId || result?.chatId || null;
             setAppChatId(chatId);
@@ -75,7 +93,7 @@ const VacancyDetail = () => {
                 navigate(`/chats?chatId=${encodeURIComponent(chatId)}`);
             }
         } catch (err) {
-            setError(err.message || 'Не удалось откликнуться');
+            setError(formatApiUserMessage(err) || 'Не удалось откликнуться');
         } finally {
             setApplying(false);
         }
@@ -119,7 +137,7 @@ const VacancyDetail = () => {
                                 </div>
                             ) : null}
 
-                            {isStudent && !vacancy.hasApplied ? (
+                            {isStudent && !vacancy.hasApplied && canApply ? (
                                 <form className="vacanciesPage__applyForm" onSubmit={handleApply}>
                                     <div className="vacanciesPage__filterGroup">
                                         <label htmlFor="cover-letter">Сопроводительное письмо</label>
@@ -138,6 +156,14 @@ const VacancyDetail = () => {
                                         </button>
                                     </div>
                                 </form>
+                            ) : null}
+
+                            {isStudent && !vacancy.hasApplied && !canApply ? (
+                                <p className="vacanciesPage__hint vacanciesPage__hint--pending">
+                                    {isAccountPending(getAccountStatus())
+                                        ? PENDING_APPROVAL_MESSAGE
+                                        : 'Откликнуться на вакансию могут только студенты с одобренным аккаунтом.'}
+                                </p>
                             ) : null}
 
                             {vacancy.hasApplied ? (

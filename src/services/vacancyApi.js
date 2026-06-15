@@ -1,8 +1,18 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { buildPageQuery, extractPageRows } from '../utils/pageable.js';
+import { canStudentApplyToVacancies } from './authApi.js';
+import { PENDING_APPROVAL_MESSAGE } from '../utils/apiErrors.js';
 import { getVacancyById, listVacanciesPage } from './catalogApi.js';
 
 export const vacancyPageRows = (res) => extractPageRows(res);
+
+const requireStudentVacancyAccess = () => {
+    if (!canStudentApplyToVacancies()) {
+        const err = new Error(PENDING_APPROVAL_MESSAGE);
+        err.status = 403;
+        throw err;
+    }
+};
 
 export const listVacancies = (filter = {}, page = 0, size = 20) => listVacanciesPage(filter, page, size);
 
@@ -11,6 +21,7 @@ export const getVacancy = (id) => getVacancyById(id);
 export const listMyVacancies = () => apiClientJson('vacancies/mine', { method: 'GET' });
 
 export const listMyApplications = (page = 0, size = 20) => {
+    requireStudentVacancyAccess();
     const { query } = buildPageQuery({ page, size });
     return apiClientJson(`vacancies/applications/mine?${query}`, { method: 'GET' });
 };
@@ -33,11 +44,13 @@ export const listVacancyApplications = (vacancyId, page = 0, size = 20) => {
     return apiClientJson(`vacancies/${vacancyId}/applications?${query}`, { method: 'GET' });
 };
 
-export const applyToVacancy = (id, body) =>
-    apiClientJson(`vacancies/${id}/applications`, {
+export const applyToVacancy = (id, body) => {
+    requireStudentVacancyAccess();
+    return apiClientJson(`vacancies/${id}/applications`, {
         method: 'POST',
-        body: body ? JSON.stringify(body) : undefined,
+        body: JSON.stringify(body ?? {}),
     });
+};
 
 export const acceptApplication = (vacancyId, applicationId) =>
     apiClientJson(`vacancies/${vacancyId}/applications/${applicationId}/accept`, { method: 'POST' });

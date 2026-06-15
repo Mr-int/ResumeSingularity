@@ -1,4 +1,8 @@
-import { isAccountPending } from '../services/authApi.js';
+import {
+    isAccountPending,
+    isStudentRole,
+    getAccountStatus,
+} from '../services/authApi.js';
 
 export const PENDING_APPROVAL_MESSAGE =
     'Ваш аккаунт ещё на проверке. После одобрения администратором откроется полный доступ к каталогу и профилю.';
@@ -55,6 +59,12 @@ export function formatApiUserMessage(error) {
     }
 
     if (status === 403) {
+        if (
+            isStudentRole()
+            && (isAccountPending(getAccountStatus()) || isPendingApprovalText(raw))
+        ) {
+            return PENDING_APPROVAL_MESSAGE;
+        }
         if (raw && !isAccessDeniedText(raw)) return raw;
         return 'Недостаточно прав для выполнения действия.';
     }
@@ -75,5 +85,6 @@ export function isPendingApprovalError(error) {
     const raw = String(error.message || error.responseBody?.message || '');
     if (isPendingApprovalText(raw)) return true;
     if (error.status === 403 && isAccountPending()) return true;
+    if (error.status === 403 && isStudentRole() && isAccountPending(getAccountStatus())) return true;
     return false;
 }

@@ -124,6 +124,24 @@ async function resolveMe() {
     return null;
 }
 
+const tuCongratsStorageKey = (requestId) => `resume:tu-congrats:${requestId}`;
+
+const hasSeenTuCongrats = (requestId) => {
+    try {
+        return sessionStorage.getItem(tuCongratsStorageKey(requestId)) === '1';
+    } catch {
+        return false;
+    }
+};
+
+const markTuCongratsSeen = (requestId) => {
+    try {
+        sessionStorage.setItem(tuCongratsStorageKey(requestId), '1');
+    } catch {
+        /* empty */
+    }
+};
+
 const ChatsView = () => {
     const [searchParams] = useSearchParams();
     const isMobile = useMediaQuery('(max-width: 768px)');
@@ -148,6 +166,7 @@ const ChatsView = () => {
     const [pendingBusy, setPendingBusy] = useState(false);
     const [pendingComment, setPendingComment] = useState('');
     const [tuReasonCode, setTuReasonCode] = useState('NOT_A_FIT');
+    const [tuCongrats, setTuCongrats] = useState(null);
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
     const draftInputRef = useRef(null);
@@ -413,6 +432,63 @@ const ChatsView = () => {
         [chats, selectedId],
     );
 
+    const loadPendingRequest = useCallback(async () => {
+        if (!selectedId || !me?.role) {
+            setPendingRequest(null);
+            setPendingMode(null);
+            return null;
+        }
+        const chatRow =
+            chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
+            selectedChat ||
+            { id: selectedId };
+        const chatIds = new Set(getChatIdList(chatRow, selectedId).map(String));
+        const peerRecruiterId = chatRow?.recruiterId ?? selectedChat?.recruiterId;
+        const peerStudentId = chatRow?.studentId ?? selectedChat?.studentId;
+        const res = await filterMyRequests({}, 0, 100);
+        const items = extractRequestRows(res);
+        const matched = items.filter((r) =>
+            matchRequestToChat(r, chatRow, chatIds, peerRecruiterId, peerStudentId),
+        );
+        const studentAction =
+            me.role === 'student'
+                ? matched.find((r) => canStudentDecideRequest(r.result) && resolveRequestId(r))
+                : null;
+        const tuAction = matched.find(
+            (r) => canTuDecideRequest(r.result, me.role) && resolveRequestId(r),
+        );
+        let request = null;
+        let mode = null;
+        if (studentAction) {
+            request = studentAction;
+            mode = 'student_decision';
+        } else if (tuAction) {
+            request = tuAction;
+            mode = 'tu_decision';
+        } else if (matched[0]) {
+            request = matched[0];
+        }
+        const resolvedId = request ? resolveRequestId(request) : null;
+        setPendingRequest(resolvedId ? request : null);
+        setPendingMode(mode);
+        if (!mode) {
+            setPendingComment('');
+            setTuReasonCode('NOT_A_FIT');
+        }
+        if (resolvedId && request?.result === 'SUCCESS' && !hasSeenTuCongrats(resolvedId)) {
+            markTuCongratsSeen(resolvedId);
+            setTuCongrats({ variant: 'success', requestId: resolvedId });
+        }
+        return request;
+    }, [selectedId, selectedChat, me?.role]);
+
+    const closeTuCongrats = () => {
+        if (tuCongrats?.requestId) {
+            markTuCongratsSeen(tuCongrats.requestId);
+        }
+        setTuCongrats(null);
+    };
+
     const peerReadMessageId = useMemo(
         () => extractPeerReadMessageId(selectedChat, me?.role),
         [selectedChat, me?.role],
@@ -456,47 +532,10 @@ const ChatsView = () => {
             setPendingComment('');
             return;
         }
-        const chatRow =
-            chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
-            selectedChat ||
-            { id: selectedId };
-        const chatIds = new Set(getChatIdList(chatRow, selectedId).map(String));
-        const peerRecruiterId = chatRow?.recruiterId ?? selectedChat?.recruiterId;
-        const peerStudentId = chatRow?.studentId ?? selectedChat?.studentId;
         let cancelled = false;
         (async () => {
             try {
-                const res = await filterMyRequests({}, 0, 100);
-                const items = extractRequestRows(res);
-                const matched = items.filter((r) =>
-                    matchRequestToChat(r, chatRow, chatIds, peerRecruiterId, peerStudentId),
-                );
-                const studentAction =
-                    me?.role === 'student'
-                        ? matched.find((r) => canStudentDecideRequest(r.result) && resolveRequestId(r))
-                        : null;
-                const tuAction = matched.find(
-                    (r) => canTuDecideRequest(r.result) && resolveRequestId(r),
-                );
-                let request = null;
-                let mode = null;
-                if (studentAction) {
-                    request = studentAction;
-                    mode = 'student_decision';
-                } else if (tuAction) {
-                    request = tuAction;
-                    mode = 'tu_decision';
-                } else if (matched[0]) {
-                    request = matched[0];
-                }
-                if (!cancelled) {
-                    setPendingRequest(request && resolveRequestId(request) ? request : null);
-                    setPendingMode(mode);
-                    if (!mode) {
-                        setPendingComment('');
-                        setTuReasonCode('NOT_A_FIT');
-                    }
-                }
+                await loadPendingRequest();
             } catch {
                 if (!cancelled) {
                     setPendingRequest(null);
@@ -507,15 +546,16 @@ const ChatsView = () => {
         return () => {
             cancelled = true;
         };
-    }, [selectedId, selectedChat, me?.role]);
+    }, [selectedId, loadPendingRequest]);
 
     useEffect(() => {
         if (!selectedId) return undefined;
         const poll = window.setInterval(() => {
             refreshSummary(selectedId);
+            loadPendingRequest().catch(() => {});
         }, 4000);
         return () => window.clearInterval(poll);
-    }, [selectedId, refreshSummary]);
+    }, [selectedId, refreshSummary, loadPendingRequest]);
 
     useEffect(() => {
         const ids = new Set();
@@ -701,7 +741,7 @@ const ChatsView = () => {
             await loadMessages(chatRow, selectedId);
             await loadChats();
         } catch (err) {
-            setSendError(formatApiUserMessage(err, 'Не удалось обработать заявку'));
+            setSendError(formatApiUserMessage(err) || 'Не удалось обработать заявку');
         } finally {
             setPendingBusy(false);
         }
@@ -717,15 +757,24 @@ const ChatsView = () => {
                 requestId,
                 buildTuDecisionBody(accepted, tuReasonCode, pendingComment),
             );
-            setPendingRequest(null);
-            setPendingMode(null);
             setPendingComment('');
             setTuReasonCode('NOT_A_FIT');
             const chatRow = selectedChat || { id: selectedId };
             await loadMessages(chatRow, selectedId);
             await loadChats();
+            if (accepted) {
+                const res = await filterMyRequests({}, 0, 100);
+                const items = extractRequestRows(res);
+                const updated = items.find((r) => resolveRequestId(r) === requestId);
+                const variant = updated?.result === 'SUCCESS' ? 'success' : 'confirmed';
+                setTuCongrats({ variant, requestId });
+                if (variant === 'success') {
+                    markTuCongratsSeen(requestId);
+                }
+            }
+            await loadPendingRequest();
         } catch (err) {
-            setSendError(formatApiUserMessage(err, 'Не удалось обработать решение по ТУ'));
+            setSendError(formatApiUserMessage(err) || 'Не удалось обработать решение по ТУ');
         } finally {
             setPendingBusy(false);
         }
@@ -923,7 +972,9 @@ const ChatsView = () => {
                         >
                             <p className="chatsView__requestPanelTitle">Техническое собеседование</p>
                             <p className="chatsView__requestPanelHint">
-                                Подтвердите прохождение ТУ или укажите причину отказа.
+                                {me?.role === 'student'
+                                    ? 'Подтвердите, что вы прошли техническое собеседование с работодателем, или укажите причину отказа.'
+                                    : 'Подтвердите, что студент прошёл техническое собеседование, или укажите причину отказа.'}
                             </p>
                             <label className="chatsView__requestPanelField">
                                 <span>Причина отказа</span>
@@ -1131,6 +1182,41 @@ const ChatsView = () => {
                     </form>
                 </footer>
             </main>
+
+            {tuCongrats ? (
+                <div
+                    className="chatsView__tuCongratsOverlay"
+                    role="presentation"
+                    onClick={closeTuCongrats}
+                >
+                    <div
+                        className="chatsView__tuCongratsModal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="tu-congrats-title"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="chatsView__tuCongratsIcon" aria-hidden="true">
+                            {tuCongrats.variant === 'success' ? '🎉' : '✓'}
+                        </div>
+                        <h3 id="tu-congrats-title" className="chatsView__tuCongratsTitle">
+                            {tuCongrats.variant === 'success' ? 'Поздравляем!' : 'ТУ подтверждено'}
+                        </h3>
+                        <p className="chatsView__tuCongratsText">
+                            {tuCongrats.variant === 'success'
+                                ? 'Заявка успешно завершена. Желаем удачи в дальнейшем сотрудничестве!'
+                                : 'Вы подтвердили прохождение технического собеседования.'}
+                        </p>
+                        <button
+                            type="button"
+                            className="chatsView__tuCongratsBtn"
+                            onClick={closeTuCongrats}
+                        >
+                            Отлично
+                        </button>
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 };

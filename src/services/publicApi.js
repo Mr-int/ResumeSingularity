@@ -33,7 +33,11 @@ export const filterPublicStudentCards = async (filterReq = {}, page = 0, size = 
     return normalizePageResponse(resp, page, size);
 };
 
-/** GET /public/vacancies — публичная витрина (не используется в ЛК, только для справки). */
+/** GET /public/vacancies/{id} */
+export const getPublicVacancyById = (id) =>
+    apiClientJson(`public/vacancies/${id}`, { method: 'GET', credentials: 'omit' });
+
+/** GET /public/vacancies — публичная витрина. */
 export const listPublicVacancies = async (filter = {}, page = 0, size = 20) => {
     const { query } = buildPageQuery({ page, size });
     const params = new URLSearchParams(query);
@@ -43,7 +47,11 @@ export const listPublicVacancies = async (filter = {}, page = 0, size = 20) => {
     (filter.employmentTypes || []).forEach((v) => params.append('employmentTypes', v));
     (filter.specialityIds || []).forEach((v) => params.append('specialityIds', String(v)));
     (filter.skillIds || []).forEach((v) => params.append('skillIds', String(v)));
-    return apiClientJson(`public/vacancies?${params.toString()}`, { method: 'GET' });
+    const resp = await apiClientJson(`public/vacancies?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'omit',
+    });
+    return normalizePageResponse(resp, page, size);
 };
 
 /** GET /main/status */
