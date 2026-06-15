@@ -4,15 +4,8 @@ import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { listVacancies, vacancyPageRows } from '../services/vacancyApi.js';
 import { isStudentRole, isRecruiterRole } from '../services/authApi.js';
+import { buildVacancyMetaLine } from '../utils/vacancyEnums.js';
 import './vacanciesPage.css';
-
-const WORK_LABELS = { REMOTE: 'Удалённо', OFFICE: 'Офис', HYBRID: 'Гибрид' };
-const EMP_LABELS = {
-    INTERNSHIP: 'Стажировка',
-    PART_TIME: 'Частичная',
-    FULL_TIME: 'Полная',
-    PROJECT: 'Проект',
-};
 
 const Vacancies = () => {
     const [items, setItems] = useState([]);
@@ -112,9 +105,7 @@ const Vacancies = () => {
 
                     <ul className="vacanciesPage__list">
                         {items.map((v) => {
-                            const meta = [v.companyName || 'Компания', v.city, WORK_LABELS[v.workFormat], EMP_LABELS[v.employmentType]]
-                                .filter(Boolean)
-                                .join(' · ');
+                            const meta = buildVacancyMetaLine(v);
                             return (
                                 <li key={v.id} className="vacanciesPage__item">
                                     <Link to={`/vacancies/${v.id}`} className="vacanciesPage__itemLink">

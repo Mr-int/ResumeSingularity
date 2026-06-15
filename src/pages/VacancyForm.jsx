@@ -3,19 +3,27 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { createVacancy, getVacancy, updateVacancy } from '../services/vacancyApi.js';
+import {
+    WORK_FORMAT_OPTIONS,
+    EMPLOYMENT_TYPE_OPTIONS,
+    WORK_FORMAT_LABELS,
+    EMPLOYMENT_TYPE_LABELS,
+    extractWorkFormats,
+    extractEmploymentTypes,
+} from '../utils/vacancyEnums.js';
 import './vacanciesPage.css';
-
-const WORK_FORMATS = ['REMOTE', 'OFFICE', 'HYBRID'];
-const EMPLOYMENT_TYPES = ['INTERNSHIP', 'PART_TIME', 'FULL_TIME', 'PROJECT'];
 
 const emptyForm = () => ({
     title: '',
     companyName: '',
     city: '',
     description: '',
-    workFormat: 'REMOTE',
-    employmentType: 'FULL_TIME',
+    workFormats: ['REMOTE'],
+    employmentTypes: ['FULL_TIME'],
 });
+
+const toggleListValue = (list, value) =>
+    list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
 
 const VacancyForm = () => {
     const { id } = useParams();
@@ -35,13 +43,15 @@ const VacancyForm = () => {
             try {
                 const data = await getVacancy(id);
                 if (!cancelled) {
+                    const workFormats = extractWorkFormats(data);
+                    const employmentTypes = extractEmploymentTypes(data);
                     setForm({
                         title: data.title || '',
                         companyName: data.companyName || '',
                         city: data.city || '',
                         description: data.description || '',
-                        workFormat: data.workFormat || 'REMOTE',
-                        employmentType: data.employmentType || 'FULL_TIME',
+                        workFormats: workFormats.length ? workFormats : ['REMOTE'],
+                        employmentTypes: employmentTypes.length ? employmentTypes : ['FULL_TIME'],
                     });
                 }
             } catch (e) {
@@ -59,6 +69,10 @@ const VacancyForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!form.workFormats.length || !form.employmentTypes.length) {
+            setError('Выберите хотя бы один формат работы и один тип занятости');
+            return;
+        }
         setSaving(true);
         setError('');
         try {
@@ -67,8 +81,8 @@ const VacancyForm = () => {
                 companyName: form.companyName.trim() || undefined,
                 city: form.city.trim() || undefined,
                 description: form.description.trim() || undefined,
-                workFormat: form.workFormat,
-                employmentType: form.employmentType,
+                workFormats: form.workFormats,
+                employmentTypes: form.employmentTypes,
             };
             if (isEdit) {
                 await updateVacancy(id, body);
@@ -126,34 +140,44 @@ const VacancyForm = () => {
                                 />
                             </div>
                             <div className="vacanciesPage__filterGroup">
-                                <label htmlFor="vacancy-work">Формат</label>
-                                <select
-                                    id="vacancy-work"
-                                    className="vacanciesPage__input"
-                                    value={form.workFormat}
-                                    onChange={(e) => setField('workFormat', e.target.value)}
-                                >
-                                    {WORK_FORMATS.map((v) => (
-                                        <option key={v} value={v}>
-                                            {v}
-                                        </option>
+                                <span className="vacanciesPage__groupLabel">Формат работы</span>
+                                <div className="vacanciesPage__checkboxGroup">
+                                    {WORK_FORMAT_OPTIONS.map((value) => (
+                                        <label key={value} className="vacanciesPage__checkboxLabel">
+                                            <input
+                                                type="checkbox"
+                                                checked={form.workFormats.includes(value)}
+                                                onChange={() =>
+                                                    setField(
+                                                        'workFormats',
+                                                        toggleListValue(form.workFormats, value),
+                                                    )
+                                                }
+                                            />
+                                            {WORK_FORMAT_LABELS[value]}
+                                        </label>
                                     ))}
-                                </select>
+                                </div>
                             </div>
                             <div className="vacanciesPage__filterGroup">
-                                <label htmlFor="vacancy-employment">Занятость</label>
-                                <select
-                                    id="vacancy-employment"
-                                    className="vacanciesPage__input"
-                                    value={form.employmentType}
-                                    onChange={(e) => setField('employmentType', e.target.value)}
-                                >
-                                    {EMPLOYMENT_TYPES.map((v) => (
-                                        <option key={v} value={v}>
-                                            {v}
-                                        </option>
+                                <span className="vacanciesPage__groupLabel">Занятость</span>
+                                <div className="vacanciesPage__checkboxGroup">
+                                    {EMPLOYMENT_TYPE_OPTIONS.map((value) => (
+                                        <label key={value} className="vacanciesPage__checkboxLabel">
+                                            <input
+                                                type="checkbox"
+                                                checked={form.employmentTypes.includes(value)}
+                                                onChange={() =>
+                                                    setField(
+                                                        'employmentTypes',
+                                                        toggleListValue(form.employmentTypes, value),
+                                                    )
+                                                }
+                                            />
+                                            {EMPLOYMENT_TYPE_LABELS[value]}
+                                        </label>
                                     ))}
-                                </select>
+                                </div>
                             </div>
                             <div className="vacanciesPage__filterGroup">
                                 <label htmlFor="vacancy-description">Описание</label>

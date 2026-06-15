@@ -11,6 +11,7 @@ import {
     vacancyPageRows,
 } from '../services/vacancyApi.js';
 import { isStudentRole, isRecruiterRole } from '../services/authApi.js';
+import { buildVacancyMetaLine, getApplicationStatusLabel } from '../utils/vacancyEnums.js';
 import './vacanciesPage.css';
 
 const VacancyDetail = () => {
@@ -105,11 +106,7 @@ const VacancyDetail = () => {
                         <article className="vacanciesPage__detail">
                             <h1>{vacancy.title}</h1>
                             <p className="vacanciesPage__company">{vacancy.companyName}</p>
-                            <p className="vacanciesPage__meta">
-                                {[vacancy.city, vacancy.workFormat, vacancy.employmentType, vacancy.status]
-                                    .filter(Boolean)
-                                    .join(' · ')}
-                            </p>
+                            <p className="vacanciesPage__meta">{buildVacancyMetaLine(vacancy, { includeStatus: true })}</p>
                             {vacancy.description ? (
                                 <div className="vacanciesPage__description">{vacancy.description}</div>
                             ) : null}
@@ -170,7 +167,7 @@ const VacancyDetail = () => {
                                             <div key={app.id} className="vacanciesPage__applicationRow">
                                                 <div>
                                                     <strong>{app.studentName || 'Студент'}</strong>
-                                                    <p className="vacanciesPage__meta">{app.status}</p>
+                                                    <p className="vacanciesPage__meta">{getApplicationStatusLabel(app.status)}</p>
                                                     {app.coverLetter ? (
                                                         <p className="vacanciesPage__description">{app.coverLetter}</p>
                                                     ) : null}

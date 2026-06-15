@@ -242,11 +242,17 @@ const StudentSlider = () => {
                                 <p className="studentSlider__emptyText">{PENDING_APPROVAL_MESSAGE}</p>
                             </>
                         ) : emptyReason === 'guest' ? (
-                            <p className="studentSlider__emptyText">
-                                Войдите в аккаунт, чтобы увидеть каталог студентов.
-                            </p>
+                            <>
+                                <p className="studentSlider__emptyTitle">Войдите в аккаунт</p>
+                                <p className="studentSlider__emptyText">
+                                    Чтобы увидеть каталог студентов на главной странице.
+                                </p>
+                            </>
                         ) : (
-                            <p className="studentSlider__emptyText">Пока нет студентов для показа.</p>
+                            <>
+                                <p className="studentSlider__emptyTitle">Студенты скоро появятся</p>
+                                <p className="studentSlider__emptyText">Пока нет карточек для показа в слайдере.</p>
+                            </>
                         )}
                     </div>
                 )}

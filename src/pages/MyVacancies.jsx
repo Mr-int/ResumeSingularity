@@ -8,6 +8,7 @@ import {
     listMyVacancies,
     submitVacancyForReview,
 } from '../services/vacancyApi.js';
+import { buildVacancyMetaLine, getVacancyStatusLabel } from '../utils/vacancyEnums.js';
 import './vacanciesPage.css';
 
 const MyVacancies = () => {
@@ -67,9 +68,11 @@ const MyVacancies = () => {
                             <li key={v.id} className="vacanciesPage__card vacanciesPage__card--static">
                                 <div className="vacanciesPage__cardHead">
                                     <h2>{v.title}</h2>
-                                    <span className="vacanciesPage__badge">{v.status}</span>
+                                    <span className="vacanciesPage__badge">
+                                        {getVacancyStatusLabel(v.status)}
+                                    </span>
                                 </div>
-                                <p className="vacanciesPage__meta">{v.city || '—'}</p>
+                                <p className="vacanciesPage__meta">{buildVacancyMetaLine(v) || v.city || '—'}</p>
                                 <div className="vacanciesPage__cardActions">
                                     <Link to={`/vacancies/${v.id}/edit`} className="vacanciesPage__linkBtn">
                                         Редактировать

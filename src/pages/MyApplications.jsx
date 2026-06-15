@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { listMyApplications, vacancyPageRows, withdrawApplication } from '../services/vacancyApi.js';
+import { getApplicationStatusLabel } from '../utils/vacancyEnums.js';
 import './vacanciesPage.css';
 
 const MyApplications = () => {
@@ -87,7 +88,7 @@ const MyApplications = () => {
                                         ) : null}
                                     </div>
                                     <span className="vacanciesPage__itemStatus vacanciesPage__itemStatus--muted">
-                                        {a.status}
+                                        {getApplicationStatusLabel(a.status)}
                                     </span>
                                 </div>
                             </li>
