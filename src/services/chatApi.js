@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api.js';
 import { apiClientJson } from '../utils/apiClient.js';
+import { isChatMessagesBlockedError } from '../utils/apiErrors.js';
 
 /** Spring Page: data или content, иногда массив напрямую */
 export const extractChatPageItems = (res) => {
@@ -86,14 +87,21 @@ export const getMyChats = (page = 0, size = 50) =>
  * GET /chat/{chatId}/messages
  * При 500 на бэкенде пробуем без sort (известная несовместимость pageable).
  */
-export const getChatMessages = async (chatId, page = 0, size = 50) => {
+export const getChatMessages = async (chatId, page = 0, size = 50, options = {}) => {
+    const quiet = options.quiet === true;
     const withSort = `chat/${chatId}/messages?${pageQuery(page, size, ['createdAt,asc'])}`;
     const noSort = `chat/${chatId}/messages?${pageQuery(page, size, [])}`;
     try {
-        return await apiClientJson(withSort, { method: 'GET' });
+        return await apiClientJson(withSort, { method: 'GET', quiet });
     } catch (e) {
-        if (e.status === 500 || e.status === 400) {
-            return await apiClientJson(noSort, { method: 'GET' });
+        if (isChatMessagesBlockedError(e)) {
+            throw e;
+        }
+        if (e.status === 500) {
+            return await apiClientJson(noSort, { method: 'GET', quiet });
+        }
+        if (e.status === 400) {
+            return await apiClientJson(noSort, { method: 'GET', quiet });
         }
         throw e;
     }
@@ -112,7 +120,10 @@ export const loadMergedChatMessages = async (chatRow, fallbackId, page = 0, size
     const ids = getChatIdList(chatRow, fallbackId);
     const batches = await Promise.all(
         ids.map((id) =>
-            getChatMessages(id, page, size).catch(() => ({ data: [] })),
+            getChatMessages(id, page, size, { quiet: true }).catch((e) => {
+                if (isChatMessagesBlockedError(e)) return { data: [] };
+                return { data: [] };
+            }),
         ),
     );
     const byId = new Map();
@@ -204,7 +215,7 @@ export const markChatFullyRead = async (chatId, knownLastMessageId = null) => {
     if (!chatId) return false;
     let messageId = knownLastMessageId;
     if (!messageId) {
-        const res = await getChatMessages(chatId, 0, 50);
+        const res = await getChatMessages(chatId, 0, 50, { quiet: true });
         const rows = extractChatPageItems(res);
         const last = rows.filter(isActiveMessage).pop();
         messageId = last?.id;

@@ -1,6 +1,10 @@
 import { API_BASE_URL } from '../config/api.js';
 import { refreshSession } from '../services/authApi.js';
-import { formatApiUserMessage, isPendingApprovalError } from './apiErrors.js';
+import {
+    formatApiUserMessage,
+    isChatMessagesBlockedError,
+    isPendingApprovalError,
+} from './apiErrors.js';
 
 const clearLocalAuthSilently = () => {
     localStorage.removeItem('isAuthenticated');
@@ -110,7 +114,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
             return {};
         }
     } catch (error) {
-        if (!quiet && !isPendingApprovalError(error)) {
+        if (!quiet && !isPendingApprovalError(error) && !isChatMessagesBlockedError(error)) {
             console.error(`[API] Error for endpoint ${endpoint}:`, error);
             console.error('[API] Full URL was:', url);
         }

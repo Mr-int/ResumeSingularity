@@ -88,3 +88,13 @@ export function isPendingApprovalError(error) {
     if (error.status === 403 && isStudentRole() && isAccountPending(getAccountStatus())) return true;
     return false;
 }
+
+/** Чат ещё закрыт — студент не принял заявку. */
+export function isChatMessagesBlockedError(error) {
+    if (!error) return false;
+    const raw = normalize(error.message || error.responseBody?.message || '');
+    return (
+        raw.includes('переписка доступна после принятия')
+        || raw.includes('принятия заявки студентом')
+    );
+}

@@ -54,9 +54,17 @@ const parseResponseJson = async (response) => {
 
 const parseAuthErrorMessage = (status, rawBody) => {
     let message = rawBody;
+    let parsed = null;
     try {
-        const parsed = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+        parsed = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
         message = parsed?.message || message;
+        if (Array.isArray(parsed?.errors) && parsed.errors.length) {
+            message = parsed.errors.join('; ');
+        } else if (Array.isArray(parsed?.fieldErrors) && parsed.fieldErrors.length) {
+            message = parsed.fieldErrors
+                .map((f) => f.message || `${f.field}: ${f.defaultMessage || ''}`)
+                .join('; ');
+        }
     } catch {
         /* keep raw */
     }
@@ -66,7 +74,20 @@ const parseAuthErrorMessage = (status, rawBody) => {
     if (status === 403) {
         return message || 'Доступ запрещён. Аккаунт может быть на проверке.';
     }
-    return message || `Ошибка входа (${status})`;
+    if (status === 400) {
+        const lower = String(message || '').toLowerCase();
+        if (lower.includes('username') || lower.includes('логин')) {
+            return 'Логин занят или не подходит. Используйте латинские буквы, цифры и подчёркивание (3–64 символа).';
+        }
+        if (
+            lower.includes('verification')
+            || lower.includes('верификац')
+            || lower.includes('phoneverification')
+        ) {
+            return 'Подтверждение телефона недействительно или истекло. Подтвердите номер в Telegram заново.';
+        }
+    }
+    return message || `Ошибка (${status})`;
 };
 
 /** Сбрасывает протухшую серверную сессию, чтобы login не ломался из‑за старых cookies. */
@@ -228,13 +249,7 @@ export const registerStudent = async (body) => {
     });
     if (!response.ok) {
         const text = await response.text();
-        let msg = text;
-        try {
-            msg = JSON.parse(text).message || text;
-        } catch {
-            /* empty */
-        }
-        const err = new Error(msg || `Ошибка ${response.status}`);
+        const err = new Error(parseAuthErrorMessage(response.status, text));
         err.status = response.status;
         throw err;
     }
@@ -266,13 +281,7 @@ export const registerRecruiter = async (body) => {
     });
     if (!response.ok) {
         const text = await response.text();
-        let msg = text;
-        try {
-            msg = JSON.parse(text).message || text;
-        } catch {
-            /* empty */
-        }
-        const err = new Error(msg || `Ошибка ${response.status}`);
+        const err = new Error(parseAuthErrorMessage(response.status, text));
         err.status = response.status;
         throw err;
     }

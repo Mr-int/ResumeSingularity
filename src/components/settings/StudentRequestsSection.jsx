@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { filterMyRequests, postStudentDecision, buildStudentDecisionBody, extractRequestRows, resolveRequestId } from '../../services/requestApi.js';
-import { getRecruiterById } from '../../services/getApi.js';
+import { fetchRecruiterForView } from '../../services/getApi.js';
 import { formatApiUserMessage, isPendingApprovalError } from '../../utils/apiErrors.js';
 
 const RESULT_LABELS = {
@@ -48,7 +48,7 @@ const StudentRequestsSection = ({ studentId }) => {
             await Promise.all(
                 [...new Set(rows.map((r) => r.recruiterId).filter(Boolean))].map(async (rid) => {
                     try {
-                        recruiterMap[rid] = await getRecruiterById(rid);
+                        recruiterMap[rid] = await fetchRecruiterForView(rid);
                     } catch {
                         recruiterMap[rid] = null;
                     }

@@ -51,6 +51,20 @@ const roleBadgeClass = (apiRole, profileRole) => {
     return 'accountPage__roleBadge--recruiter';
 };
 
+const identityStatusClass = (accountStatus, profileRole) => {
+    if (
+        profileRole === 'student_pending'
+        || profileRole === 'recruiter_pending'
+        || accountStatus === 'PENDING'
+        || accountStatus === 'PENDING_APPROVAL'
+    ) {
+        return 'accountPage__identityStatus--warn';
+    }
+    if (accountStatus === 'APPROVED') return 'accountPage__identityStatus--ok';
+    if (accountStatus === 'REJECTED') return 'accountPage__identityStatus--rejected';
+    return '';
+};
+
 const resolveIdentity = (session, profileRole) => {
     const apiRole =
         session?.role ||
@@ -73,7 +87,7 @@ const resolveIdentity = (session, profileRole) => {
         roleLabel = 'Работодатель';
     }
     const statusLabel = accountStatus ? STATUS_LABELS[accountStatus] || accountStatus : null;
-    return { apiRole, username, roleLabel, statusLabel };
+    return { apiRole, username, roleLabel, statusLabel, accountStatus };
 };
 
 const studentToForm = (s) => ({
@@ -429,12 +443,13 @@ const SettingsPage = () => {
                                 </span>
                                 <div className="accountPage__identityMeta">
                                     <span className="accountPage__identityUsername">{identity.username}</span>
-                                    {identity.statusLabel ? (
-                                        <span className="accountPage__identityStatus">{identity.statusLabel}</span>
-                                    ) : null}
-                                    {role === 'recruiter_pending' || role === 'student_pending' ? (
-                                        <span className="accountPage__identityStatus accountPage__identityStatus--warn">
-                                            Аккаунт на проверке
+                                    {identity.statusLabel
+                                    || role === 'recruiter_pending'
+                                    || role === 'student_pending' ? (
+                                        <span
+                                            className={`accountPage__identityStatus ${identityStatusClass(identity.accountStatus, role)}`.trim()}
+                                        >
+                                            {identity.statusLabel || 'Аккаунт на проверке'}
                                         </span>
                                     ) : null}
                                 </div>

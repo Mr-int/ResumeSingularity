@@ -16,6 +16,22 @@ export const getStudentMe = () =>
     apiClientJson('student/me', { method: 'GET', skipSessionClearOn403: true, quiet: true });
 
 export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { method: 'GET' });
+
+/** Карточка рекрутера для чата (403/404 → null, без сброса сессии). */
+export const fetchRecruiterForView = async (id) => {
+    if (!id) return null;
+    try {
+        const data = await apiClientJson(`recruiter/${id}`, {
+            method: 'GET',
+            skipSessionClearOn403: true,
+            quiet: true,
+        });
+        return data?.id ? data : null;
+    } catch (e) {
+        if (e.status === 403 || e.status === 404) return null;
+        throw e;
+    }
+};
 export const getRecruiterMe = () =>
     apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true, quiet: true });
 

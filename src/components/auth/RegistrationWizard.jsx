@@ -11,6 +11,10 @@ import logo from '../../assets/logos/Logo.png';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { MIN_REGISTRATION_PASSWORD_LENGTH, validateRegistrationPassword } from '../../utils/passwordPolicy.js';
 import { normalizePhone, formatPhoneDisplay } from '../../utils/phoneFormat.js';
+import {
+    buildRecruiterRegistrationBody,
+    validateRegistrationUsername,
+} from '../../utils/registrationValidation.js';
 import './loginModal.css';
 
 const ChevronLeftIcon = () => (
@@ -196,9 +200,12 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
             showError('Пароли не совпадают');
             return false;
         }
-        if (requireUsername && (!username.trim() || username.trim().length < 3)) {
-            showError('Укажите логин (минимум 3 символа)');
-            return false;
+        if (requireUsername) {
+            const usernameCheck = validateRegistrationUsername(username);
+            if (!usernameCheck.ok) {
+                showError(usernameCheck.message);
+                return false;
+            }
         }
         return true;
     };
@@ -215,6 +222,19 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
         const login = username.trim();
         setLoading(true);
         try {
+            const statusRes = await getPhoneVerificationStatus(verification.verificationId);
+            if (statusRes.status !== 'CONFIRMED') {
+                const expired = statusRes.status === 'EXPIRED';
+                showError(
+                    expired
+                        ? 'Время подтверждения телефона истекло. Подтвердите номер заново.'
+                        : 'Сначала подтвердите номер в Telegram.',
+                );
+                if (expired) {
+                    setView('contact');
+                }
+                return;
+            }
             if (isStudent) {
                 await registerStudent({
                     username: login,
@@ -226,18 +246,20 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                 stopPolling();
                 setView('done-student');
             } else {
-                await registerRecruiter({
-                    username: login,
-                    password,
-                    passwordConfirm,
-                    phoneNumber: verification.phoneNumber,
-                    phoneVerificationId: verification.verificationId,
-                    companyName: recruiterCompany.trim(),
-                    firstName: recruiterFirstName.trim(),
-                    lastName: recruiterLastName.trim(),
-                    email: recruiterEmail.trim(),
-                    city: recruiterCity.trim(),
-                });
+                await registerRecruiter(
+                    buildRecruiterRegistrationBody({
+                        username: login,
+                        password,
+                        passwordConfirm,
+                        phoneNumber: verification.phoneNumber,
+                        phoneVerificationId: verification.verificationId,
+                        companyName: recruiterCompany,
+                        firstName: recruiterFirstName,
+                        lastName: recruiterLastName,
+                        email: recruiterEmail,
+                        city: recruiterCity,
+                    }),
+                );
                 stopPolling();
                 setView('done-recruiter');
             }

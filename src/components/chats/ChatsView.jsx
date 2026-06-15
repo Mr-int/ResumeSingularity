@@ -23,7 +23,15 @@ import {
 } from '../../utils/requestFlow.js';
 import { formatApiUserMessage } from '../../utils/apiErrors.js';
 import { getStudentById } from '../../services/studentApi.js';
-import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
+import { fetchRecruiterForView, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
+import {
+    derivePeerMetaFromMessages,
+    formatRecruiterPeerMeta,
+    formatStudentPeerMeta,
+    isGenericPeerTitle,
+    resolveRecruiterIdForChat,
+    resolveStudentIdForChat,
+} from '../../utils/chatPeerMeta.js';
 import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
 import { disconnectChatWebSocket, subscribeChatTopic } from '../../services/chatWebSocket.js';
@@ -181,6 +189,7 @@ const ChatsView = () => {
     const chatAliasRef = useRef({});
     const studentCacheRef = useRef(new Map());
     const recruiterCacheRef = useRef(new Map());
+    const myRequestsRef = useRef([]);
     const chatsRef = useRef([]);
     const selectedIdRef = useRef(null);
     const readChatRowsRef = useRef(new Set());
@@ -290,10 +299,10 @@ const ChatsView = () => {
         }
     }, []);
 
-    const enrichChatMeta = useCallback(async (chat, party) => {
+    const enrichChatMeta = useCallback(async (chat, party, requests = []) => {
         const key = chat.id;
         const cachedTitle = titleCache.current.get(key);
-        if (cachedTitle && cachedTitle !== 'Диалог') {
+        if (cachedTitle && !isGenericPeerTitle(cachedTitle)) {
             return {
                 title: cachedTitle,
                 subtitle: subtitleCache.current.get(key) || '',
@@ -301,34 +310,40 @@ const ChatsView = () => {
             };
         }
 
+        const chatIds = new Set(getChatIdList(chat, chat.id).map(String));
         let title = '';
         let subtitle = '';
         let avatarUrl = null;
 
         const tryStudent = async (studentId) => {
-            if (!studentId) return false;
-            let s = studentCacheRef.current.get(studentId);
-            if (!s) {
-                s = await getStudentById(studentId);
-                studentCacheRef.current.set(studentId, s);
+            const resolvedId = studentId || resolveStudentIdForChat(chat, chatIds, requests);
+            if (!resolvedId) return false;
+            let student = studentCacheRef.current.get(resolvedId);
+            if (!student) {
+                student = await getStudentById(resolvedId);
+                if (student) studentCacheRef.current.set(resolvedId, student);
             }
-            title = `${s.firstName || ''} ${s.lastName || ''}`.trim() || 'Студент';
-            subtitle = s.speciality || s.profession || '';
-            avatarUrl = getImageUrl(peerImagePath(s));
+            const meta = formatStudentPeerMeta(student);
+            if (!meta) return false;
+            title = meta.title;
+            subtitle = meta.subtitle;
+            avatarUrl = getImageUrl(peerImagePath(student));
             return true;
         };
 
         const tryRecruiter = async (recruiterId) => {
-            if (!recruiterId) return false;
-            let r = recruiterCacheRef.current.get(recruiterId);
-            if (!r) {
-                r = await getRecruiterById(recruiterId);
-                recruiterCacheRef.current.set(recruiterId, r);
+            const resolvedId = recruiterId || resolveRecruiterIdForChat(chat, chatIds, requests);
+            if (!resolvedId) return false;
+            let recruiter = recruiterCacheRef.current.get(resolvedId);
+            if (!recruiter) {
+                recruiter = await fetchRecruiterForView(resolvedId);
+                if (recruiter) recruiterCacheRef.current.set(resolvedId, recruiter);
             }
-            const person = `${r.firstName || ''} ${r.lastName || ''}`.trim();
-            title = r.companyName || person || 'Работодатель';
-            subtitle = person && r.companyName ? person : '';
-            avatarUrl = getImageUrl(peerImagePath(r));
+            const meta = formatRecruiterPeerMeta(recruiter);
+            if (!meta) return false;
+            title = meta.title;
+            subtitle = meta.subtitle;
+            avatarUrl = getImageUrl(peerImagePath(recruiter));
             return true;
         };
 
@@ -352,9 +367,11 @@ const ChatsView = () => {
             else title = chat.studentId ? 'Студент' : chat.recruiterId ? 'Работодатель' : 'Собеседник';
         }
 
-        titleCache.current.set(key, title);
-        subtitleCache.current.set(key, subtitle);
-        avatarCache.current.set(key, avatarUrl);
+        if (!isGenericPeerTitle(title)) {
+            titleCache.current.set(key, title);
+            subtitleCache.current.set(key, subtitle);
+            avatarCache.current.set(key, avatarUrl);
+        }
         return { title, subtitle, avatarUrl };
     }, []);
 
@@ -369,9 +386,31 @@ const ChatsView = () => {
         try {
             const party = await resolveMe();
             setMe(party);
+            const role = party?.role || null;
+
+            let myRequests = [];
+            try {
+                const reqRes = await filterMyRequests({}, 0, 100);
+                myRequests = extractRequestRows(reqRes);
+                myRequestsRef.current = myRequests;
+                if (role === 'student') {
+                    const recruiterIds = [
+                        ...new Set(myRequests.map((r) => r.recruiterId).filter(Boolean)),
+                    ];
+                    await Promise.all(
+                        recruiterIds.map(async (recruiterId) => {
+                            if (recruiterCacheRef.current.has(recruiterId)) return;
+                            const recruiter = await fetchRecruiterForView(recruiterId);
+                            if (recruiter) recruiterCacheRef.current.set(recruiterId, recruiter);
+                        }),
+                    );
+                }
+            } catch {
+                myRequestsRef.current = [];
+            }
+
             const res = await getMyChats(0, 50);
             const rows = extractChatPageItems(res);
-            const role = party?.role || null;
             const { chats: deduped, aliasToCanonical } = dedupeChatsByPeer(rows, role);
             chatAliasRef.current = aliasToCanonical;
             setChats(deduped);
@@ -380,7 +419,11 @@ const ChatsView = () => {
             const nextAvatars = {};
             await Promise.all(
                 deduped.map(async (c) => {
-                    const { title, subtitle, avatarUrl } = await enrichChatMeta(c, party);
+                    const { title, subtitle, avatarUrl } = await enrichChatMeta(
+                        c,
+                        party,
+                        myRequests,
+                    );
                     nextTitles[c.id] = title;
                     nextSubtitles[c.id] = subtitle;
                     if (avatarUrl) nextAvatars[c.id] = avatarUrl;
@@ -397,6 +440,21 @@ const ChatsView = () => {
         }
     }, [enrichChatMeta]);
 
+    const applyPeerMetaFromMessages = useCallback(
+        (chatId, rows) => {
+            if (!chatId || !rows?.length || me?.role !== 'student') return;
+            const currentTitle = titleCache.current.get(chatId) || titles[chatId];
+            if (!isGenericPeerTitle(currentTitle)) return;
+            const derived = derivePeerMetaFromMessages(rows, isMine);
+            if (!derived?.title) return;
+            titleCache.current.set(chatId, derived.title);
+            subtitleCache.current.set(chatId, derived.subtitle || '');
+            setTitles((prev) => ({ ...prev, [chatId]: derived.title }));
+            setSubtitles((prev) => ({ ...prev, [chatId]: derived.subtitle || '' }));
+        },
+        [isMine, me?.role, titles],
+    );
+
     const loadMessages = useCallback(
         async (chatRow, fallbackId) => {
             const chatId = chatRow?.id ?? fallbackId;
@@ -406,6 +464,7 @@ const ChatsView = () => {
             try {
                 const rows = await loadMergedChatMessages(chatRow, fallbackId, 0, 50);
                 setMessages(rows);
+                applyPeerMetaFromMessages(chatId, rows);
                 const last = rows.filter((m) => !isMessageDeleted(m)).pop();
                 if (last?.id) {
                     try {
@@ -424,7 +483,7 @@ const ChatsView = () => {
                 setLoadingMessages(false);
             }
         },
-        [refreshSummary, clearChatUnread],
+        [refreshSummary, clearChatUnread, applyPeerMetaFromMessages],
     );
 
     const selectedChat = useMemo(
@@ -479,7 +538,7 @@ const ChatsView = () => {
             markTuCongratsSeen(resolvedId);
             setTuCongrats({ variant: 'success', requestId: resolvedId });
         }
-        return request;
+        return { request: resolvedId ? request : null, mode };
     }, [selectedId, selectedChat, me?.role]);
 
     const closeTuCongrats = () => {
@@ -519,11 +578,27 @@ const ChatsView = () => {
         const chatRow =
             chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
             { id: selectedId };
-        loadMessages(chatRow, selectedId).then(() => {
+        (async () => {
+            let skipMessages = false;
+            try {
+                const { mode } = await loadPendingRequest();
+                skipMessages = mode === 'student_decision' && me?.role === 'student';
+            } catch {
+                /* панель заявки не критична для загрузки ленты */
+            }
+            if (messagesLoadGen.current !== gen) return;
+            if (skipMessages) {
+                setMessages([]);
+                setSendError('');
+                setLoadingMessages(false);
+                refreshSummary(selectedId);
+                return;
+            }
+            await loadMessages(chatRow, selectedId);
             if (messagesLoadGen.current !== gen) return;
             refreshSummary(selectedId);
-        });
-    }, [selectedId, loadMessages, refreshSummary]);
+        })();
+    }, [selectedId, loadMessages, loadPendingRequest, refreshSummary, me?.role]);
 
     useEffect(() => {
         if (!selectedId) {
