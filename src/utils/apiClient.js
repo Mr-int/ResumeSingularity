@@ -16,6 +16,32 @@ const isHtmlBody = (text) => {
     return value.startsWith('<') || value.includes('<html') || value.includes('<!DOCTYPE');
 };
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
+
+const mergeAbortSignals = (timeoutMs, externalSignal) => {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+    const onExternalAbort = () => controller.abort();
+    if (externalSignal) {
+        if (externalSignal.aborted) {
+            controller.abort();
+        } else {
+            externalSignal.addEventListener('abort', onExternalAbort, { once: true });
+        }
+    }
+
+    return {
+        signal: controller.signal,
+        cleanup: () => {
+            window.clearTimeout(timeoutId);
+            if (externalSignal) {
+                externalSignal.removeEventListener('abort', onExternalAbort);
+            }
+        },
+    };
+};
+
 const buildHttpError = (status, errorText, responseBody) => {
     const message = responseBody?.message || (isHtmlBody(errorText) ? '' : errorText);
     const err = new Error(formatApiUserMessage({ status, message, responseBody }));
@@ -37,14 +63,21 @@ export const apiClientJson = async (endpoint, options = {}) => {
 
     const url = `${API_BASE_URL}${endpoint}`;
 
+    const timeoutMs =
+        typeof options.timeoutMs === 'number' && options.timeoutMs > 0
+            ? options.timeoutMs
+            : DEFAULT_REQUEST_TIMEOUT_MS;
+    const { signal, cleanup } = mergeAbortSignals(timeoutMs, options.signal);
+
     try {
         const response = await fetch(url, {
             method,
             headers,
             body,
             credentials: options.credentials ?? 'include',
-            signal: options.signal,
+            signal,
         });
+        cleanup();
 
         if (response.status === 401) {
             if (!options._retriedAfterRefresh && !endpoint.startsWith('auth/')) {
@@ -114,6 +147,14 @@ export const apiClientJson = async (endpoint, options = {}) => {
             return {};
         }
     } catch (error) {
+        cleanup();
+
+        if (error?.name === 'AbortError') {
+            const timeoutError = new Error('Превышено время ожидания ответа от сервера');
+            timeoutError.status = 408;
+            throw timeoutError;
+        }
+
         if (!quiet && !isPendingApprovalError(error) && !isChatMessagesBlockedError(error)) {
             console.error(`[API] Error for endpoint ${endpoint}:`, error);
             console.error('[API] Full URL was:', url);

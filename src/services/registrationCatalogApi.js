@@ -3,12 +3,29 @@ import { buildPageQuery, normalizePageResponse } from '../utils/pageable.js';
 
 /** Размер страницы публичного справочника (ограничен конфигом бэкенда). */
 const REGISTRATION_PAGE_SIZE = 20;
+const CATALOG_FETCH_TIMEOUT_MS = 12_000;
+
+const catalogCache = {
+    skills: null,
+    specialities: null,
+};
+const catalogInflight = {
+    skills: null,
+    specialities: null,
+};
+
+export const invalidateRegistrationCatalogCache = () => {
+    catalogCache.skills = null;
+    catalogCache.specialities = null;
+};
 
 const fetchPaged = async (endpoint, page = 0, size = REGISTRATION_PAGE_SIZE) => {
     const { query } = buildPageQuery({ page, size });
     const resp = await apiClientJson(`${endpoint}?${query}`, {
         method: 'GET',
         credentials: 'omit',
+        timeoutMs: CATALOG_FETCH_TIMEOUT_MS,
+        quiet: true,
     });
     return normalizePageResponse(resp, page, size);
 };
@@ -40,32 +57,65 @@ const fetchAllPaged = async (listFn) => {
     return Array.from(byId.values());
 };
 
+const loadCatalog = async (key, listFn, sortFn, { force = false } = {}) => {
+    if (!force && catalogCache[key]) {
+        return catalogCache[key];
+    }
+    if (!force && catalogInflight[key]) {
+        return catalogInflight[key];
+    }
+
+    const task = (async () => {
+        const items = await fetchAllPaged(listFn);
+        const sorted = sortFn(items);
+        catalogCache[key] = sorted;
+        return sorted;
+    })();
+
+    catalogInflight[key] = task;
+    try {
+        return await task;
+    } finally {
+        if (catalogInflight[key] === task) {
+            catalogInflight[key] = null;
+        }
+    }
+};
+
 /** GET /public/registration/specialities */
 export const listRegistrationSpecialities = (page = 0, size = 20) =>
     fetchPaged('public/registration/specialities', page, size);
 
 /** Все специальности из справочника регистрации (для выбора по имени). */
-export const fetchAllRegistrationSpecialities = async () => {
-    const items = await fetchAllPaged(listRegistrationSpecialities);
-    return items.sort((a, b) =>
-        String(a.name || a.specialityName || a.title || '').localeCompare(
-            String(b.name || b.specialityName || b.title || ''),
-            'ru',
-        ),
+export const fetchAllRegistrationSpecialities = (options = {}) =>
+    loadCatalog(
+        'specialities',
+        listRegistrationSpecialities,
+        (items) =>
+            items.sort((a, b) =>
+                String(a.name || a.specialityName || a.title || '').localeCompare(
+                    String(b.name || b.specialityName || b.title || ''),
+                    'ru',
+                ),
+            ),
+        options,
     );
-};
 
 /** GET /public/registration/skills */
 export const listRegistrationSkills = (page = 0, size = 20) =>
     fetchPaged('public/registration/skills', page, size);
 
 /** Все навыки из справочника регистрации (для выбора по имени). */
-export const fetchAllRegistrationSkills = async () => {
-    const items = await fetchAllPaged(listRegistrationSkills);
-    return items.sort((a, b) =>
-        String(a.name || a.title || '').localeCompare(String(b.name || b.title || ''), 'ru'),
+export const fetchAllRegistrationSkills = (options = {}) =>
+    loadCatalog(
+        'skills',
+        listRegistrationSkills,
+        (items) =>
+            items.sort((a, b) =>
+                String(a.name || a.title || '').localeCompare(String(b.name || b.title || ''), 'ru'),
+            ),
+        options,
     );
-};
 
 /** GET /public/registration/educations */
 export const listRegistrationEducations = (page = 0, size = 20) =>

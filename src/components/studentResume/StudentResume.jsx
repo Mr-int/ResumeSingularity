@@ -80,19 +80,13 @@ const StudentResume = () => {
                     portfolioResult,
                     educationResult,
                     experienceResult,
-                    catalogResult,
-                    allStudentsResult
+                    allStudentsResult,
                 ] = await Promise.allSettled([
                     canLoadDetails ? getPortfolioByStudentId(id) : Promise.resolve([]),
                     canLoadDetails ? getEducationDetailsByStudentId(id) : Promise.resolve([]),
                     canLoadDetails ? getExperienceDetailsByStudentId(id) : Promise.resolve([]),
-                    fetchAllRegistrationSkills(),
                     canLoadDetails ? getAllStudents() : Promise.resolve([]),
                 ]);
-
-                if (catalogResult.status === 'fulfilled') {
-                    setSkillCatalogMap(buildSkillCatalogMap(catalogResult.value));
-                }
 
                 if (studentData.skills && Array.isArray(studentData.skills)) {
                     setSkills(studentData.skills);
@@ -155,6 +149,24 @@ const StudentResume = () => {
         };
 
         fetchStudent();
+    }, [id]);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetchAllRegistrationSkills()
+            .then((data) => {
+                if (!cancelled) {
+                    setSkillCatalogMap(buildSkillCatalogMap(data));
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setSkillCatalogMap(new Map());
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
     }, [id]);
 
     const toggleExperience = () => {

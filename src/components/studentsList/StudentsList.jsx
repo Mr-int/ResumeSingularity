@@ -273,8 +273,6 @@ const StudentsList = () => {
     // Мемоизированная функция для получения студентов с фильтрами
     const fetchFilteredStudents = useCallback(async (filters) => {
         try {
-            setLoading(true);
-
             const filterData = buildStudentFilterReq(filters);
 
             // /student/filter is pageable. В API page/size должны быть в query (?page=&size=),
@@ -311,10 +309,10 @@ const StudentsList = () => {
                 setError(formatApiUserMessage(err));
             }
             return [];
-        } finally {
-            setLoading(false);
         }
     }, []);
+
+    const skipFiltersEffectRef = useRef(true);
 
     useEffect(() => {
         const loadSpecialities = async () => {
@@ -338,21 +336,32 @@ const StudentsList = () => {
     }, []);
 
     useEffect(() => {
+        let cancelled = false;
+
         const loadSkillsCatalog = async () => {
             try {
                 const data = await fetchAllRegistrationSkills();
-                setSkillCatalogMap(buildSkillCatalogMap(data));
+                if (!cancelled) {
+                    setSkillCatalogMap(buildSkillCatalogMap(data));
+                }
             } catch (err) {
                 console.error('Failed to load skills catalog:', err);
-                setSkillCatalogMap(new Map());
+                if (!cancelled) {
+                    setSkillCatalogMap(new Map());
+                }
             }
         };
 
         loadSkillsCatalog();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     // Первоначальная загрузка данных
     useEffect(() => {
+        let cancelled = false;
+
         const loadInitialData = async () => {
             try {
                 setLoading(true);
@@ -360,32 +369,51 @@ const StudentsList = () => {
                     course: [],
                     adult: false,
                     specialty: [],
-                    searchQuery: ""
+                    searchQuery: "",
                 });
-                setAllStudents(data);
+                if (!cancelled) {
+                    setAllStudents(data);
+                }
             } catch (err) {
-                if (isPendingApprovalError(err)) {
-                    setPendingNotice(PENDING_APPROVAL_MESSAGE);
-                    setError(null);
-                } else if (err?.status !== 403) {
-                    setError(formatApiUserMessage(err));
+                if (!cancelled) {
+                    if (isPendingApprovalError(err)) {
+                        setPendingNotice(PENDING_APPROVAL_MESSAGE);
+                        setError(null);
+                    } else if (err?.status !== 403) {
+                        setError(formatApiUserMessage(err));
+                    }
                 }
             } finally {
-                setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         };
 
         loadInitialData();
+        return () => {
+            cancelled = true;
+        };
     }, [fetchFilteredStudents]);
 
-    // Применение фильтров при изменении currentFilters
+    // Применение фильтров при изменении currentFilters (кроме первого маунта)
     useEffect(() => {
-        const applyFilters = async () => {
-            const data = await fetchFilteredStudents(currentFilters);
-            setAllStudents(data);
-        };
+        if (skipFiltersEffectRef.current) {
+            skipFiltersEffectRef.current = false;
+            return;
+        }
 
-        applyFilters();
+        let cancelled = false;
+        (async () => {
+            const data = await fetchFilteredStudents(currentFilters);
+            if (!cancelled) {
+                setAllStudents(data);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
     }, [currentFilters, fetchFilteredStudents]);
 
     useEffect(() => {
