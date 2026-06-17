@@ -15,6 +15,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import ApprovedRoute from './components/auth/ApprovedRoute.jsx';
 import GlobalAuthPrompt from './components/auth/GlobalAuthPrompt.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
+import ChatUnreadNotifier from './components/chats/ChatUnreadNotifier.jsx';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -95,6 +96,7 @@ const AppRoutes = () => {
           <Route path='/account' element={<Navigate to="/settings" replace />} />
         </Routes>
         <FloatingButton />
+        <ChatUnreadNotifier />
         <GlobalAuthPrompt />
 
         {isRouteLoading && (

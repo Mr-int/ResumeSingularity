@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '../config/api.js';
-import { apiClientJson } from '../utils/apiClient.js';
+import { getImageUrl } from '../config/api.js';
+import { apiClientFormData, apiClientJson } from '../utils/apiClient.js';
 import { isChatMessagesBlockedError } from '../utils/apiErrors.js';
 
 /** Spring Page: data или content, иногда массив напрямую */
@@ -259,40 +259,33 @@ export const getChatSummary = async (chatId) => {
 /**
  * POST /chat/{chatId}/messages/attachment — multipart
  */
+export const getChatAttachmentUrl = (storageName) => {
+    if (!storageName) return null;
+    const value = String(storageName).trim();
+    if (!value) return null;
+    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+    return getImageUrl(value);
+};
+
+const MAX_CHAT_ATTACHMENT_BYTES = 15 * 1024 * 1024;
+
 export const postChatAttachment = async (chatId, file, body = '') => {
+    if (!file) {
+        throw new Error('Файл не выбран');
+    }
+    if (file.size > MAX_CHAT_ATTACHMENT_BYTES) {
+        throw new Error('Файл слишком большой (максимум 15 МБ)');
+    }
+
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, file.name);
     if (body != null && String(body).trim()) {
         formData.append('body', String(body).trim());
     }
 
-    const url = `${API_BASE_URL}chat/${chatId}/messages/attachment`;
-    const response = await fetch(url, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
+    return apiClientFormData(`chat/${chatId}/messages/attachment`, formData, {
+        timeoutMs: 60_000,
     });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        let msg = errorText;
-        try {
-            const j = JSON.parse(errorText);
-            msg = j.message || errorText;
-        } catch {
-            /* empty */
-        }
-        const err = new Error(msg || `Ошибка ${response.status}`);
-        err.status = response.status;
-        throw err;
-    }
-
-    const contentType = response.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-        return response.json();
-    }
-    const text = await response.text();
-    return text ? JSON.parse(text) : {};
 };
 
 /**

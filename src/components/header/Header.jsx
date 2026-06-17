@@ -7,6 +7,7 @@ import {
     requestLogin,
     AUTH_CHANGED_EVENT,
 } from '../../services/authApi.js';
+import { subscribeChatUnreadTotal } from '../../utils/chatUnreadBus.js';
 import logo from '../../assets/logos/Logo.png';
 import searchIcon from '../../assets/icons/searchIcon.svg';
 import gradientSearchIcon from '../../assets/icons/searchIconGradieng.svg';
@@ -18,6 +19,7 @@ const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [authed, setAuthed] = useState(() => isAuthenticated());
     const [isStudent, setIsStudent] = useState(() => isStudentRole());
+    const [chatUnreadTotal, setChatUnreadTotalState] = useState(0);
 
     useEffect(() => {
         const sync = () => {
@@ -28,6 +30,14 @@ const Header = () => {
         window.addEventListener(AUTH_CHANGED_EVENT, sync);
         return () => window.removeEventListener(AUTH_CHANGED_EVENT, sync);
     }, []);
+
+    useEffect(() => {
+        if (!authed) {
+            setChatUnreadTotalState(0);
+            return undefined;
+        }
+        return subscribeChatUnreadTotal(setChatUnreadTotalState);
+    }, [authed]);
 
     useEffect(() => {
         setIsMenuOpen(false);
@@ -116,8 +126,13 @@ const Header = () => {
 
                 <div className="header__rightCluster">
                     {authed ? (
-                        <Link to="/chats" className="header__navLink">
+                        <Link to="/chats" className="header__navLink header__navLink--chats">
                             чаты
+                            {chatUnreadTotal > 0 ? (
+                                <span className="header__chatBadge" aria-label={`Непрочитанных: ${chatUnreadTotal}`}>
+                                    {chatUnreadTotal > 99 ? '99+' : chatUnreadTotal}
+                                </span>
+                            ) : null}
                         </Link>
                     ) : null}
                     <Link to="/students" className="header__search">
@@ -196,10 +211,15 @@ const Header = () => {
                 {authed ? (
                     <Link
                         to="/chats"
-                        className="header__mobileBtn"
+                        className="header__mobileBtn header__mobileBtn--chats"
                         onClick={handleMobileLinkClick}
                     >
                         чаты
+                        {chatUnreadTotal > 0 ? (
+                            <span className="header__chatBadge header__chatBadge--mobile">
+                                {chatUnreadTotal > 99 ? '99+' : chatUnreadTotal}
+                            </span>
+                        ) : null}
                     </Link>
                 ) : null}
                 {authed ? (

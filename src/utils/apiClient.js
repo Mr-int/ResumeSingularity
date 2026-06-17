@@ -171,3 +171,66 @@ export const apiClientJson = async (endpoint, options = {}) => {
         throw error;
     }
 };
+
+/**
+ * multipart/form-data с cookie-сессией и повтором после refresh при 401.
+ */
+export const apiClientFormData = async (endpoint, formData, options = {}) => {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const quiet = options.quiet === true;
+    const timeoutMs =
+        typeof options.timeoutMs === 'number' && options.timeoutMs > 0
+            ? options.timeoutMs
+            : DEFAULT_REQUEST_TIMEOUT_MS;
+    const { signal, cleanup } = mergeAbortSignals(timeoutMs, options.signal);
+
+    const send = async (retried) => {
+        const response = await fetch(url, {
+            method: options.method || 'POST',
+            credentials: options.credentials ?? 'include',
+            body: formData,
+            signal,
+        });
+
+        if (response.status === 401 && !retried && !endpoint.startsWith('auth/')) {
+            await refreshSession();
+            return send(true);
+        }
+
+        return response;
+    };
+
+    try {
+        const response = await send(Boolean(options._retriedAfterRefresh));
+        cleanup();
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            let responseBody = null;
+            try {
+                responseBody = errorText ? JSON.parse(errorText) : null;
+            } catch {
+                responseBody = { message: errorText };
+            }
+            throw buildHttpError(response.status, errorText, responseBody);
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+            return response.json();
+        }
+        const text = await response.text();
+        return text ? JSON.parse(text) : {};
+    } catch (error) {
+        cleanup();
+        if (error?.name === 'AbortError') {
+            const timeoutError = new Error('Превышено время ожидания ответа от сервера');
+            timeoutError.status = 408;
+            throw timeoutError;
+        }
+        if (!quiet) {
+            console.error(`[API] FormData error for endpoint ${endpoint}:`, error);
+        }
+        throw error;
+    }
+};

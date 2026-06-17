@@ -1,16 +1,37 @@
+const READ_CURSOR_FIELDS = [
+    'studentLastReadMessageId',
+    'recruiterLastReadMessageId',
+    'peerLastReadMessageId',
+    'otherPartyLastReadMessageId',
+    'counterpartyLastReadMessageId',
+    'lastReadMessageId',
+    'otherLastReadMessageId',
+];
+
 const READ_CURSOR_FIELDS_BY_ROLE = {
     recruiter: [
         'studentLastReadMessageId',
         'peerLastReadMessageId',
         'otherPartyLastReadMessageId',
         'counterpartyLastReadMessageId',
+        'otherLastReadMessageId',
+        'lastReadMessageId',
     ],
     student: [
         'recruiterLastReadMessageId',
         'peerLastReadMessageId',
         'otherPartyLastReadMessageId',
         'counterpartyLastReadMessageId',
+        'otherLastReadMessageId',
+        'lastReadMessageId',
     ],
+};
+
+export const isChatReadEvent = (payload) => {
+    if (!payload || typeof payload !== 'object') return false;
+    const type = String(payload.type || payload.eventType || payload.systemEvent || '').toUpperCase();
+    if (type.includes('READ') && type !== 'CHAT_MESSAGE') return true;
+    return READ_CURSOR_FIELDS.some((key) => payload[key] != null && String(payload[key]).trim());
 };
 
 /** UUID из сводки чата — если бэкенд отдаёт курсор прочтения собеседника. */

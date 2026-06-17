@@ -12,6 +12,7 @@ import {
     patchChatMessage,
     extractChatPageItems,
     dedupeChatsByPeer,
+    getChatAttachmentUrl,
 } from '../../services/chatApi.js';
 import { filterMyRequests, postStudentDecision, buildStudentDecisionBody, extractRequestRows, resolveRequestId, postRequestTuDecision } from '../../services/requestApi.js';
 import {
@@ -41,8 +42,10 @@ import { INBOX_REFRESH_TYPES, TU_PHASE_LABELS } from '../../utils/tuPhase.js';
 import {
     extractPeerReadMessageId,
     getOutgoingReadStatus,
+    isChatReadEvent,
     readStatusLabel,
 } from '../../utils/chatReadStatus.js';
+import { setActiveChatId, setChatUnreadTotal } from '../../utils/chatUnreadBus.js';
 import { useMediaQuery } from '../../utils/useMediaQuery.js';
 
 const formatTime = (iso) => {
@@ -158,6 +161,7 @@ const markTuCongratsSeen = (chatId, requestId) => {
 
 const REQUESTS_CACHE_MS = 15_000;
 const CHAT_POLL_MS = 15_000;
+const READ_RECEIPT_POLL_MS = 4_000;
 
 const ChatsView = () => {
     const [searchParams] = useSearchParams();
@@ -204,6 +208,7 @@ const ChatsView = () => {
     const readChatRowsRef = useRef(new Set());
     const pendingModeRef = useRef(null);
     const lastRequestsFetchAt = useRef(0);
+    const lastMarkedReadIdRef = useRef(null);
 
     useEffect(() => {
         chatsRef.current = chats;
@@ -211,7 +216,14 @@ const ChatsView = () => {
 
     useEffect(() => {
         selectedIdRef.current = selectedId;
+        setActiveChatId(selectedId);
+        lastMarkedReadIdRef.current = null;
     }, [selectedId]);
+
+    useEffect(() => {
+        const total = chats.reduce((sum, row) => sum + (Number(row.unreadCount) || 0), 0);
+        setChatUnreadTotal(total);
+    }, [chats]);
 
     const clearChatUnread = useCallback((chatId) => {
         const key = String(chatId);
@@ -281,6 +293,7 @@ const ChatsView = () => {
         try {
             const summary = await getChatSummary(chatId);
             if (!summary || (summary.id == null && summary.unreadCount == null)) return;
+            const role = me?.role;
             setChats((prev) => {
                 const i = prev.findIndex((c) => String(c.id) === String(chatId));
                 if (i < 0) return prev;
@@ -296,10 +309,13 @@ const ChatsView = () => {
                         merged.unreadCount = 0;
                     }
                 }
+                const peerReadBefore = extractPeerReadMessageId(prevRow, role);
+                const peerReadAfter = extractPeerReadMessageId(merged, role);
                 const same =
                     prevRow.unreadCount === merged.unreadCount &&
                     prevRow.lastMessagePreview === merged.lastMessagePreview &&
-                    prevRow.lastActivityAt === merged.lastActivityAt;
+                    prevRow.lastActivityAt === merged.lastActivityAt &&
+                    peerReadBefore === peerReadAfter;
                 if (same) return prev;
                 const copy = [...prev];
                 copy[i] = merged;
@@ -308,7 +324,7 @@ const ChatsView = () => {
         } catch {
             /* не критично */
         }
-    }, []);
+    }, [me?.role]);
 
     const enrichChatMeta = useCallback(async (chat, party, requests = []) => {
         const key = chat.id;
@@ -677,13 +693,50 @@ const ChatsView = () => {
     }, [selectedId, refreshSummary, loadPendingRequest, loadMessages]);
 
     useEffect(() => {
+        if (!selectedId) return undefined;
+        refreshSummary(selectedId);
+        const poll = window.setInterval(() => {
+            refreshSummary(selectedId);
+        }, READ_RECEIPT_POLL_MS);
+        return () => window.clearInterval(poll);
+    }, [selectedId, refreshSummary]);
+
+    useEffect(() => {
+        if (!selectedId || !messages.length) return;
+        const last = [...messages].reverse().find((m) => !isMessageDeleted(m));
+        if (!last?.id || lastMarkedReadIdRef.current === last.id) return;
+        lastMarkedReadIdRef.current = last.id;
+        const chatRow =
+            chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
+            { id: selectedId };
+        markPeerChatsRead(chatRow, last.id)
+            .then(() => {
+                clearChatUnread(selectedId);
+                refreshSummary(selectedId);
+            })
+            .catch(() => {});
+    }, [selectedId, messages, clearChatUnread, refreshSummary]);
+
+    useEffect(() => {
         const ids = wsTopicKey ? wsTopicKey.split(',').filter(Boolean) : [];
         if (!ids.length) return undefined;
 
         const handleWsMessage = (chatId, message) => {
-            if (!message?.id) return;
             const canonical = chatAliasRef.current[String(chatId)] || String(chatId);
             const isOpen = String(selectedIdRef.current) === String(canonical);
+
+            if (isChatReadEvent(message)) {
+                setChats((prev) =>
+                    prev.map((c) => {
+                        if (String(c.id) !== String(canonical)) return c;
+                        return { ...c, ...message };
+                    }),
+                );
+                if (isOpen) refreshSummary(canonical);
+                return;
+            }
+
+            if (!message?.id) return;
             const preview = message.body || message.attachmentStorageName || 'Вложение';
 
             if (isOpen) {
@@ -820,7 +873,10 @@ const ChatsView = () => {
         requestPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, []);
 
-    useEffect(() => () => disconnectChatWebSocket(), []);
+    useEffect(() => () => {
+        setActiveChatId(null);
+        disconnectChatWebSocket();
+    }, []);
 
     const filteredChats = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -1249,9 +1305,12 @@ const ChatsView = () => {
                                 peerReadMessageId,
                                 isMine,
                             );
-                            const attachUrl = !isMessageDeleted(m)
-                                ? getImageUrl(m.attachmentStorageName)
+                            const attachUrl = !isMessageDeleted(m) && m.attachmentStorageName
+                                ? getChatAttachmentUrl(m.attachmentStorageName)
                                 : null;
+                            const attachLabel = m.attachmentStorageName
+                                ? String(m.attachmentStorageName).split(/[/\\]/).pop()
+                                : 'Вложение';
                             const isEditing = editingMessageId === m.id;
                             return (
                                 <React.Fragment key={m.id}>
@@ -1301,8 +1360,9 @@ const ChatsView = () => {
                                                                 className="chatsView__attachment"
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
+                                                                download={attachLabel}
                                                             >
-                                                                {m.attachmentStorageName || 'Вложение'}
+                                                                📎 {attachLabel}
                                                             </a>
                                                         ) : null}
                                                     </>
@@ -1351,6 +1411,7 @@ const ChatsView = () => {
                             ref={fileInputRef}
                             type="file"
                             hidden
+                            accept="image/*,.pdf,.doc,.docx,.txt,.zip,.rar"
                             onChange={handleAttachment}
                         />
                         <div className="chatsView__inputWrapper">
