@@ -33,9 +33,11 @@ import {
     resolveRecruiterIdForChat,
     resolveStudentIdForChat,
 } from '../../utils/chatPeerMeta.js';
-import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
+import { AUTH_USERNAME_KEY, getAuthMe } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
-import { disconnectChatWebSocket, subscribeChatTopic } from '../../services/chatWebSocket.js';
+import { disconnectChatWebSocket, subscribeChatTopic, subscribeUserInbox } from '../../services/chatWebSocket.js';
+import { formatChatSystemMessage } from '../../utils/chatSystemEvents.js';
+import { INBOX_REFRESH_TYPES, TU_PHASE_LABELS } from '../../utils/tuPhase.js';
 import {
     extractPeerReadMessageId,
     getOutgoingReadStatus,
@@ -574,7 +576,10 @@ const ChatsView = () => {
         }
 
         if (resolvedId && belongsToOpenChat && request?.result) {
-            const statusText = REQUEST_RESULT_LABELS[request.result] || request.result;
+            const statusText =
+                (request.tuPhase && TU_PHASE_LABELS[request.tuPhase])
+                || REQUEST_RESULT_LABELS[request.result]
+                || request.result;
             setSubtitles((prev) => {
                 if (prev[selectedId] === statusText) return prev;
                 return { ...prev, [selectedId]: statusText };
@@ -717,6 +722,76 @@ const ChatsView = () => {
         );
         return () => unsubscribes.forEach((fn) => fn?.());
     }, [wsTopicKey, isMine, refreshSummary, clearChatUnread]);
+
+    useEffect(() => {
+        let cancelled = false;
+        let unsubscribe = () => {};
+
+        const handleInboxEvent = async (event) => {
+            const type = event?.type;
+            if (!type || !INBOX_REFRESH_TYPES.has(type)) return;
+
+            const rawChatId = event?.chatId ?? event?.appChatId;
+            const chatId = rawChatId
+                ? chatAliasRef.current[String(rawChatId)] || String(rawChatId)
+                : null;
+
+            if (chatId) {
+                await refreshSummary(chatId);
+            }
+
+            const openId = selectedIdRef.current;
+            const isOpen = chatId && openId && String(chatId) === String(openId);
+            const isTuEvent = type.startsWith('TU_') || type === 'REQUEST_DECISION';
+
+            if (isOpen && (isTuEvent || type === 'NEW_REQUEST')) {
+                try {
+                    const prevMode = pendingModeRef.current;
+                    const { mode } = await loadPendingRequest();
+                    if (mode === 'tu_decision' && prevMode !== mode) {
+                        const chatRow =
+                            chatsRef.current.find((c) => String(c.id) === String(openId)) ||
+                            { id: openId };
+                        await loadMessages(chatRow, openId, { silent: true });
+                    }
+                } catch {
+                    /* inbox refresh */
+                }
+            }
+
+            if (type === 'CHAT_MESSAGE' && chatId && !isOpen) {
+                setChats((prev) =>
+                    prev.map((c) => {
+                        if (String(c.id) !== String(chatId)) return c;
+                        const key = String(chatId);
+                        if (readChatRowsRef.current.has(key)) return c;
+                        return {
+                            ...c,
+                            unreadCount: (Number(c.unreadCount) || 0) + 1,
+                        };
+                    }),
+                );
+            }
+        };
+
+        (async () => {
+            try {
+                const session = await getAuthMe();
+                const userId = session?.id;
+                if (!userId || cancelled) return;
+                unsubscribe = subscribeUserInbox(userId, (event) => {
+                    handleInboxEvent(event);
+                });
+            } catch {
+                /* WS inbox optional */
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+            unsubscribe();
+        };
+    }, [refreshSummary, loadPendingRequest, loadMessages]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -900,7 +975,7 @@ const ChatsView = () => {
 
     const tuWaitingHint =
         pendingRequest && pendingMode === 'tu_waiting'
-            ? getTuWaitingHint(pendingRequest.result, me?.role)
+            ? getTuWaitingHint(pendingRequest, me?.role)
             : null;
 
     const activeTitle = selectedId ? titles[selectedId] || '…' : 'Выберите чат';
@@ -1162,7 +1237,7 @@ const ChatsView = () => {
                                     <React.Fragment key={m.id}>
                                         {showSep ? <div className="chatsView__dateSep">{day}</div> : null}
                                         <div className="chatsView__systemMsg">
-                                            {m.body || m.systemEvent || 'Системное сообщение'}
+                                            {formatChatSystemMessage(m)}
                                         </div>
                                     </React.Fragment>
                                 );

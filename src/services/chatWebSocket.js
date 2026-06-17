@@ -107,6 +107,37 @@ export function subscribeChatTopic(chatId, handler) {
     };
 }
 
+/**
+ * Персональный inbox: заявки, ТУ, сообщения вне открытого чата.
+ * @param {string} userId — из GET /auth/me → id
+ * @param {(event: object) => void} handler
+ * @returns {() => void}
+ */
+export function subscribeUserInbox(userId, handler) {
+    if (!userId) return () => {};
+
+    const topic = `/topic/users/${userId}/inbox`;
+    let entry = topicSubscriptions.get(topic);
+    if (!entry) {
+        entry = { sub: null, handlers: new Set() };
+        topicSubscriptions.set(topic, entry);
+    }
+    entry.handlers.add(handler);
+
+    ensureChatWebSocket();
+    subscribeTopic(topic);
+
+    return () => {
+        const current = topicSubscriptions.get(topic);
+        if (!current) return;
+        current.handlers.delete(handler);
+        if (current.handlers.size === 0) {
+            current.sub?.unsubscribe();
+            topicSubscriptions.delete(topic);
+        }
+    };
+}
+
 export function disconnectChatWebSocket() {
     for (const entry of topicSubscriptions.values()) {
         entry.sub?.unsubscribe();

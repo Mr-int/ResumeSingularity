@@ -26,17 +26,48 @@ export const canStudentDecideRequest = (result) => STUDENT_DECIDABLE_RESULTS.has
  * - STUDENT_CONFIRMED: обе стороны (студент принял заявку, этап ТУ открыт)
  * - RECRUITER_CONFIRMED: только студент (финальное подтверждение после работодателя)
  */
-export const canTuDecideRequest = (result, role) => {
-    if (!result || !role) return false;
+export const canTuDecideRequest = (request, role) => {
+    if (!request || !role) return false;
+
+    const phase = request.tuPhase;
+    if (phase === 'WAITING_STUDENT') return role === 'student';
+    if (phase === 'WAITING_RECRUITER') return role === 'recruiter';
+    if (phase === 'COMPLETED' || phase === 'REJECTED' || phase === 'NOT_APPLICABLE') {
+        return false;
+    }
+
+    const result = request.result;
+    if (!result) return false;
     if (result === 'STUDENT_CONFIRMED') return true;
     if (result === 'RECRUITER_CONFIRMED') return role === 'student';
     return false;
 };
 
 /** Ожидание решения второй стороны на этапе ТУ. */
-export const getTuWaitingHint = (result, role) => {
-    if (result === 'RECRUITER_CONFIRMED' && role === 'recruiter') {
+export const getTuWaitingHint = (request, role) => {
+    if (!request || !role) return null;
+
+    const phase = request.tuPhase;
+    if (phase === 'WAITING_STUDENT' && role === 'recruiter') {
+        return 'Вы подтвердили ТУ. Ожидаем подтверждение от студента.';
+    }
+    if (phase === 'WAITING_RECRUITER' && role === 'student') {
+        return 'Работодатель подтвердил ТУ. Подтвердите прохождение технического собеседования.';
+    }
+    if (phase === 'WAITING_STUDENT' || phase === 'WAITING_RECRUITER') {
+        return null;
+    }
+
+    if (request.result === 'RECRUITER_CONFIRMED' && role === 'recruiter') {
         return 'Вы подтвердили ТУ. Ожидаем финальное подтверждение от студента.';
+    }
+    if (
+        request.result === 'STUDENT_CONFIRMED'
+        && role === 'student'
+        && request.recruiterTuConfirmedAt
+        && !request.studentTuConfirmedAt
+    ) {
+        return 'Ожидаем подтверждение ТУ от работодателя.';
     }
     return null;
 };
@@ -88,13 +119,13 @@ export const resolveRequestAction = (matched, role, resolveId, focusChatId = nul
         }
     }
 
-    const tuAction = sorted.find((r) => canTuDecideRequest(r.result, role));
+    const tuAction = sorted.find((r) => canTuDecideRequest(r, role));
     if (tuAction) {
         return { request: tuAction, mode: 'tu_decision' };
     }
 
-    const tuWaiting = sorted.find((r) => TU_DECIDABLE_RESULTS.has(r.result));
-    if (tuWaiting && getTuWaitingHint(tuWaiting.result, role)) {
+    const tuWaiting = sorted.find((r) => getTuWaitingHint(r, role));
+    if (tuWaiting) {
         return { request: tuWaiting, mode: 'tu_waiting' };
     }
 
