@@ -196,6 +196,7 @@ export const markChatRead = (chatId, messageId) =>
     apiClientJson(`chat/${chatId}/read`, {
         method: 'POST',
         body: JSON.stringify({ messageId }),
+        quiet: true,
     });
 
 /** Один объект чата / summary (не постраничный список). */
@@ -208,12 +209,27 @@ export const normalizeChatEntity = (res) => {
 
 const isActiveMessage = (m) => m && !m.deletedAt && !m.deletedByAdmin;
 
+const resolveMessageChatId = (message, chatRow, fallbackId = null) => {
+    const mergeIds = new Set(getChatIdList(chatRow, fallbackId ?? chatRow?.id).map(String));
+    if (message?.chatId != null && mergeIds.has(String(message.chatId))) {
+        return String(message.chatId);
+    }
+    if (chatRow?.id != null) return String(chatRow.id);
+    if (fallbackId != null) return String(fallbackId);
+    return null;
+};
+
 /**
- * Помечает прочитанным один чат — до последнего сообщения в ленте.
+ * Помечает прочитанным один чат — messageId должен принадлежать этому chatId.
  */
-export const markChatFullyRead = async (chatId, knownLastMessageId = null) => {
+export const markChatFullyRead = async (chatId, knownLastMessage = null) => {
     if (!chatId) return false;
-    let messageId = knownLastMessageId;
+    let messageId = null;
+    if (knownLastMessage && typeof knownLastMessage === 'object') {
+        messageId = knownLastMessage.id;
+    } else if (knownLastMessage) {
+        messageId = knownLastMessage;
+    }
     if (!messageId) {
         const res = await getChatMessages(chatId, 0, 50, { quiet: true });
         const rows = extractChatPageItems(res);
@@ -226,20 +242,47 @@ export const markChatFullyRead = async (chatId, knownLastMessageId = null) => {
 };
 
 /**
- * У одного собеседника может быть несколько chatId (по заявкам).
- * Чтобы бейдж не залипал, читаем все связанные диалоги.
+ * Для объединённого диалога (несколько chatId по заявкам) — read только в том чате,
+ * куда реально попало сообщение (message.chatId).
  */
-export const markPeerChatsRead = async (chatRow, knownLastMessageId = null) => {
-    const ids = Array.isArray(chatRow?._mergedIds) && chatRow._mergedIds.length
-        ? chatRow._mergedIds
-        : [chatRow?.id].filter(Boolean);
-    const canonicalId = chatRow?.id != null ? String(chatRow.id) : null;
+export const markMergedChatRead = async (chatRow, messagesOrMessage = null, fallbackId = null) => {
+    const mergeIds = new Set(getChatIdList(chatRow, fallbackId ?? chatRow?.id).map(String));
+    const rows = Array.isArray(messagesOrMessage)
+        ? messagesOrMessage
+        : messagesOrMessage
+          ? [messagesOrMessage]
+          : [];
+
+    const lastByChat = new Map();
+    for (const message of rows) {
+        if (!isActiveMessage(message) || !message?.id) continue;
+        const chatId = resolveMessageChatId(message, chatRow, fallbackId);
+        if (!chatId || !mergeIds.has(chatId)) continue;
+        const prev = lastByChat.get(chatId);
+        if (!prev || new Date(message.createdAt || 0) > new Date(prev.createdAt || 0)) {
+            lastByChat.set(chatId, message);
+        }
+    }
+
+    if (lastByChat.size) {
+        await Promise.all(
+            [...lastByChat.values()].map(async (message) => {
+                const chatId = resolveMessageChatId(message, chatRow, fallbackId);
+                if (!chatId) return;
+                try {
+                    await markChatRead(chatId, message.id);
+                } catch {
+                    /* сообщение могло быть из другого чата merge-группы */
+                }
+            }),
+        );
+        return;
+    }
+
     await Promise.all(
-        ids.map(async (id) => {
-            const lastId =
-                canonicalId && String(id) === canonicalId ? knownLastMessageId : null;
+        [...mergeIds].map(async (id) => {
             try {
-                await markChatFullyRead(id, lastId);
+                await markChatFullyRead(id);
             } catch {
                 /* отдельный чат мог быть недоступен */
             }
@@ -247,12 +290,18 @@ export const markPeerChatsRead = async (chatRow, knownLastMessageId = null) => {
     );
 };
 
+/** @deprecated alias */
+export const markPeerChatsRead = markMergedChatRead;
+
 
 /**
  * GET /chat/{chatId}/summary
  */
-export const getChatSummary = async (chatId) => {
-    const res = await apiClientJson(`chat/${chatId}/summary`, { method: 'GET' });
+export const getChatSummary = async (chatId, options = {}) => {
+    const res = await apiClientJson(`chat/${chatId}/summary`, {
+        method: 'GET',
+        quiet: options.quiet === true,
+    });
     return normalizeChatEntity(res);
 };
 
@@ -296,3 +345,23 @@ export const patchChatMessage = (chatId, messageId, body) =>
         method: 'PATCH',
         body: JSON.stringify({ body: body ?? '' }),
     });
+
+/** PATCH в чате, к которому привязано сообщение (важно для merge-диалогов). */
+export const patchChatMessageResilient = async (chatRow, fallbackId, messageId, body, messageChatId = null) => {
+    const ordered = [
+        ...(messageChatId ? [String(messageChatId)] : []),
+        ...getChatIdList(chatRow, fallbackId),
+    ];
+    const unique = [...new Set(ordered.filter(Boolean))];
+
+    let lastErr = null;
+    for (const id of unique) {
+        try {
+            return await patchChatMessage(id, messageId, body);
+        } catch (e) {
+            lastErr = e;
+            if (e.status !== 403 && e.status !== 404 && e.status !== 400) throw e;
+        }
+    }
+    throw lastErr || new Error('Не удалось изменить сообщение');
+};

@@ -8,8 +8,8 @@ import {
     postChatAttachmentResilient,
     loadMergedChatMessages,
     getChatIdList,
-    markPeerChatsRead,
-    patchChatMessage,
+    markMergedChatRead,
+    patchChatMessageResilient,
     extractChatPageItems,
     dedupeChatsByPeer,
     getChatAttachmentUrl,
@@ -161,7 +161,7 @@ const markTuCongratsSeen = (chatId, requestId) => {
 
 const REQUESTS_CACHE_MS = 15_000;
 const CHAT_POLL_MS = 15_000;
-const READ_RECEIPT_POLL_MS = 4_000;
+const READ_RECEIPT_POLL_MS = 8_000;
 
 const ChatsView = () => {
     const [searchParams] = useSearchParams();
@@ -291,7 +291,7 @@ const ChatsView = () => {
     const refreshSummary = useCallback(async (chatId) => {
         if (!chatId) return;
         try {
-            const summary = await getChatSummary(chatId);
+            const summary = await getChatSummary(chatId, { quiet: true });
             if (!summary || (summary.id == null && summary.unreadCount == null)) return;
             const role = me?.role;
             setChats((prev) => {
@@ -523,7 +523,7 @@ const ChatsView = () => {
                 if (last?.id) {
                     try {
                         const row = chatRow?.id ? chatRow : { id: chatId };
-                        await markPeerChatsRead(row, last.id);
+                        await markMergedChatRead(row, rows, chatId);
                         clearChatUnread(chatId);
                         await refreshSummary(chatId);
                     } catch {
@@ -709,7 +709,7 @@ const ChatsView = () => {
         const chatRow =
             chatsRef.current.find((c) => String(c.id) === String(selectedId)) ||
             { id: selectedId };
-        markPeerChatsRead(chatRow, last.id)
+        markMergedChatRead(chatRow, messages, selectedId)
             .then(() => {
                 clearChatUnread(selectedId);
                 refreshSummary(selectedId);
@@ -746,7 +746,7 @@ const ChatsView = () => {
                     const chatRow =
                         chatsRef.current.find((c) => String(c.id) === String(canonical)) ||
                         { id: canonical };
-                    markPeerChatsRead(chatRow, message.id).catch(() => {});
+                    markMergedChatRead(chatRow, message, canonical).catch(() => {});
                     clearChatUnread(canonical);
                     refreshSummary(canonical);
                 }
@@ -925,16 +925,21 @@ const ChatsView = () => {
         if (!selectedId || !editingMessageId || sending) return;
         const text = editDraft.trim();
         if (!text) return;
+        const sourceMessage = messages.find((m) => m.id === editingMessageId);
         setSending(true);
         setSendError('');
         try {
-            const updated = await patchChatMessage(selectedId, editingMessageId, text);
+            const chatRow = selectedChat || { id: selectedId };
+            const updated = await patchChatMessageResilient(
+                chatRow,
+                selectedId,
+                editingMessageId,
+                text,
+                sourceMessage?.chatId,
+            );
             const message = updated?.id ? updated : updated?.data ?? updated;
             if (message?.id) mergeMessage(message);
-            else {
-                const chatRow = selectedChat || { id: selectedId };
-                await loadMessages(chatRow, selectedId);
-            }
+            else await loadMessages(chatRow, selectedId);
             cancelEditMessage();
         } catch (err) {
             setSendError(err.message || 'Не удалось изменить сообщение');
@@ -1341,12 +1346,23 @@ const ChatsView = () => {
                                                             value={editDraft}
                                                             onChange={(e) => setEditDraft(e.target.value)}
                                                             rows={3}
+                                                            autoFocus
                                                         />
                                                         <div className="chatsView__editActions">
-                                                            <button type="button" onClick={saveEditMessage} disabled={sending}>
+                                                            <button
+                                                                type="button"
+                                                                className="chatsView__editSaveBtn"
+                                                                onClick={saveEditMessage}
+                                                                disabled={sending || !editDraft.trim()}
+                                                            >
                                                                 Сохранить
                                                             </button>
-                                                            <button type="button" onClick={cancelEditMessage}>
+                                                            <button
+                                                                type="button"
+                                                                className="chatsView__editCancelBtn"
+                                                                onClick={cancelEditMessage}
+                                                                disabled={sending}
+                                                            >
                                                                 Отмена
                                                             </button>
                                                         </div>
