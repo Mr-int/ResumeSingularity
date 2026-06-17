@@ -18,7 +18,6 @@ const Footer = () => {
                     <h2>Навигация</h2>
                     <Link to="/">Главная</Link>
                     <Link to="/students">Студенты</Link>
-                    <a href="https://singularity.academy/college" target="_blank" rel="noreferrer">Обучение</a>
                     <a href="/#projects">Проекты</a>
                 </div>
 
