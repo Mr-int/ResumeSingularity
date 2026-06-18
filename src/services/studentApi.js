@@ -522,6 +522,50 @@ export const getAllSpecialities = async () => {
     }
 };
 
+/**
+ * Получение всех навыков с пагинацией (те же ID, что ожидает резюме на бэкенде).
+ */
+export const getAllSkills = async () => {
+    const pageSize = 200;
+    const maxPages = 200;
+
+    try {
+        const byId = new Map();
+        const first = await apiClientJson(`skill/filter?page=0&size=${pageSize}`, {
+            method: 'POST',
+            body: JSON.stringify({}),
+            quiet: true,
+        });
+
+        const firstData = Array.isArray(first?.data) ? first.data : [];
+        const totalPages = typeof first?.totalPages === 'number' ? first.totalPages : 1;
+        const pagesToFetch = Math.min(totalPages, maxPages);
+
+        for (const s of firstData) {
+            if (s?.id != null) byId.set(String(s.id), s);
+        }
+
+        for (let page = 1; page < pagesToFetch; page += 1) {
+            const res = await apiClientJson(`skill/filter?page=${page}&size=${pageSize}`, {
+                method: 'POST',
+                body: JSON.stringify({}),
+                quiet: true,
+            });
+            const pageData = Array.isArray(res?.data) ? res.data : [];
+            for (const s of pageData) {
+                if (s?.id != null) byId.set(String(s.id), s);
+            }
+        }
+
+        return Array.from(byId.values());
+    } catch (_) {
+        const fallback = await apiClientJson('skill', { method: 'GET', quiet: true });
+        if (Array.isArray(fallback)) return fallback;
+        if (Array.isArray(fallback?.data)) return fallback.data;
+        return [];
+    }
+};
+
 export const getPortfolioById = async (id) => {
     try {
         const data = await apiClientJson(`portfolio/${id}`, {

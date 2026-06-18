@@ -19,6 +19,29 @@ export function validateRegistrationUsername(username) {
 }
 
 /**
+ * Тело POST /auth/register-student — только поля, которые принимает API.
+ * Email сохраняем локально (для резюме), в запрос не отправляем: на части бэкендов поле отсутствует.
+ */
+export function buildStudentRegistrationBody(fields) {
+    const body = {
+        username: String(fields.username || '').trim(),
+        password: fields.password,
+        passwordConfirm: fields.passwordConfirm,
+        phoneNumber: fields.phoneNumber,
+        phoneVerificationId: fields.phoneVerificationId,
+    };
+    const name = String(fields.name || '').trim();
+    if (name) body.name = name;
+    const firstName = String(fields.firstName || '').trim();
+    if (firstName) body.firstName = firstName;
+    const lastName = String(fields.lastName || '').trim();
+    if (lastName) body.lastName = lastName;
+    const middleName = String(fields.middleName || '').trim();
+    if (middleName) body.middleName = middleName;
+    return body;
+}
+
+/**
  * Тело POST /auth/register-recruiter — без пустых необязательных полей.
  */
 export function buildRecruiterRegistrationBody(fields) {

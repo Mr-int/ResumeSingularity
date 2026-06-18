@@ -8,16 +8,16 @@ import {
     patchRecruiter,
     uploadStudentPhoto,
 } from '../services/accountApi.js';
-import { getStudentResumeForEdit, updateStudentResume, completeStudentResume } from '../services/onboardingApi.js';
+import { getStudentResumeForEdit, saveStudentResume as persistStudentResume } from '../services/onboardingApi.js';
 import { changePassword, getAuthMe, getStoredAuthPhone, getStoredAuthEmail, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, isAccountPending, syncAuthSession, AUTH_USERNAME_KEY } from '../services/authApi.js';
 import { formatApiUserMessage } from '../utils/apiErrors.js';
 import { getImageUrl } from '../config/api.js';
-import { fetchAllRegistrationSkills, fetchAllRegistrationSpecialities } from '../services/registrationCatalogApi.js';
+import { fetchResumeSkills, fetchResumeSpecialities } from '../services/registrationCatalogApi.js';
 import { extractSkillIds } from '../utils/skills.js';
 import { COURSE_OPTIONS, BUSYNESS_OPTIONS, COURSE_LABELS, BUSYNESS_LABELS } from '../utils/studentEnums.js';
 import { formatPhoneForInput, normalizePhone, pickPhoneNumber } from '../utils/phoneFormat.js';
 import { getBirthDateInputBounds, sanitizeBirthDateInput } from '../utils/birthDate.js';
-import { validateStudentResumeForm, formatResumeApiValidationError } from '../utils/studentResumeValidation.js';
+import { validateStudentResumeForm, formatResumeApiValidationError, buildStudentResumeRequestBody } from '../utils/studentResumeValidation.js';
 import { isValidVerificationEmail } from '../services/verificationApi.js';
 import './accountPage.css';
 
@@ -156,6 +156,8 @@ const SettingsPage = () => {
     const [skillsCatalogLoading, setSkillsCatalogLoading] = useState(false);
     const [specialitiesCatalog, setSpecialitiesCatalog] = useState([]);
     const [specialitiesCatalogLoading, setSpecialitiesCatalogLoading] = useState(false);
+    const [catalogError, setCatalogError] = useState('');
+    const [studentResumeReady, setStudentResumeReady] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [avatarVersion, setAvatarVersion] = useState(0);
 
@@ -176,6 +178,81 @@ const SettingsPage = () => {
                 setSession(currentSession);
             } catch {
                 setSession(null);
+            }
+
+            const apiRole = currentSession?.role || getAuthRole();
+
+            if (apiRole === 'STUDENT') {
+                try {
+                    const s = await getStudentMe();
+                    setRole('student');
+                    setProfile(s);
+                    let resume = null;
+                    try {
+                        resume = await getStudentResumeForEdit();
+                    } catch {
+                        /* резюме может отсутствовать */
+                    }
+                    setStudentForm(studentToForm({
+                        ...s,
+                        ...(resume || {}),
+                        ...withAccountPhone(s, resume, currentSession),
+                    }));
+                    setStudentSettings({
+                        publicProfileConsent: Boolean(s.publicProfileConsent),
+                    });
+                    setStudentResumeReady(true);
+                    return;
+                } catch (e) {
+                    if (e.status !== 404 && e.status !== 403) throw e;
+                }
+
+                const accountStatus = currentSession?.accountStatus || getAccountStatus();
+                if (isAccountPending(accountStatus)) {
+                    setRole('student_pending');
+                } else {
+                    setRole('student');
+                }
+                setProfile(null);
+                setStudentResumeReady(false);
+                let resume = null;
+                try {
+                    resume = await getStudentResumeForEdit();
+                    setStudentResumeReady(true);
+                } catch {
+                    /* первое сохранение резюме */
+                }
+                setStudentForm(studentToForm({
+                    ...(resume || {}),
+                    ...withAccountPhone(currentSession, resume),
+                }));
+                return;
+            }
+
+            if (apiRole === 'RECRUITER' || apiRole === 'USER') {
+                try {
+                    const r = await getRecruiterMe();
+                    setRole('recruiter');
+                    setProfile(r);
+                    setRecruiterForm(recruiterToForm({ ...r, ...withAccountPhone(r, currentSession) }));
+                    return;
+                } catch (e2) {
+                    if (e2.status === 404 || e2.status === 403) {
+                        const accountStatus = currentSession?.accountStatus || getAccountStatus();
+                        if (isAccountPending(accountStatus)) {
+                            setRole('recruiter_pending');
+                        } else {
+                            setRole('recruiter');
+                        }
+                        setProfile(null);
+                        setRecruiterForm((prev) => recruiterToForm({
+                            ...prev,
+                            ...withAccountPhone(currentSession),
+                        }));
+                        return;
+                    }
+                    throw e2;
+                }
             }
 
             try {
@@ -208,36 +285,6 @@ const SettingsPage = () => {
                 setRecruiterForm(recruiterToForm({ ...r, ...withAccountPhone(r, currentSession) }));
             } catch (e2) {
                 if (e2.status === 404 || e2.status === 403) {
-                    const apiRole = currentSession?.role || getAuthRole();
-                    const accountStatus = currentSession?.accountStatus || getAccountStatus();
-
-                    if (apiRole === 'STUDENT') {
-                        if (isAccountPending(accountStatus)) {
-                            setRole('student_pending');
-                            setProfile(null);
-                        } else {
-                            setRole('student');
-                            setProfile(null);
-                        }
-                        setStudentForm((prev) => studentToForm({
-                            ...prev,
-                            ...withAccountPhone(currentSession),
-                        }));
-                        return;
-                    }
-                    if (apiRole === 'RECRUITER' || apiRole === 'USER') {
-                        if (isAccountPending(accountStatus)) {
-                            setRole('recruiter_pending');
-                        } else {
-                            setRole('recruiter');
-                        }
-                        setProfile(null);
-                        setRecruiterForm((prev) => recruiterToForm({
-                            ...prev,
-                            ...withAccountPhone(currentSession),
-                        }));
-                        return;
-                    }
                     setRole(null);
                     setProfile(null);
                     return;
@@ -263,18 +310,23 @@ const SettingsPage = () => {
         let cancelled = false;
         setSkillsCatalogLoading(true);
         setSpecialitiesCatalogLoading(true);
+        setCatalogError('');
 
-        Promise.all([fetchAllRegistrationSkills(), fetchAllRegistrationSpecialities()])
+        Promise.all([fetchResumeSkills(), fetchResumeSpecialities()])
             .then(([skills, specialities]) => {
                 if (!cancelled) {
                     setSkillsCatalog(skills);
                     setSpecialitiesCatalog(specialities);
+                    if (!skills.length && !specialities.length) {
+                        setCatalogError('Не удалось загрузить списки навыков и специальностей. Обновите страницу.');
+                    }
                 }
             })
             .catch(() => {
                 if (!cancelled) {
                     setSkillsCatalog([]);
                     setSpecialitiesCatalog([]);
+                    setCatalogError('Не удалось загрузить списки навыков и специальностей. Обновите страницу.');
                 }
             })
             .finally(() => {
@@ -306,26 +358,14 @@ const SettingsPage = () => {
 
     const birthDateBounds = useMemo(() => getBirthDateInputBounds(), []);
 
-    const buildResumeBody = (resumeEmail) => {
-        const skillIds = Array.isArray(studentForm.skillsIds)
-            ? studentForm.skillsIds.map(Number).filter((n) => Number.isFinite(n) && n > 0)
-            : [];
-        const specId = Number(studentForm.specialityId);
-        return {
-            firstName: studentForm.firstName.trim(),
-            lastName: studentForm.lastName.trim(),
-            email: resumeEmail,
-            city: studentForm.city.trim() || undefined,
-            bio: studentForm.bio,
-            birthDate: sanitizeBirthDateInput(studentForm.birthDate) || undefined,
-            course: studentForm.course,
-            busyness: studentForm.busyness,
-            phoneNumber: normalizePhone(studentForm.phoneNumber.trim() || getStoredAuthPhone() || '') || undefined,
-            telegramUsername: studentForm.telegramUsername.trim() || undefined,
-            specialityId: Number.isFinite(specId) && specId > 0 ? specId : undefined,
-            skillsIds: skillIds.length ? skillIds : [],
-        };
-    };
+    const resumeCatalogue = useMemo(() => ({
+        specialityIds: specialitiesCatalog
+            .map((item) => Number(item.id))
+            .filter((id) => Number.isFinite(id) && id > 0),
+        skillIds: skillsCatalog
+            .map((item) => Number(item.id))
+            .filter((id) => Number.isFinite(id) && id > 0),
+    }), [specialitiesCatalog, skillsCatalog]);
 
     const saveStudentSettings = async () => {
         setSaving('settings');
@@ -347,7 +387,9 @@ const SettingsPage = () => {
         setSaving('resume');
         setError('');
         try {
-            const validation = validateStudentResumeForm(studentForm);
+            const validation = validateStudentResumeForm(studentForm, {
+                catalogue: resumeCatalogue,
+            });
             if (!validation.ok) {
                 setError(validation.message);
                 return;
@@ -360,15 +402,11 @@ const SettingsPage = () => {
                 setStudentForm((prev) => ({ ...prev, email: validation.email }));
             }
 
-            const body = {
-                ...buildResumeBody(validation.email),
-                birthDate: validation.birthDate,
-            };
-            const hadProfile = Boolean(profile?.id);
-            const updated = hadProfile
-                ? await updateStudentResume(body)
-                : await completeStudentResume(body);
+            const body = buildStudentResumeRequestBody(studentForm, validation);
+            const hadProfile = Boolean(profile?.id) || studentResumeReady;
+            const updated = await persistStudentResume(body, { hasStudentCard: hadProfile });
             setProfile(updated);
+            setStudentResumeReady(true);
             setStudentForm(studentToForm({ ...updated, ...withAccountPhone(updated) }));
             flashOk(hadProfile ? 'Резюме обновлено' : 'Резюме создано');
         } catch (e) {
@@ -568,8 +606,14 @@ const SettingsPage = () => {
                             {!profile && (
                                 <div className="accountPage__banner" role="status">
                                     Заполните резюме, чтобы создать карточку студента и открыть полный доступ к каталогу.
+                                    Карточка появится после первого успешного сохранения резюме.
                                 </div>
                             )}
+                            {catalogError ? (
+                                <div className="accountPage__banner" role="alert">
+                                    {catalogError}
+                                </div>
+                            ) : null}
 
                             {profile && studentForm.course === 'NEW' && (
                                 <div className="accountPage__banner" role="status">

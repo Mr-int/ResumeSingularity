@@ -1,4 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
+import { isResumeConstraintError } from '../utils/studentResumeValidation.js';
 
 const ONBOARDING_CACHE_KEY = 'resumeOnboardingCache';
 
@@ -45,6 +46,24 @@ export const updateStudentResume = (body) =>
         method: 'PUT',
         body: JSON.stringify(body),
     });
+
+/**
+ * POST для первого сохранения, PUT для обновления.
+ * При duplicate/constraint на POST автоматически пробует PUT.
+ */
+export const saveStudentResume = async (body, { hasStudentCard = false } = {}) => {
+    if (hasStudentCard) {
+        return updateStudentResume(body);
+    }
+    try {
+        return await completeStudentResume(body);
+    } catch (error) {
+        if (isResumeConstraintError(error)) {
+            return updateStudentResume(body);
+        }
+        throw error;
+    }
+};
 
 /** GET /recruiter/onboarding/status */
 export const getRecruiterOnboardingStatus = () =>

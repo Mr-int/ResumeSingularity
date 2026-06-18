@@ -13,6 +13,7 @@ import { MIN_REGISTRATION_PASSWORD_LENGTH, validateRegistrationPassword } from '
 import { normalizePhone, formatPhoneDisplay } from '../../utils/phoneFormat.js';
 import {
     buildRecruiterRegistrationBody,
+    buildStudentRegistrationBody,
     validateRegistrationUsername,
 } from '../../utils/registrationValidation.js';
 import './loginModal.css';
@@ -214,14 +215,16 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                 return;
             }
             if (isStudent) {
-                await registerStudent({
-                    username: login,
-                    password,
-                    passwordConfirm,
-                    phoneNumber: verification.phoneNumber,
-                    phoneVerificationId: verification.verificationId,
-                    email: verification.email,
-                });
+                await registerStudent(
+                    buildStudentRegistrationBody({
+                        username: login,
+                        password,
+                        passwordConfirm,
+                        phoneNumber: verification.phoneNumber,
+                        phoneVerificationId: verification.verificationId,
+                    }),
+                    { email: verification.email },
+                );
                 stopPolling();
                 setView('done-student');
             } else {

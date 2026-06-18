@@ -280,9 +280,10 @@ const clearLocalAuth = () => {
 
 /**
  * POST /auth/register-student
- * @param {{ username: string, password: string, passwordConfirm: string, name?: string, phoneNumber: string, phoneVerificationId: string }} body
+ * @param {object} body — поля для API (см. buildStudentRegistrationBody)
+ * @param {{ email?: string }} [meta] — email для локального сохранения (в API не уходит)
  */
-export const registerStudent = async (body) => {
+export const registerStudent = async (body, meta = {}) => {
     await resetStaleSessionBeforeAuth();
     const url = `${API_BASE_URL}auth/register-student`;
     const response = await fetch(url, {
@@ -303,7 +304,7 @@ export const registerStudent = async (body) => {
         localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
     }
     persistAuthPhone(body.phoneNumber);
-    persistAuthEmail(body.email);
+    persistAuthEmail(meta.email);
     await syncAuthSession();
     notifyAuthChanged();
     const contentType = response.headers.get('content-type');

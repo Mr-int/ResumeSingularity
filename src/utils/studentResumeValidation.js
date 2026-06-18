@@ -1,4 +1,6 @@
 import { isValidVerificationEmail } from '../services/verificationApi.js';
+import { getStoredAuthPhone } from '../services/authApi.js';
+import { normalizePhone } from './phoneFormat.js';
 import { validateBirthDate } from './birthDate.js';
 
 export const RESUME_FIELD_LABELS = {
@@ -27,6 +29,13 @@ const formatMissingFieldsMessage = (fields) => {
 export const validateStudentResumeForm = (form, options = {}) => {
     const missing = [];
     const email = String(options.email ?? form.email ?? '').trim();
+    const catalogue = options.catalogue || null;
+    const allowedSpecIds = catalogue?.specialityIds
+        ? new Set(catalogue.specialityIds.map(Number).filter((n) => n > 0))
+        : null;
+    const allowedSkillIds = catalogue?.skillIds
+        ? new Set(catalogue.skillIds.map(Number).filter((n) => n > 0))
+        : null;
 
     if (!String(form.firstName || '').trim()) missing.push('firstName');
     if (!String(form.lastName || '').trim()) missing.push('lastName');
@@ -53,11 +62,20 @@ export const validateStudentResumeForm = (form, options = {}) => {
     const specId = Number(form.specialityId);
     if (!Number.isFinite(specId) || specId <= 0) {
         missing.push('specialityId');
+    } else if (allowedSpecIds?.size && !allowedSpecIds.has(specId)) {
+        return {
+            ok: false,
+            message: 'Выберите специальность из списка на странице (обновите страницу, если список пустой).',
+            missingFields: ['specialityId'],
+        };
     }
 
-    const skillIds = Array.isArray(form.skillsIds)
+    let skillIds = Array.isArray(form.skillsIds)
         ? form.skillsIds.map(Number).filter((n) => Number.isFinite(n) && n > 0)
         : [];
+    if (allowedSkillIds?.size) {
+        skillIds = skillIds.filter((id) => allowedSkillIds.has(id));
+    }
     if (!skillIds.length) {
         missing.push('skillsIds');
     }
@@ -77,6 +95,44 @@ export const validateStudentResumeForm = (form, options = {}) => {
         specialityId: specId,
         skillsIds: skillIds,
     };
+};
+
+export const isResumeConstraintError = (error) => {
+    if (!error) return false;
+    const raw = String(error.message || error.responseBody?.message || '').toLowerCase();
+    return (
+        raw.includes('constraint violation')
+        || raw.includes('duplicate key')
+        || raw.includes('foreign key')
+        || raw.includes('data integrity')
+        || raw.includes('нарушает ограничение')
+        || raw.includes('нарушение целостности')
+    );
+};
+
+export const buildStudentResumeRequestBody = (form, validation) => {
+    const telegram = String(form.telegramUsername || '').trim();
+    const city = String(form.city || '').trim();
+    const bio = String(form.bio || '').trim();
+    const phone = normalizePhone(String(form.phoneNumber || '').trim() || getStoredAuthPhone() || '');
+
+    const body = {
+        firstName: String(form.firstName || '').trim(),
+        lastName: String(form.lastName || '').trim(),
+        email: validation.email,
+        birthDate: validation.birthDate,
+        course: form.course || 'FIRST',
+        busyness: form.busyness || 'FREE',
+        specialityId: validation.specialityId,
+        skillsIds: validation.skillsIds,
+    };
+
+    if (city) body.city = city;
+    if (bio) body.bio = bio;
+    if (phone) body.phoneNumber = phone;
+    if (telegram) body.telegramUsername = telegram;
+
+    return body;
 };
 
 const FIELD_ERROR_ALIASES = {
@@ -119,6 +175,10 @@ export const formatResumeApiValidationError = (error) => {
 
     const raw = String(error.message || body?.message || '').trim();
     if (!raw) return null;
+
+    if (/foreign key|violates foreign key|fk_|нарушает ограничение внешнего ключа|constraint violation|duplicate key|data integrity|нарушение целостности/i.test(raw)) {
+        return 'Не удалось сохранить резюме: выбранные специальность или навыки недоступны, либо резюме уже создано. Обновите страницу и попробуйте снова.';
+    }
 
     if (/не должно быть пустым|must not be (blank|empty)/i.test(raw)) {
         return 'Заполните все обязательные поля резюме: имя, фамилия, дата рождения, email, специальность и навыки.';
