@@ -554,6 +554,7 @@ const StudentResume = () => {
                     </div>
                 </div>
 
+                {!isStudentRole() && (
                 <div className="StudentResume__contactSection">
                     <h2 className="StudentResume__contactTitle">Свяжитесь со студентом</h2>
                     <div className="StudentResume__contactContent">
@@ -581,6 +582,7 @@ const StudentResume = () => {
                         />
                     </div>
                 </div>
+                )}
 
                 {similarStudents.length > 0 && (
                     <div className="StudentResume__similarSection">
