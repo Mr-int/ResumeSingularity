@@ -779,13 +779,22 @@
 .StudentResume__experiencePicker {
     position: relative;
     width: 100%;
-    height: 500px;
+    height: var(--experience-picker-height, 400px);
     perspective: 1500px;
     display: flex;
     align-items: center;
     outline: none;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+}
+
+.StudentResume__experienceMeasure {
+    position: absolute;
+    visibility: hidden;
+    pointer-events: none;
+    width: 100%;
+    left: 0;
+    top: 0;
 }
 
 .StudentResume__experienceCylinder {
@@ -807,67 +816,12 @@
     width: 100%;
     margin-bottom: 0;
     backface-visibility: hidden;
-    overflow: hidden;
+    box-sizing: border-box;
     transition: opacity 0.4s ease, border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
-}
-
-.StudentResume__experienceItem--wheel .StudentResume__experienceCompany {
-    font-size: clamp(22px, 3vw, 40px);
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.StudentResume__experienceItem--wheel .StudentResume__experiencePosition {
-    font-size: clamp(18px, 2.4vw, 32px);
-    display: -webkit-box;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.StudentResume__experienceItem--wheel .StudentResume__experienceDescription {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 0;
-}
-
-.StudentResume__experienceItem--wheel .StudentResume__experienceYears {
-    font-size: clamp(16px, 2vw, 24px);
-    margin-bottom: 10px;
 }
 
 .StudentResume__experienceMobileCard {
     width: 100%;
-}
-
-.StudentResume__experienceTimelineLine {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    width: 3px;
-    transform: translateX(-50%);
-    background: #fff;
-    border-radius: 2px;
-    z-index: 0;
-}
-
-.StudentResume__experienceTimelineSegment {
-    position: absolute;
-    width: 3px;
-    z-index: 1;
-    background: rgba(255, 255, 255, 0.35);
-    transition: background 0.5s ease;
-}
-
-.StudentResume__experienceTimelineSegment--dashed {
-    background: transparent;
-    background-image: linear-gradient(to bottom, #E53BCF 50%, transparent 50%);
-    background-size: 3px 8px;
 }
 
 .StudentResume__experienceItem {
@@ -894,7 +848,7 @@
     box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
 }
 
-.StudentResume__experienceItem--card:not(.StudentResume__experienceItem--wheel).active {
+.StudentResume__experienceItem--card.active:not(.StudentResume__experienceItem--wheel) {
     transform: translateY(-2px);
 }
 
@@ -959,19 +913,27 @@
 
 .StudentResume__experienceTimelineNav {
     position: relative;
-    min-height: 350px;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     justify-self: stretch;
-    gap: 0;
+    gap: 15px;
     padding: 6px 0;
 }
 
 .StudentResume__experienceTimelineNav::before {
-    content: none;
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 2px;
+    z-index: 0;
 }
 
 .StudentResume__experienceTimelineDot {
@@ -1352,25 +1314,18 @@
     }
 
     .StudentResume__experienceWithTimeline {
-        grid-template-columns: minmax(0, 1fr) 44px;
+        grid-template-columns: 1fr;
     }
 
-    .StudentResume__experienceWithTimeline--mobile {
-        grid-template-columns: minmax(0, 1fr) 44px;
-        gap: 16px;
-    }
-
-    .StudentResume__experienceWithTimeline--mobile .StudentResume__experiencePicker {
+    .StudentResume__experiencePicker {
         height: auto;
         perspective: none;
         -webkit-mask-image: none;
         mask-image: none;
     }
 
-    .StudentResume__experienceWithTimeline--mobile .StudentResume__experienceTimelineNav {
-        display: flex;
-        min-height: 220px;
-        width: 44px;
+    .StudentResume__experienceTimelineNav {
+        display: none;
     }
 }
 

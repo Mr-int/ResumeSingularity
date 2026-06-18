@@ -1,12 +1,16 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
 
-const ITEM_HEIGHT = 210;
+const DEFAULT_ITEM_HEIGHT = 320;
 const ANGLE_STEP = 18;
-const RADIUS = Math.round((ITEM_HEIGHT / 2) / Math.tan((ANGLE_STEP / 2) * (Math.PI / 180)));
 const WHEEL_THROTTLE_MS = 250;
 const MOBILE_BREAKPOINT = 768;
 const SWIPE_THRESHOLD_PX = 40;
+const PICKER_PADDING = 80;
+
+const getRadius = (itemHeight) => Math.round(
+    (itemHeight / 2) / Math.tan((ANGLE_STEP / 2) * (Math.PI / 180)),
+);
 
 const useMediaQuery = (query) => {
     const [matches, setMatches] = useState(() => {
@@ -65,12 +69,11 @@ ExperienceCard.displayName = 'ExperienceCard';
 
 const ExperienceCylinder = ({ items = [] }) => {
     const [activeIndex, setActiveIndex] = useState(0);
+    const [itemHeight, setItemHeight] = useState(DEFAULT_ITEM_HEIGHT);
     const pickerRef = useRef(null);
     const cylinderRef = useRef(null);
-    const navRef = useRef(null);
+    const measureRef = useRef(null);
     const itemRefs = useRef([]);
-    const segmentRefs = useRef([]);
-    const dotRefs = useRef([]);
     const wheelThrottleRef = useRef(false);
     const touchStartRef = useRef(null);
 
@@ -78,6 +81,8 @@ const ExperienceCylinder = ({ items = [] }) => {
     const prefersReducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
 
     const totalItems = items.length;
+    const radius = getRadius(itemHeight);
+    const pickerHeight = itemHeight + PICKER_PADDING;
 
     useEffect(() => {
         if (activeIndex >= totalItems) {
@@ -86,8 +91,14 @@ const ExperienceCylinder = ({ items = [] }) => {
     }, [activeIndex, totalItems]);
 
     itemRefs.current = itemRefs.current.slice(0, totalItems);
-    segmentRefs.current = segmentRefs.current.slice(0, Math.max(0, totalItems - 1));
-    dotRefs.current = dotRefs.current.slice(0, totalItems);
+
+    useLayoutEffect(() => {
+        if (!measureRef.current) return;
+        const measured = Math.ceil(measureRef.current.getBoundingClientRect().height);
+        if (measured > 0) {
+            setItemHeight((prev) => (prev === measured ? prev : measured));
+        }
+    }, [items]);
 
     const applyCylinderTransforms = useCallback(() => {
         if (isMobile || !cylinderRef.current) return;
@@ -98,70 +109,30 @@ const ExperienceCylinder = ({ items = [] }) => {
         itemRefs.current.forEach((item, index) => {
             if (!item) return;
             const itemAngle = index * ANGLE_STEP;
-            item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${RADIUS}px)`;
+            item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
             item.style.opacity = index === activeIndex ? '1' : '0.7';
             item.classList.toggle('active', index === activeIndex);
         });
-    }, [activeIndex, isMobile]);
-
-    const updateNavigationLayout = useCallback(() => {
-        const nav = navRef.current;
-        if (!nav || totalItems === 0) return;
-
-        const dots = dotRefs.current.filter(Boolean);
-        const segments = segmentRefs.current.filter(Boolean);
-        if (dots.length === 0) return;
-
-        const asideRect = nav.getBoundingClientRect();
-        const topPad = 10;
-        const bottomPad = 10;
-        const availHeight = asideRect.height - topPad - bottomPad;
-        const dotPositions = [];
-
-        dots.forEach((dot, index) => {
-            const progress = totalItems > 1 ? index / (totalItems - 1) : 0.5;
-            const yPos = topPad + progress * availHeight;
-            dot.style.position = 'absolute';
-            dot.style.top = `${yPos - 8}px`;
-            dot.style.left = '50%';
-            dot.style.transform = 'translateX(-50%)';
-            dotPositions.push(yPos);
-        });
-
-        segments.forEach((segment, index) => {
-            if (index < dotPositions.length - 1) {
-                segment.style.top = `${dotPositions[index]}px`;
-                segment.style.height = `${dotPositions[index + 1] - dotPositions[index]}px`;
-                segment.style.left = '50%';
-                segment.style.transform = 'translateX(-50%)';
-            }
-        });
-    }, [totalItems]);
+    }, [activeIndex, isMobile, radius]);
 
     useLayoutEffect(() => {
         if (!isMobile) {
             itemRefs.current.forEach((item, index) => {
                 if (!item) return;
                 const itemAngle = index * ANGLE_STEP;
-                item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${RADIUS}px)`;
+                item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
             });
             applyCylinderTransforms();
         }
-
-        updateNavigationLayout();
-    }, [applyCylinderTransforms, isMobile, totalItems, updateNavigationLayout, activeIndex]);
+    }, [applyCylinderTransforms, isMobile, totalItems, radius, activeIndex]);
 
     useEffect(() => {
         if (isMobile) return undefined;
 
-        const onResize = () => {
-            updateNavigationLayout();
-            applyCylinderTransforms();
-        };
-
+        const onResize = () => applyCylinderTransforms();
         window.addEventListener('resize', onResize);
         return () => window.removeEventListener('resize', onResize);
-    }, [applyCylinderTransforms, isMobile, updateNavigationLayout]);
+    }, [applyCylinderTransforms, isMobile]);
 
     const goToIndex = useCallback((index) => {
         if (index < 0 || index >= totalItems || index === activeIndex) return;
@@ -265,21 +236,33 @@ const ExperienceCylinder = ({ items = [] }) => {
         : '';
 
     const activeItem = items[activeIndex];
+    const measureItem = items.reduce((tallest, item) => {
+        const tallestLen = (tallest?.company?.length || 0) + (tallest?.position?.length || 0) + (tallest?.description?.length || 0);
+        const itemLen = (item?.company?.length || 0) + (item?.position?.length || 0) + (item?.description?.length || 0);
+        return itemLen > tallestLen ? item : tallest;
+    }, items[0]);
 
     return (
-        <div
-            className={`StudentResume__experienceWithTimeline${isMobile ? ' StudentResume__experienceWithTimeline--mobile' : ''}`}
-        >
+        <div className="StudentResume__experienceWithTimeline">
             <div
                 ref={pickerRef}
                 className="StudentResume__experiencePicker"
+                style={{ '--experience-picker-height': `${pickerHeight}px` }}
                 role="listbox"
                 aria-label="Опыт работы"
                 aria-activedescendant={isMobile ? `experience-item-${activeIndex}` : undefined}
                 tabIndex={0}
             >
+                <div
+                    ref={measureRef}
+                    className="StudentResume__experienceMeasure"
+                    aria-hidden="true"
+                >
+                    <ExperienceCard exp={measureItem} index={0} isActive isWheel={false} onFocus={() => {}} />
+                </div>
+
                 {isMobile ? (
-                    <div className="StudentResume__experienceMobileCard">
+                    <div className="StudentResume__experienceList">
                         <ExperienceCard
                             key={activeItem.id || activeIndex}
                             exp={activeItem}
@@ -293,7 +276,7 @@ const ExperienceCylinder = ({ items = [] }) => {
                     <div
                         ref={cylinderRef}
                         className={`StudentResume__experienceCylinder ${transitionClass}`.trim()}
-                        style={{ height: `${ITEM_HEIGHT}px` }}
+                        style={{ height: `${itemHeight}px` }}
                     >
                         {items.map((exp, index) => (
                             <ExperienceCard
@@ -303,7 +286,7 @@ const ExperienceCylinder = ({ items = [] }) => {
                                 isActive={activeIndex === index}
                                 isWheel
                                 onFocus={goToIndex}
-                                style={{ height: `${ITEM_HEIGHT}px` }}
+                                style={{ height: `${itemHeight}px` }}
                                 ref={(el) => { itemRefs.current[index] = el; }}
                             />
                         ))}
@@ -312,28 +295,12 @@ const ExperienceCylinder = ({ items = [] }) => {
             </div>
 
             <div
-                ref={navRef}
                 className="StudentResume__experienceTimelineNav"
                 aria-label="Навигация по опыту"
             >
-                <div className="StudentResume__experienceTimelineLine" aria-hidden="true" />
-
-                {totalItems > 1 && Array.from({ length: totalItems - 1 }, (_, index) => (
-                    <div
-                        key={`segment-${index}`}
-                        ref={(el) => { segmentRefs.current[index] = el; }}
-                        className={[
-                            'StudentResume__experienceTimelineSegment',
-                            index === activeIndex - 1 || index === activeIndex ? 'StudentResume__experienceTimelineSegment--dashed' : '',
-                        ].filter(Boolean).join(' ')}
-                        aria-hidden="true"
-                    />
-                ))}
-
                 {items.map((_, index) => (
                     <button
                         key={`exp-dot-${index}`}
-                        ref={(el) => { dotRefs.current[index] = el; }}
                         type="button"
                         className={`StudentResume__experienceTimelineDot ${activeIndex === index ? 'active' : ''}`}
                         onClick={() => goToIndex(index)}

@@ -765,11 +765,11 @@
 }
 
 .loginModal__roleCardIcon--employer {
-    background-image: url("../../assets/logos/recruter.png");
+    background-image: url("../../assets/icons/recruter.png");
 }
 
 .loginModal__roleCardIcon--student {
-    background-image: url("../../assets/logos/student.png");
+    background-image: url("../../assets/icons/student.png");
 }
 
 .loginModal__roleCardText {
