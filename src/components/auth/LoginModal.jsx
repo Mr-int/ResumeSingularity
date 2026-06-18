@@ -9,7 +9,7 @@ import {
 import RegistrationWizard from './RegistrationWizard.jsx';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { validateRegistrationPassword } from '../../utils/passwordPolicy.js';
-import logo from '../../assets/logos/Logo.png';
+import logo from '../../assets/logos/icoRes.png';
 import './loginModal.css';
 
 const ChevronLeftIcon = () => (

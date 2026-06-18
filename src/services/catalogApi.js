@@ -72,3 +72,7 @@ export const listAuthProjects = (q) => {
 
 /** GET /projects/{id} */
 export const getAuthProject = (id) => apiClientJson(`projects/${id}`, { method: 'GET' });
+
+/** GET /admin/projects/{id}/students — UUID участников (может быть недоступно не-админам). */
+export const listAdminProjectStudentIds = (projectId) =>
+    apiClientJson(`admin/projects/${projectId}/students`, { method: 'GET', quiet: true });

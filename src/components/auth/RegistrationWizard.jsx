@@ -7,7 +7,7 @@ import {
     isValidVerificationEmail,
     isVerificationMailDeliveryError,
 } from '../../services/verificationApi.js';
-import logo from '../../assets/logos/Logo.png';
+import logo from '../../assets/logos/icoRes.png';
 import PhoneOtpConfirm from './PhoneOtpConfirm.jsx';
 import { MIN_REGISTRATION_PASSWORD_LENGTH, validateRegistrationPassword } from '../../utils/passwordPolicy.js';
 import { normalizePhone, formatPhoneDisplay } from '../../utils/phoneFormat.js';

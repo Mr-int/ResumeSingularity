@@ -1,7 +1,7 @@
 import { getImageUrl } from '../config/api.js';
 import { extractPageRows } from '../utils/pageable.js';
-import { listAuthProjects, getAuthProject } from './catalogApi.js';
-import { listPublicProjects, getPublicProject } from './publicApi.js';
+import { listAuthProjects, getAuthProject, listAdminProjectStudentIds } from './catalogApi.js';
+import { listPublicProjects, getPublicProject, getPublicHomeVitrina } from './publicApi.js';
 import { filterStudentCardsPage, getStudentById } from './studentApi.js';
 import {
     getAccountStatus,
@@ -183,31 +183,72 @@ const withParticipantMeta = (project, participants) => {
     };
 };
 
+const loadVitrinaProjectParticipantsMap = async () => {
+    try {
+        const data = await getPublicHomeVitrina();
+        const map = new Map();
+        for (const item of data?.projects || []) {
+            const participants = normalizeProjectParticipants(item);
+            if (participants.length && item?.id != null) {
+                map.set(String(item.id), participants);
+            }
+        }
+        return map;
+    } catch {
+        return new Map();
+    }
+};
+
+const loadProjectParticipants = async (project, catalogMap, vitrinaMap) => {
+    let participants = Array.isArray(project.participants) ? [...project.participants] : [];
+
+    if (!participants.length && vitrinaMap?.size) {
+        participants = vitrinaMap.get(String(project.id)) || [];
+    }
+
+    if (participantsNeedLookup(participants)) {
+        try {
+            const detail = normalizeProjectCard(await getAuthProject(project.id), 'auth');
+            if (detail?.participants?.length) {
+                participants = detail.participants;
+            }
+        } catch {
+            /* оставляем участников из списка / витрины */
+        }
+    }
+
+    if (!participants.length) {
+        try {
+            const ids = await listAdminProjectStudentIds(project.id);
+            if (Array.isArray(ids) && ids.length) {
+                participants = ids.map(participantFromRef).filter(Boolean);
+            }
+        } catch {
+            /* admin endpoint недоступен для роли STUDENT */
+        }
+    }
+
+    participants = applyCatalogToParticipants(participants, catalogMap);
+
+    if (participantsNeedLookup(participants)) {
+        participants = await resolveParticipantNames(participants);
+    }
+
+    return participants;
+};
+
 /** Для одобренных пользователей подтягиваем участников из детальной карточки и каталога студентов. */
 export const enrichProjectCardsParticipants = async (projects = []) => {
     if (!canLoadAuthProjectParticipants()) return projects;
 
-    const catalogMap = await buildStudentCatalogMap();
+    const [catalogMap, vitrinaMap] = await Promise.all([
+        buildStudentCatalogMap(),
+        loadVitrinaProjectParticipantsMap(),
+    ]);
 
     return Promise.all(
         projects.map(async (project) => {
-            let participants = project.participants || [];
-
-            try {
-                const detail = normalizeProjectCard(await getAuthProject(project.id), 'auth');
-                if (detail?.participants?.length) {
-                    participants = detail.participants;
-                }
-            } catch {
-                /* оставляем участников из списка */
-            }
-
-            participants = applyCatalogToParticipants(participants, catalogMap);
-
-            if (participantsNeedLookup(participants)) {
-                participants = await resolveParticipantNames(participants);
-            }
-
+            const participants = await loadProjectParticipants(project, catalogMap, vitrinaMap);
             return withParticipantMeta(project, participants);
         }),
     );

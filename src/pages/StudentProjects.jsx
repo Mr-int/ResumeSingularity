@@ -124,14 +124,16 @@ const ProjectModal = ({ project, loadingParticipants = false, onClose }) => {
                 aria-labelledby="project-modal-title"
                 onClick={(e) => e.stopPropagation()}
             >
-                <button
-                    type="button"
-                    className="studentProjectsPage__modalClose"
-                    onClick={onClose}
-                    aria-label="Закрыть"
-                >
-                    ×
-                </button>
+                <div className="studentProjectsPage__modalToolbar">
+                    <button
+                        type="button"
+                        className="studentProjectsPage__modalClose"
+                        onClick={onClose}
+                        aria-label="Закрыть"
+                    >
+                        ×
+                    </button>
+                </div>
 
                 <div className="studentProjectsPage__modalBody">
                     <ProjectGallery images={project.images || []} className="studentProjectsPage__gallery--modal" />
