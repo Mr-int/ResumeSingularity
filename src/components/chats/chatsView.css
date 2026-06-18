@@ -806,6 +806,24 @@
     color: #a89494;
 }
 
+.chatsView__error p {
+    margin: 0 0 10px;
+}
+
+.chatsView__profileLink {
+    display: inline-block;
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.chatsView__profileLink:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
 @media (max-width: 768px) {
     .chatsView__container {
         flex-direction: column;

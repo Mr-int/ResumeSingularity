@@ -220,6 +220,7 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
                     passwordConfirm,
                     phoneNumber: verification.phoneNumber,
                     phoneVerificationId: verification.verificationId,
+                    email: verification.email,
                 });
                 stopPolling();
                 setView('done-student');

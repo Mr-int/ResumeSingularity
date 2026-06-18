@@ -98,3 +98,17 @@ export function isChatMessagesBlockedError(error) {
         || raw.includes('принятия заявки студентом')
     );
 }
+
+/** Профиль не заполнен — чаты недоступны. */
+export function isProfileIncompleteForChatError(error) {
+    if (!error) return false;
+    const raw = normalize(error.message || error.responseBody?.message || '');
+    return (
+        raw.includes('дозаполните профиль')
+        || raw.includes('заполните профиль')
+        || raw.includes('complete your profile')
+    );
+}
+
+export const PROFILE_INCOMPLETE_CHAT_MESSAGE =
+    'Дозаполните профиль для доступа к переписке';

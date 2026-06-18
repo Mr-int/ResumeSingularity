@@ -20,3 +20,31 @@ export const phoneToLocalDigits = (phone) => {
     if (!phone) return '';
     return String(phone).replace(/\D/g, '').replace(/^7|^8/, '');
 };
+
+/** Берёт телефон из ответа API / профиля (разные имена полей). */
+export const pickPhoneNumber = (...sources) => {
+    for (const source of sources) {
+        if (!source || typeof source !== 'object') continue;
+        const candidates = [
+            source.phoneNumber,
+            source.phone,
+            source.mobile,
+            source.user?.phoneNumber,
+            source.user?.phone,
+        ];
+        for (const value of candidates) {
+            const normalized = String(value || '').trim();
+            if (normalized) return normalized;
+        }
+    }
+    return '';
+};
+
+/** Для отображения в текстовом поле профиля */
+export const formatPhoneForInput = (phone) => {
+    const raw = String(phone || '').trim();
+    if (!raw) return '';
+    if (raw.startsWith('+')) return raw;
+    const digits = phoneToLocalDigits(raw);
+    return digits ? formatPhoneDisplay(digits) : raw;
+};

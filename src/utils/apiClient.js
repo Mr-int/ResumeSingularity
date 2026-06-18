@@ -4,6 +4,7 @@ import {
     formatApiUserMessage,
     isChatMessagesBlockedError,
     isPendingApprovalError,
+    isProfileIncompleteForChatError,
 } from './apiErrors.js';
 
 const clearLocalAuthSilently = () => {
@@ -155,7 +156,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
             throw timeoutError;
         }
 
-        if (!quiet && !isPendingApprovalError(error) && !isChatMessagesBlockedError(error)) {
+        if (!quiet && !isPendingApprovalError(error) && !isChatMessagesBlockedError(error) && !isProfileIncompleteForChatError(error)) {
             console.error(`[API] Error for endpoint ${endpoint}:`, error);
             console.error('[API] Full URL was:', url);
         }

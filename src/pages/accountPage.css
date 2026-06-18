@@ -227,17 +227,23 @@
 }
 
 .accountPage__input--readonly,
-.accountPage__formGroup input:disabled {
-    opacity: 0.72;
-    cursor: not-allowed;
-    background: #080808;
-    border-color: #1a1a1a;
+.accountPage__formGroup input.accountPage__input--readonly {
+    opacity: 1;
+    cursor: default;
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+    background: #0a0a0a;
+    border-color: #222222;
 }
 
 .accountPage__input--readonly:hover,
-.accountPage__formGroup input:disabled:hover {
-    background: #080808;
-    border-color: #1a1a1a;
+.accountPage__formGroup input.accountPage__input--readonly:hover,
+.accountPage__input--readonly:focus,
+.accountPage__formGroup input.accountPage__input--readonly:focus {
+    background: #0a0a0a;
+    border-color: #222222;
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
 }
 
 .accountPage__fieldHint {

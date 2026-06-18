@@ -9,12 +9,16 @@ import {
     uploadStudentPhoto,
 } from '../services/accountApi.js';
 import { getStudentResumeForEdit, updateStudentResume, completeStudentResume } from '../services/onboardingApi.js';
-import { changePassword, getAuthMe, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, isAccountPending, syncAuthSession, AUTH_USERNAME_KEY } from '../services/authApi.js';
+import { changePassword, getAuthMe, getStoredAuthPhone, getStoredAuthEmail, logoutServer, getAuthRole, getAccountStatus, isAuthenticated, isAccountPending, syncAuthSession, AUTH_USERNAME_KEY } from '../services/authApi.js';
 import { formatApiUserMessage } from '../utils/apiErrors.js';
 import { getImageUrl } from '../config/api.js';
 import { fetchAllRegistrationSkills, fetchAllRegistrationSpecialities } from '../services/registrationCatalogApi.js';
 import { extractSkillIds } from '../utils/skills.js';
 import { COURSE_OPTIONS, BUSYNESS_OPTIONS, COURSE_LABELS, BUSYNESS_LABELS } from '../utils/studentEnums.js';
+import { formatPhoneForInput, normalizePhone, pickPhoneNumber } from '../utils/phoneFormat.js';
+import { getBirthDateInputBounds, sanitizeBirthDateInput } from '../utils/birthDate.js';
+import { validateStudentResumeForm, formatResumeApiValidationError } from '../utils/studentResumeValidation.js';
+import { isValidVerificationEmail } from '../services/verificationApi.js';
 import './accountPage.css';
 
 const COURSES = COURSE_OPTIONS;
@@ -90,16 +94,30 @@ const resolveIdentity = (session, profileRole) => {
     return { apiRole, username, roleLabel, statusLabel, accountStatus };
 };
 
+const pickAccountEmail = (...sources) => {
+    for (const source of sources) {
+        const value = String(source?.email || '').trim();
+        if (value && isValidVerificationEmail(value)) return value;
+    }
+    const stored = getStoredAuthEmail();
+    if (stored && isValidVerificationEmail(stored)) return stored;
+    for (const source of sources) {
+        const username = String(source?.username || '').trim();
+        if (username && isValidVerificationEmail(username)) return username;
+    }
+    return '';
+};
+
 const studentToForm = (s) => ({
     firstName: s.firstName || '',
     lastName: s.lastName || '',
     city: s.city || '',
     bio: s.bio || '',
-    birthDate: s.birthDate || '',
+    birthDate: sanitizeBirthDateInput(s.birthDate || ''),
     course: s.course || 'FIRST',
     busyness: s.busyness || 'FREE',
-    email: s.email || '',
-    phoneNumber: s.phoneNumber || '',
+    email: pickAccountEmail(s) || String(s.email || '').trim(),
+    phoneNumber: formatPhoneForInput(pickPhoneNumber(s)),
     telegramUsername: s.telegramUsername || '',
     specialityId: s.specialityId != null ? String(s.specialityId) : '',
     skillsIds: extractSkillIds(s.skillsIds ?? s.skills),
@@ -111,8 +129,12 @@ const recruiterToForm = (r) => ({
     firstName: r.firstName || '',
     lastName: r.lastName || '',
     email: r.email || '',
-    phoneNumber: r.phoneNumber || '',
+    phoneNumber: formatPhoneForInput(pickPhoneNumber(r)),
     telegramUsername: r.telegramUsername || '',
+});
+
+const withAccountPhone = (...sources) => ({
+    phoneNumber: pickPhoneNumber(...sources, { phoneNumber: getStoredAuthPhone() }),
 });
 
 const SettingsPage = () => {
@@ -160,16 +182,20 @@ const SettingsPage = () => {
                 const s = await getStudentMe();
                 setRole('student');
                 setProfile(s);
-                setStudentForm(studentToForm(s));
-                setStudentSettings({
-                    publicProfileConsent: Boolean(s.publicProfileConsent),
-                });
+                let resume = null;
                 try {
-                    const resume = await getStudentResumeForEdit();
-                    if (resume) setStudentForm(studentToForm({ ...s, ...resume }));
+                    resume = await getStudentResumeForEdit();
                 } catch {
                     /* резюме может отсутствовать */
                 }
+                setStudentForm(studentToForm({
+                    ...s,
+                    ...(resume || {}),
+                    ...withAccountPhone(s, resume, currentSession),
+                }));
+                setStudentSettings({
+                    publicProfileConsent: Boolean(s.publicProfileConsent),
+                });
                 return;
             } catch (e) {
                 if (e.status !== 404 && e.status !== 403) throw e;
@@ -179,7 +205,7 @@ const SettingsPage = () => {
                 const r = await getRecruiterMe();
                 setRole('recruiter');
                 setProfile(r);
-                setRecruiterForm(recruiterToForm(r));
+                setRecruiterForm(recruiterToForm({ ...r, ...withAccountPhone(r, currentSession) }));
             } catch (e2) {
                 if (e2.status === 404 || e2.status === 403) {
                     const apiRole = currentSession?.role || getAuthRole();
@@ -193,6 +219,10 @@ const SettingsPage = () => {
                             setRole('student');
                             setProfile(null);
                         }
+                        setStudentForm((prev) => studentToForm({
+                            ...prev,
+                            ...withAccountPhone(currentSession),
+                        }));
                         return;
                     }
                     if (apiRole === 'RECRUITER' || apiRole === 'USER') {
@@ -202,6 +232,10 @@ const SettingsPage = () => {
                             setRole('recruiter');
                         }
                         setProfile(null);
+                        setRecruiterForm((prev) => recruiterToForm({
+                            ...prev,
+                            ...withAccountPhone(currentSession),
+                        }));
                         return;
                     }
                     setRole(null);
@@ -270,7 +304,9 @@ const SettingsPage = () => {
         return avatarVersion > 0 ? `${base}?v=${avatarVersion}` : base;
     }, [avatarPreview, profile?.imagePath, avatarVersion]);
 
-    const buildResumeBody = () => {
+    const birthDateBounds = useMemo(() => getBirthDateInputBounds(), []);
+
+    const buildResumeBody = (resumeEmail) => {
         const skillIds = Array.isArray(studentForm.skillsIds)
             ? studentForm.skillsIds.map(Number).filter((n) => Number.isFinite(n) && n > 0)
             : [];
@@ -278,12 +314,13 @@ const SettingsPage = () => {
         return {
             firstName: studentForm.firstName.trim(),
             lastName: studentForm.lastName.trim(),
+            email: resumeEmail,
             city: studentForm.city.trim() || undefined,
             bio: studentForm.bio,
-            birthDate: studentForm.birthDate,
+            birthDate: sanitizeBirthDateInput(studentForm.birthDate) || undefined,
             course: studentForm.course,
             busyness: studentForm.busyness,
-            phoneNumber: studentForm.phoneNumber.trim() || undefined,
+            phoneNumber: normalizePhone(studentForm.phoneNumber.trim() || getStoredAuthPhone() || '') || undefined,
             telegramUsername: studentForm.telegramUsername.trim() || undefined,
             specialityId: Number.isFinite(specId) && specId > 0 ? specId : undefined,
             skillsIds: skillIds.length ? skillIds : [],
@@ -310,16 +347,32 @@ const SettingsPage = () => {
         setSaving('resume');
         setError('');
         try {
-            const body = buildResumeBody();
+            const validation = validateStudentResumeForm(studentForm);
+            if (!validation.ok) {
+                setError(validation.message);
+                return;
+            }
+
+            if (validation.birthDate !== studentForm.birthDate) {
+                setStudentForm((prev) => ({ ...prev, birthDate: validation.birthDate }));
+            }
+            if (validation.email !== studentForm.email) {
+                setStudentForm((prev) => ({ ...prev, email: validation.email }));
+            }
+
+            const body = {
+                ...buildResumeBody(validation.email),
+                birthDate: validation.birthDate,
+            };
             const hadProfile = Boolean(profile?.id);
             const updated = hadProfile
                 ? await updateStudentResume(body)
                 : await completeStudentResume(body);
             setProfile(updated);
-            setStudentForm(studentToForm(updated));
+            setStudentForm(studentToForm({ ...updated, ...withAccountPhone(updated) }));
             flashOk(hadProfile ? 'Резюме обновлено' : 'Резюме создано');
         } catch (e) {
-            setError(formatApiUserMessage(e) || 'Не удалось сохранить резюме');
+            setError(formatResumeApiValidationError(e) || formatApiUserMessage(e) || 'Не удалось сохранить резюме');
         } finally {
             setSaving('');
         }
@@ -333,12 +386,15 @@ const SettingsPage = () => {
             const body = {};
             for (const [key, value] of Object.entries(recruiterForm)) {
                 if (key === 'email') continue;
-                const v = typeof value === 'string' ? value.trim() : value;
+                let v = typeof value === 'string' ? value.trim() : value;
+                if (key === 'phoneNumber') {
+                    v = normalizePhone(v || getStoredAuthPhone() || '');
+                }
                 if (v !== '') body[key] = v;
             }
             const updated = await patchRecruiter(profile.id, body);
             setProfile(updated);
-            setRecruiterForm(recruiterToForm(updated));
+            setRecruiterForm(recruiterToForm({ ...updated, ...withAccountPhone(updated) }));
             flashOk('Профиль работодателя сохранён');
         } catch (e) {
             setError(e.message || 'Не удалось сохранить профиль');
@@ -421,11 +477,20 @@ const SettingsPage = () => {
     };
 
     const identity = resolveIdentity(session, role);
-    const accountEmail =
-        (session?.username || identity.username || '').trim()
-        || studentForm.email
-        || recruiterForm.email
-        || '';
+    const accountEmail = pickAccountEmail(
+        session,
+        profile,
+        studentForm,
+        recruiterForm,
+        { username: identity.username !== 'Аккаунт' ? identity.username : '' },
+        { username: (() => {
+            try {
+                return (localStorage.getItem(AUTH_USERNAME_KEY) || '').trim();
+            } catch {
+                return '';
+            }
+        })() },
+    ) || recruiterForm.email;
     const showIdentity = !loading && (role || isAuthenticated());
 
     return (
@@ -592,7 +657,13 @@ const SettingsPage = () => {
                                     </label>
                                     <label className="accountPage__formGroup">
                                         <span>Дата рождения</span>
-                                        <input type="date" value={studentForm.birthDate} onChange={(e) => setStudentField('birthDate', e.target.value)} />
+                                        <input
+                                            type="date"
+                                            value={studentForm.birthDate}
+                                            min={birthDateBounds.min}
+                                            max={birthDateBounds.max}
+                                            onChange={(e) => setStudentField('birthDate', sanitizeBirthDateInput(e.target.value))}
+                                        />
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>О себе</span>
@@ -618,14 +689,13 @@ const SettingsPage = () => {
                                         <span>Email</span>
                                         <input
                                             type="email"
-                                            value={accountEmail}
-                                            readOnly
-                                            disabled
-                                            className="accountPage__input--readonly"
-                                            aria-describedby="account-email-hint"
+                                            value={studentForm.email}
+                                            onChange={(e) => setStudentField('email', e.target.value.trim())}
+                                            placeholder="youremail@example.com"
+                                            autoComplete="email"
                                         />
-                                        <span id="account-email-hint" className="accountPage__fieldHint">
-                                            Почта аккаунта — изменить нельзя
+                                        <span className="accountPage__fieldHint">
+                                            Обязателен для сохранения резюме и доступа к чатам
                                         </span>
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
@@ -743,7 +813,6 @@ const SettingsPage = () => {
                                             type="email"
                                             value={accountEmail}
                                             readOnly
-                                            disabled
                                             className="accountPage__input--readonly"
                                             aria-describedby="recruiter-email-hint"
                                         />

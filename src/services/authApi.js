@@ -12,21 +12,61 @@ let syncInFlight = null;
 let authMeServerErrorUntil = 0;
 const AUTH_ME_SERVER_ERROR_COOLDOWN_MS = 30_000;
 
-export function notifyAuthChanged() {
-    window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
-}
-
-// Re-export for hooks
-export { AUTH_CHANGED_EVENT as RESUME_AUTH_CHANGED_EVENT };
-
 const AUTH_FLAG_KEY = 'isAuthenticated';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
+/** Телефон, подтверждённый при регистрации (auth/me его не отдаёт). */
+export const AUTH_PHONE_KEY = 'resumeAuthPhone';
+/** Email, подтверждённый при регистрации (auth/me может не отдавать). */
+export const AUTH_EMAIL_KEY = 'resumeAuthEmail';
 /** Роль с последнего входа (STUDENT, RECRUITER, ADMIN). */
 export const AUTH_ROLE_KEY = 'resumeAuthRole';
 export const AUTH_ACCOUNT_STATUS_KEY = 'resumeAccountStatus';
 export const AUTH_HINTS_DISABLED_KEY = 'resumeHintsDisabled';
 export const AUTH_RETURN_KEY = 'authReturnTo';
+
+export function notifyAuthChanged() {
+    window.dispatchEvent(new CustomEvent(AUTH_CHANGED_EVENT));
+}
+
+export function getStoredAuthPhone() {
+    try {
+        return (localStorage.getItem(AUTH_PHONE_KEY) || '').trim();
+    } catch {
+        return '';
+    }
+}
+
+function persistAuthPhone(phoneNumber) {
+    const normalized = String(phoneNumber || '').trim();
+    if (!normalized) return;
+    try {
+        localStorage.setItem(AUTH_PHONE_KEY, normalized);
+    } catch {
+        /* ignore */
+    }
+}
+
+export function getStoredAuthEmail() {
+    try {
+        return (localStorage.getItem(AUTH_EMAIL_KEY) || '').trim();
+    } catch {
+        return '';
+    }
+}
+
+export function persistAuthEmail(email) {
+    const normalized = String(email || '').trim().toLowerCase();
+    if (!normalized) return;
+    try {
+        localStorage.setItem(AUTH_EMAIL_KEY, normalized);
+    } catch {
+        /* ignore */
+    }
+}
+
+// Re-export for hooks
+export { AUTH_CHANGED_EVENT as RESUME_AUTH_CHANGED_EVENT };
 
 export const consumeAuthReturnTo = () => {
     const returnTo = sessionStorage.getItem(AUTH_RETURN_KEY);
@@ -105,6 +145,8 @@ async function resetStaleSessionBeforeAuth() {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
+    localStorage.removeItem(AUTH_PHONE_KEY);
+    localStorage.removeItem(AUTH_EMAIL_KEY);
     localStorage.removeItem(AUTH_ROLE_KEY);
     localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
     localStorage.removeItem(AUTH_HINTS_DISABLED_KEY);
@@ -222,6 +264,8 @@ const clearLocalAuth = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
+    localStorage.removeItem(AUTH_PHONE_KEY);
+    localStorage.removeItem(AUTH_EMAIL_KEY);
     localStorage.removeItem(AUTH_ROLE_KEY);
     localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
     localStorage.removeItem(AUTH_HINTS_DISABLED_KEY);
@@ -258,6 +302,8 @@ export const registerStudent = async (body) => {
     if (body.username != null && String(body.username).trim()) {
         localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
     }
+    persistAuthPhone(body.phoneNumber);
+    persistAuthEmail(body.email);
     await syncAuthSession();
     notifyAuthChanged();
     const contentType = response.headers.get('content-type');
@@ -290,6 +336,8 @@ export const registerRecruiter = async (body) => {
     if (body.username != null && String(body.username).trim()) {
         localStorage.setItem(AUTH_USERNAME_KEY, String(body.username).trim());
     }
+    persistAuthPhone(body.phoneNumber);
+    persistAuthEmail(body.email);
     await syncAuthSession();
     notifyAuthChanged();
     const contentType = response.headers.get('content-type');
@@ -400,6 +448,12 @@ async function syncAuthSessionInternal() {
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         if (data?.username) {
             localStorage.setItem(AUTH_USERNAME_KEY, nextUsername);
+        }
+        if (data?.phoneNumber) {
+            persistAuthPhone(data.phoneNumber);
+        }
+        if (data?.email) {
+            persistAuthEmail(data.email);
         }
         if (data?.role) {
             localStorage.setItem(AUTH_ROLE_KEY, nextRole);

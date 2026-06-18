@@ -23,7 +23,7 @@ import {
     REQUEST_RESULT_LABELS,
     TU_REASON_CODES,
 } from '../../utils/requestFlow.js';
-import { formatApiUserMessage } from '../../utils/apiErrors.js';
+import { formatApiUserMessage, isProfileIncompleteForChatError, PROFILE_INCOMPLETE_CHAT_MESSAGE } from '../../utils/apiErrors.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { fetchRecruiterForView, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
 import {
@@ -171,6 +171,7 @@ const ChatsView = () => {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [loadingList, setLoadingList] = useState(false);
     const [listError, setListError] = useState('');
+    const [profileIncomplete, setProfileIncomplete] = useState(false);
     const [chats, setChats] = useState([]);
     const [titles, setTitles] = useState({});
     const [subtitles, setSubtitles] = useState({});
@@ -438,6 +439,7 @@ const ChatsView = () => {
             setLoadingList(true);
         }
         setListError('');
+        setProfileIncomplete(false);
         if (!silent) {
             titleCache.current.clear();
             subtitleCache.current.clear();
@@ -496,7 +498,12 @@ const ChatsView = () => {
             setSubtitles(nextSubtitles);
             setAvatars(nextAvatars);
         } catch (e) {
-            setListError(e.message || 'Не удалось загрузить чаты');
+            if (isProfileIncompleteForChatError(e)) {
+                setProfileIncomplete(true);
+                setListError(PROFILE_INCOMPLETE_CHAT_MESSAGE);
+            } else {
+                setListError(formatApiUserMessage(e) || 'Не удалось загрузить чаты');
+            }
             setChats([]);
         } finally {
             if (!silent) {
@@ -1109,7 +1116,16 @@ const ChatsView = () => {
                 </div>
                 <div className="chatsView__dialogsList">
                     {loadingList && <div className="chatsView__muted">Загрузка…</div>}
-                    {listError && <div className="chatsView__error">{listError}</div>}
+                    {listError && (
+                        <div className="chatsView__error">
+                            <p>{listError}</p>
+                            {profileIncomplete ? (
+                                <Link to="/settings" className="chatsView__profileLink">
+                                    Заполнить профиль
+                                </Link>
+                            ) : null}
+                        </div>
+                    )}
                     {!loadingList && !listError && filteredChats.length === 0 && (
                         <div className="chatsView__empty">Пока нет диалогов</div>
                     )}
