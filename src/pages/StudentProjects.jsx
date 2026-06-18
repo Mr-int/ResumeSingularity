@@ -74,11 +74,26 @@ const ProjectCard = ({ project, onOpen }) => {
             <h2 className="studentProjectsPage__cardTitle">{project.title}</h2>
             <p className="studentProjectsPage__cardDescription">{previewText}</p>
             {project.participants?.length > 0 ? (
-                <p className="studentProjectsPage__cardMeta">
-                    {project.participants.length === 1
-                        ? `Участник: ${project.participants[0].name}`
-                        : `Участники: ${project.participants.map((p) => p.name).join(', ')}`}
-                </p>
+                <div
+                    className="studentProjectsPage__cardMeta"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                >
+                    <span className="studentProjectsPage__cardMetaLabel">
+                        {project.participants.length === 1 ? 'Участник:' : 'Участники:'}
+                    </span>
+                    <div className="studentProjectsPage__cardParticipants">
+                        {project.participants.map((p) => (
+                            <Link
+                                key={p.id}
+                                to={`/studentsResume/${p.id}`}
+                                className="studentProjectsPage__cardParticipant"
+                            >
+                                {p.name || 'Студент'}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
             ) : null}
         </li>
     );

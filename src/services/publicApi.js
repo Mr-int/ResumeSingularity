@@ -3,7 +3,15 @@ import { buildPageQuery, normalizePageResponse } from '../utils/pageable.js';
 
 /** GET /public/vitrina/home */
 export const getPublicHomeVitrina = () =>
-    apiClientJson('public/vitrina/home', { method: 'GET' });
+    apiClientJson('public/vitrina/home', { method: 'GET', credentials: 'omit' });
+
+/** Студенты для главной витрины (гости без регистрации). */
+export const getPublicHomeVitrinaStudents = async () => {
+    const data = await getPublicHomeVitrina();
+    if (Array.isArray(data?.students)) return data.students;
+    if (Array.isArray(data)) return data;
+    return [];
+};
 
 /** GET /public/projects */
 export const listPublicProjects = (q) => {

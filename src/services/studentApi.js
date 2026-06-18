@@ -1,7 +1,27 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
 import { hasApprovedCatalogAccess, isAuthenticated } from './authApi.js';
-import { filterPublicStudentCards, getPublicStudentCard } from './publicApi.js';
+import { filterPublicStudentCards, getPublicStudentCard, getPublicHomeVitrinaStudents } from './publicApi.js';
+
+/**
+ * Студенты для слайдера на главной:
+ * - одобренные пользователи — полный каталог;
+ * - гости — GET /public/vitrina/home;
+ * - остальные авторизованные — getAllStudents (может быть пусто до одобрения).
+ */
+export const getHomeSliderStudents = async () => {
+    if (hasApprovedCatalogAccess()) {
+        return getAllStudents();
+    }
+    if (!isAuthenticated()) {
+        try {
+            return await getPublicHomeVitrinaStudents();
+        } catch {
+            return [];
+        }
+    }
+    return getAllStudents();
+};
 
 export const getAllStudents = async () => {
     try {

@@ -179,7 +179,6 @@
     margin: 0;
     font-size: 11px;
     color: #ffffff;
-    transition: border-color 0.2s ease;
 }
 
 .accountPage__formGroup:focus-within {
@@ -210,7 +209,7 @@
     padding: 11px 14px;
     width: 100%;
     resize: vertical;
-    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 .accountPage__formGroup input:hover,
@@ -225,12 +224,36 @@
 .accountPage__formGroup textarea:focus {
     border-color: #666666;
     background: #111111;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.accountPage__input--readonly,
+.accountPage__formGroup input:disabled {
+    opacity: 0.72;
+    cursor: not-allowed;
+    background: #080808;
+    border-color: #1a1a1a;
+}
+
+.accountPage__input--readonly:hover,
+.accountPage__formGroup input:disabled:hover {
+    background: #080808;
+    border-color: #1a1a1a;
+}
+
+.accountPage__fieldHint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #888888;
+    line-height: 1.4;
 }
 
 .accountPage__formGroup input::placeholder,
 .accountPage__formGroup textarea::placeholder {
     color: #888888;
+}
+
+.accountPage__formGroup textarea {
+    overscroll-behavior: contain;
 }
 
 .accountPage__formGroup select {
@@ -480,9 +503,14 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px 18px;
-    padding: 10px 0 4px;
+    padding: 12px 14px;
     max-height: 240px;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #0a0a0a;
+    border: 1px solid #222222;
+    border-radius: 4px;
+    -webkit-overflow-scrolling: touch;
 }
 
 .accountPage__skillOption {
@@ -501,6 +529,15 @@
     margin-top: 3px;
     accent-color: #ffffff;
     flex-shrink: 0;
+}
+
+.accountPage__formGroup.accountPage__fullWidth:has(.accountPage__skillsGrid) {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.accountPage__formGroup.accountPage__fullWidth:has(.accountPage__skillsGrid) > span {
+    margin-bottom: 10px;
 }
 
 .accountPage__skillsEmpty {

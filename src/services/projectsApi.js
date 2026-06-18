@@ -2,8 +2,15 @@ import { getImageUrl } from '../config/api.js';
 import { extractPageRows } from '../utils/pageable.js';
 import { listAuthProjects, getAuthProject } from './catalogApi.js';
 import { listPublicProjects, getPublicProject } from './publicApi.js';
-import { getStudentById } from './studentApi.js';
-import { hasApprovedCatalogAccess, isAuthenticated } from './authApi.js';
+import { filterStudentCardsPage, getStudentById } from './studentApi.js';
+import {
+    getAccountStatus,
+    hasApprovedCatalogAccess,
+    isAccountApproved,
+    isAuthenticated,
+    isStudentRole,
+    syncAuthSession,
+} from './authApi.js';
 
 const normalizeSiteProjectImage = (img) => {
     if (!img) return null;
@@ -30,14 +37,20 @@ const participantFromStudent = (student) => {
     if (!student || student.id == null) return null;
     const firstName = student.firstName || '';
     const lastName = student.lastName || '';
+    const combined = `${firstName} ${lastName}`.trim();
+    const name = combined || student.fullName || student.displayName || student.name || '';
     return {
         id: String(student.id),
         firstName,
         lastName,
-        name: `${firstName} ${lastName}`.trim() || 'Студент',
-        speciality: student.speciality || student.profession || '',
+        name: name || 'Студент',
+        speciality:
+            student.speciality
+            || student.profession
+            || student.specialityName
+            || '',
         course: student.course || '',
-        imageUrl: student.imagePath ? getImageUrl(student.imagePath) : null,
+        imageUrl: student.imagePath ? getImageUrl(student.imagePath) : (student.imageUrl || null),
     };
 };
 
@@ -48,17 +61,21 @@ const participantFromRef = (ref) => {
         if (!id) return null;
         return { id, firstName: '', lastName: '', name: '' };
     }
+    if (ref.student && typeof ref.student === 'object') {
+        return participantFromRef(ref.student);
+    }
     const id = ref.id ?? ref.studentId;
     if (id == null) return null;
     const firstName = ref.firstName || '';
     const lastName = ref.lastName || '';
-    const name = `${firstName} ${lastName}`.trim();
+    const combined = `${firstName} ${lastName}`.trim();
+    const name = combined || ref.fullName || ref.displayName || ref.name || '';
     return {
         id: String(id),
         firstName,
         lastName,
-        name: name || ref.name || '',
-        speciality: ref.speciality || ref.profession || '',
+        name,
+        speciality: ref.speciality || ref.profession || ref.specialityName || '',
         course: ref.course || '',
         imageUrl: ref.imagePath ? getImageUrl(ref.imagePath) : (ref.imageUrl || null),
     };
@@ -66,10 +83,18 @@ const participantFromRef = (ref) => {
 
 const collectStudentRefs = (item) => {
     const refs = [];
-    if (Array.isArray(item?.students)) refs.push(...item.students);
+    if (Array.isArray(item?.students)) {
+        for (const entry of item.students) {
+            if (entry?.student) refs.push(entry.student);
+            else refs.push(entry);
+        }
+    }
     if (Array.isArray(item?.studentCards)) refs.push(...item.studentCards);
     if (Array.isArray(item?.participants)) refs.push(...item.participants);
     if (Array.isArray(item?.studentIds)) refs.push(...item.studentIds);
+    if (Array.isArray(item?.linkedStudents)) refs.push(...item.linkedStudents);
+    if (Array.isArray(item?.authors)) refs.push(...item.authors);
+    if (Array.isArray(item?.members)) refs.push(...item.members);
     if (item?.student) refs.push(item.student);
     if (item?.studentId != null && !refs.length) refs.push({ id: item.studentId });
     return refs;
@@ -89,6 +114,47 @@ const normalizeProjectParticipants = (item) => {
 const participantsNeedLookup = (participants = []) =>
     participants.length === 0
     || participants.some((participant) => !String(participant.name || '').trim());
+
+const canLoadAuthProjectParticipants = () => {
+    if (!isAuthenticated()) return false;
+    if (hasApprovedCatalogAccess()) return true;
+    return isStudentRole() && isAccountApproved(getAccountStatus());
+};
+
+const buildStudentCatalogMap = async () => {
+    const map = new Map();
+    if (!canLoadAuthProjectParticipants()) return map;
+
+    try {
+        const pageSize = 200;
+        const first = await filterStudentCardsPage({}, { page: 0, size: pageSize });
+        const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 1;
+
+        for (const student of first.data || []) {
+            if (student?.id != null) map.set(String(student.id), student);
+        }
+
+        for (let page = 1; page < totalPages; page += 1) {
+            const res = await filterStudentCardsPage({}, { page, size: pageSize });
+            for (const student of res.data || []) {
+                if (student?.id != null) map.set(String(student.id), student);
+            }
+        }
+    } catch {
+        /* каталог опционален для обогащения */
+    }
+
+    return map;
+};
+
+const applyCatalogToParticipants = (participants = [], catalogMap = new Map()) =>
+    participants.map((participant) => {
+        const fromCatalog = catalogMap.get(String(participant.id));
+        if (fromCatalog) return participantFromStudent(fromCatalog) || participant;
+        const name = String(participant.name || '').trim();
+        if (name && name !== 'Студент') return participant;
+        return participant;
+    });
 
 const resolveParticipantNames = async (participants = []) =>
     Promise.all(
@@ -118,25 +184,25 @@ const withParticipantMeta = (project, participants) => {
 };
 
 /** Для одобренных пользователей подтягиваем участников из детальной карточки и каталога студентов. */
-export const enrichProjectCardsParticipants = async (projects = []) =>
-    Promise.all(
-        projects.map(async (project) => {
-            if (project.source !== 'auth' || !hasApprovedCatalogAccess()) {
-                return project;
-            }
+export const enrichProjectCardsParticipants = async (projects = []) => {
+    if (!canLoadAuthProjectParticipants()) return projects;
 
+    const catalogMap = await buildStudentCatalogMap();
+
+    return Promise.all(
+        projects.map(async (project) => {
             let participants = project.participants || [];
 
-            if (participantsNeedLookup(participants)) {
-                try {
-                    const detail = normalizeProjectCard(await getAuthProject(project.id), 'auth');
-                    if (detail?.participants?.length) {
-                        participants = detail.participants;
-                    }
-                } catch {
-                    /* оставляем список как есть */
+            try {
+                const detail = normalizeProjectCard(await getAuthProject(project.id), 'auth');
+                if (detail?.participants?.length) {
+                    participants = detail.participants;
                 }
+            } catch {
+                /* оставляем участников из списка */
             }
+
+            participants = applyCatalogToParticipants(participants, catalogMap);
 
             if (participantsNeedLookup(participants)) {
                 participants = await resolveParticipantNames(participants);
@@ -145,6 +211,7 @@ export const enrichProjectCardsParticipants = async (projects = []) =>
             return withParticipantMeta(project, participants);
         }),
     );
+};
 
 /** SiteProjectDTO → карточка витрины. */
 export const normalizeProjectCard = (item, source = 'public') => {
@@ -183,13 +250,20 @@ const mapProjectRows = (raw, source) =>
 
 /**
  * GET /public/projects (аноним) или GET /projects (авторизованный каталог).
- * Одобренные пользователи (в т.ч. студенты) всегда идут через /projects с участниками.
+ * Одобренные студенты всегда получают участников через /projects + каталог.
  */
 export const listStudentProjectCards = async (q = '') => {
     const query = q.trim() || undefined;
-    const approved = hasApprovedCatalogAccess();
 
-    if (approved) {
+    try {
+        await syncAuthSession();
+    } catch {
+        /* продолжаем с локальной сессией */
+    }
+
+    const useAuthCatalog = canLoadAuthProjectParticipants();
+
+    if (useAuthCatalog) {
         const raw = await listAuthProjects(query);
         const rows = mapProjectRows(raw, 'auth');
         return enrichProjectCardsParticipants(rows);
@@ -199,10 +273,19 @@ export const listStudentProjectCards = async (q = '') => {
         try {
             const raw = await listAuthProjects(query);
             const rows = mapProjectRows(raw, 'auth');
-            if (rows.length > 0) return rows;
+            if (rows.length > 0) {
+                return enrichProjectCardsParticipants(rows);
+            }
         } catch (err) {
+            if (isStudentRole()) throw err;
             if (err?.status !== 401 && err?.status !== 403) throw err;
         }
+    }
+
+    if (isStudentRole() && isAuthenticated()) {
+        const err = new Error('Каталог проектов доступен после одобрения аккаунта');
+        err.status = 403;
+        throw err;
     }
 
     const raw = await listPublicProjects(query);
@@ -211,13 +294,19 @@ export const listStudentProjectCards = async (q = '') => {
 
 /** GET /projects/{id} или GET /public/projects/{id}. */
 export const getStudentProject = async (id, source = 'auth') => {
-    const approved = hasApprovedCatalogAccess();
+    try {
+        await syncAuthSession();
+    } catch {
+        /* ignore */
+    }
+
+    const useAuthCatalog = canLoadAuthProjectParticipants();
 
     try {
-        if (approved || (source === 'auth' && isAuthenticated())) {
+        if (useAuthCatalog || (source === 'auth' && isAuthenticated())) {
             const data = await getAuthProject(id);
             const card = normalizeProjectCard(data, 'auth') || data;
-            if (approved && card?.id != null) {
+            if (useAuthCatalog && card?.id != null) {
                 const [enriched] = await enrichProjectCardsParticipants([card]);
                 return enriched || card;
             }
@@ -226,7 +315,7 @@ export const getStudentProject = async (id, source = 'auth') => {
         const data = await getPublicProject(id);
         return normalizeProjectCard(data, 'public') || data;
     } catch (err) {
-        if (!approved && isAuthenticated() && source !== 'public') {
+        if (!useAuthCatalog && isAuthenticated() && source !== 'public') {
             const data = await getPublicProject(id);
             return normalizeProjectCard(data, 'public') || data;
         }

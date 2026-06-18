@@ -4,7 +4,7 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import { getAllStudents } from "../../services/studentApi.js";
+import { getHomeSliderStudents } from "../../services/studentApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import { hasApprovedCatalogAccess, isAuthenticated } from "../../services/authApi.js";
 import { PENDING_APPROVAL_MESSAGE } from "../../utils/apiErrors.js";
@@ -31,7 +31,7 @@ const StudentSlider = () => {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
-                const data = await getAllStudents();
+                const data = await getHomeSliderStudents();
                 const visible = (Array.isArray(data) ? data : []).filter(hasStudentProfilePhoto);
                 setStudents(visible);
                 if (visible.length > 0) {
@@ -39,7 +39,7 @@ const StudentSlider = () => {
                     setActiveCardIndex(middleIndex);
                     setEmptyReason(null);
                 } else if (!isAuthenticated()) {
-                    setEmptyReason('guest');
+                    setEmptyReason('empty');
                 } else if (!hasApprovedCatalogAccess()) {
                     setEmptyReason('pending');
                 } else {
@@ -247,7 +247,7 @@ const StudentSlider = () => {
                             <>
                                 <p className="studentSlider__emptyTitle">Войдите в аккаунт</p>
                                 <p className="studentSlider__emptyText">
-                                    Чтобы увидеть каталог студентов на главной странице.
+                                    Чтобы увидеть полный каталог студентов.
                                 </p>
                             </>
                         ) : (

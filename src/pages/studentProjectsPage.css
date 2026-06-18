@@ -291,16 +291,31 @@
 }
 
 .studentProjectsPage__cardMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     font-size: 13px;
     color: #ffffff;
-    opacity: 0.8;
+    opacity: 0.9;
 }
 
+.studentProjectsPage__cardMetaLabel {
+    font-weight: 500;
+}
+
+.studentProjectsPage__cardParticipants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+}
+
+.studentProjectsPage__cardParticipant,
 .studentProjectsPage__cardMeta a {
     color: #80acff;
     text-decoration: none;
 }
 
+.studentProjectsPage__cardParticipant:hover,
 .studentProjectsPage__cardMeta a:hover {
     text-decoration: underline;
 }

@@ -41,6 +41,13 @@ const FloatingButton = () => {
         }
     }, [isStudentPage, currentStudentId]);
 
+    useEffect(() => {
+        setIsHidden(false);
+        setIsExpanded(false);
+        setIsClosing(false);
+        setShowForm(false);
+    }, [location.pathname]);
+
     const startClosing = () => {
         if (isClosing) return;
         setIsClosing(true);
@@ -101,8 +108,8 @@ const FloatingButton = () => {
     if (
         isHidden
         || isStudentRole()
-        || location.pathname === '/chats'
-        || location.pathname === '/settings'
+        || !isStudentPage
+        || !currentStudentId
     ) {
         return null;
     }

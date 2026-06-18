@@ -127,7 +127,6 @@ const SettingsPage = () => {
     const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
     const [studentSettings, setStudentSettings] = useState({
         publicProfileConsent: false,
-        hintsDisabled: false,
     });
     const [pwdForm, setPwdForm] = useState({ currentPassword: '', newPassword: '' });
     const [saving, setSaving] = useState('');
@@ -164,7 +163,6 @@ const SettingsPage = () => {
                 setStudentForm(studentToForm(s));
                 setStudentSettings({
                     publicProfileConsent: Boolean(s.publicProfileConsent),
-                    hintsDisabled: Boolean(s.hintsDisabled),
                 });
                 try {
                     const resume = await getStudentResumeForEdit();
@@ -285,7 +283,6 @@ const SettingsPage = () => {
             birthDate: studentForm.birthDate,
             course: studentForm.course,
             busyness: studentForm.busyness,
-            email: studentForm.email.trim(),
             phoneNumber: studentForm.phoneNumber.trim() || undefined,
             telegramUsername: studentForm.telegramUsername.trim() || undefined,
             specialityId: Number.isFinite(specId) && specId > 0 ? specId : undefined,
@@ -299,7 +296,6 @@ const SettingsPage = () => {
         try {
             const updated = await patchStudentMe({
                 publicProfileConsent: studentSettings.publicProfileConsent,
-                hintsDisabled: studentSettings.hintsDisabled,
             });
             setProfile(updated);
             flashOk('Настройки сохранены');
@@ -336,6 +332,7 @@ const SettingsPage = () => {
         try {
             const body = {};
             for (const [key, value] of Object.entries(recruiterForm)) {
+                if (key === 'email') continue;
                 const v = typeof value === 'string' ? value.trim() : value;
                 if (v !== '') body[key] = v;
             }
@@ -424,6 +421,11 @@ const SettingsPage = () => {
     };
 
     const identity = resolveIdentity(session, role);
+    const accountEmail =
+        (session?.username || identity.username || '').trim()
+        || studentForm.email
+        || recruiterForm.email
+        || '';
     const showIdentity = !loading && (role || isAuthenticated());
 
     return (
@@ -528,19 +530,6 @@ const SettingsPage = () => {
                                         />
                                         <span>Показывать карточку анонимам на публичной витрине</span>
                                     </label>
-                                    <label className="accountPage__formGroup accountPage__formGroup--checkbox accountPage__fullWidth">
-                                        <input
-                                            type="checkbox"
-                                            checked={studentSettings.hintsDisabled}
-                                            onChange={(e) =>
-                                                setStudentSettings((p) => ({
-                                                    ...p,
-                                                    hintsDisabled: e.target.checked,
-                                                }))
-                                            }
-                                        />
-                                        <span>Отключить подсказки</span>
-                                    </label>
                                 </div>
                                 <div className="accountPage__btnContainer">
                                     <button
@@ -627,7 +616,17 @@ const SettingsPage = () => {
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Email</span>
-                                        <input type="email" value={studentForm.email} onChange={(e) => setStudentField('email', e.target.value)} />
+                                        <input
+                                            type="email"
+                                            value={accountEmail}
+                                            readOnly
+                                            disabled
+                                            className="accountPage__input--readonly"
+                                            aria-describedby="account-email-hint"
+                                        />
+                                        <span id="account-email-hint" className="accountPage__fieldHint">
+                                            Почта аккаунта — изменить нельзя
+                                        </span>
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Телефон</span>
@@ -740,7 +739,17 @@ const SettingsPage = () => {
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Email</span>
-                                        <input type="email" value={recruiterForm.email} onChange={(e) => setRecruiterField('email', e.target.value)} />
+                                        <input
+                                            type="email"
+                                            value={accountEmail}
+                                            readOnly
+                                            disabled
+                                            className="accountPage__input--readonly"
+                                            aria-describedby="recruiter-email-hint"
+                                        />
+                                        <span id="recruiter-email-hint" className="accountPage__fieldHint">
+                                            Почта аккаунта — изменить нельзя
+                                        </span>
                                     </label>
                                     <label className="accountPage__formGroup accountPage__fullWidth">
                                         <span>Телефон</span>
