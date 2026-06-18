@@ -184,5 +184,9 @@ export const formatResumeApiValidationError = (error) => {
         return 'Заполните все обязательные поля резюме: имя, фамилия, дата рождения, email, специальность и навыки.';
     }
 
+    if (/не привязана карточка студента|student card.*not linked/i.test(raw)) {
+        return 'Карточка резюме ещё не создана. Обновите страницу и сохраните профиль ещё раз.';
+    }
+
     return raw;
 };

@@ -1,6 +1,5 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { buildPageQuery, normalizePageResponse } from '../utils/pageable.js';
-import { getAllSkills, getAllSpecialities } from './studentApi.js';
 
 /** Размер страницы публичного справочника (ограничен конфигом бэкенда). */
 const REGISTRATION_PAGE_SIZE = 20;
@@ -126,53 +125,12 @@ export const listRegistrationEducations = (page = 0, size = 20) =>
 export const listRegistrationCompanies = (page = 0, size = 20) =>
     fetchPaged('public/registration/companies', page, size);
 
-const sortSpecialities = (items) =>
-    items.sort((a, b) =>
-        String(a.name || a.specialityName || a.title || '').localeCompare(
-            String(b.name || b.specialityName || b.title || ''),
-            'ru',
-        ),
-    );
-
-const sortSkills = (items) =>
-    items.sort((a, b) =>
-        String(a.name || a.title || '').localeCompare(String(b.name || b.title || ''), 'ru'),
-    );
-
 /**
- * Справочник специальностей для резюме: основной API (FK бэкенда), затем публичный регистрационный.
+ * Справочники для формы резюме студента — только публичные эндпоинты регистрации.
+ * (skill/filter и speciality/filter требуют прав и недоступны новому студенту.)
  */
-export const fetchResumeSpecialities = async (options = {}) => {
-    try {
-        const main = await getAllSpecialities();
-        if (main.length) return sortSpecialities([...main]);
-    } catch {
-        /* fallback */
-    }
-    try {
-        const reg = await fetchAllRegistrationSpecialities(options);
-        if (reg.length) return reg;
-    } catch {
-        /* ignore */
-    }
-    return [];
-};
+export const fetchResumeSpecialities = (options = {}) =>
+    fetchAllRegistrationSpecialities(options);
 
-/**
- * Справочник навыков для резюме: основной API (FK бэкенда), затем публичный регистрационный.
- */
-export const fetchResumeSkills = async (options = {}) => {
-    try {
-        const main = await getAllSkills();
-        if (main.length) return sortSkills([...main]);
-    } catch {
-        /* fallback */
-    }
-    try {
-        const reg = await fetchAllRegistrationSkills(options);
-        if (reg.length) return reg;
-    } catch {
-        /* ignore */
-    }
-    return [];
-};
+export const fetchResumeSkills = (options = {}) =>
+    fetchAllRegistrationSkills(options);

@@ -157,7 +157,6 @@ const SettingsPage = () => {
     const [specialitiesCatalog, setSpecialitiesCatalog] = useState([]);
     const [specialitiesCatalogLoading, setSpecialitiesCatalogLoading] = useState(false);
     const [catalogError, setCatalogError] = useState('');
-    const [studentResumeReady, setStudentResumeReady] = useState(false);
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [avatarVersion, setAvatarVersion] = useState(0);
 
@@ -201,7 +200,6 @@ const SettingsPage = () => {
                     setStudentSettings({
                         publicProfileConsent: Boolean(s.publicProfileConsent),
                     });
-                    setStudentResumeReady(true);
                     return;
                 } catch (e) {
                     if (e.status !== 404 && e.status !== 403) throw e;
@@ -214,17 +212,8 @@ const SettingsPage = () => {
                     setRole('student');
                 }
                 setProfile(null);
-                setStudentResumeReady(false);
-                let resume = null;
-                try {
-                    resume = await getStudentResumeForEdit();
-                    setStudentResumeReady(true);
-                } catch {
-                    /* первое сохранение резюме */
-                }
                 setStudentForm(studentToForm({
-                    ...(resume || {}),
-                    ...withAccountPhone(currentSession, resume),
+                    ...withAccountPhone(currentSession),
                 }));
                 return;
             }
@@ -403,10 +392,9 @@ const SettingsPage = () => {
             }
 
             const body = buildStudentResumeRequestBody(studentForm, validation);
-            const hadProfile = Boolean(profile?.id) || studentResumeReady;
+            const hadProfile = Boolean(profile?.id);
             const updated = await persistStudentResume(body, { hasStudentCard: hadProfile });
             setProfile(updated);
-            setStudentResumeReady(true);
             setStudentForm(studentToForm({ ...updated, ...withAccountPhone(updated) }));
             flashOk(hadProfile ? 'Резюме обновлено' : 'Резюме создано');
         } catch (e) {
