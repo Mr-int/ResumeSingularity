@@ -12,6 +12,10 @@ const getRadius = (itemHeight) => Math.round(
     (itemHeight / 2) / Math.tan((ANGLE_STEP / 2) * (Math.PI / 180)),
 );
 
+const getPerspective = (radius) => Math.max(6000, radius * 12);
+
+const getItemScale = (perspective, radius) => (perspective - radius) / perspective;
+
 const useMediaQuery = (query) => {
     const [matches, setMatches] = useState(() => {
         if (typeof window === 'undefined') return false;
@@ -82,6 +86,8 @@ const ExperienceCylinder = ({ items = [] }) => {
 
     const totalItems = items.length;
     const radius = getRadius(itemHeight);
+    const perspective = getPerspective(radius);
+    const itemScale = getItemScale(perspective, radius);
     const pickerHeight = itemHeight + PICKER_PADDING;
 
     useEffect(() => {
@@ -109,22 +115,22 @@ const ExperienceCylinder = ({ items = [] }) => {
         itemRefs.current.forEach((item, index) => {
             if (!item) return;
             const itemAngle = index * ANGLE_STEP;
-            item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
+            item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px) scale(${itemScale})`;
             item.style.opacity = index === activeIndex ? '1' : '0.7';
             item.classList.toggle('active', index === activeIndex);
         });
-    }, [activeIndex, isMobile, radius]);
+    }, [activeIndex, isMobile, radius, itemScale]);
 
     useLayoutEffect(() => {
         if (!isMobile) {
             itemRefs.current.forEach((item, index) => {
                 if (!item) return;
                 const itemAngle = index * ANGLE_STEP;
-                item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px)`;
+                item.style.transform = `rotateX(${-itemAngle}deg) translateZ(${radius}px) scale(${itemScale})`;
             });
             applyCylinderTransforms();
         }
-    }, [applyCylinderTransforms, isMobile, totalItems, radius, activeIndex]);
+    }, [applyCylinderTransforms, isMobile, totalItems, radius, itemScale, activeIndex]);
 
     useEffect(() => {
         if (isMobile) return undefined;
@@ -247,7 +253,10 @@ const ExperienceCylinder = ({ items = [] }) => {
             <div
                 ref={pickerRef}
                 className="StudentResume__experiencePicker"
-                style={{ '--experience-picker-height': `${pickerHeight}px` }}
+                style={{
+                    '--experience-picker-height': `${pickerHeight}px`,
+                    '--experience-picker-perspective': `${perspective}px`,
+                }}
                 role="listbox"
                 aria-label="Опыт работы"
                 aria-activedescendant={isMobile ? `experience-item-${activeIndex}` : undefined}
@@ -286,7 +295,7 @@ const ExperienceCylinder = ({ items = [] }) => {
                                 isActive={activeIndex === index}
                                 isWheel
                                 onFocus={goToIndex}
-                                style={{ height: `${itemHeight}px` }}
+                                style={{ minHeight: `${itemHeight}px` }}
                                 ref={(el) => { itemRefs.current[index] = el; }}
                             />
                         ))}
