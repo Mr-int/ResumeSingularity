@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getImageUrl } from "../../config/api.js";
 import "./studentResume.css";
@@ -22,10 +22,10 @@ import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
+import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.js";
 import { buildSkillCatalogMap, getSkillDisplayName } from "../../utils/skills.js";
 import { fetchAllRegistrationSkills } from "../../services/registrationCatalogApi.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
-import ExperienceCylinder from "./ExperienceCylinder.jsx";
 import { isAuthenticated, isRecruiterRole, isStudentRole, requestLogin, hasApprovedCatalogAccess } from "../../services/authApi.js";
 
 const StudentResume = () => {
@@ -43,6 +43,8 @@ const StudentResume = () => {
     const [skillCatalogMap, setSkillCatalogMap] = useState(() => new Map());
     const [similarStudents, setSimilarStudents] = useState([]);
     const [showApplicationForm, setShowApplicationForm] = useState(false);
+    const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
+    const experienceItemRefs = useRef([]);
 
     const canLeaveRequest = !isStudentRole();
 
@@ -177,6 +179,51 @@ const StudentResume = () => {
     const toggleEducation = () => {
         setExpandedEducation(!expandedEducation);
     };
+
+    useEffect(() => {
+        experienceItemRefs.current = experienceItemRefs.current.slice(0, experienceDetails.length);
+        if (activeExperienceIndex >= experienceDetails.length) {
+            setActiveExperienceIndex(0);
+        }
+    }, [experienceDetails.length, activeExperienceIndex]);
+
+    useEffect(() => {
+        if (!expandedExperience || experienceDetails.length === 0) {
+            return;
+        }
+
+        const items = experienceItemRefs.current.filter(Boolean);
+        if (items.length === 0) return;
+
+        const updateActiveByViewportCenter = () => {
+            const viewportCenterY = window.innerHeight / 2;
+            let nearestIndex = 0;
+            let nearestDistance = Number.POSITIVE_INFINITY;
+
+            items.forEach((item) => {
+                const rect = item.getBoundingClientRect();
+                const itemCenterY = rect.top + rect.height / 2;
+                const distance = Math.abs(itemCenterY - viewportCenterY);
+                const indexValue = Number(item.dataset.expIndex);
+
+                if (!Number.isNaN(indexValue) && distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestIndex = indexValue;
+                }
+            });
+
+            setActiveExperienceIndex((prev) => (prev === nearestIndex ? prev : nearestIndex));
+        };
+
+        updateActiveByViewportCenter();
+        window.addEventListener('scroll', updateActiveByViewportCenter, { passive: true });
+        window.addEventListener('resize', updateActiveByViewportCenter);
+
+        return () => {
+            window.removeEventListener('scroll', updateActiveByViewportCenter);
+            window.removeEventListener('resize', updateActiveByViewportCenter);
+        };
+    }, [expandedExperience, experienceDetails]);
 
     const calculateAge = (birthDate) => {
         if (!birthDate) return null;
@@ -384,7 +431,56 @@ const StudentResume = () => {
                         {expandedExperience && (
                             <div className="StudentResume__expandableContent StudentResume__expandableContent--bordered">
                                 {experienceDetails.length > 0 ? (
-                                    <ExperienceCylinder items={experienceDetails} />
+                                    <div className="StudentResume__experienceWithTimeline">
+                                        <div className="StudentResume__experienceList">
+                                            {experienceDetails.map((exp, index) => (
+                                                <article
+                                                    key={exp.id || index}
+                                                    ref={(el) => { experienceItemRefs.current[index] = el; }}
+                                                    data-exp-index={index}
+                                                    className={`StudentResume__experienceItem StudentResume__experienceItem--card ${activeExperienceIndex === index ? 'active' : ''}`}
+                                                    tabIndex={0}
+                                                    onFocus={() => setActiveExperienceIndex(index)}
+                                                >
+                                                    <div className="StudentResume__experienceTimeline">
+                                                        <div className="StudentResume__experienceYears">
+                                                            {formatExperiencePeriodText(exp.startDate, exp.endDate, exp.current)}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="StudentResume__experienceInfo">
+                                                        {exp.company?.trim() && (
+                                                            <h3 className="StudentResume__experienceCompany">{exp.company}</h3>
+                                                        )}
+                                                        {exp.position?.trim() && (
+                                                            <h4 className="StudentResume__experiencePosition">{exp.position}</h4>
+                                                        )}
+                                                        {exp.description && (
+                                                            <p className="StudentResume__experienceDescription">{exp.description}</p>
+                                                        )}
+                                                    </div>
+                                                </article>
+                                            ))}
+                                        </div>
+
+                                        <div className="StudentResume__experienceTimelineNav" aria-label="Навигация по опыту">
+                                            {experienceDetails.map((_, index) => (
+                                                <button
+                                                    key={`exp-dot-${index}`}
+                                                    type="button"
+                                                    className={`StudentResume__experienceTimelineDot ${activeExperienceIndex === index ? 'active' : ''}`}
+                                                    onClick={() => {
+                                                        const item = experienceItemRefs.current[index];
+                                                        if (item) {
+                                                            item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                            item.focus({ preventScroll: true });
+                                                        }
+                                                    }}
+                                                    aria-label={`Опыт ${index + 1}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                 ) : (
                                     <p>пока пусто :D</p>
                                 )}
