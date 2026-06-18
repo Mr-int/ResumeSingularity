@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import { listStudentProjectCards } from '../services/projectsApi.js';
+import { listStudentProjectCards, getStudentProject } from '../services/projectsApi.js';
 import { formatApiUserMessage } from '../utils/apiErrors.js';
 import './studentProjectsPage.css';
 
@@ -73,16 +73,18 @@ const ProjectCard = ({ project, onOpen }) => {
             {project.section ? <p className="studentProjectsPage__cardSection">{project.section}</p> : null}
             <h2 className="studentProjectsPage__cardTitle">{project.title}</h2>
             <p className="studentProjectsPage__cardDescription">{previewText}</p>
-            {project.participants?.length === 1 ? (
+            {project.participants?.length > 0 ? (
                 <p className="studentProjectsPage__cardMeta">
-                    Участник: {project.participants[0].name}
+                    {project.participants.length === 1
+                        ? `Участник: ${project.participants[0].name}`
+                        : `Участники: ${project.participants.map((p) => p.name).join(', ')}`}
                 </p>
             ) : null}
         </li>
     );
 };
 
-const ProjectModal = ({ project, onClose }) => {
+const ProjectModal = ({ project, loadingParticipants = false, onClose }) => {
     const fullText = project.body || project.summary || 'Описание не указано';
 
     useEffect(() => {
@@ -152,6 +154,8 @@ const ProjectModal = ({ project, onClose }) => {
                                 ))}
                             </div>
                         </div>
+                    ) : loadingParticipants ? (
+                        <p className="studentProjectsPage__hint">Загрузка участников…</p>
                     ) : null}
                 </div>
             </div>
@@ -166,6 +170,26 @@ const StudentProjects = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [openProject, setOpenProject] = useState(null);
+    const [openingProjectId, setOpeningProjectId] = useState(null);
+
+    const handleOpenProject = useCallback(async (project) => {
+        setOpenProject(project);
+        if (!project?.id) return;
+
+        setOpeningProjectId(project.id);
+        try {
+            const full = await getStudentProject(project.id, project.source || 'auth');
+            if (full) {
+                setOpenProject((prev) => (
+                    prev && String(prev.id) === String(project.id) ? { ...prev, ...full } : prev
+                ));
+            }
+        } catch {
+            /* оставляем данные из списка */
+        } finally {
+            setOpeningProjectId(null);
+        }
+    }, []);
 
     const load = useCallback(async (query = '') => {
         setLoading(true);
@@ -229,7 +253,7 @@ const StudentProjects = () => {
                             <ProjectCard
                                 key={`${project.source}-${project.id}`}
                                 project={project}
-                                onOpen={setOpenProject}
+                                onOpen={handleOpenProject}
                             />
                         ))}
                     </ul>
@@ -237,7 +261,14 @@ const StudentProjects = () => {
             </main>
             <Footer />
             {openProject ? (
-                <ProjectModal project={openProject} onClose={() => setOpenProject(null)} />
+                <ProjectModal
+                    project={openProject}
+                    loadingParticipants={openingProjectId != null && String(openingProjectId) === String(openProject.id)}
+                    onClose={() => {
+                        setOpenProject(null);
+                        setOpeningProjectId(null);
+                    }}
+                />
             ) : null}
         </>
     );

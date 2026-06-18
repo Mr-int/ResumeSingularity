@@ -8,10 +8,17 @@ export const isGenericPeerTitle = (title) => {
 export const formatRecruiterPeerMeta = (recruiter) => {
     if (!recruiter || typeof recruiter !== 'object') return null;
     const person = `${recruiter.firstName || ''} ${recruiter.lastName || ''}`.trim();
-    const title = recruiter.companyName || person || null;
+    const company = String(recruiter.companyName || '').trim();
+    const title = person || company || null;
     if (!title) return null;
-    const subtitle = person && recruiter.companyName ? person : '';
+    const subtitle = person && company ? company : '';
     return { title, subtitle };
+};
+
+export const formatRecruiterDisplayName = (displayName) => {
+    const value = String(displayName || '').trim();
+    if (!value) return null;
+    return { title: value, subtitle: '' };
 };
 
 export const formatStudentPeerMeta = (student) => {
@@ -31,6 +38,32 @@ export const resolveRecruiterIdForChat = (chat, chatIds, requests = []) => {
         return appChatId != null && ids.has(String(appChatId));
     });
     return matched?.recruiterId ?? null;
+};
+
+const findRequestForChat = (chat, chatIds, requests = []) => {
+    const ids = chatIds instanceof Set ? chatIds : new Set((chatIds || []).map(String));
+    return (Array.isArray(requests) ? requests : []).find((request) => {
+        const appChatId = request?.appChatId ?? request?.chatId;
+        return appChatId != null && ids.has(String(appChatId));
+    });
+};
+
+/** Имя работодателя из сводки чата или заявки (бэкенд). */
+export const resolveRecruiterDisplayName = (chat, chatIds, requests = []) => {
+    const fromChat = String(chat?.recruiterDisplayName || '').trim();
+    if (fromChat) return fromChat;
+    const matched = findRequestForChat(chat, chatIds, requests);
+    const fromRequest = String(matched?.recruiterDisplayName || '').trim();
+    return fromRequest || null;
+};
+
+/** Имя студента из сводки чата или заявки (бэкенд). */
+export const resolveStudentDisplayName = (chat, chatIds, requests = []) => {
+    const fromChat = String(chat?.studentDisplayName || '').trim();
+    if (fromChat) return fromChat;
+    const matched = findRequestForChat(chat, chatIds, requests);
+    const fromRequest = String(matched?.studentDisplayName || '').trim();
+    return fromRequest || null;
 };
 
 /** studentId из чата или из заявки по appChatId. */

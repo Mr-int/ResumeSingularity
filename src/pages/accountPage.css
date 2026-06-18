@@ -278,6 +278,16 @@
     margin: 40px 0 0;
 }
 
+.accountPage__btnContainer--row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.accountPage__btnContainer--row .accountPage__submit--secondary {
+    margin-top: 0;
+}
+
 .accountPage__submit {
     background: transparent;
     color: #ffffff;

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ApplicationForm from '../applicationForm/ApplicationForm.jsx';
 import { getStudentById } from '../../services/studentApi.js';
-import { isAuthenticated, isRecruiterRole, requestLogin } from '../../services/authApi.js';
+import { isAuthenticated, isRecruiterRole, isStudentRole, requestLogin } from '../../services/authApi.js';
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import './floatingButton.css';
 
@@ -98,7 +98,12 @@ const FloatingButton = () => {
         return Promise.resolve();
     };
 
-    if (isHidden || location.pathname === '/chats' || location.pathname === '/settings') {
+    if (
+        isHidden
+        || isStudentRole()
+        || location.pathname === '/chats'
+        || location.pathname === '/settings'
+    ) {
         return null;
     }
 

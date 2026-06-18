@@ -1,10 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "./banner.css";
 import searchIcon from "../../assets/icons/searchIcon.svg";
 import bannerImg from "../../assets/other/bannerImg.png";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import { AUTH_CHANGED_EVENT, isStudentRole } from "../../services/authApi.js";
 
 const Banner = () => {
+    const [isStudent, setIsStudent] = useState(() => isStudentRole());
+
+    useEffect(() => {
+        const syncStudentRole = () => setIsStudent(isStudentRole());
+        syncStudentRole();
+        window.addEventListener(AUTH_CHANGED_EVENT, syncStudentRole);
+        return () => window.removeEventListener(AUTH_CHANGED_EVENT, syncStudentRole);
+    }, []);
+
     return (
         <article className="banner">
             <div className="banner__wrapper">
@@ -23,7 +33,7 @@ const Banner = () => {
                             className="banner__button"
                             icon={<img src={searchIcon} alt="Поиск" />}
                         >
-                            Найти стажёра
+                            {isStudent ? 'Студенты' : 'Найти стажёра'}
                         </GradientButton>
                     </div>
 

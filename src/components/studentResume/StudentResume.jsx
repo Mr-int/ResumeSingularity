@@ -26,7 +26,7 @@ import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.j
 import { buildSkillCatalogMap, getSkillDisplayName } from "../../utils/skills.js";
 import { fetchAllRegistrationSkills } from "../../services/registrationCatalogApi.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
-import { isAuthenticated, isRecruiterRole, requestLogin, hasApprovedCatalogAccess } from "../../services/authApi.js";
+import { isAuthenticated, isRecruiterRole, isStudentRole, requestLogin, hasApprovedCatalogAccess } from "../../services/authApi.js";
 
 const StudentResume = () => {
     const { id } = useParams();
@@ -46,7 +46,10 @@ const StudentResume = () => {
     const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
     const experienceItemRefs = useRef([]);
 
+    const canLeaveRequest = !isStudentRole();
+
     const openApplicationForm = () => {
+        if (!canLeaveRequest) return;
         if (!isAuthenticated() || !isRecruiterRole()) {
             requestLogin();
             return;
@@ -316,15 +319,17 @@ const StudentResume = () => {
                                 <div className="StudentResume__personName">
                                     <h2>{fullName}</h2>
                                     <p>{student.speciality || student.profession || 'Специальность не указана'}</p>
-                                    <GradientButton
-                                        as="button"
-                                        type="button"
-                                        className="StudentResume__sendBid"
-                                        icon={<img src={mailIcon} alt="Иконка почты" />}
-                                        onClick={() => setShowApplicationForm(true)}
-                                    >
-                                        Оставить заявку
-                                    </GradientButton>
+                                    {canLeaveRequest && (
+                                        <GradientButton
+                                            as="button"
+                                            type="button"
+                                            className="StudentResume__sendBid"
+                                            icon={<img src={mailIcon} alt="Иконка почты" />}
+                                            onClick={openApplicationForm}
+                                        >
+                                            Оставить заявку
+                                        </GradientButton>
+                                    )}
                                 </div>
                             </div>
 
@@ -396,15 +401,17 @@ const StudentResume = () => {
                                 </div>
                             )}
 
-                            <GradientButton
-                                as="button"
-                                type="button"
-                                className="StudentResume__sendBid"
-                                icon={<img src={mailIcon} alt="Иконка почты" />}
-                                onClick={() => setShowApplicationForm(true)}
-                            >
-                                Оставить заявку
-                            </GradientButton>
+                            {canLeaveRequest && (
+                                <GradientButton
+                                    as="button"
+                                    type="button"
+                                    className="StudentResume__sendBid"
+                                    icon={<img src={mailIcon} alt="Иконка почты" />}
+                                    onClick={openApplicationForm}
+                                >
+                                    Оставить заявку
+                                </GradientButton>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -556,13 +563,15 @@ const StudentResume = () => {
 
                         <div className="StudentResume__contactInfo">
                             <img src={sunIcon} alt="Sun_icon" className="StudentResume__sunIcon "/>
-                            <div className="StudentResume__contactWrapper">
-                                <p>Студент готов проходить стажировку в вашей компании!</p>
-                                <button onClick={openApplicationForm}>
-                                    Связаться
-                                    <img src={mailIcon} alt="Mail icon"/>
-                                </button>
-                            </div>
+                            {canLeaveRequest && (
+                                <div className="StudentResume__contactWrapper">
+                                    <p>Студент готов проходить стажировку в вашей компании!</p>
+                                    <button type="button" onClick={openApplicationForm}>
+                                        Связаться
+                                        <img src={mailIcon} alt="Mail icon"/>
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <img
@@ -591,7 +600,7 @@ const StudentResume = () => {
                     </div>
                 )}
             </div>
-            {showApplicationForm && (
+            {canLeaveRequest && showApplicationForm && (
                 <ApplicationForm
                     studentName={fullName}
                     studentId={id}

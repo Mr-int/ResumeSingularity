@@ -9,10 +9,19 @@ import leraActive from '../../assets/heroAnimation/lera_active.png';
 import leraUnactive from '../../assets/heroAnimation/lera_unactive.png';
 import { useEffect, useState } from 'react';
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+import { AUTH_CHANGED_EVENT, isStudentRole } from '../../services/authApi.js';
 
 const Hero = () => {
     const [isMobile, setIsMobile] = useState(false);
     const [isRightCardHovered, setIsRightCardHovered] = useState(false);
+    const [isStudent, setIsStudent] = useState(() => isStudentRole());
+
+    useEffect(() => {
+        const syncStudentRole = () => setIsStudent(isStudentRole());
+        syncStudentRole();
+        window.addEventListener(AUTH_CHANGED_EVENT, syncStudentRole);
+        return () => window.removeEventListener(AUTH_CHANGED_EVENT, syncStudentRole);
+    }, []);
 
     useEffect(() => {
         const checkMobile = () => {
@@ -46,7 +55,7 @@ const Hero = () => {
                         className="hero__button"
                         icon={<img src={searchIcon} alt="search" className="button__icon" />}
                     >
-                        Найти стажёра
+                        {isStudent ? 'Студенты' : 'Найти стажёра'}
                     </GradientButton>
                 </div>
 

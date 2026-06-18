@@ -62,7 +62,6 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
     const pollRef = useRef(null);
 
     const [selectedRole, setSelectedRole] = useState('student');
-    const [contactTab, setContactTab] = useState('phone');
     const [phoneLocal, setPhoneLocal] = useState('');
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
@@ -105,7 +104,7 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
         }, 2500);
     };
 
-    const beginVerification = async ({ phoneNumber, email, channel }) => {
+    const beginVerification = async ({ phoneNumber, email }) => {
         clearError();
         const phone = normalizePhone(phoneNumber);
         if (phone.replace(/\D/g, '').length < 11) {
@@ -113,27 +112,25 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
             return;
         }
         const emailTrim = String(email || '').trim();
-        if (channel === 'email') {
-            if (!emailTrim) {
-                showError('Укажите email');
-                return;
-            }
-            if (!isValidVerificationEmail(emailTrim)) {
-                showError('Укажите корректный email');
-                return;
-            }
+        if (!emailTrim) {
+            showError('Укажите email');
+            return;
+        }
+        if (!isValidVerificationEmail(emailTrim)) {
+            showError('Укажите корректный email');
+            return;
         }
         setLoading(true);
         try {
             let res;
-            let effectiveChannel = channel;
+            let effectiveChannel = 'email';
             try {
                 res = await startPhoneVerification({
                     phoneNumber: phone,
-                    ...(channel === 'email' ? { email: emailTrim } : {}),
+                    email: emailTrim,
                 });
             } catch (err) {
-                if (channel === 'email' && isVerificationMailDeliveryError(err)) {
+                if (isVerificationMailDeliveryError(err)) {
                     res = await startPhoneVerification({ phoneNumber: phone });
                     effectiveChannel = 'phone';
                     showError(
@@ -146,7 +143,7 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
             setVerification({
                 ...res,
                 phoneNumber: phone,
-                email: emailTrim || null,
+                email: emailTrim,
                 channel: effectiveChannel,
                 role,
             });
@@ -166,28 +163,9 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
         }
     };
 
-    const beginTelegramVerification = () =>
-        beginVerification({ phoneNumber: phoneLocal, channel: 'phone' });
-
-    const beginEmailVerification = () =>
-        beginVerification({ phoneNumber: phoneLocal, email, channel: 'email' });
-
     const handleContactNext = (e) => {
         e.preventDefault();
-        if (contactTab === 'email') {
-            beginEmailVerification();
-            return;
-        }
-        beginTelegramVerification();
-    };
-
-    const openTelegramDirect = () => {
-        clearError();
-        if (contactTab === 'email') {
-            beginEmailVerification();
-            return;
-        }
-        beginTelegramVerification();
+        beginVerification({ phoneNumber: phoneLocal, email });
     };
 
     const validatePassword = (requireUsername) => {
@@ -291,7 +269,6 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
     const confirmRole = () => {
         clearError();
         setRole(selectedRole);
-        setContactTab('phone');
         setView('contact');
     };
 
@@ -353,93 +330,42 @@ const RegistrationWizard = ({ onClose, onSuccess, onLogin }) => {
 
                 {view === 'contact' && (
                     <Shell onBack={handleBack} heading="Регистрация" subheading={roleSubtitle} footer={<LegalFooter />}>
-                        <div className="loginModal__tabs" role="tablist">
-                            <button
-                                type="button"
-                                role="tab"
-                                aria-selected={contactTab === 'phone'}
-                                className={`loginModal__tab ${contactTab === 'phone' ? 'loginModal__tab--active' : ''}`}
-                                onClick={() => setContactTab('phone')}
-                            >
-                                Телефон
-                            </button>
-                            <button
-                                type="button"
-                                role="tab"
-                                aria-selected={contactTab === 'email'}
-                                className={`loginModal__tab ${contactTab === 'email' ? 'loginModal__tab--active' : ''}`}
-                                onClick={() => setContactTab('email')}
-                            >
-                                Почта
-                            </button>
-                        </div>
                         <form onSubmit={handleContactNext} className="loginModal__form">
-                            {contactTab === 'phone' ? (
-                                <>
-                                    <div className="loginModal__phoneRow">
-                                        <div className="loginModal__phonePrefix">
-                                            <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
-                                            +7
-                                        </div>
-                                        <input
-                                            className="loginModal__phoneInput"
-                                            type="tel"
-                                            inputMode="tel"
-                                            value={formatPhoneDisplay(phoneLocal)}
-                                            onChange={(e) => setPhoneLocal(e.target.value.replace(/\D/g, ''))}
-                                            required
-                                            placeholder="952 312-94-90"
-                                        />
-                                    </div>
-                                    <p className="loginModal__fieldHint">
-                                        СМС не отправляем — подтвердите номер в Telegram-боте.
-                                    </p>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="loginModal__emailRow">
-                                        <div className="loginModal__emailIcon">✉</div>
-                                        <input
-                                            type="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value.replace(/\s/g, ''))}
-                                            placeholder="youremail@example.com"
-                                            className="loginModal__phoneInput"
-                                            required
-                                            autoComplete="email"
-                                        />
-                                    </div>
-                                    <div className="loginModal__phoneRow">
-                                        <div className="loginModal__phonePrefix">
-                                            <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
-                                            +7
-                                        </div>
-                                        <input
-                                            className="loginModal__phoneInput"
-                                            type="tel"
-                                            inputMode="tel"
-                                            value={formatPhoneDisplay(phoneLocal)}
-                                            onChange={(e) => setPhoneLocal(e.target.value.replace(/\D/g, ''))}
-                                            required
-                                            placeholder="952 312-94-90"
-                                            aria-label="Номер телефона для аккаунта"
-                                        />
-                                    </div>
-                                    <p className="loginModal__fieldHint">
-                                        Код придёт на почту. Номер телефона нужен для аккаунта.
-                                    </p>
-                                </>
-                            )}
-                        <button type="submit" className="loginModal__primaryBtn">
-                            Дальше
-                        </button>
-                    </form>
-                    {contactTab === 'phone' ? (
-                        <button type="button" className="loginModal__telegramBtn" onClick={openTelegramDirect}>
-                            <span>Войти через Telegram</span>
-                            <TelegramPlaneIcon />
-                        </button>
-                    ) : null}
+                            <div className="loginModal__emailRow">
+                                <div className="loginModal__emailIcon">✉</div>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value.replace(/\s/g, ''))}
+                                    placeholder="youremail@example.com"
+                                    className="loginModal__phoneInput"
+                                    required
+                                    autoComplete="email"
+                                />
+                            </div>
+                            <div className="loginModal__phoneRow">
+                                <div className="loginModal__phonePrefix">
+                                    <span className="loginModal__phonePrefixFlag" aria-hidden="true">🇷🇺</span>
+                                    +7
+                                </div>
+                                <input
+                                    className="loginModal__phoneInput"
+                                    type="tel"
+                                    inputMode="tel"
+                                    value={formatPhoneDisplay(phoneLocal)}
+                                    onChange={(e) => setPhoneLocal(e.target.value.replace(/\D/g, ''))}
+                                    required
+                                    placeholder="952 312-94-90"
+                                    aria-label="Номер телефона для аккаунта"
+                                />
+                            </div>
+                            <p className="loginModal__fieldHint">
+                                Код придёт на почту. Номер телефона нужен для аккаунта.
+                            </p>
+                            <button type="submit" className="loginModal__primaryBtn">
+                                Дальше
+                            </button>
+                        </form>
                     </Shell>
                 )}
 

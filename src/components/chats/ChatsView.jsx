@@ -29,15 +29,18 @@ import { fetchRecruiterForView, getStudentMe, getRecruiterMe } from '../../servi
 import {
     derivePeerMetaFromMessages,
     formatRecruiterPeerMeta,
+    formatRecruiterDisplayName,
     formatStudentPeerMeta,
     isGenericPeerTitle,
+    resolveRecruiterDisplayName,
     resolveRecruiterIdForChat,
+    resolveStudentDisplayName,
     resolveStudentIdForChat,
 } from '../../utils/chatPeerMeta.js';
 import { AUTH_USERNAME_KEY, getAuthMe } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
 import { disconnectChatWebSocket, subscribeChatTopic, subscribeUserInbox } from '../../services/chatWebSocket.js';
-import { formatChatSystemMessage } from '../../utils/chatSystemEvents.js';
+import { formatChatSystemMessage, formatChatListPreview } from '../../utils/chatSystemEvents.js';
 import { INBOX_REFRESH_TYPES, TU_PHASE_LABELS } from '../../utils/tuPhase.js';
 import {
     extractPeerReadMessageId,
@@ -374,14 +377,37 @@ const ChatsView = () => {
             return true;
         };
 
+        const tryRecruiterDisplayName = () => {
+            const displayName = resolveRecruiterDisplayName(chat, chatIds, requests);
+            const meta = formatRecruiterDisplayName(displayName);
+            if (!meta) return false;
+            title = meta.title;
+            subtitle = meta.subtitle;
+            return true;
+        };
+
+        const tryStudentDisplayName = () => {
+            const displayName = resolveStudentDisplayName(chat, chatIds, requests);
+            if (!displayName) return false;
+            title = displayName;
+            subtitle = '';
+            return true;
+        };
+
         try {
             if (party?.role === 'recruiter') {
-                await tryStudent(chat.studentId);
+                if (!(await tryStudent(chat.studentId))) {
+                    tryStudentDisplayName();
+                }
             } else if (party?.role === 'student') {
-                await tryRecruiter(chat.recruiterId);
+                if (!(await tryRecruiter(chat.recruiterId))) {
+                    tryRecruiterDisplayName();
+                }
             } else {
                 if (!(await tryStudent(chat.studentId))) {
-                    await tryRecruiter(chat.recruiterId);
+                    if (!(await tryRecruiter(chat.recruiterId))) {
+                        tryStudentDisplayName() || tryRecruiterDisplayName();
+                    }
                 }
             }
         } catch {
@@ -389,7 +415,11 @@ const ChatsView = () => {
         }
 
         if (!title) {
-            if (party?.role === 'student') title = 'Работодатель';
+            if (party?.role === 'student' && tryRecruiterDisplayName()) {
+                /* display name from chat/request */
+            } else if (party?.role === 'recruiter' && tryStudentDisplayName()) {
+                /* display name from chat/request */
+            } else if (party?.role === 'student') title = 'Работодатель';
             else if (party?.role === 'recruiter') title = 'Студент';
             else title = chat.studentId ? 'Студент' : chat.recruiterId ? 'Работодатель' : 'Собеседник';
         }
@@ -737,7 +767,10 @@ const ChatsView = () => {
             }
 
             if (!message?.id) return;
-            const preview = message.body || message.attachmentStorageName || 'Вложение';
+            const preview =
+                message.messageKind === 'SYSTEM'
+                    ? formatChatSystemMessage(message)
+                    : message.body || message.attachmentStorageName || 'Вложение';
 
             if (isOpen) {
                 mergeMessage(message);
@@ -1084,13 +1117,9 @@ const ChatsView = () => {
                         const active = String(c.id) === String(selectedId);
                         const title = titles[c.id] || '…';
                         const subtitle = subtitles[c.id] || '';
-                        const preview = c.lastMessagePreview || '';
+                        const preview = formatChatListPreview(c.lastMessagePreview || '');
                         const hasUnread = c.unreadCount > 0;
                         let meta = hasUnread && preview ? preview : subtitle || preview;
-                        if (c._mergedCount > 1) {
-                            const suffix = ` · ${c._mergedCount} заявки`;
-                            meta = meta ? `${meta}${suffix}` : suffix.trim();
-                        }
                         return (
                             <button
                                 key={c.id}

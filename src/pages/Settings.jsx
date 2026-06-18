@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
@@ -692,7 +692,17 @@ const SettingsPage = () => {
                                         )}
                                     </label>
                                 </div>
-                                <div className="accountPage__btnContainer">
+                                <div className="accountPage__btnContainer accountPage__btnContainer--row">
+                                    {profile?.id ? (
+                                        <Link
+                                            to={`/studentsResume/${profile.id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="accountPage__submit accountPage__submit--secondary"
+                                        >
+                                            Предпросмотр
+                                        </Link>
+                                    ) : null}
                                     <button
                                         type="button"
                                         className="accountPage__submit"
