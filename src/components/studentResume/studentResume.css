@@ -1,0 +1,1477 @@
+.StudentResume {
+    margin: 0 auto;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 45px 40px 0;
+    font-family: Sansation, sans-serif;
+    box-sizing: border-box;
+}
+
+.StudentResume__loadingScreen {
+    position: fixed;
+    inset: 0;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.StudentResume__loader {
+    width: 80px;
+    height: 80px;
+    border: 4px solid transparent;
+    border-top: 4px solid #ffffff;
+    border-radius: 50%;
+    animation: StudentResumeSpin 1s linear infinite;
+    position: relative;
+}
+
+.StudentResume__loader::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    border: 4px solid transparent;
+    border-top: 4px solid #ff0055;
+    border-radius: 50%;
+    animation: StudentResumeSpin 1.5s linear infinite;
+}
+
+@keyframes StudentResumeSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.StudentResume__mainContent {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.StudentResume__wrapper {
+    width: 100%;
+    background-image: linear-gradient(90deg, #4655FF, #BDF7FF);
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-top: 200px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    position: relative;
+}
+
+.StudentResume__profile {
+    width: 100%;
+    background: #000;
+    border-radius: 25px;
+    border: 2px solid #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    padding: 40px;
+}
+
+.StudentResume__header {
+    --StudentResume-header-text-offset: -50px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 90%;
+    padding-top: 35px;
+    padding-bottom: 10px;
+    min-height: 200px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.StudentResume__person {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 20px;
+    flex: 1;
+}
+
+.StudentResume__personFace {
+    width: 268px;
+    position: relative;
+    flex-shrink: 0;
+    align-self: flex-start;
+}
+
+.StudentResume__personFace img {
+    width: 236px;
+    height: 236px;
+    border-radius: 22px;
+    border: 2px solid #fff;
+    position: absolute;
+    top: -125px;
+    object-fit: cover;
+}
+
+.StudentResume__personName {
+    position: relative;
+    top: var(--StudentResume-header-text-offset);
+    color: #fff;
+    flex: 1;
+}
+
+.StudentResume__personName h2 {
+    font-size: 40px;
+    font-family: "StratosSemiLight";
+    margin-bottom: 10px;
+}
+
+.StudentResume__personName p {
+    font-size: 28px;
+    margin-bottom: 24px;
+}
+
+.StudentResume__flexInfo {
+    position: relative;
+    top: var(--StudentResume-header-text-offset);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    color: gray;
+    font-size: 24px;
+    gap: 22px;
+    margin: 0;
+    font-family: 'StratosSemiLight';
+}
+
+.StudentResume__sendBid {
+    width: 305px;
+    height: 45px;
+    font-family: Sansation, sans-serif;
+    font-size: 23px;
+    letter-spacing: 1px;
+    gap: 12px;
+    opacity: 1;
+    border-radius: 100px;
+    padding: 12px 32px;
+    box-sizing: border-box;
+    line-height: 1;
+}
+
+.StudentResume__about {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    padding-bottom: 60px;
+    font-family: "StratosSemiLight";
+}
+
+.StudentResume__section {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.StudentResume__sectionTitle {
+    font-family: StratosExtraLight, sans-serif;
+    color: #fff;
+    font-size: 32px;
+    margin: 0;
+}
+
+.StudentResume__sectionText {
+    font-family: 'StratosLight', sans-serif;
+    color: #fff;
+    font-size: 24px;
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-line;
+}
+
+.StudentResume__skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.StudentResume__skillCapsule {
+    font-family: StratosRegular, sans-serif;
+    background: #fff;
+    color: #000;
+    padding: 6px 24px;
+    border-radius: 100px;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.StudentResume__portfolio {
+    display: flex;
+    gap: 25px;
+    min-height: 200px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: #4655FF #000;
+}
+
+.StudentResume__portfolio::-webkit-scrollbar {
+    height: 8px;
+}
+
+.StudentResume__portfolio::-webkit-scrollbar-track {
+    background: #000;
+    border-radius: 4px;
+}
+
+.StudentResume__portfolio::-webkit-scrollbar-thumb {
+    background: #4655FF;
+    border-radius: 4px;
+}
+
+.StudentResume__portfolioItem {
+    position: relative;
+    height: 200px;
+    width: 300px;
+    min-width: 300px;
+    border-radius: 15px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    background-size: 100% 100%;
+    flex-shrink: 0;
+}
+
+.StudentResume__portfolioContent {
+    position: relative;
+    z-index: 2;
+    border-radius: 10px;
+    width: 90%;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    gap: 15px;
+    box-sizing: border-box;
+    text-align: left;
+    padding: 18px;
+}
+
+.StudentResume__portfolioTitle {
+    color: #000;
+    font-size: 30px;
+    margin: 0;
+    font-family: 'StratosSemiLight';
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.15;
+}
+
+.StudentResume__portfolioDescription {
+    color: #000;
+    font-size: 22px;
+    margin: 0;
+    font-family: 'StratosSemiLight';
+    max-height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    text-align: left;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.2;
+}
+
+.StudentResume__portfolioContent--compact .StudentResume__portfolioTitle {
+    font-size: 24px;
+}
+
+.StudentResume__portfolioContent--compact .StudentResume__portfolioDescription {
+    font-size: 18px;
+}
+
+.StudentResume__portfolioContent--dense .StudentResume__portfolioTitle {
+    font-size: 20px;
+}
+
+.StudentResume__portfolioContent--dense .StudentResume__portfolioDescription {
+    font-size: 16px;
+}
+
+.StudentResume__additionalSections {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 35px;
+}
+
+.StudentResume__expandableSection {
+    width: 100%;
+}
+
+.StudentResume__expandableHeader {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 20px 0;
+    transition: opacity 0.3s;
+}
+
+.StudentResume__expandableHeader:hover {
+    opacity: 0.8;
+}
+
+.StudentResume__expandableTitle {
+    color: #fff;
+    font-size: 32px;
+    margin: 0;
+    font-family: StratosSemiLight, sans-serif;
+    font-weight: 400;
+}
+
+.StudentResume__expandableArrow {
+    display: inline-block;
+    width: 32px;
+    height: 14px;
+    margin-left: 15px;
+    margin-top: 4px;
+    flex-shrink: 0;
+    transition: transform 0.3s;
+}
+
+.StudentResume__expandableArrow.expanded {
+    transform: rotate(180deg);
+}
+
+.StudentResume__expandableContent {
+    padding: 30px;
+    color: #fff;
+    margin-top: 20px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.StudentResume__expandableContent--bordered {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+}
+
+.StudentResume__expandableContent--no-border {
+    border: none;
+    padding: 30px 0;
+}
+
+.StudentResume__expandableContent h3 {
+    font-size: 40px;
+    margin: 0 0 8px 0;
+    font-weight: normal;
+}
+
+.StudentResume__expandableContent h2 {
+    font-size: 26px;
+    margin: 0 0 20px 0;
+    color: #fff;
+}
+
+.StudentResume__expandableContent p {
+    font-size: 20px;
+    line-height: 1.7;
+    margin: 0;
+    color: #ccc;
+}
+
+.StudentResume__educationSubtitle {
+    font-size: 22px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.StudentResume__contactSection {
+    width: 100%;
+    margin-bottom: 80px;
+    min-height: 500px;
+    margin-top: 40px;
+}
+
+.StudentResume__contactTitle {
+    color: #fff;
+    font-size: 40px;
+    font-family: StratosSemiLight, sans-serif;
+    margin-bottom: 40px;
+    text-align: left;
+    font-weight: 300;
+}
+
+.StudentResume__contactContent {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    min-height: 400px;
+    position: relative;
+}
+
+.StudentResume__contactSlider {
+    display: flex;
+    align-items: stretch;
+    min-height: 380px;
+}
+
+.StudentResume__contactSlider .student-slider-card {
+    height: 380px;
+    min-height: 380px;
+    width: 240px;
+}
+
+.StudentResume__contactSlider .student-slider-card--active {
+    height: 380px;
+    min-height: 380px;
+    width: 240px;
+}
+
+.StudentResume__contactSlider .student-slider-card__photoWrapper {
+    flex: 1;
+    min-height: 0;
+}
+
+.StudentResume__contactSlider .student-slider-card__photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.StudentResume__contactInfo {
+    flex: 1;
+    background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat;
+    border-radius: 15px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 380px;
+    background-position: center center;
+    background-size: 100% 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.StudentResume__contactWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 32px;
+    z-index: 2;
+    position: relative;
+}
+
+.StudentResume__contactWrapper button {
+    background: transparent;
+    border: 2px solid #fff;
+    border-radius: 100px;
+    color: #fff;
+    font-family: StratosSkyeng, sans-serif;
+    font-size: 24px;
+    padding: 8px 20px 8px 24px;
+    cursor: pointer;
+    transition: all .3s;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 200px;
+    align-self: flex-start;
+}
+
+.StudentResume__contactWrapper p {
+    width: 400px;
+    color: #fff;
+    font-size: 40px;
+    text-align: left;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.StudentResume__cloudMailIcon {
+    position: absolute;
+    width: 140px;
+    right: -40px;
+    bottom: -25px;
+    z-index: 1;
+}
+
+.StudentResume__sunIcon {
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    left: -90px;
+    top: -90px;
+    z-index: 1;
+}
+
+.StudentResume__contactDetails {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.StudentResume__contactDetailItem {
+    margin-bottom: 20px;
+}
+
+.StudentResume__contactDetailItem h4 {
+    color: #bdf7ff;
+    font-size: 18px;
+    margin: 0 0 10px 0;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.StudentResume__contactDetailItem p {
+    color: #fff;
+    font-size: 16px;
+    text-align: left;
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+.StudentResume__similarSection {
+    width: 100%;
+    margin-bottom: 80px;
+}
+
+.StudentResume__similarTitle {
+    color: #fff;
+    font-size: 40px;
+    font-family: StratosSemiLight, sans-serif;
+    margin-bottom: 40px;
+    text-align: left;
+    font-weight: 300;
+}
+
+.StudentResume__similarList {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 4px 0 14px 0;
+    scrollbar-width: thin;
+    scrollbar-color: #4655FF #000;
+    scroll-behavior: smooth;
+}
+
+.StudentResume__similarList::-webkit-scrollbar {
+    height: 8px;
+}
+
+.StudentResume__similarList::-webkit-scrollbar-track {
+    background: #000;
+    border-radius: 4px;
+}
+
+.StudentResume__similarList::-webkit-scrollbar-thumb {
+    background: #4655FF;
+    border-radius: 4px;
+}
+
+.StudentResume__similarLink {
+    width: 275px;
+    height: 440px;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: block;
+    cursor: pointer;
+    border-radius: 13px;
+}
+
+.StudentResume__similarLink:hover {
+    transform: translateY(-4px);
+}
+
+.StudentResume__similarLink .student-slider-card {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    pointer-events: auto;
+    padding: 10px;
+    gap: 14px;
+    box-sizing: border-box;
+}
+
+.StudentResume__similarLink .student-slider-card__photoWrapper {
+    height: 301px;
+    min-height: 301px;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.StudentResume__similarLink .student-slider-card__photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.StudentResume__similarLink .student-slider-card__text {
+    flex-shrink: 0;
+    gap: 6px;
+}
+
+.StudentResume__similarLink .student-slider-card__name {
+    font-size: 28px;
+    width: 100%;
+}
+
+.StudentResume__similarLink .student-slider-card__job {
+    font-size: 18px;
+    padding-bottom: 0;
+}
+
+.StudentResume__similarLink .student-slider-card__course,
+.StudentResume__similarLink .student-slider-card__extraIco {
+    width: 44px;
+    height: 44px;
+    left: 10px;
+    border-radius: 10px;
+}
+
+.StudentResume__similarLink .student-slider-card--active .student-slider-card__course {
+    width: 100px;
+}
+
+.StudentResume__similarLink .student-slider-card__courseIco {
+    width: 44px;
+}
+
+.StudentResume__similarLink .student-slider-card__extraIco {
+    bottom: 65px;
+}
+
+.StudentResume__similarLink .student-slider-card__extraIco img {
+    width: 18px;
+    height: 28px;
+}
+
+.StudentResume__similarLink .student-slider-card__course {
+    bottom: 14px;
+}
+
+.StudentResume__similarLink .student-slider-card__courseText {
+    font-size: 18px;
+}
+
+.StudentResume__educationList {
+    margin-top: 20px;
+}
+
+.StudentResume__educationItem {
+    display: flex;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.StudentResume__educationTimeline {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 30px;
+    min-width: 120px;
+    gap: 20px;
+}
+
+.StudentResume__educationYears {
+    font-weight: 500;
+    font-size: 24px;
+    color: #B3B3B3;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.StudentResume__educationYears span {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.StudentResume__educationVerticalLine {
+    width: 1px;
+    background-color: #fff;
+    flex-grow: 1;
+    height: 100%;
+}
+
+.StudentResume__educationInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.StudentResume__educationName {
+    font-family: "StratosSemiLight", serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+}
+
+.StudentResume__educationSpeciality {
+    font-size: 1rem;
+    color: #bdf7ff;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.StudentResume__educationAdditional {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.StudentResume__educationLink {
+    font-size: 24px;
+    background: linear-gradient(90deg, #E95A57, #E53BCF, #3E8EFF);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.StudentResume__experienceList {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.StudentResume__experienceWithTimeline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 44px;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.StudentResume__experienceItem {
+    display: flex;
+    margin-bottom: 40px;
+    position: relative;
+    flex-direction: column;
+}
+
+.StudentResume__experienceItem--card {
+    margin-bottom: 0;
+    border: 2px solid #fff;
+    border-radius: 20px;
+    padding: 24px 26px;
+    background: #000;
+    transition: opacity 0.35s ease, border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+}
+
+.StudentResume__experienceItem--card.active {
+    border: 2px solid transparent;
+    background:
+        linear-gradient(#000, #000) padding-box,
+        linear-gradient(90deg, #E95A57 0%, #E53BCF 49.5%, #3E8EFF 100%) border-box;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+}
+
+.StudentResume__experienceItem--card:focus {
+    outline: none;
+}
+
+.StudentResume__experienceItem--card:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.55);
+    outline-offset: 3px;
+}
+
+.StudentResume__experienceTimeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 120px;
+    align-self: flex-start;
+}
+
+.StudentResume__experienceYears {
+    font-family: StratosSemiLight, sans-serif;
+    font-weight: 400;
+    font-size: 24px;
+    color: #B3B3B3;
+    margin-bottom: 15px;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+.StudentResume__experienceInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.StudentResume__experienceCompany {
+    font-family: StratosSemiLight, sans-serif;
+    font-size: 40px;
+    font-weight: 500;
+    margin: 0 0 5px 0;
+    color: #fff;
+    line-height: 1.15;
+}
+
+.StudentResume__experiencePosition {
+    font-family: "StratosSkyeng", sans-serif;
+    font-size: 32px;
+    font-weight: 300;
+    margin: 0 0 10px 0;
+    color: #fff;
+    line-height: 1.2;
+}
+
+.StudentResume__experienceDescription {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.StudentResume__experienceTimelineNav {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    justify-self: stretch;
+    gap: 15px;
+    padding: 6px 0;
+}
+
+.StudentResume__experienceTimelineNav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 3px;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 2px;
+    z-index: 0;
+}
+
+.StudentResume__experienceTimelineDot {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    display: block;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: none;
+    background: #fff;
+    cursor: pointer;
+    z-index: 1;
+    position: relative;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.StudentResume__experienceTimelineDot.active {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #ff3d77, #338aff);
+    transform: scale(1);
+    box-shadow: 0 0 15px rgba(255, 61, 119, 0.5);
+}
+
+.StudentResume__experienceTimelineDot.active::before {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.StudentResume__numbersImg {
+    position: absolute;
+    right: -5%;
+    top: -10%;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1200px) {
+    .StudentResume {
+        padding: 45px 40px 0;
+    }
+
+    .StudentResume__expandableContent h3 {
+        font-size: 32px;
+    }
+
+    .StudentResume__contactInfo {
+        height: 350px;
+        min-height: 350px;
+    }
+
+    .StudentResume__contactSlider {
+        min-height: 350px;
+    }
+    
+    .StudentResume__contactSlider {
+        display: none;
+    }
+
+    .StudentResume__contactSlider .student-slider-card,
+    .StudentResume__contactSlider .student-slider-card--active {
+        height: 350px;
+        min-height: 350px;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
+    .StudentResume__contactWrapper p {
+        width: 350px;
+        font-size: 36px;
+    }
+}
+
+@media (max-width: 1150px) {
+    .StudentResume {
+        padding: 30px 40px 0;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
+    .StudentResume__header {
+        flex-direction: column;
+        gap: 24px;
+        padding: 25px 0;
+        align-items: center;
+    }
+
+    .StudentResume__person {
+        flex-direction: row;
+        gap: 0;
+        width: 100%;
+        justify-content: center;
+        align-self: flex-start;
+    }
+
+    .StudentResume__personFace img {
+        width: 220px;
+        height: 220px;
+        top: -97px;
+    }
+
+    .StudentResume__personName {
+        margin-top: 0;
+        top: 0;
+    }
+
+    .StudentResume__personName h2 {
+        font-size: 36px;
+    }
+
+    .StudentResume__personName p {
+        font-size: 24px;
+    }
+
+    .StudentResume__flexInfo {
+        position: static;
+        top: 0;
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 20px;
+        margin: 0;
+        width: 100%;
+    }
+
+    .StudentResume__about {
+        width: 95%;
+        gap: 40px;
+        padding-bottom: 50px;
+    }
+
+    .StudentResume__sectionTitle,
+    .StudentResume__expandableTitle {
+        font-size: 28px;
+    }
+
+    .StudentResume__contactContent {
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .StudentResume__contactTitle,
+    .StudentResume__similarTitle {
+        font-size: 36px;
+    }
+
+    .StudentResume__similarLink {
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .StudentResume__contactSlider {
+        display: none;
+    }
+
+    .StudentResume__experienceYears {
+        font-size: 22px;
+    }
+
+    .StudentResume {
+        padding: 30px 40px 0;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
+    .StudentResume__wrapper {
+        padding-top: 80px;
+        border-radius: 20px;
+    }
+
+    .StudentResume__person {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .StudentResume__personName p {
+        margin: 0;
+    }
+
+    .StudentResume__personFace {
+        display: flex;
+        align-self: center;
+        height: 111px;
+        justify-content: center;
+    }
+
+    .StudentResume__personFace img {
+        width: 197px;
+        height: 197px;
+    }
+
+    .StudentResume__personName {
+        width: 100%;
+        text-align: left;
+        align-self: flex-start;
+        top: 0;
+    }
+
+    .StudentResume__personName h2 {
+        font-size: 30px;
+    }
+
+    .StudentResume__personName p {
+        font-size: 22px;
+    }
+
+    .StudentResume__personName .StudentResume__sendBid {
+        display: none;
+    }
+
+    .StudentResume__sendBid {
+        width: 100%;
+        max-width: 305px;
+        height: 45px;
+        font-family: Sansation, sans-serif;
+        font-size: 23px;
+        letter-spacing: 1px;
+        gap: 12px;
+        opacity: 1;
+        border-radius: 100px;
+        padding: 12px 32px;
+        box-sizing: border-box;
+        line-height: 1;
+    }
+
+    .StudentResume__sendBid img {
+        width: 24px;
+        height: 18px;
+    }
+
+    .StudentResume__about {
+        width: 100%;
+        gap: 35px;
+        padding: 0 10px 40px;
+    }
+
+    .StudentResume__skills {
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .StudentResume__skillCapsule {
+        padding: 10px 22px;
+        font-size: 18px;
+    }
+
+    .StudentResume__sectionTitle,
+    .StudentResume__expandableTitle {
+        font-size: 26px;
+    }
+
+    .StudentResume__portfolioItem {
+        height: 180px;
+        min-width: 280px;
+    }
+
+    .StudentResume__portfolioContent {
+        padding: 15px;
+        gap: 12px;
+    }
+
+    .StudentResume__portfolioTitle {
+        font-size: 20px;
+    }
+
+    .StudentResume__portfolioDescription {
+        font-size: 14px;
+        max-height: 60px;
+    }
+
+    .StudentResume__expandableContent {
+        padding: 20px;
+    }
+
+    .StudentResume__contactSection,
+    .StudentResume__similarSection {
+        margin-top: 40px;
+        margin-bottom: 60px;
+    }
+
+    .StudentResume__contactTitle,
+    .StudentResume__similarTitle {
+        font-size: 28px;
+        text-align: left;
+        margin-bottom: 30px;
+    }
+
+    .StudentResume__contactContent {
+        flex-direction: column;
+        gap: 40px;
+    }
+
+    .StudentResume__contactInfo {
+        padding: 20px;
+        min-height: 350px;
+    }
+
+    .StudentResume__contactWrapper {
+        align-items: center;
+        text-align: center;
+        gap: 25px;
+    }
+
+    .StudentResume__contactWrapper p {
+        width: 100%;
+        font-size: 28px;
+        text-align: center;
+    }
+
+    .StudentResume__similarList {
+        gap: 10px;
+    }
+
+    .StudentResume__contactWrapper button {
+        align-self: center;
+    }
+
+    .StudentResume__cloudMailIcon {
+        width: 120px;
+        height: auto;
+    }
+
+    .StudentResume__similarLink {
+        min-width: 150px;
+    }
+
+    .StudentResume__educationItem {
+        flex-direction: column;
+    }
+
+    .StudentResume__educationTimeline {
+        flex-direction: row;
+        margin-right: 0;
+        margin-bottom: 15px;
+        align-items: center;
+        min-width: auto;
+    }
+
+    .StudentResume__educationVerticalLine {
+        width: 40px;
+        height: 1px;
+        margin: 0 15px;
+        min-height: 0;
+    }
+
+    .StudentResume__experienceTimeline {
+        flex-direction: row;
+        margin-right: 0;
+        margin-bottom: 15px;
+        align-items: center;
+        min-width: auto;
+    }
+
+    .StudentResume__experienceWithTimeline {
+        grid-template-columns: 1fr;
+    }
+
+    .StudentResume__experienceTimelineNav {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .StudentResume__experienceYears {
+        font-size: 18px;
+    }
+
+    .StudentResume {
+        padding: 30px 20px 0;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
+    .StudentResume__contactContent {
+        flex-direction: column;
+    }
+
+
+    .StudentResume__contactInfo .student-slider-card {
+        width: 120px;
+        height: 120px;
+        flex-shrink: 0;
+    }
+
+    .StudentResume__contactInfo .student-slider-card__photoWrapper {
+        width: 100%;
+        height: 100%;
+    }
+
+    .StudentResume__contactInfo .student-slider-card__photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .StudentResume__contactInfo .student-slider-card__text {
+        display: none;
+    }
+
+    .StudentResume__contactWrapper {
+        flex: 1;
+        gap: 15px;
+    }
+
+    .StudentResume__contactWrapper p {
+        font-size: 18px;
+        width: 100%;
+    }
+
+    .StudentResume__contactWrapper button {
+        min-width: 150px;
+        font-size: 18px;
+        padding: 5px 15px;
+    }
+
+    .StudentResume__sunIcon img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .StudentResume {
+        padding: 30px 20px 0;
+    }
+
+    .StudentResume__experienceYears {
+        font-size: 16px;
+    }
+
+    .StudentResume__expandableContent h3 {
+        font-size: 30px;
+    }
+
+    .StudentResume__educationYears {
+        font-size: 20px;
+    }
+
+    .StudentResume__expandableContent p {
+        font-size: 18px;
+    }
+
+    .StudentResume__educationLink {
+        font-size: 20px;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
+    .StudentResume__personFace img {
+        width: 173px;
+        height: 173px;
+    }
+
+    .StudentResume__personName h2 {
+        font-size: 26px;
+    }
+
+    .StudentResume__flexInfo {
+        font-size: 18px;
+        gap: 15px;
+    }
+
+    .StudentResume__portfolioItem {
+        height: 160px;
+        min-width: 240px;
+    }
+
+    .StudentResume__portfolioContent {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .StudentResume__portfolioTitle {
+        font-size: 18px;
+    }
+
+    .StudentResume__portfolioDescription {
+        font-size: 12px;
+        max-height: 50px;
+        -webkit-line-clamp: 2;
+    }
+
+    .StudentResume__sectionTitle,
+    .StudentResume__expandableTitle {
+        font-size: 22px;
+    }
+
+    .StudentResume__contactTitle,
+    .StudentResume__similarTitle {
+        font-size: 24px;
+    }
+
+    .StudentResume__contactInfo {
+        min-height: 300px;
+        padding: 15px;
+    }
+
+    .StudentResume__contactWrapper p {
+        font-size: 22px;
+    }
+
+    .StudentResume__contactWrapper button {
+        font-size: 20px;
+        padding: 6px 16px 6px 20px;
+        min-width: 180px;
+    }
+
+    .StudentResume__sunIcon {
+        left: -90px;
+        top: -100px;
+    }
+
+    .StudentResume__sunIcon img {
+        width: 120px;
+        height: 120px;
+    }
+
+    .StudentResume__cloudMailIcon {
+        width: 100px;
+    }
+}
+
+@media (max-width: 400px) {
+    .StudentResume {
+        padding: 30px 20px 0;
+    }
+
+    .StudentResume__expandableContent h3 {
+        font-size: 26px;
+    }
+
+    .StudentResume__experienceYears {
+        font-size: 14px;
+    }
+
+    .StudentResume__mainContent {
+        max-width: 1200px;
+    }
+
+    .StudentResume__contactInfo {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .StudentResume__contactInfo .student-slider-card {
+        width: 150px;
+        height: 150px;
+    }
+
+    .StudentResume__contactWrapper {
+        align-items: center;
+        text-align: center;
+    }
+
+    .StudentResume__contactWrapper p {
+        font-size: 16px;
+    }
+
+    .StudentResume__contactWrapper button {
+        align-self: center;
+    }
+}

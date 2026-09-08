@@ -1,0 +1,699 @@
+.applicationForm__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-in-out;
+    padding: 20px;
+}
+
+.applicationForm__content {
+    width: min(920px, 100%);
+    min-height: min(800px, calc(100vh - 40px));
+    max-height: calc(100vh - 40px);
+    background: url("../../assets/other/radialBluePurpleGradient.png") no-repeat center center;
+    background-size: cover;
+    border-radius: 20px;
+    padding: 50px 165px;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
+    animation: slideIn 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    box-sizing: border-box;
+}
+
+.applicationForm__content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.applicationForm__content::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+}
+
+.applicationForm__content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 3px;
+}
+
+.applicationForm__content::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Внутренняя обёртка: к ней привязана иконка облака (низ блока), при скролле иконка уезжает вниз вместе с контентом */
+.applicationForm__contentInner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    min-height: min-content;
+}
+
+.applicationForm__close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.3s;
+    font-size: 0;
+}
+
+.applicationForm__close::before,
+.applicationForm__close::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: #fff;
+    border-radius: 1px;
+}
+
+.applicationForm__close::before {
+    transform: rotate(45deg);
+}
+
+.applicationForm__close::after {
+    transform: rotate(-45deg);
+}
+
+.applicationForm__close:hover {
+    opacity: 0.7;
+}
+
+.applicationForm__info {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 16px 20px 16px 60px;
+    margin-bottom: 25px;
+    color: #fff;
+    font-size: 18px;
+    text-align: left;
+    font-family: 'StratosSkyeng', sans-serif;
+    line-height: 1.4;
+    position: relative;
+}
+
+.applicationForm__info-icon {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    width: 24px;
+    height: 24px;
+}
+
+.applicationForm__successWindow {
+    width: 790px;
+    min-height: 450px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #363636 0%, #616161 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 80px;
+    padding-right: 80px;
+    box-sizing: border-box;
+    font-family: 'StratosLight', sans-serif;
+    animation: slideIn 0.3s ease-in-out;
+}
+
+.applicationForm__successWindow-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    margin: 0;
+}
+
+.applicationForm__successWindow-body {
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin: 0;
+}
+
+.applicationForm__successWindow-titleRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+}
+
+.applicationForm__successWindow-title {
+    color: #fff;
+    font-size: 40px;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.applicationForm__successWindow-titleIcon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.applicationForm__successWindow-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 24px;
+    line-height: 1.5;
+    margin: 0;
+    text-align: left;
+}
+
+.applicationForm__successActions {
+    margin-top: 8px;
+}
+
+.applicationForm__successChatsBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 28px;
+    border-radius: 100px;
+    border: 2px solid transparent;
+    font-size: 18px;
+    font-family: 'StratosSkyeng', 'StratosLight', sans-serif;
+    color: #fff;
+    cursor: pointer;
+    background: linear-gradient(90deg, #e95a57 0%, #e53bcf 49.5%, #3e8eff 100%) border-box;
+    transition: border-color 0.25s ease, background 0.25s ease;
+}
+
+.applicationForm__successChatsBtn:hover {
+    background: transparent;
+    border-color: #fff;
+}
+
+.applicationForm__successWindow-tgBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.applicationForm__successWindow-tgLink {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 500px;
+    height: 146px;
+    box-sizing: border-box;
+    padding-left: 42px;
+    background: linear-gradient(180deg, #2AABEE 0%, #229ED9 100%);
+    border: 1px solid #fff;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 24px;
+    font-family: 'StratosLight', sans-serif;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    margin: 0;
+}
+
+.applicationForm__successWindow-tgLink-textBlock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.applicationForm__successWindow-tgLink-text {
+    display: block;
+}
+
+.applicationForm__successWindow-tgLink-arrow {
+    display: block;
+}
+
+.applicationForm__successWindow-tgLink-telegramIcon {
+    flex-shrink: 0;
+    width: 200px;
+    height: 100%;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.applicationForm__successWindow-tgLink:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 700px) {
+    .applicationForm__successWindow {
+        width: 100%;
+        max-width: 700px;
+        min-height: auto;
+        height: auto;
+        padding: 40px 24px;
+    }
+
+    .applicationForm__successWindow-inner {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .applicationForm__successWindow-tgBlock {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .applicationForm__successWindow-tgLink {
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 500px) {
+    .applicationForm__successWindow {
+        padding: 24px 16px;
+    }
+
+    .applicationForm__successWindow-tgLink {
+        height: 120px;
+        padding-left: 24px;
+        padding-right: 16px;
+        font-size: 18px;
+    }
+
+    .applicationForm__successWindow-tgLink-textBlock {
+        gap: 8px;
+    }
+
+    .applicationForm__successWindow-tgLink-telegramIcon {
+        width: 120px;
+        height: 90%;
+    }
+
+}
+
+
+.applicationForm__countdown {
+    color: #bdf7ff;
+    font-size: 16px;
+    margin-top: 20px;
+    opacity: 0.8;
+}
+
+.applicationForm__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.applicationForm__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.applicationForm__field label {
+    color: #fff;
+    font-size: 24px;
+    font-family: 'StratosLight', sans-serif;
+}
+
+.applicationForm__field input {
+    height: 45px;
+    background: #E9E9E9;
+    border: 1px solid #e0e0e0;
+    border-radius: 100px;
+    padding: 0 32px;
+    color: #666666;
+    font-size: 24px;
+    font-family: 'StratosSkyeng', sans-serif;
+    transition: border-color 0.3s;
+    resize: vertical;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.applicationForm__field input:focus {
+    outline: none;
+    border-color: #4655FF;
+}
+
+.applicationForm__field input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.applicationForm__field input::placeholder {
+    color: #999999;
+}
+
+.applicationForm__emailWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.applicationForm__field input.applicationForm__inputValid {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.applicationForm__field input.applicationForm__inputInvalid {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+.applicationForm__emailHint {
+    display: block;
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 15px;
+    font-family: 'StratosSkyeng', sans-serif;
+    transition: opacity 0.2s ease, max-height 0.2s ease, visibility 0.2s ease;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.applicationForm__emailHint--error {
+    color: #dc3545;
+}
+
+.applicationForm__emailHint--success {
+    color: #28a745;
+}
+
+.applicationForm__emailHint--visible {
+    opacity: 1;
+    max-height: 40px;
+    visibility: visible;
+}
+
+.applicationForm__telegramWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.applicationForm__field input.applicationForm__telegramInput {
+    color: #0088cc;
+    font-weight: 500;
+}
+
+.applicationForm__field input.applicationForm__telegramInput:focus {
+    border-color: #0088cc;
+}
+
+.applicationForm__field input.applicationForm__telegramInput.applicationForm__inputInvalid {
+    border-color: #ff5252;
+}
+
+.applicationForm__telegramHint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: #bdbdbd;
+    font-family: 'StratosSkyeng', sans-serif;
+    line-height: 1.35;
+}
+
+.applicationForm__telegramFieldError {
+    display: block;
+    color: #ff5252;
+    font-size: 11px;
+    margin-top: 5px;
+    font-family: 'StratosSkyeng', sans-serif;
+    transition: opacity 0.2s ease, max-height 0.2s ease, visibility 0.2s ease;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.applicationForm__telegramFieldError--visible {
+    opacity: 1;
+    max-height: 40px;
+    visibility: visible;
+}
+
+.applicationForm__phoneFieldError {
+    display: block;
+    margin-top: 4px;
+    color: #dc3545;
+    font-size: 12px;
+    font-family: 'StratosSkyeng', sans-serif;
+    transition: opacity 0.2s ease, max-height 0.2s ease, visibility 0.2s ease;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.applicationForm__phoneFieldError--visible {
+    opacity: 1;
+    max-height: 40px;
+    visibility: visible;
+}
+
+.applicationForm__error {
+    color: #E95A57;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px;
+    background: rgba(233, 90, 87, 0.1);
+    border-radius: 8px;
+    font-family: 'StratosSkyeng', sans-serif;
+}
+
+.applicationForm__button-container {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.applicationForm__submit {
+    background: transparent;
+    border: 2px solid #fff;
+    border-radius: 100px;
+    color: #fff;
+    font-family: 'StratosSkyeng', sans-serif;
+    font-size: 24px;
+    width: 226px;
+    height: 45px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+.applicationForm__submit:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.applicationForm__submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.applicationForm__submit-icon {
+    width: 28px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.applicationForm__sunIcon {
+    position: absolute;
+    top: -131px;
+    left: -246px;
+    pointer-events: none;
+}
+
+/* Иконка облака — в правом низу блока .applicationForm__content (не экрана) */
+.applicationForm__cloudMailIcon {
+    position: absolute;
+    bottom: -90px;
+    right: -210px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 900px) {
+    .applicationForm__content {
+        padding: 45px 108px;
+        max-height: calc(100vh - 32px);
+    }
+
+    .applicationForm__sunIcon {
+        top: -130px;
+        left: -190px;
+    }
+
+    .applicationForm__cloudMailIcon {
+        bottom: -95px;
+        right: -160px;
+    }
+}
+
+@media (max-width: 640px) {
+    .applicationForm__overlay {
+        padding: 8px;
+        align-items: center;
+    }
+
+    .applicationForm__sunIcon {
+        top: -48px;
+        left: -48px;
+        width: 80px;
+        height: auto;
+    }
+
+    .applicationForm__cloudMailIcon {
+        bottom: -20px;
+        right: -12px;
+        width: 80px;
+        height: auto;
+    }
+
+    .applicationForm__content {
+        width: 100%;
+        max-width: 100%;
+        min-height: unset;
+        height: 100%;
+        max-height: calc(100vh - 16px);
+        padding: 14px 14px 22px;
+        justify-content: flex-start;
+    }
+
+    .applicationForm__contentInner {
+        flex: 0 1 auto;
+    }
+
+    .applicationForm__close {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .applicationForm__form {
+        gap: 12px;
+    }
+
+    .applicationForm__info {
+        margin-bottom: 12px;
+        padding: 10px 12px 10px 40px;
+        font-size: 13px;
+        line-height: 1.35;
+        border-radius: 8px;
+    }
+
+    .applicationForm__info-icon {
+        left: 12px;
+        top: 12px;
+        width: 20px;
+        height: 20px;
+    }
+
+    .applicationForm__field {
+        gap: 4px;
+    }
+
+    .applicationForm__field label {
+        font-size: 15px;
+    }
+
+    .applicationForm__field input {
+        height: 40px;
+        padding: 0 14px;
+        font-size: 16px;
+        border-radius: 100px;
+    }
+
+    .applicationForm__telegramHint {
+        font-size: 11px;
+        margin-top: 4px;
+    }
+
+    .applicationForm__phoneFieldError,
+    .applicationForm__telegramFieldError {
+        font-size: 10px;
+    }
+
+    .applicationForm__emailHint {
+        font-size: 11px;
+        margin-top: 4px;
+        min-height: 12px;
+    }
+
+    .applicationForm__error {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .applicationForm__submit {
+        width: 100%;
+        max-width: 100%;
+        height: 40px;
+        font-size: 16px;
+        margin-top: 6px;
+        padding: 0 16px;
+    }
+
+    .applicationForm__submit-icon {
+        width: 22px;
+        height: 16px;
+    }
+
+    .applicationForm__button-container {
+        margin-top: 4px;
+        width: 100%;
+    }
+}

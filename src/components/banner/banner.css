@@ -1,0 +1,320 @@
+.banner {
+    width: 100%;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 46px 0;
+}
+
+.banner__wrapper {
+    max-width: 1200px;
+    width: 100%;
+    height: 412px;
+    margin: 0 40px;
+    border: double 3px transparent;
+    border-radius: 32px;
+    background-image:
+            linear-gradient(black, black),
+            linear-gradient(90deg, #3E8EFF, #E53BCF, #E95A57);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.banner__content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    background-image: url("../../assets/other/bannerDiamondGradient.png");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+
+.banner__left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px 72px;
+}
+
+.banner__title {
+    color: #FFFFFF;
+    font-family: "Sansation";
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.banner__titleDot {
+    width: 24px;
+    height: 24px;
+    margin-left: 10px;
+    background-color: #90EE90;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+.banner__titleDot::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    background-color: #00AD20;
+    border-radius: 50%;
+    animation: bannerTitleDotPulse 1.4s ease-in-out infinite;
+    transform-origin: center;
+}
+
+@keyframes bannerTitleDotPulse {
+    0%,
+    100% {
+        transform: scale(0.9);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+}
+
+.banner__imageWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 100%;
+    padding-right: 77px;
+}
+
+.banner__text {
+    color: rgba(255, 255, 255, 0.9);
+    font-family: 'StratosSemiLight';
+    font-size: 17px;
+    line-height: 1.5;
+    margin: 0;
+    max-width: 430px;
+}
+
+.banner__link {
+    text-decoration: none;
+}
+
+.banner__button {
+    width: 300px;
+    height: 50px;
+    font-family: "Sansation", sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.banner__img {
+    height: 360px;
+    max-width: 100%;
+}
+
+.banner__br {
+    display: block;
+}
+
+@media (max-width: 1280px) {
+    .banner__wrapper {
+        margin: 0 40px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .banner__left {
+        padding: 30px 40px;
+    }
+
+    .banner__title {
+        font-size: 30px;
+    }
+
+    .banner__text {
+        font-size: 16px;
+    }
+
+    .banner__content {
+        padding-right: 10px;
+    }
+
+    .banner__imageWrapper {
+        padding-right: 0;
+    }
+}
+
+@media (max-width: 1130px) {
+    .banner__img {
+        height: 330px;
+    }
+}
+
+@media (max-width: 992px) {
+    .banner {
+        padding: 40px 0;
+    }
+
+    .banner__wrapper {
+        margin: 0 40px;
+    }
+
+    .banner__title {
+        font-size: 28px;
+    }
+
+    .banner__text {
+        font-size: 15px;
+    }
+
+    .banner__button {
+        width: 260px;
+        height: 46px;
+        font-size: 20px;
+    }
+
+    .banner__img {
+        height: 300px;
+    }
+
+    .banner__wrapper {
+        height: 370px;
+    }
+
+    .banner__left {
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 898px) {
+    .banner__img {
+        height: 276px;
+    }
+
+    .banner__img {
+        max-width: 98%;
+    }
+}
+
+@media (max-width: 848px) {
+    .banner__img {
+        height: 256px;
+    }
+
+    .banner__img {
+        max-width: 96%;
+    }
+    .banner__title {
+        font-size: 27px;
+    }
+}
+
+@media (max-width: 808px) {
+    .banner__content {
+        flex-direction: column;
+        align-items: center;
+        padding-right: 0;
+        padding-top: 0;
+    }
+
+    .banner__wrapper {
+        height: 534px;
+    }
+
+    .banner__img {
+        height: 250px;
+    }
+
+    .banner__left {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .banner__title {
+        font-size: 36px;
+    }
+
+    .banner__text {
+        max-width: 100%;
+        font-size: 18px;
+    }
+
+    .banner__button {
+        width: 260px;
+    }
+
+    .banner__br {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .banner__wrapper {
+        margin: 0 20px;
+        border-radius: 24px;
+    }
+
+    .banner__left {
+        padding: 30px 20px;
+        gap: 24px;
+    }
+
+    .banner__title {
+        font-size: 28px;
+        line-height: 1.3;
+    }
+
+    .banner__text {
+        font-size: 16px;
+        line-height: 1.4;
+    }
+
+    .banner__button {
+        width: 240px;
+        height: 44px;
+        font-size: 20px;
+        margin-top: 0;
+    }
+}
+
+@media (max-width: 440px) {
+    .banner__img {
+        max-width: 90%;
+    }
+
+    .banner__img {
+        height: 214px;
+    }
+}
+
+@media (max-width: 400px) {
+    .banner__wrapper {
+        margin: 0 15px;
+    }
+
+    .banner__title {
+        font-size: 24px;
+    }
+
+    .banner__text {
+        font-size: 15px;
+    }
+
+    .banner__button {
+        width: 220px;
+        height: 42px;
+        font-size: 18px;
+    }
+
+    .banner__left {
+        padding: 25px 15px;
+    }
+}

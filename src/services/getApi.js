@@ -1,0 +1,102 @@
+import { apiClientJson } from '../utils/apiClient.js';
+import { API_BASE_URL, getImageUrl } from '../config/api.js';
+
+const withPageParams = (endpoint, pageable) => {
+    if (!pageable) return endpoint;
+    const page = typeof pageable.page === 'number' ? pageable.page : 0;
+    const size = typeof pageable.size === 'number' ? pageable.size : 10;
+    const qs = new URLSearchParams({ page: String(page), size: String(size) }).toString();
+    return `${endpoint}?${qs}`;
+};
+
+// ---- Students / Recruiters ----
+export const getStudentById = (id) => apiClientJson(`student/${id}`, { method: 'GET' });
+/** 403 не сбрасывает сессию — иначе рекрутёр теряет вход при проверке «не студент». */
+export const getStudentMe = () =>
+    apiClientJson('student/me', { method: 'GET', skipSessionClearOn403: true });
+
+export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { method: 'GET' });
+export const getRecruiterMe = () =>
+    apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true });
+
+const catalogRows = (json) => {
+    if (Array.isArray(json)) return json;
+    if (Array.isArray(json?.data)) return json.data;
+    if (Array.isArray(json?.content)) return json.content;
+    return [];
+};
+
+const fetchJsonSafe = async (url, options) => {
+    const response = await fetch(url, { credentials: 'include', ...options });
+    if (!response.ok) return null;
+    try {
+        return await response.json();
+    } catch {
+        return null;
+    }
+};
+
+/** Справочник специальностей для формы регистрации (без сброса сессии при 401). */
+export const getSpecialitiesForRegistration = async () => {
+    const publicRes = await fetchJsonSafe(
+        `${API_BASE_URL}public/registration/specialities?page=0&size=200`,
+        { method: 'GET' },
+    );
+    let rows = catalogRows(publicRes);
+    if (rows.length) return rows;
+
+    const filterRes = await fetchJsonSafe(`${API_BASE_URL}speciality/filter?page=0&size=200`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+    });
+    rows = catalogRows(filterRes);
+    if (rows.length) return rows;
+
+    const listRes = await fetchJsonSafe(`${API_BASE_URL}speciality`, { method: 'GET' });
+    return catalogRows(listRes);
+};
+
+// ---- Dictionaries / entities ----
+export const getSpecialityById = (id) => apiClientJson(`speciality/${id}`, { method: 'GET' });
+export const getSkillById = (id) => apiClientJson(`skill/${id}`, { method: 'GET' });
+
+export const getPortfolioById = (id) => apiClientJson(`portfolio/${id}`, { method: 'GET' });
+export const getInstitutionById = (id) => apiClientJson(`institution/${id}`, { method: 'GET' });
+export const getExperienceById = (id) => apiClientJson(`experience/${id}`, { method: 'GET' });
+export const getEducationById = (id) => apiClientJson(`education/${id}`, { method: 'GET' });
+export const getCompanyById = (id) => apiClientJson(`company/${id}`, { method: 'GET' });
+
+// ---- Requests ----
+export const getRequestById = (id) => apiClientJson(`request/${id}`, { method: 'GET' });
+
+// ---- Main ----
+export const getMainStatus = () => apiClientJson('main/status', { method: 'GET' });
+
+/**
+ * URL для картинки через /main/photo/{image_path}
+ * (используй в <img src="...">, чтобы не возиться с blob).
+ */
+export const getMainPhotoUrl = (imagePath) => getImageUrl(imagePath);
+
+/**
+ * Если нужно именно скачать изображение как Blob.
+ */
+export const fetchMainPhotoBlob = async (imagePath) => {
+    const url = getImageUrl(imagePath);
+    if (!url) return null;
+
+    const response = await fetch(url.startsWith('/api/') ? url : `${API_BASE_URL}${url}`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const err = new Error(`Не удалось загрузить изображение: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+
+    return await response.blob();
+};
+

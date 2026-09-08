@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansation:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  outline: 0;
+  box-sizing: border-box;
+}
+
+img {
+  user-select: none;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.appRouteLoader {
+  position: fixed;
+  inset: 0;
+  background-color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.appRouteLoader__spinner {
+  width: 80px;
+  height: 80px;
+  border: 4px solid transparent;
+  border-top: 4px solid #fff;
+  border-radius: 50%;
+  animation: appRouteLoaderSpin 1s linear infinite;
+  position: relative;
+}
+
+.appRouteLoader__spinner::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 4px solid transparent;
+  border-top: 4px solid #ff0055;
+  border-radius: 50%;
+  animation: appRouteLoaderSpin 1.5s linear infinite;
+}
+
+@keyframes appRouteLoaderSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@font-face {
+  font-family: 'StratosThin';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-THIN.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosThinItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-THINITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosExtraLight';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-EXTRALIGHT.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosExtraLightItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-EXTRALIGHTITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosLight';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-LIGHT.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosLightItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-LIGHTITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosSemiLight';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-SEMILIGHT.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosSemiLightItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-SEMILIGHTITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosRegular';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-REGULAR.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-ITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosMedium';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-MEDIUM.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosMediumItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-MEDIUMITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosSemiBold';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-SEMIBOLD.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosSemiBoldItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-SEMIBOLDITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosBold';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-BOLD.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosBoldItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-BOLDITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosExtraBold';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-EXTRABOLD.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosExtraBoldItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-EXTRABOLDITALIC.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosBlack';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-BLACK.OTF') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'StratosBlackItalic';
+  src: url('/public/fonts/stratos skyeng/STRATOSSKYENG-BLACKITALIC.OTF') format('opentype');
+  font-display: swap;
+}

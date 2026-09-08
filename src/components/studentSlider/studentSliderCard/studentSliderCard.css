@@ -1,0 +1,196 @@
+.student-slider-card {
+    width: 166px;
+    height: 266px;
+    background: none;
+    border: 2px solid #fff;
+    border-radius: 13px;
+    color: #fff;
+    padding: 6px;
+    font-family: Sansation, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-weight: 600;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.student-slider-card--active {
+    background: #fff;
+    width: 185px;
+    height: 296px;
+    color: #000;
+    padding: 7px;
+}
+
+.student-slider-card__photoWrapper {
+    height: 70%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.student-slider-card__photo {
+    width: 153px;
+    height: 167px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.student-slider-card--active .student-slider-card__photo {
+    width: 171px;
+    height: 186px;
+}
+
+.student-slider-card__course, .student-slider-card__extraIco {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    left: 5px;
+    border-radius: 7px;
+}
+
+.student-slider-card__course {
+    bottom: 10px;
+    background: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;
+}
+
+.student-slider-card--active .student-slider-card__course {
+    background: #fff;
+    width: 73px;
+    text-transform: uppercase;
+    font-style: italic;
+    color: #000000;
+}
+
+.student-slider-card__courseText {
+    display: none;
+    font-size: 14px;
+    font-family: StratosSemiLight;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-left: 5px;
+    flex: 1;
+}
+
+.student-slider-card--active .student-slider-card__courseText {
+    display: block;
+}
+
+.student-slider-card__courseBadge {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    min-height: 30px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'StratosBoldItalic', sans-serif;
+}
+
+.student-slider-card__courseBadge--1 {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.student-slider-card__courseBadge--2 {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.student-slider-card__courseBadge--3 {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.student-slider-card__courseBadge--4 {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
+}
+
+.student-slider-card__extraIco {
+    bottom: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+}
+
+/* Менеджер проектов: белый центр + синий ореол */
+.student-slider-card__extraIco--manager {
+    background: radial-gradient(circle at center, rgba(0, 139, 255, 0.04) 0%, rgba(0, 139, 255, 0.11) 45%, rgba(0, 139, 255, 0.2) 85%), #fff;
+}
+
+/* Маркетинг: белый центр + красный ореол */
+.student-slider-card__extraIco--marketing {
+    background: radial-gradient(circle at center, rgba(255, 13, 0, 0.04) 0%, rgba(255, 13, 0, 0.11) 45%, rgba(255, 13, 0, 0.2) 85%), #fff;
+}
+
+/* Web: белый центр + синий ореол */
+.student-slider-card__extraIco--web {
+    background: radial-gradient(circle at center, rgba(0, 139, 255, 0.04) 0%, rgba(0, 139, 255, 0.11) 45%, rgba(0, 139, 255, 0.2) 85%), #fff;
+}
+
+/* Java: белый центр + синий ореол rgb(0, 116, 189) */
+.student-slider-card__extraIco--java {
+    background: radial-gradient(circle at center, rgba(0, 116, 189, 0.04) 0%, rgba(0, 116, 189, 0.11) 45%, rgba(0, 116, 189, 0.2) 85%), #fff;
+}
+
+/* Python: белый центр + желтый ореол rgb(255, 196, 0) */
+.student-slider-card__extraIco--python {
+    background: radial-gradient(circle at center, rgba(255, 196, 0, 0.04) 0%, rgba(255, 196, 0, 0.11) 45%, rgba(255, 196, 0, 0.2) 85%), #fff;
+}
+
+/* Тестировщик: белый центр + оранжевый ореол */
+.student-slider-card__extraIco--tester {
+    background: radial-gradient(circle at center, rgba(255, 128, 0, 0.04) 0%, rgba(255, 128, 0, 0.11) 45%, rgba(255, 128, 0, 0.2) 85%), #fff;
+}
+
+/* Графический дизайнер: белый фон + мягкая тень #C300FF сверху */
+.student-slider-card__extraIco--designer {
+    background: radial-gradient(circle at center, rgba(195, 0, 255, 0.04) 0%, rgba(195, 0, 255, 0.11) 45%, rgba(195, 0, 255, 0.2) 85%), #fff;
+}
+
+/* Аналитик данных: белый фон + мягкая тень #0077FF сверху */
+.student-slider-card__extraIco--analyst {
+    background: radial-gradient(circle at center, rgba(0, 119, 255, 0.04) 0%, rgba(0, 119, 255, 0.11) 45%, rgba(0, 119, 255, 0.2) 85%), #fff;
+}
+
+.student-slider-card__extraIco img {
+    width: 14px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.student-slider-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.student-slider-card__name {
+    font-family: 'StratosRegular';
+    letter-spacing: 1px;
+    font-size: 20px;
+    width: 50%;
+}
+
+.student-slider-card__job {
+    font-family: 'StratosRegular';
+    font-size: 12px;
+    font-weight: 400;
+    padding-bottom: 10px;
+}
+
+.student-slider-card--active .student-slider-card__name {
+    font-size: 22px;
+}
+
+.student-slider-card--active .student-slider-card__job {
+    font-size: 14px;
+}
