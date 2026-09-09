@@ -1,4 +1,12 @@
-export const API_BASE_URL = '/api/';
+const withTrailingSlash = (url) => (url.endsWith('/') ? url : `${url}/`);
+
+const defaultApiBase = import.meta.env.DEV
+    ? '/api/'
+    : 'https://api.singularity-resume.ru/';
+
+export const API_BASE_URL = withTrailingSlash(
+    import.meta.env.VITE_API_BASE_URL || defaultApiBase,
+);
 
 /**
  * Получить URL изображения через эндпоинт /main/photo/{image_path}

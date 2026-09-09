@@ -109,7 +109,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
         console.error('[API] Full URL was:', url);
 
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${window.location.origin}/api/`);
+            throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${API_BASE_URL}`);
         }
 
         if (error.message.includes('401') || error.message.includes('Unauthorized')) {

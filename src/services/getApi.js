@@ -86,7 +86,7 @@ export const fetchMainPhotoBlob = async (imagePath) => {
     const url = getImageUrl(imagePath);
     if (!url) return null;
 
-    const response = await fetch(url.startsWith('/api/') ? url : `${API_BASE_URL}${url}`, {
+    const response = await fetch(url.startsWith('http') || url.startsWith('/') ? url : `${API_BASE_URL}${url}`, {
         method: 'GET',
         credentials: 'include',
     });

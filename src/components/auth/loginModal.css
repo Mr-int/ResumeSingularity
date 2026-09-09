@@ -13,6 +13,8 @@
     z-index: 10000;
     font-family: 'Montserrat', sans-serif;
     animation: loginModalFadeIn 0.3s ease-in-out;
+    overflow: hidden;
+    padding: 16px;
 }
 
 .loginModal__card {
@@ -22,17 +24,38 @@
     width: 100%;
     max-width: 440px;
     max-height: min(90vh, 880px);
+    overflow-x: hidden;
     overflow-y: auto;
+    overscroll-behavior: contain;
     position: relative;
     text-align: center;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
     animation: loginModalSlideIn 0.3s ease-in-out;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+.loginModal__card::-webkit-scrollbar {
+    width: 4px;
+}
+
+.loginModal__card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.loginModal__card::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+}
+
+.loginModal__card::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
 }
 
 .loginModal__card::before {
     content: '';
     position: absolute;
-    inset: -1px;
+    inset: 0;
     border-radius: 40px;
     padding: 1px;
     background: linear-gradient(135deg, #ff416c 0%, #2b5876 50%, #4e54c8 100%);
@@ -98,10 +121,14 @@
 
 .loginModal__form {
     text-align: left;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .loginModal__inputGroup {
     margin-bottom: 20px;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .loginModal__inputGroup label {
@@ -122,6 +149,8 @@
 .loginModal__inputGroup select,
 .loginModal__inputWrap input {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     background-color: #09090d;
     border: 1px solid #1f1f2e;
     border-radius: 12px;
@@ -131,6 +160,9 @@
     font-family: inherit;
     outline: none;
     transition: border-color 0.2s;
+}
+
+.loginModal__inputGroup select {
     appearance: none;
 }
 
@@ -321,10 +353,16 @@
 }
 
 @media (max-width: 480px) {
+    .loginModal__overlay {
+        padding: 12px;
+        align-items: flex-start;
+    }
+
     .loginModal__card {
         padding: 36px 22px;
         border-radius: 28px;
-        margin: 0 12px;
+        margin: 0;
+        max-height: calc(100vh - 24px);
     }
 
     .loginModal__card::before {
