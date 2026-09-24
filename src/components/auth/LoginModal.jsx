@@ -18,7 +18,7 @@ const EyeOffIcon = () => (
     </svg>
 );
 
-const LoginModal = ({ onClose, onSuccess, onRegisterClick }) => {
+const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -28,18 +28,48 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick }) => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
+
+        const trimmedUsername = username.trim();
+        const trimmedPassword = password.trim();
+
+        if (!trimmedUsername && !trimmedPassword) {
+            setError('Заполните все поля');
+            return;
+        }
+        if (!trimmedUsername) {
+            setError('Введите логин');
+            return;
+        }
+        if (!trimmedPassword) {
+            setError('Введите пароль');
+            return;
+        }
+
         setLoading(true);
         try {
-            await login(username, password);
+            await login(trimmedUsername, trimmedPassword);
             setTimeout(() => {
                 setLoading(false);
                 onSuccess();
             }, 100);
         } catch (err) {
-            setError('Неверное имя пользователя или пароль');
+            const message =
+                (err && err.message && String(err.message).trim()) ||
+                'Неверное имя пользователя или пароль';
+            setError(message);
             console.error('Login error:', err);
             setLoading(false);
         }
+    };
+
+    const handleUsernameChange = (e) => {
+        setUsername(e.target.value);
+        if (error) setError('');
+    };
+
+    const handlePasswordChange = (e) => {
+        setPassword(e.target.value);
+        if (error) setError('');
     };
 
     const handleBack = () => {
@@ -55,51 +85,60 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick }) => {
                     onClick={handleBack}
                     aria-label="Назад"
                 >
-                    <img 
-                        src={BackIcon} 
-                        alt="Назад" 
+                    <img
+                        src={BackIcon}
+                        alt="Назад"
                         className="loginModal__backIcon"
                     />
                 </button>
 
                 <div className="loginModal__logoWrap">
-                    <img 
-                        src={LogoImage} 
-                        alt="Resume Singularity" 
+                    <img
+                        src={LogoImage}
+                        alt="Resume Singularity"
                         className="loginModal__logoImage"
                     />
                 </div>
 
                 <h2 className="loginModal__heading">Вход</h2>
 
-                <form onSubmit={handleLogin} className="loginModal__form">
+                <form onSubmit={handleLogin} className="loginModal__form" noValidate>
                     <div className="loginModal__inputGroup">
-                        <label htmlFor="loginModal-login">Логин</label>
+                        <label
+                            htmlFor="loginModal-login"
+                            className={error ? 'loginModal__label--error' : undefined}
+                        >
+                            Логин
+                        </label>
                         <div className="loginModal__inputWrap">
                             <input
                                 id="loginModal-login"
                                 type="text"
                                 autoComplete="username"
                                 value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                required
+                                onChange={handleUsernameChange}
                                 disabled={loading}
+                                className={error ? 'loginModal__input--error' : undefined}
                             />
                         </div>
                     </div>
 
                     <div className="loginModal__inputGroup">
-                        <label htmlFor="loginModal-password">Пароль</label>
+                        <label
+                            htmlFor="loginModal-password"
+                            className={error ? 'loginModal__label--error' : undefined}
+                        >
+                            Пароль
+                        </label>
                         <div className="loginModal__inputWrap">
                             <input
                                 id="loginModal-password"
                                 type={showPassword ? 'text' : 'password'}
                                 autoComplete="current-password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
+                                onChange={handlePasswordChange}
                                 disabled={loading}
-                                className="loginModal__inputPassword"
+                                className={`loginModal__inputPassword${error ? ' loginModal__input--error' : ''}`}
                             />
                             <button
                                 type="button"
@@ -114,25 +153,41 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick }) => {
                         </div>
                     </div>
 
-                    {error ? <div className="loginModal__error" role="alert">{error}</div> : null}
-
                     <button type="submit" className="loginModal__primaryBtn" disabled={loading}>
                         {loading ? 'Вход…' : 'Войти'}
                     </button>
                 </form>
 
-                <button 
-                    type="button" 
+                <button
+                    type="button"
                     className="loginModal__registerLink"
                     onClick={onRegisterClick}
                 >
                     <span>Зарегистрироваться</span>
                 </button>
 
-                <a href="#" className="loginModal__forgotLink" onClick={(e) => e.preventDefault()}>
+                <button
+                    type="button"
+                    className="loginModal__forgotLink"
+                    onClick={onForgotClick}
+                >
                     Забыли пароль?
-                </a>
+                </button>
             </div>
+
+            {error ? (
+                <div className="loginModal__error" role="alert">
+                    <span className="loginModal__errorText">{error}</span>
+                    <button
+                        type="button"
+                        className="loginModal__errorClose"
+                        onClick={() => setError('')}
+                        aria-label="Закрыть"
+                    >
+                        ×
+                    </button>
+                </div>
+            ) : null}
         </div>
     );
 };

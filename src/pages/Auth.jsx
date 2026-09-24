@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import LoginModal from '../components/auth/LoginModal.jsx';
 import RegisterModal from '../components/auth/RegisterModal.jsx';
 import RegisterForm from '../components/auth/RegisterForm.jsx';
+import ForgotPasswordModal from '../components/auth/ForgotPasswordModal.jsx';
 import { isAuthenticated } from '../services/authApi.js';
 
 const Auth = () => {
@@ -10,6 +11,9 @@ const Auth = () => {
     const navigate = useNavigate();
 
     const getViewFromUrl = () => {
+        if (location.pathname === '/forgot-password') {
+            return 'forgot-password';
+        }
         if (location.pathname === '/registration') {
             const role = new URLSearchParams(location.search).get('role');
             if (role === 'student') return 'register-student';
@@ -57,6 +61,10 @@ const Auth = () => {
         navigate('/registration?role=recruiter', { replace: true });
     };
 
+    const goToForgotPassword = () => {
+        navigate('/forgot-password', { replace: true });
+    };
+
     const handleRegisterSuccess = (role) => {
         if (role === 'student') {
             alert('Аккаунт создан! Профиль появится у рекрутеров после модерации администратором.');
@@ -66,12 +74,22 @@ const Auth = () => {
         goToLogin();
     };
 
+    if (view === 'forgot-password') {
+        return (
+            <ForgotPasswordModal
+                onBack={goToLogin}
+                onClose={handleClose}
+            />
+        );
+    }
+
     if (view === 'login') {
         return (
             <LoginModal
                 onClose={handleClose}
                 onSuccess={handleLoginSuccess}
                 onRegisterClick={goToRegister}
+                onForgotClick={goToForgotPassword}
             />
         );
     }
