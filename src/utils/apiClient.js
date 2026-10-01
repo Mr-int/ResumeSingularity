@@ -6,8 +6,9 @@ const clearAuthAndRedirect = () => {
     localStorage.removeItem('isAuthenticated_time');
     sessionStorage.setItem('showLoginAfter403', 'true');
     window.dispatchEvent(new CustomEvent('resume:auth-required'));
-    if (!window.location.pathname.startsWith('/students')) {
-        window.location.href = '/students';
+    const path = window.location.pathname;
+    if (!path.startsWith('/login') && !path.startsWith('/registration')) {
+        window.location.href = '/login';
     }
 };
 
@@ -108,7 +109,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
         console.error('[API] Full URL was:', url);
 
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${window.location.origin}/api/`);
+            throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${API_BASE_URL}`);
         }
 
         if (error.message.includes('401') || error.message.includes('Unauthorized')) {

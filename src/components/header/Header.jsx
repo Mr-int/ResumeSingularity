@@ -53,7 +53,11 @@ const Header = () => {
                                 выйти
                             </button>
                         </>
-                    ) : null}
+                    ) : (
+                        <Link to="/login" className="header__navLink">
+                            войти
+                        </Link>
+                    )}
                     <Link to="/students" className="header__search">
                     <span className="header__searchBtn">
                         <span className="header__searchBtnWhite">найти стажера</span>
@@ -139,7 +143,15 @@ const Header = () => {
                             выйти
                         </button>
                     </>
-                ) : null}
+                ) : (
+                    <Link
+                        to="/login"
+                        className="header__mobileBtn"
+                        onClick={handleMobileLinkClick}
+                    >
+                        войти
+                    </Link>
+                )}
             </div>
         </header>
     )

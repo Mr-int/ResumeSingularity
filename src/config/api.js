@@ -1,10 +1,13 @@
-export const API_BASE_URL = '/api/';
+const withTrailingSlash = (url) => (url.endsWith('/') ? url : `${url}/`);
 
-/**
- * Получить URL изображения через эндпоинт /main/photo/{image_path}
- * @param {string} imagePath - Путь к изображению из поля imagePath в теле ответа
- * @returns {string} Полный URL изображения
- */
+const defaultApiBase = import.meta.env.DEV
+    ? '/api/v1/'
+    : 'https://singularity-resume.ru/api/v1/';
+
+export const API_BASE_URL = withTrailingSlash(
+    import.meta.env.VITE_API_BASE_URL || defaultApiBase,
+);
+
 export const getImageUrl = (imagePath) => {
     if (!imagePath) return null;
 
@@ -15,4 +18,3 @@ export const getImageUrl = (imagePath) => {
     const cleanPath = imagePath.startsWith('/') ? imagePath.slice(1) : imagePath;
     return `${API_BASE_URL}main/photo/${cleanPath}`;
 };
-

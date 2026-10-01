@@ -7,6 +7,7 @@ import Settings from "./pages/Settings.jsx";
 import Chats from "./pages/Chats.jsx";
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
+import Auth from './pages/Auth.jsx';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -33,6 +34,9 @@ const AppRoutes = () => {
       <>
         <Routes>
           <Route path='/' element={<Home />} />
+          <Route path='/login' element={<Auth />} />
+          <Route path='/registration' element={<Auth />} />
+          <Route path='/forgot-password' element={<Auth />} />
           <Route path='/students' element={
             <ProtectedRoute>
               <Students />
