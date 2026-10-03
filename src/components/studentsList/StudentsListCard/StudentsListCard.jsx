@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 import { Link } from "react-router-dom";
 import './studentsListCard.css';
+import { getImageUrl } from "../../../config/api.js";
+
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
 
 const StudentsListCard = ({ student }) => {
     const [showFullBio, setShowFullBio] = useState(false);
@@ -15,18 +17,22 @@ const StudentsListCard = ({ student }) => {
 
         const imagePath = studentData.imagePath || studentData.image || studentData.photo;
 
-        if (!imagePath) return PLACEHOLDER_AVATAR;
-
-        if (imagePath.startsWith('http')) {
+        if (imagePath && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
             return imagePath;
         }
 
-        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
+        if (imagePath) {
+            const url = getImageUrl(imagePath);
+            if (url) return url;
+        }
+
         const studentId = studentData.id;
+        if (studentId) {
+            const url = getImageUrl(`${studentId}.jpg`);
+            if (url) return url;
+        }
 
-        if (!studentId) return PLACEHOLDER_AVATAR;
-
-        return `${baseUrl}/${studentId}.jpg`;
+        return PLACEHOLDER_AVATAR;
     };
 
     const getCourseNumber = (course) => {
@@ -54,7 +60,6 @@ const StudentsListCard = ({ student }) => {
     const imageSrc = getStudentImageUrl(student);
     const courseNumber = getCourseNumber(student.course);
 
-    // ~3 строки в блоке описания (line-clamp: 3, ~70–80 символов на строку)
     const MAX_BIO_PREVIEW_LENGTH = 220;
 
     const truncateAtWord = (text, maxLen) => {
@@ -63,9 +68,7 @@ const StudentsListCard = ({ student }) => {
         const lastSpace = truncated.lastIndexOf(' ');
         const cutIndex = lastSpace > 0 ? lastSpace : maxLen;
         let result = text.substring(0, cutIndex).trim();
-        // убираем запятую и др. в конце
         result = result.replace(/[,\s;:]+$/, '').trim();
-        // убираем точки в конце — перед ссылкой будут ровно три точки
         result = result.replace(/\.+$/, '').trim();
         return result;
     };
@@ -78,7 +81,7 @@ const StudentsListCard = ({ student }) => {
         : 'Описание отсутствует';
 
     const maxVisibleSkills = 5;
-    const showAllIfOneRemaining = student.skills && student.skills.length === maxVisibleSkills + 1; // 6 скиллов — показываем все
+    const showAllIfOneRemaining = student.skills && student.skills.length === maxVisibleSkills + 1;
     const skills = student.skills && student.skills.length > 0
         ? student.skills.slice(0, showAllIfOneRemaining ? student.skills.length : maxVisibleSkills)
         : [{ id: 1, name: 'Навыки не указаны' }];
