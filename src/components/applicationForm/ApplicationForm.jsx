@@ -32,7 +32,6 @@ const normalizePhoneForApi = (raw) => {
     return digits;
 };
 
-/** Маска как в демо: РФ 7/8/9 → +7/8 (___) ___-__-__, иначе до +16 цифр. */
 const formatPhoneDisplay = (inputNumbersValue) => {
     if (!inputNumbersValue) return '';
     let nums = inputNumbersValue;
