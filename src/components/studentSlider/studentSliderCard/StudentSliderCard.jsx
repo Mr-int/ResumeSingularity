@@ -1,6 +1,8 @@
 import React from "react";
 import './studentSliderCard.css';
+
 const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Ccircle fill='%23444' cx='100' cy='100' r='100'/%3E%3Ccircle fill='%23666' cx='100' cy='82' r='28'/%3E%3Cellipse fill='%23666' cx='100' cy='165' rx='45' ry='38'/%3E%3C/svg%3E";
+
 import javaIcon from "../../../assets/specialities/java.png";
 import pythonIcon from "../../../assets/specialities/python.png";
 import designIcon from "../../../assets/specialities/design.png";
@@ -9,6 +11,8 @@ import analyticsIcon from "../../../assets/specialities/dataAnalyst.png";
 import managementIcon from "../../../assets/specialities/management.png";
 import projectManagerIcon from "../../../assets/specialities/projectManager.png";
 import marketingIcon from "../../../assets/specialities/marketing.png";
+
+import { getImageUrl } from "../../../config/api.js";
 
 const StudentSliderCard = ({ student, isActive, onClick }) => {
     if (!student) {
@@ -22,18 +26,22 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
 
         const imagePath = studentData.imagePath || studentData.image || studentData.photo;
 
-        if (!imagePath) return PLACEHOLDER_AVATAR;
-
-        if (imagePath.startsWith('http')) {
+        if (imagePath && (imagePath.startsWith('http://') || imagePath.startsWith('https://'))) {
             return imagePath;
         }
 
-        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
+        if (imagePath) {
+            const url = getImageUrl(imagePath);
+            if (url) return url;
+        }
+
         const studentId = studentData.id;
+        if (studentId) {
+            const url = getImageUrl(`${studentId}.jpg`);
+            if (url) return url;
+        }
 
-        if (!studentId) return PLACEHOLDER_AVATAR;
-
-        return `${baseUrl}/${studentId}.jpg`;
+        return PLACEHOLDER_AVATAR;
     };
 
     const getCourseNumber = (course) => {
@@ -95,7 +103,6 @@ const StudentSliderCard = ({ student, isActive, onClick }) => {
         }
 
         if (specLower.includes('дизайнер') || specLower.includes('design') ||
-            
             specLower.includes('таргетолог') || specLower.includes('target')) {
             return designIcon;
         }
