@@ -41,5 +41,5 @@ jobs:
 
             cd "$PROJECT_DIR"
 
-            docker compose up -d --build "$SERVICE"
+            docker compose up -d --build --force-recreate "$SERVICE"
             docker compose ps "$SERVICE"
