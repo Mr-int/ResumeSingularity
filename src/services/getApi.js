@@ -36,25 +36,31 @@ const fetchJsonSafe = async (url, options) => {
     }
 };
 
-/** Справочник специальностей для формы регистрации (без сброса сессии при 401). */
+/** Справочник специальностей: POST /speciality/filter, страница в query, тело фильтра пустое. */
 export const getSpecialitiesForRegistration = async () => {
-    const publicRes = await fetchJsonSafe(
-        `${API_BASE_URL}public/registration/specialities?page=0&size=200`,
-        { method: 'GET' },
-    );
-    let rows = catalogRows(publicRes);
-    if (rows.length) return rows;
+    const pageSize = 200;
+    const byId = new Map();
+    let page = 0;
+    let totalPages = 1;
 
-    const filterRes = await fetchJsonSafe(`${API_BASE_URL}speciality/filter?page=0&size=200`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-    });
-    rows = catalogRows(filterRes);
-    if (rows.length) return rows;
+    while (page < totalPages && page < 20) {
+        const response = await fetchJsonSafe(
+            `${API_BASE_URL}speciality/filter?page=${page}&size=${pageSize}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({}),
+            },
+        );
+        for (const item of catalogRows(response)) {
+            if (item?.id != null) byId.set(String(item.id), item);
+        }
+        totalPages = typeof response?.totalPages === 'number' ? response.totalPages : 1;
+        page += 1;
+        if (!response) break;
+    }
 
-    const listRes = await fetchJsonSafe(`${API_BASE_URL}speciality`, { method: 'GET' });
-    return catalogRows(listRes);
+    return Array.from(byId.values());
 };
 
 // ---- Dictionaries / entities ----

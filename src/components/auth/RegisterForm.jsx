@@ -7,6 +7,7 @@ import {
     registerStudent,
     resendEmailConfirmation,
 } from '../../services/authApi.js';
+import { patchStudentMe } from '../../services/accountApi.js';
 import { getSpecialitiesForRegistration } from '../../services/getApi.js';
 import './registerForm.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
@@ -20,6 +21,12 @@ const CAMPUS_OPTIONS = [
 ];
 
 const COURSE_OPTIONS = [1, 2, 3, 4];
+const COURSE_API = {
+    1: 'FIRST',
+    2: 'SECOND',
+    3: 'THIRD',
+    4: 'FOURTH',
+};
 const CODE_LENGTH = 4;
 const MESSAGE_TIMEOUT = 3000;
 const MESSAGE_LEAVE_DURATION = 300;
@@ -157,24 +164,23 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     });
 
     const registerStudentAccount = async () => {
-        if (studentAccountCreated) {
-            setStep(5);
-            return;
-        }
-
         setLoading(true);
         try {
             const email = formData.email.trim();
-            await registerStudent({
-                ...accountPayload(),
-                birthDate: formData.birthDate,
-                campus: formData.campus,
-                city: formData.campus,
+            if (!studentAccountCreated) {
+                await registerStudent({
+                    ...accountPayload(),
+                    city: formData.campus,
+                });
+                markEmailConfirmationPending(email);
+                setStudentAccountCreated(true);
+            }
+            await patchStudentMe({
                 specialityId: Number(formData.specialityId),
-                course: Number(formData.course),
+                course: COURSE_API[Number(formData.course)],
+                birthDate: formData.birthDate,
+                city: formData.campus,
             });
-            markEmailConfirmationPending(email);
-            setStudentAccountCreated(true);
             setCode(['', '', '', '']);
             setStep(5);
         } catch (err) {
