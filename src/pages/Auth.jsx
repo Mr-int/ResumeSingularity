@@ -4,7 +4,7 @@ import LoginModal from '../components/auth/LoginModal.jsx';
 import RegisterModal from '../components/auth/RegisterModal.jsx';
 import RegisterForm from '../components/auth/RegisterForm.jsx';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal.jsx';
-import { isAuthenticated } from '../services/authApi.js';
+import { EMAIL_CONFIRMATION_PENDING_KEY, isAuthenticated } from '../services/authApi.js';
 
 const Auth = () => {
     const location = useLocation();
@@ -29,7 +29,10 @@ const Auth = () => {
         setView(getViewFromUrl());
     }, [location.pathname, location.search]);
 
-    if (isAuthenticated()) {
+    const emailConfirmationPending = sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
+    const stayForEmailConfirmation = location.pathname === '/registration' && emailConfirmationPending;
+
+    if (isAuthenticated() && !stayForEmailConfirmation) {
         const from = location.state?.from;
         const dest = from && from !== '/login' && from !== '/registration' ? from : '/students';
         return <Navigate to={dest} replace />;
