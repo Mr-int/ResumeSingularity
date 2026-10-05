@@ -5,9 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_BASE_PATH: /
     container_name: resume-singularity-web
     ports:
-      - "80:80"
+      - "5371:80"
     environment:
       - NODE_ENV=production
     restart: unless-stopped
@@ -17,4 +19,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
