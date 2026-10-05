@@ -1,6 +1,9 @@
 import { API_BASE_URL } from '../config/api.js';
 
 const AUTH_FLAG_KEY = 'isAuthenticated';
+/** Пока студент не подтвердил почту, /registration не должен сбрасывать его из‑за cookie. */
+export const EMAIL_CONFIRMATION_PENDING_KEY = 'resume:email-confirmation-pending';
+export const EMAIL_CONFIRMATION_EMAIL_KEY = 'resume:email-confirmation-email';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
 
@@ -199,6 +202,91 @@ export const registerRecruiter = async (body) => {
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
+    }
+    return {};
+};
+
+const parseAuthError = async (response) => {
+    const text = await response.text();
+    let msg = text;
+    try {
+        msg = JSON.parse(text).message || text;
+    } catch {
+        /* empty */
+    }
+    const err = new Error(msg || `Ошибка ${response.status}`);
+    err.status = response.status;
+    return err;
+};
+
+/**
+ * POST /auth/confirm-email
+ * @param {string} code
+ */
+export const confirmEmail = async (code) => {
+    const url = `${API_BASE_URL}auth/confirm-email`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/resend-email-confirmation
+ */
+export const resendEmailConfirmation = async () => {
+    const url = `${API_BASE_URL}auth/resend-email-confirmation`;
+    const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/forgot-password
+ */
+export const forgotPassword = async (email) => {
+    const url = `${API_BASE_URL}auth/forgot-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/reset-password
+ */
+export const resetPassword = async ({ email, code, newPassword, passwordConfirm }) => {
+    const url = `${API_BASE_URL}auth/reset-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+            email,
+            code,
+            newPassword,
+            passwordConfirm,
+        }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
     }
     return {};
 };

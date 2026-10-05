@@ -1,8 +1,10 @@
+import { APP_BASE_URL } from '../utils/appBase.js';
+
 const withTrailingSlash = (url) => (url.endsWith('/') ? url : `${url}/`);
 
 const defaultApiBase = import.meta.env.DEV
     ? '/api/v1/'
-    : 'https://singularity-resume.ru/api/v1/';
+    : `${APP_BASE_URL}api/v1/`;
 
 export const API_BASE_URL = withTrailingSlash(
     import.meta.env.VITE_API_BASE_URL || defaultApiBase,

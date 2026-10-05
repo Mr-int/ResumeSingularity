@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api.js';
 import { refreshSession } from '../services/authApi.js';
+import { appPath } from './appBase.js';
 
 const clearAuthAndRedirect = () => {
     localStorage.removeItem('isAuthenticated');
@@ -7,8 +8,10 @@ const clearAuthAndRedirect = () => {
     sessionStorage.setItem('showLoginAfter403', 'true');
     window.dispatchEvent(new CustomEvent('resume:auth-required'));
     const path = window.location.pathname;
-    if (!path.startsWith('/login') && !path.startsWith('/registration')) {
-        window.location.href = '/login';
+    const loginPath = appPath('login');
+    const registrationPath = appPath('registration');
+    if (!path.startsWith(loginPath) && !path.startsWith(registrationPath)) {
+        window.location.href = loginPath;
     }
 };
 
