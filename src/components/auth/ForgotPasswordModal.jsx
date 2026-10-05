@@ -3,9 +3,11 @@ import './forgotPasswordModal.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
 import EmailIcon from '../../assets/icons/email.svg';
+import { forgotPassword, resetPassword } from '../../services/authApi.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_LENGTH = 4;
+const MIN_PASSWORD_LENGTH = 12;
 const MESSAGE_TIMEOUT = 3000;
 const MESSAGE_LEAVE_DURATION = 300;
 
@@ -25,7 +27,9 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
 
     const hideTimerRef = useRef(null);
     const removeTimerRef = useRef(null);
+    const redirectTimerRef = useRef(null);
     const codeRowRef = useRef(null);
+    const [passwordSaved, setPasswordSaved] = useState(false);
 
     const clearMessageTimers = () => {
         if (hideTimerRef.current) {
@@ -36,6 +40,19 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
             clearTimeout(removeTimerRef.current);
             removeTimerRef.current = null;
         }
+    };
+
+    const clearRedirectTimer = () => {
+        if (redirectTimerRef.current) {
+            clearTimeout(redirectTimerRef.current);
+            redirectTimerRef.current = null;
+        }
+    };
+
+    const leaveFlow = () => {
+        clearRedirectTimer();
+        if (onBack) onBack();
+        else if (onClose) onClose();
     };
 
     const showMessage = (type, text) => {
@@ -54,7 +71,10 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
     };
 
     useEffect(() => {
-        return () => clearMessageTimers();
+        return () => {
+            clearMessageTimers();
+            clearRedirectTimer();
+        };
     }, []);
 
     const setErrorAndShow = (text) => {
@@ -95,7 +115,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
 
         setLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 600));
+            await forgotPassword(trimmedEmail);
             setStep(2);
             setCode(['', '', '', '']);
             setInfoAndShow(`Код отправлен на ${trimmedEmail}`);
@@ -114,7 +134,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         setInfo('');
         setLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 600));
+            await forgotPassword(email.trim());
             setInfoAndShow(`Код повторно отправлен на ${email}`);
         } catch (err) {
             const message =
@@ -126,39 +146,35 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         }
     };
 
-    const handleConfirmCode = async (codeArray) => {
+    const handleConfirmCode = (codeArray) => {
         setError('');
         setInfo('');
 
         const source = codeArray || code;
         const fullCode = source.join('').trim();
 
-        if (fullCode.length < CODE_LENGTH) {
-            setErrorAndShow('Введите код полностью');
+        if (!/^\d{4}$/.test(fullCode)) {
+            setErrorAndShow('Введите код из 4 цифр');
             return;
         }
 
-        setLoading(true);
-        try {
-            await new Promise((resolve) => setTimeout(resolve, 600));
-            setStep(3);
-            setInfoAndShow('Код подтверждён. Придумайте новый пароль.');
-        } catch (err) {
-            const message =
-                (err && err.message && String(err.message).trim()) ||
-                'Неверный код';
-            setErrorAndShow(message);
-        } finally {
-            setLoading(false);
-        }
+        setStep(3);
     };
 
     const handleSavePassword = async () => {
+        if (loading || passwordSaved) return;
+
         setError('');
         setInfo('');
 
-        if (password.length < 4) {
-            setErrorAndShow('Пароль должен быть не менее 4 символов');
+        if (password.length < MIN_PASSWORD_LENGTH) {
+            setErrorAndShow(`Пароль должен быть не короче ${MIN_PASSWORD_LENGTH} символов`);
+            return;
+        }
+        const hasLetter = [...password].some((ch) => /\p{L}/u.test(ch));
+        const hasDigit = [...password].some((ch) => /\d/.test(ch));
+        if (!hasLetter || !hasDigit) {
+            setErrorAndShow('Пароль должен содержать букву и цифру');
             return;
         }
         if (password !== passwordConfirm) {
@@ -168,12 +184,15 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
 
         setLoading(true);
         try {
-            await new Promise((resolve) => setTimeout(resolve, 600));
+            await resetPassword({
+                email: email.trim(),
+                code: code.join('').trim(),
+                newPassword: password,
+                passwordConfirm,
+            });
+            setPasswordSaved(true);
             setInfoAndShow('Пароль успешно изменён. Теперь войдите с новым паролем.');
-            setTimeout(() => {
-                if (onBack) onBack();
-                else if (onClose) onClose();
-            }, 1800);
+            redirectTimerRef.current = setTimeout(leaveFlow, 1800);
         } catch (err) {
             const message =
                 (err && err.message && String(err.message).trim()) ||
@@ -228,7 +247,6 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
             focusCodeInput(lastFilled + 1);
         } else {
             focusCodeInput(CODE_LENGTH - 1);
-            handleConfirmCode(next);
         }
     };
 
@@ -261,7 +279,8 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         }
     };
 
-    const handleCodeRowClick = () => {
+    const handleCodeRowClick = (e) => {
+        if (e.target.closest('input')) return;
         const firstEmpty = code.findIndex((d) => !d);
         const target = firstEmpty === -1 ? CODE_LENGTH - 1 : firstEmpty;
         focusCodeInput(target);
@@ -279,15 +298,14 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         setCode(next);
         clearMessages();
 
-        if (pasted.length === CODE_LENGTH) {
-            focusCodeInput(CODE_LENGTH - 1);
-            handleConfirmCode(next);
-        } else {
-            focusCodeInput(Math.min(pasted.length, CODE_LENGTH - 1));
-        }
+        focusCodeInput(Math.min(pasted.length, CODE_LENGTH) - 1);
     };
 
     const handleBack = () => {
+        if (passwordSaved) {
+            leaveFlow();
+            return;
+        }
         if (step === 3) {
             setStep(2);
             setCode(['', '', '', '']);
@@ -421,6 +439,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                         onChange={(e) => handleCodeChange(index, e.target.value)}
                                         onKeyDown={(e) => handleCodeKeyDown(index, e)}
                                         onPaste={handleCodePaste}
+                                        onClick={(e) => e.stopPropagation()}
                                         onFocus={(e) => e.target.select()}
                                         disabled={loading}
                                         className={
@@ -432,6 +451,15 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                     />
                                 ))}
                             </div>
+
+                            <button
+                                type="button"
+                                className="forgotModal__primaryBtn"
+                                onClick={() => handleConfirmCode()}
+                                disabled={loading}
+                            >
+                                Далее
+                            </button>
 
                             <button
                                 type="button"
@@ -495,7 +523,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                 type="button"
                                 className="forgotModal__primaryBtn"
                                 onClick={handleSavePassword}
-                                disabled={loading}
+                                disabled={loading || passwordSaved}
                             >
                                 {loading ? 'Сохранение…' : 'Сохранить пароль'}
                             </button>

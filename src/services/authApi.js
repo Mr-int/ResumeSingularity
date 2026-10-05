@@ -203,6 +203,58 @@ export const registerRecruiter = async (body) => {
     return {};
 };
 
+const parseAuthError = async (response) => {
+    const text = await response.text();
+    let msg = text;
+    try {
+        msg = JSON.parse(text).message || text;
+    } catch {
+        /* empty */
+    }
+    const err = new Error(msg || `Ошибка ${response.status}`);
+    err.status = response.status;
+    return err;
+};
+
+/**
+ * POST /auth/forgot-password
+ */
+export const forgotPassword = async (email) => {
+    const url = `${API_BASE_URL}auth/forgot-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/reset-password
+ */
+export const resetPassword = async ({ email, code, newPassword, passwordConfirm }) => {
+    const url = `${API_BASE_URL}auth/reset-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+            email,
+            code,
+            newPassword,
+            passwordConfirm,
+        }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
 /**
  * POST /auth/refresh
  */
