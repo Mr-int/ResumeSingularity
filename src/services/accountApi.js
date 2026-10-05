@@ -1,5 +1,6 @@
     import { apiClientJson } from '../utils/apiClient.js';
     import { API_BASE_URL } from '../config/api.js';
+    import { appPath } from '../utils/appBase.js';
 
     /** PATCH /student/{id} — частичное обновление профиля студента */
     export const patchStudent = (studentId, body) =>
@@ -33,7 +34,7 @@
         if (response.status === 401) {
             localStorage.removeItem('isAuthenticated');
             localStorage.removeItem('isAuthenticated_time');
-            window.location.href = '/login';
+            window.location.href = appPath('login');
             throw new Error('HTTP error! status: 401 - Unauthorized');
         }
 

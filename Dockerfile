@@ -15,6 +15,10 @@ RUN npm ci --only=production=false
 # Копируем весь код
 COPY . .
 
+# `/` — основной сайт, `/plt/` — тестовый контур за тем же доменом
+ARG VITE_BASE_PATH=/
+ENV VITE_BASE_PATH=$VITE_BASE_PATH
+
 # Собираем приложение для production
 RUN npm run build
 

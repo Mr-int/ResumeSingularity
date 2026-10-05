@@ -8,6 +8,7 @@ import Chats from "./pages/Chats.jsx";
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 import Auth from './pages/Auth.jsx';
+import { routerBasename } from './utils/appBase.js';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -72,7 +73,7 @@ const AppRoutes = () => {
 
 function App() {
   return (
-    <Router>
+    <Router basename={routerBasename}>
         <AppRoutes />
     </Router>
   )
