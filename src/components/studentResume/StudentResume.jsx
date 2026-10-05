@@ -21,6 +21,7 @@ import ApplicationForm from "../applicationForm/ApplicationForm.jsx";
 import numbersImg from "../../assets/other/numbers.png";
 import sunIcon from "../../assets/other/sun.png";
 import cloudMailIcon from "../../assets/other/cloudMail.png";
+import { API_BASE_URL } from "../../config/api.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import { formatExperiencePeriodText } from "../../utils/formatExperiencePeriod.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
@@ -239,7 +240,7 @@ const StudentResume = () => {
             return imagePath;
         }
 
-        const baseUrl = 'https://api.singularity-resume.ru/main/photo';
+        const baseUrl = `${API_BASE_URL}main/photo`;
         const studentId = id;
         return `${baseUrl}/${studentId}.jpg`;
     };

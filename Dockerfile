@@ -15,9 +15,12 @@ RUN npm ci --only=production=false
 # Копируем весь код
 COPY . .
 
-# `/` — основной сайт, `/plt/` — тестовый контур за тем же доменом
+# `/` — основной сайт, `/plt/` — тестовый контур за тем же доменом.
+# Пустой VITE_API_BASE_URL: API берётся от префикса (`/api/v1/` или `/plt/api/v1/`).
 ARG VITE_BASE_PATH=/
+ARG VITE_API_BASE_URL=/
 ENV VITE_BASE_PATH=$VITE_BASE_PATH
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # Собираем приложение для production
 RUN npm run build
