@@ -68,11 +68,12 @@ const Auth = () => {
         navigate('/forgot-password', { replace: true });
     };
 
-    const handleRegisterSuccess = (role) => {
+    const handleRegisterSuccess = (role, username) => {
+        const loginLine = username ? ` Логин для входа: ${username}.` : '';
         if (role === 'student') {
-            alert('Аккаунт создан! Профиль появится у рекрутеров после модерации администратором.');
+            alert(`Аккаунт создан! Профиль появится у рекрутеров после модерации администратором.${loginLine}`);
         } else {
-            alert('Заявка на регистрацию принята. Вход будет доступен после одобрения администратором.');
+            alert(`Заявка на регистрацию принята. Вход будет доступен после одобрения администратором.${loginLine}`);
         }
         goToLogin();
     };

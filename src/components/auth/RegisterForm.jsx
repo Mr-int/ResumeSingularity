@@ -7,8 +7,13 @@ import {
     registerStudent,
     resendEmailConfirmation,
 } from '../../services/authApi.js';
+import {
+    isUsernameTakenError,
+    normalizePhoneNumber,
+    usernameFromName,
+    usernameWithSuffix,
+} from '../../utils/registrationIdentity.js';
 import { patchStudentMe } from '../../services/accountApi.js';
-import { getSpecialitiesForRegistration } from '../../services/getApi.js';
 import './registerForm.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -34,14 +39,18 @@ const MESSAGE_LEAVE_DURATION = 300;
 const emailConfirmationPending = () =>
     sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
 
-const markEmailConfirmationPending = (email) => {
+const ASSIGNED_USERNAME_KEY = 'resume:registration-username';
+
+const markEmailConfirmationPending = (email, username) => {
     sessionStorage.setItem(EMAIL_CONFIRMATION_PENDING_KEY, '1');
     sessionStorage.setItem(EMAIL_CONFIRMATION_EMAIL_KEY, email);
+    sessionStorage.setItem(ASSIGNED_USERNAME_KEY, username);
 };
 
 const clearEmailConfirmationPending = () => {
     sessionStorage.removeItem(EMAIL_CONFIRMATION_PENDING_KEY);
     sessionStorage.removeItem(EMAIL_CONFIRMATION_EMAIL_KEY);
+    sessionStorage.removeItem(ASSIGNED_USERNAME_KEY);
 };
 
 const RegisterForm = ({ role, onBack, onSuccess }) => {
@@ -51,7 +60,9 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [studentAccountCreated, setStudentAccountCreated] = useState(pendingOnOpen);
-    const [specialties, setSpecialties] = useState([]);
+    const [assignedUsername, setAssignedUsername] = useState(
+        pendingOnOpen ? (sessionStorage.getItem(ASSIGNED_USERNAME_KEY) || '') : '',
+    );
     const [code, setCode] = useState(['', '', '', '']);
     const codeRowRef = useRef(null);
 
@@ -70,8 +81,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         middleName: '',
         noMiddleName: false,
         birthDate: '',
+        phoneNumber: '',
         course: '',
-        specialityId: '',
         campus: '',
         companyName: '',
         city: '',
@@ -119,30 +130,6 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         return () => clearMessageTimers();
     }, []);
 
-    useEffect(() => {
-        if (role === 'student') {
-            let cancelled = false;
-            (async () => {
-                try {
-                    const data = await getSpecialitiesForRegistration();
-                    if (cancelled) return;
-                    const normalized = data
-                        .map((item) => ({
-                            id: String(item.id),
-                            name: item.name || item.specialityName || `Специальность ${item.id}`,
-                        }))
-                        .filter((item) => item.id && item.name)
-                        .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-                    setSpecialties(normalized);
-                } catch (err) {
-                    console.error('Failed to load specialities:', err);
-                    if (!cancelled) setSpecialties([]);
-                }
-            })();
-            return () => { cancelled = true; };
-        }
-    }, [role]);
-
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
@@ -153,8 +140,10 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         clearMessage();
     };
 
-    const accountPayload = () => ({
-        username: formData.email.trim(),
+    const loginPreview = assignedUsername || usernameFromName(formData.lastName, formData.firstName);
+
+    const accountPayload = (username) => ({
+        username,
         password: formData.password,
         passwordConfirm: formData.passwordConfirm,
         firstName: formData.firstName.trim(),
@@ -163,20 +152,38 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         email: formData.email.trim(),
     });
 
+    const registerWithFreeUsername = async (submit) => {
+        const base = usernameFromName(formData.lastName, formData.firstName);
+        let lastError = null;
+        for (let attempt = 1; attempt <= 20; attempt += 1) {
+            const username = usernameWithSuffix(base, attempt);
+            try {
+                await submit(username);
+                setAssignedUsername(username);
+                return username;
+            } catch (err) {
+                lastError = err;
+                if (!isUsernameTakenError(err) || attempt === 20) throw err;
+            }
+        }
+        throw lastError;
+    };
+
     const registerStudentAccount = async () => {
         setLoading(true);
         try {
             const email = formData.email.trim();
+            const phoneNumber = normalizePhoneNumber(formData.phoneNumber);
             if (!studentAccountCreated) {
-                await registerStudent({
-                    ...accountPayload(),
+                const username = await registerWithFreeUsername((login) => registerStudent({
+                    ...accountPayload(login),
                     city: formData.campus,
-                });
-                markEmailConfirmationPending(email);
+                    phoneNumber,
+                }));
+                markEmailConfirmationPending(email, username);
                 setStudentAccountCreated(true);
             }
             await patchStudentMe({
-                specialityId: Number(formData.specialityId),
                 course: COURSE_API[Number(formData.course)],
                 birthDate: formData.birthDate,
                 city: formData.campus,
@@ -195,13 +202,12 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     const submitRecruiter = async () => {
         setLoading(true);
         try {
-            await registerRecruiter({
-                ...accountPayload(),
+            const username = await registerWithFreeUsername((login) => registerRecruiter({
+                ...accountPayload(login),
                 companyName: formData.companyName.trim(),
                 city: formData.city.trim(),
-                phoneNumber: '',
-            });
-            onSuccess(role);
+            }));
+            onSuccess(role, username);
         } catch (err) {
             const message = err.message || 'Не удалось отправить данные';
             setError(message);
@@ -222,7 +228,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         try {
             await confirmEmail(fullCode);
             clearEmailConfirmationPending();
-            onSuccess(role);
+            onSuccess(role, assignedUsername || loginPreview);
         } catch (err) {
             const message = err.message || 'Неверный код';
             setError(message);
@@ -362,6 +368,10 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 setErrorAndShow('Укажите дату рождения');
                 return;
             }
+            if (isStudent && !normalizePhoneNumber(formData.phoneNumber)) {
+                setErrorAndShow('Введите телефон: от 7 до 15 цифр, можно с + в начале');
+                return;
+            }
             setStep(3);
             return;
         }
@@ -395,7 +405,6 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         if (step === 4) {
             if (isStudent) {
                 if (!formData.course) { setErrorAndShow('Выберите курс'); return; }
-                if (!formData.specialityId) { setErrorAndShow('Выберите направление'); return; }
                 if (!formData.campus) { setErrorAndShow('Выберите кампус'); return; }
                 registerStudentAccount();
                 return;
@@ -507,16 +516,32 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
 
                         {isStudent && (
-                            <div className="registerForm__inputGroup">
-                                <label>Дата рождения</label>
-                                <input
-                                    type="date"
-                                    name="birthDate"
-                                    value={formData.birthDate}
-                                    onChange={handleChange}
-                                    disabled={loading}
-                                />
-                            </div>
+                            <>
+                                <div className="registerForm__inputGroup">
+                                    <label>Дата рождения</label>
+                                    <input
+                                        type="date"
+                                        name="birthDate"
+                                        value={formData.birthDate}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                    />
+                                </div>
+                                <div className="registerForm__inputGroup">
+                                    <label htmlFor="registerForm-phone">Телефон</label>
+                                    <input
+                                        id="registerForm-phone"
+                                        type="tel"
+                                        name="phoneNumber"
+                                        autoComplete="tel"
+                                        inputMode="tel"
+                                        placeholder="+79991234567"
+                                        value={formData.phoneNumber}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                    />
+                                </div>
+                            </>
                         )}
                     </>
                 );
@@ -558,14 +583,6 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 <select name="course" value={formData.course} onChange={handleChange} disabled={loading}>
                                     <option value="">Выберите курс</option>
                                     {COURSE_OPTIONS.map(c => <option key={c} value={c}>{c} курс</option>)}
-                                </select>
-                            </div>
-
-                            <div className="registerForm__inputGroup">
-                                <label>Направление (Специальность)</label>
-                                <select name="specialityId" value={formData.specialityId} onChange={handleChange} disabled={loading}>
-                                    <option value="">Выберите направление</option>
-                                    {specialties.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                 </select>
                             </div>
 
@@ -680,6 +697,12 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
 
                 <div className="registerForm__form">
                     {renderStepContent()}
+
+                    {step >= 3 && loginPreview ? (
+                        <p className="registerForm__subheading">
+                            Логин для входа: {loginPreview}
+                        </p>
+                    ) : null}
 
                     <button
                         type="button"

@@ -19,50 +19,6 @@ export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { metho
 export const getRecruiterMe = () =>
     apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true });
 
-const catalogRows = (json) => {
-    if (Array.isArray(json)) return json;
-    if (Array.isArray(json?.data)) return json.data;
-    if (Array.isArray(json?.content)) return json.content;
-    return [];
-};
-
-const fetchJsonSafe = async (url, options) => {
-    const response = await fetch(url, { credentials: 'include', ...options });
-    if (!response.ok) return null;
-    try {
-        return await response.json();
-    } catch {
-        return null;
-    }
-};
-
-/** Справочник специальностей: POST /speciality/filter, страница в query, тело фильтра пустое. */
-export const getSpecialitiesForRegistration = async () => {
-    const pageSize = 200;
-    const byId = new Map();
-    let page = 0;
-    let totalPages = 1;
-
-    while (page < totalPages && page < 20) {
-        const response = await fetchJsonSafe(
-            `${API_BASE_URL}speciality/filter?page=${page}&size=${pageSize}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({}),
-            },
-        );
-        for (const item of catalogRows(response)) {
-            if (item?.id != null) byId.set(String(item.id), item);
-        }
-        totalPages = typeof response?.totalPages === 'number' ? response.totalPages : 1;
-        page += 1;
-        if (!response) break;
-    }
-
-    return Array.from(byId.values());
-};
-
 // ---- Dictionaries / entities ----
 export const getSpecialityById = (id) => apiClientJson(`speciality/${id}`, { method: 'GET' });
 export const getSkillById = (id) => apiClientJson(`skill/${id}`, { method: 'GET' });
