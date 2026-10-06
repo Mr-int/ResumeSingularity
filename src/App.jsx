@@ -9,6 +9,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 import Auth from './pages/Auth.jsx';
 import StatusError from './pages/StatusError.jsx';
+import ResumeCreator from './pages/ResumeCreator.jsx';
 import { routerBasename } from './utils/appBase.js';
 
 const AppRoutes = () => {
@@ -60,6 +61,8 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } />
           <Route path='/account' element={<Navigate to="/settings" replace />} />
+          {/* PLUG: создание резюме без модерации админа — для доработки UI */}
+          <Route path='/plug' element={<ResumeCreator />} />
           <Route path='/error/:code' element={<StatusError />} />
           <Route path='*' element={<StatusError code="404" />} />
         </Routes>

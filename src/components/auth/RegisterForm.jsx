@@ -221,13 +221,21 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         setStep(1);
     };
 
-    const continuePending = () => {
+    const continuePending = (emailOverride = '') => {
+        const email = String(emailOverride || pendingEmail || formData.email || '').trim();
         setFormData((prev) => ({
             ...prev,
-            email: pendingEmail || prev.email,
+            email: email || prev.email,
         }));
         setStudentAccountCreated(true);
         setAssignedUsername(sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '');
+        if (email) {
+            markEmailConfirmationPending(
+                email,
+                sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || assignedUsername || usernameFromEmail(email),
+            );
+        }
+        setCode(['', '', '', '']);
         setStep(3);
     };
 
@@ -767,7 +775,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     <h2 className="registerForm__heading">Продолжить регистрацию?</h2>
                     <p className="registerForm__subheading">
                         Найдена незавершённая регистрация
-                        {pendingEmail ? ` для ${pendingEmail}` : ''}. Можно подтвердить код или начать заново.
+                        {pendingEmail ? ` для ${pendingEmail}` : ''}.
+                        Можно ввести код из письма или начать заново с другой почтой.
                     </p>
                 </>
             );
@@ -805,7 +814,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     <>
                         <h2 className="registerForm__heading">Данные для входа</h2>
                         <p className="registerForm__subheading">
-                            Телефон и пароль нужны, чтобы создать аккаунт и отправить код на {formData.email || pendingEmail}
+                            После «Получить код» аккаунт уже создаётся на сервере, код уходит на {formData.email || pendingEmail}. Подтверждение кода — следующий шаг.
                         </p>
                         <div className="registerForm__inputGroup">
                             <label htmlFor="registerForm-phone">Телефон</label>
@@ -986,7 +995,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             <button
                                 type="button"
                                 className="registerForm__primaryBtn"
-                                onClick={continuePending}
+                                onClick={() => continuePending()}
                                 disabled={loading}
                             >
                                 Продолжить

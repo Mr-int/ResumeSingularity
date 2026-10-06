@@ -69,6 +69,15 @@
     padding: 0;
 }
 
+.header__navLink--plug {
+    opacity: 0.55;
+    letter-spacing: 0.04em;
+}
+
+.header__navLink--plug:hover {
+    opacity: 1;
+}
+
 .header__logo {
     justify-self: center;
     user-select: none;

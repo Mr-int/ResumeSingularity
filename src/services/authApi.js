@@ -17,6 +17,9 @@ export const clearRegistrationDraft = () => {
     sessionStorage.removeItem(REGISTRATION_TEMP_PASSWORD_KEY);
 };
 
+export const isEmailConfirmationPending = () =>
+    sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
+
 const parseLoginErrorMessage = (status, errorText) => {
     let serverMessage = '';
     try {
@@ -195,7 +198,8 @@ const clearLocalAuth = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
-    clearRegistrationDraft();
+    // Черновик подтверждения почты НЕ трогаем — иначе после ухода на /login
+    // сессия confirm-email теряется, а почта на сервере уже занята.
     document.cookie.split(';').forEach((c) => {
         document.cookie = c
             .replace(/^ +/, '')
