@@ -6,7 +6,7 @@ export { default as SearchInput } from './Header/SearchInput/SearchInput.jsx';
 export { default as IconButton } from './Header/IconButton/IconButton.jsx';
 export { default as Avatar } from './Header/Avatar/Avatar.jsx';
 export { default as Grid } from './Grid/Grid.jsx';
-export { default as StepForm } from './StepForm/StepForm.jsx';
+export { default as StepForm, COURSE_OPTIONS, courseUiLabel } from './StepForm/StepForm.jsx';
 export { default as CardPreview } from './CardPreview/CardPreview.jsx';
 export { default as StepperFooter } from './StepperFooter/StepperFooter.jsx';
 export { default as PhotoUploader } from './PhotoUploader/PhotoUploader.jsx';

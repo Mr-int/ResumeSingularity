@@ -1,15 +1,20 @@
 import './cardPreview.css';
+import { getImageUrl } from '../../../config/api.js';
+import { courseUiLabel } from '../StepForm/StepForm.jsx';
 
 const CardPreview = ({
     firstName = 'Имя',
     lastName = 'Фамилия',
     specialty = 'Специализация',
-    course = '1',
+    course = 'FIRST',
     skillCode = 'PY',
     skillLabel = 'Python',
     photoSrc,
+    imagePath,
 }) => {
     const fullName = `${firstName} ${lastName}`.trim();
+    const courseLabel = courseUiLabel(course) || course;
+    const photoUrl = photoSrc || getImageUrl(imagePath);
 
     return (
         <section className="cardPreview">
@@ -20,10 +25,10 @@ const CardPreview = ({
 
             <div className="cardPreview__card">
                 <div className="cardPreview__photo">
-                    {photoSrc ? <img src={photoSrc} alt={fullName} /> : null}
+                    {photoUrl ? <img src={photoUrl} alt={fullName} /> : null}
                     <div className="cardPreview__badges">
                         <div className="cardPreview__badge cardPreview__badge--skill">{skillCode}</div>
-                        <div className="cardPreview__badge cardPreview__badge--course">{course}</div>
+                        <div className="cardPreview__badge cardPreview__badge--course">{courseLabel}</div>
                     </div>
                 </div>
                 <div className="cardPreview__name">{fullName || 'Имя Фамилия'}</div>
@@ -32,7 +37,7 @@ const CardPreview = ({
 
             <div className="cardPreview__legends">
                 <div className="cardPreview__legend">
-                    <span className="cardPreview__legendBadge cardPreview__legendBadge--course">{course}</span>
+                    <span className="cardPreview__legendBadge cardPreview__legendBadge--course">{courseLabel}</span>
                     Курс
                 </div>
                 <div className="cardPreview__legend">

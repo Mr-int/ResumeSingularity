@@ -7,8 +7,12 @@ export const COURSE_OPTIONS = [
     { ui: '4', value: 'FOURTH' },
 ];
 
-export const courseUiLabel = (course) =>
-    COURSE_OPTIONS.find((item) => item.value === course)?.ui || course || '';
+export const courseUiLabel = (course) => {
+    const fromOptions = COURSE_OPTIONS.find((item) => item.value === course);
+    if (fromOptions) return fromOptions.ui;
+    if (course === 'FIFTH') return '5';
+    return course || '';
+};
 
 const StepForm = ({
     step = 1,

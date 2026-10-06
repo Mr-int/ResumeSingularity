@@ -22,7 +22,7 @@ import EmailIcon from '../../assets/icons/email.svg';
 const CAMPUS_OPTIONS = [
     'Москва', 'Санкт-Петербург', 'Казань', 'Новосибирск',
     'Екатеринбург', 'Нижний Новгород', 'Краснодар', 'Ростов-на-Дону',
-    'Самара', 'Воронеж', 'Уфа', 'Пермь', 'Чебоксары', 'Челябинск', 'Онлайн'
+    'Самара', 'Воронеж', 'Уфа', 'Пермь', 'Чебоксары', 'Челябинск', 'Онлайн',
 ];
 
 const COURSE_OPTIONS = [1, 2, 3, 4];
@@ -53,13 +53,22 @@ const clearEmailConfirmationPending = () => {
     sessionStorage.removeItem(ASSIGNED_USERNAME_KEY);
 };
 
+/** Логин из почты, пока ФИО ещё не собраны (код идёт сразу после email). */
+const usernameFromEmail = (email) => {
+    const local = String(email || '').split('@')[0] || '';
+    return usernameFromName(local, 'user');
+};
+
 const RegisterForm = ({ role, onBack, onSuccess }) => {
     const isStudent = role === 'student';
     const pendingOnOpen = isStudent && emailConfirmationPending();
-    const [step, setStep] = useState(pendingOnOpen ? 5 : 1);
+    // Студент: 1 email → 2 пароль+телефон → 3 код → 4 ФИО → 5 курс
+    // Рекрутер: 1 email → 2 ФИО → 3 пароль → 4 компания
+    const [step, setStep] = useState(pendingOnOpen ? 3 : 1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [studentAccountCreated, setStudentAccountCreated] = useState(pendingOnOpen);
+    const [emailConfirmed, setEmailConfirmed] = useState(false);
     const [assignedUsername, setAssignedUsername] = useState(
         pendingOnOpen ? (sessionStorage.getItem(ASSIGNED_USERNAME_KEY) || '') : '',
     );
@@ -132,15 +141,18 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : value,
         }));
         if (error) setError('');
         clearMessage();
     };
 
-    const loginPreview = assignedUsername || usernameFromName(formData.lastName, formData.firstName);
+    const loginPreview = assignedUsername
+        || (isStudent
+            ? usernameFromEmail(formData.email)
+            : usernameFromName(formData.lastName, formData.firstName));
 
     const accountPayload = (username) => ({
         username,
@@ -152,8 +164,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         email: formData.email.trim(),
     });
 
-    const registerWithFreeUsername = async (submit) => {
-        const base = usernameFromName(formData.lastName, formData.firstName);
+    const registerWithFreeUsername = async (base, submit) => {
         let lastError = null;
         for (let attempt = 1; attempt <= 20; attempt += 1) {
             const username = usernameWithSuffix(base, attempt);
@@ -169,27 +180,28 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         throw lastError;
     };
 
-    const registerStudentAccount = async () => {
+    const registerStudentAndSendCode = async () => {
         setLoading(true);
         try {
             const email = formData.email.trim();
             const phoneNumber = normalizePhoneNumber(formData.phoneNumber);
             if (!studentAccountCreated) {
-                const username = await registerWithFreeUsername((login) => registerStudent({
-                    ...accountPayload(login),
-                    city: formData.campus,
+                const base = usernameFromEmail(email);
+                const username = await registerWithFreeUsername(base, (login) => registerStudent({
+                    username: login,
+                    password: formData.password,
+                    passwordConfirm: formData.passwordConfirm,
+                    firstName: '',
+                    lastName: '',
+                    middleName: '',
+                    email,
                     phoneNumber,
                 }));
                 markEmailConfirmationPending(email, username);
                 setStudentAccountCreated(true);
             }
-            await patchStudentMe({
-                course: COURSE_API[Number(formData.course)],
-                birthDate: formData.birthDate,
-                city: formData.campus,
-            });
             setCode(['', '', '', '']);
-            setStep(5);
+            setStep(3);
         } catch (err) {
             const message = err.message || 'Не удалось отправить данные';
             setError(message);
@@ -202,7 +214,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     const submitRecruiter = async () => {
         setLoading(true);
         try {
-            const username = await registerWithFreeUsername((login) => registerRecruiter({
+            const base = usernameFromName(formData.lastName, formData.firstName);
+            const username = await registerWithFreeUsername(base, (login) => registerRecruiter({
                 ...accountPayload(login),
                 companyName: formData.companyName.trim(),
                 city: formData.city.trim(),
@@ -228,9 +241,31 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         try {
             await confirmEmail(fullCode);
             clearEmailConfirmationPending();
-            onSuccess(role, assignedUsername || loginPreview);
+            setEmailConfirmed(true);
+            setStep(4);
         } catch (err) {
             const message = err.message || 'Неверный код';
+            setError(message);
+            showMessage(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const finishStudentProfile = async () => {
+        setLoading(true);
+        try {
+            await patchStudentMe({
+                firstName: formData.firstName.trim(),
+                lastName: formData.lastName.trim(),
+                middleName: formData.noMiddleName ? '' : formData.middleName.trim(),
+                birthDate: formData.birthDate,
+                course: COURSE_API[Number(formData.course)],
+                city: formData.campus,
+            });
+            onSuccess(role, assignedUsername || loginPreview);
+        } catch (err) {
+            const message = err.message || 'Не удалось сохранить профиль';
             setError(message);
             showMessage(message);
         } finally {
@@ -318,8 +353,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
     };
 
-    const handleCodeRowClick = (e) => {
-        if (e.target.closest('input')) return;
+    const handleCodeRowClick = () => {
         const firstEmpty = code.findIndex((d) => !d);
         const target = firstEmpty === -1 ? CODE_LENGTH - 1 : firstEmpty;
         focusCodeInput(target);
@@ -342,10 +376,70 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         focusCodeInput(lastIndex);
     };
 
+    const validateStudentPassword = () => {
+        if (formData.password.length < 12) {
+            setErrorAndShow('Пароль должен быть не короче 12 символов');
+            return false;
+        }
+        const hasLetter = [...formData.password].some((ch) => /\p{L}/u.test(ch));
+        const hasDigit = [...formData.password].some((ch) => /\d/.test(ch));
+        if (!hasLetter || !hasDigit) {
+            setErrorAndShow('Пароль должен содержать букву и цифру');
+            return false;
+        }
+        if (formData.password !== formData.passwordConfirm) {
+            setErrorAndShow('Пароли не совпадают');
+            return false;
+        }
+        return true;
+    };
+
     const handleNextStep = () => {
         setError('');
         clearMessage();
 
+        if (!isStudent) {
+            if (step === 1) {
+                if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+                    setErrorAndShow('Введите корректный email');
+                    return;
+                }
+                setStep(2);
+                return;
+            }
+            if (step === 2) {
+                if (!formData.firstName.trim() || !formData.lastName.trim()) {
+                    setErrorAndShow('Заполните имя и фамилию');
+                    return;
+                }
+                if (!formData.noMiddleName && !formData.middleName.trim()) {
+                    setErrorAndShow('Заполните отчество или отметьте галочку "Нет отчества"');
+                    return;
+                }
+                setStep(3);
+                return;
+            }
+            if (step === 3) {
+                if (formData.password.length < 4) {
+                    setErrorAndShow('Пароль должен быть не менее 4 символов');
+                    return;
+                }
+                if (formData.password !== formData.passwordConfirm) {
+                    setErrorAndShow('Пароли не совпадают');
+                    return;
+                }
+                setStep(4);
+                return;
+            }
+            if (step === 4) {
+                if (!formData.companyName.trim()) { setErrorAndShow('Укажите название компании'); return; }
+                if (!formData.city.trim()) { setErrorAndShow('Укажите город'); return; }
+                submitRecruiter();
+            }
+            return;
+        }
+
+        // student
         if (step === 1) {
             if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
                 setErrorAndShow('Введите корректный email');
@@ -356,6 +450,21 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
 
         if (step === 2) {
+            if (!normalizePhoneNumber(formData.phoneNumber)) {
+                setErrorAndShow('Введите телефон: от 7 до 15 цифр, можно с + в начале');
+                return;
+            }
+            if (!validateStudentPassword()) return;
+            registerStudentAndSendCode();
+            return;
+        }
+
+        if (step === 3) {
+            confirmStudentEmail();
+            return;
+        }
+
+        if (step === 4) {
             if (!formData.firstName.trim() || !formData.lastName.trim()) {
                 setErrorAndShow('Заполните имя и фамилию');
                 return;
@@ -364,65 +473,35 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 setErrorAndShow('Заполните отчество или отметьте галочку "Нет отчества"');
                 return;
             }
-            if (isStudent && !formData.birthDate) {
+            if (!formData.birthDate) {
                 setErrorAndShow('Укажите дату рождения');
                 return;
             }
-            if (isStudent && !normalizePhoneNumber(formData.phoneNumber)) {
-                setErrorAndShow('Введите телефон: от 7 до 15 цифр, можно с + в начале');
-                return;
-            }
-            setStep(3);
+            setStep(5);
             return;
         }
 
-        if (step === 3) {
-            const minLength = isStudent ? 12 : 4;
-            if (formData.password.length < minLength) {
-                setErrorAndShow(
-                    isStudent
-                        ? 'Пароль должен быть не короче 12 символов'
-                        : 'Пароль должен быть не менее 4 символов',
-                );
-                return;
-            }
-            if (isStudent) {
-                const hasLetter = [...formData.password].some((ch) => /\p{L}/u.test(ch));
-                const hasDigit = [...formData.password].some((ch) => /\d/.test(ch));
-                if (!hasLetter || !hasDigit) {
-                    setErrorAndShow('Пароль должен содержать букву и цифру');
-                    return;
-                }
-            }
-            if (formData.password !== formData.passwordConfirm) {
-                setErrorAndShow('Пароли не совпадают');
-                return;
-            }
-            setStep(4);
-            return;
-        }
-
-        if (step === 4) {
-            if (isStudent) {
-                if (!formData.course) { setErrorAndShow('Выберите курс'); return; }
-                if (!formData.campus) { setErrorAndShow('Выберите кампус'); return; }
-                registerStudentAccount();
-                return;
-            }
-            if (!formData.companyName.trim()) { setErrorAndShow('Укажите название компании'); return; }
-            if (!formData.city.trim()) { setErrorAndShow('Укажите город'); return; }
-            submitRecruiter();
-            return;
-        }
-
-        if (step === 5 && isStudent) {
-            confirmStudentEmail();
+        if (step === 5) {
+            if (!formData.course) { setErrorAndShow('Выберите курс'); return; }
+            if (!formData.campus) { setErrorAndShow('Выберите кампус'); return; }
+            finishStudentProfile();
         }
     };
 
     const handlePrevStep = () => {
         if (step > 1) {
-            setStep(prev => prev - 1);
+            // После создания аккаунта не даём уйти с кода «назад» на пароль без сброса сессии
+            if (isStudent && step === 3 && studentAccountCreated) {
+                setErrorAndShow('Подтвердите почту кодом из письма');
+                return;
+            }
+            if (isStudent && step === 4 && emailConfirmed) {
+                setStep(3);
+                setError('');
+                clearMessage();
+                return;
+            }
+            setStep((prev) => prev - 1);
             setError('');
             clearMessage();
             return;
@@ -431,24 +510,102 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     };
 
     const renderStepContent = () => {
+        if (!isStudent) {
+            switch (step) {
+                case 1:
+                    return (
+                        <>
+                            <h2 className="registerForm__heading">Регистрация</h2>
+                            <p className="registerForm__subheading">
+                                Введите почту для аккаунта
+                            </p>
+                            <div className="registerForm__emailRow">
+                                <div className="registerForm__emailIcon" aria-hidden="true">
+                                    <img src={EmailIcon} alt="" className="registerForm__emailIconImg" />
+                                </div>
+                                <input
+                                    id="registerForm-email"
+                                    type="email"
+                                    name="email"
+                                    autoComplete="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="youremail@example.com"
+                                    disabled={loading}
+                                    className={
+                                        'registerForm__emailInput' +
+                                        (error ? ' registerForm__emailInput--error' : '')
+                                    }
+                                />
+                            </div>
+                        </>
+                    );
+                case 2:
+                    return (
+                        <>
+                            <h2 className="registerForm__heading registerForm__heading--step">Шаг 1 из 3</h2>
+                            <div className="registerForm__inputGroup">
+                                <label>Имя</label>
+                                <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} disabled={loading} />
+                            </div>
+                            <div className="registerForm__inputGroup">
+                                <label>Фамилия</label>
+                                <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} disabled={loading} />
+                            </div>
+                            <div className="registerForm__inputGroup">
+                                <label>Отчество</label>
+                                <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} disabled={loading || formData.noMiddleName} />
+                                <div className="registerForm__checkboxWrap">
+                                    <input type="checkbox" id="noMiddleName" name="noMiddleName" checked={formData.noMiddleName} onChange={handleChange} disabled={loading} />
+                                    <label htmlFor="noMiddleName">Нет отчества</label>
+                                </div>
+                            </div>
+                        </>
+                    );
+                case 3:
+                    return (
+                        <>
+                            <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 3</h2>
+                            <div className="registerForm__inputGroup">
+                                <label>Пароль</label>
+                                <input type="password" name="password" value={formData.password} onChange={handleChange} disabled={loading} />
+                            </div>
+                            <div className="registerForm__inputGroup">
+                                <label>Повтор пароля</label>
+                                <input type="password" name="passwordConfirm" value={formData.passwordConfirm} onChange={handleChange} disabled={loading} />
+                            </div>
+                        </>
+                    );
+                case 4:
+                    return (
+                        <>
+                            <h2 className="registerForm__heading registerForm__heading--step">Шаг 3 из 3</h2>
+                            <div className="registerForm__inputGroup">
+                                <label>Официальное название компании</label>
+                                <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} disabled={loading} />
+                            </div>
+                            <div className="registerForm__inputGroup">
+                                <label>Город</label>
+                                <input type="text" name="city" value={formData.city} onChange={handleChange} disabled={loading} />
+                            </div>
+                        </>
+                    );
+                default:
+                    return null;
+            }
+        }
+
         switch (step) {
             case 1:
                 return (
                     <>
                         <h2 className="registerForm__heading">Регистрация</h2>
                         <p className="registerForm__subheading">
-                            {isStudent
-                                ? 'Введите почту для аккаунта. Код подтверждения придёт после заполнения анкеты'
-                                : 'Введите почту для аккаунта'}
+                            Введите почту, на которую придёт письмо с кодом
                         </p>
-
                         <div className="registerForm__emailRow">
                             <div className="registerForm__emailIcon" aria-hidden="true">
-                                <img
-                                    src={EmailIcon}
-                                    alt=""
-                                    className="registerForm__emailIconImg"
-                                />
+                                <img src={EmailIcon} alt="" className="registerForm__emailIconImg" />
                             </div>
                             <input
                                 id="registerForm-email"
@@ -458,7 +615,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="youremail@example.com"
-                                disabled={loading}
+                                disabled={loading || studentAccountCreated}
                                 className={
                                     'registerForm__emailInput' +
                                     (error ? ' registerForm__emailInput--error' : '')
@@ -470,86 +627,24 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             case 2:
                 return (
                     <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 1 из 3</h2>
-
+                        <h2 className="registerForm__heading">Данные для входа</h2>
+                        <p className="registerForm__subheading">
+                            Пароль и телефон нужны, чтобы создать аккаунт и отправить код на {formData.email}
+                        </p>
                         <div className="registerForm__inputGroup">
-                            <label>Имя</label>
+                            <label htmlFor="registerForm-phone">Телефон</label>
                             <input
-                                type="text"
-                                name="firstName"
-                                value={formData.firstName}
+                                id="registerForm-phone"
+                                type="tel"
+                                name="phoneNumber"
+                                autoComplete="tel"
+                                inputMode="tel"
+                                placeholder="+79991234567"
+                                value={formData.phoneNumber}
                                 onChange={handleChange}
-                                disabled={loading}
+                                disabled={loading || studentAccountCreated}
                             />
                         </div>
-                        <div className="registerForm__inputGroup">
-                            <label>Фамилия</label>
-                            <input
-                                type="text"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <div className="registerForm__inputGroup">
-                            <label>Отчество</label>
-                            <input
-                                type="text"
-                                name="middleName"
-                                value={formData.middleName}
-                                onChange={handleChange}
-                                disabled={loading || formData.noMiddleName}
-                            />
-                            <div className="registerForm__checkboxWrap">
-                                <input
-                                    type="checkbox"
-                                    id="noMiddleName"
-                                    name="noMiddleName"
-                                    checked={formData.noMiddleName}
-                                    onChange={handleChange}
-                                    disabled={loading}
-                                />
-                                <label htmlFor="noMiddleName">Нет отчества</label>
-                            </div>
-                        </div>
-
-                        {isStudent && (
-                            <>
-                                <div className="registerForm__inputGroup">
-                                    <label>Дата рождения</label>
-                                    <input
-                                        type="date"
-                                        name="birthDate"
-                                        value={formData.birthDate}
-                                        onChange={handleChange}
-                                        disabled={loading}
-                                    />
-                                </div>
-                                <div className="registerForm__inputGroup">
-                                    <label htmlFor="registerForm-phone">Телефон</label>
-                                    <input
-                                        id="registerForm-phone"
-                                        type="tel"
-                                        name="phoneNumber"
-                                        autoComplete="tel"
-                                        inputMode="tel"
-                                        placeholder="+79991234567"
-                                        value={formData.phoneNumber}
-                                        onChange={handleChange}
-                                        disabled={loading}
-                                    />
-                                </div>
-                            </>
-                        )}
-                    </>
-                );
-            case 3:
-                return (
-                    <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 3</h2>
-
                         <div className="registerForm__inputGroup">
                             <label>Пароль</label>
                             <input
@@ -557,7 +652,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                disabled={loading}
+                                disabled={loading || studentAccountCreated}
                             />
                         </div>
                         <div className="registerForm__inputGroup">
@@ -567,70 +662,18 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 name="passwordConfirm"
                                 value={formData.passwordConfirm}
                                 onChange={handleChange}
-                                disabled={loading}
+                                disabled={loading || studentAccountCreated}
                             />
                         </div>
                     </>
                 );
-            case 4:
-                if (isStudent) {
-                    return (
-                        <>
-                            <h2 className="registerForm__heading registerForm__heading--step">Шаг 3 из 3</h2>
-
-                            <div className="registerForm__inputGroup">
-                                <label>Курс</label>
-                                <select name="course" value={formData.course} onChange={handleChange} disabled={loading}>
-                                    <option value="">Выберите курс</option>
-                                    {COURSE_OPTIONS.map(c => <option key={c} value={c}>{c} курс</option>)}
-                                </select>
-                            </div>
-
-                            <div className="registerForm__inputGroup">
-                                <label>Кампус</label>
-                                <select name="campus" value={formData.campus} onChange={handleChange} disabled={loading}>
-                                    <option value="">Выберите кампус</option>
-                                    {CAMPUS_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
-                            </div>
-                        </>
-                    );
-                }
-                return (
-                    <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 3 из 3</h2>
-
-                        <div className="registerForm__inputGroup">
-                            <label>Официальное название компании</label>
-                            <input
-                                type="text"
-                                name="companyName"
-                                value={formData.companyName}
-                                onChange={handleChange}
-                                disabled={loading}
-                            />
-                        </div>
-
-                        <div className="registerForm__inputGroup">
-                            <label>Город</label>
-                            <input
-                                type="text"
-                                name="city"
-                                value={formData.city}
-                                onChange={handleChange}
-                                disabled={loading}
-                            />
-                        </div>
-                    </>
-                );
-            case 5:
+            case 3:
                 return (
                     <>
                         <h2 className="registerForm__heading">Введите код из письма</h2>
                         <p className="registerForm__subheading">
                             Отправили на почтовый ящик {formData.email}, если входящих нет, проверьте спам
                         </p>
-
                         <div
                             className="registerForm__codeRow"
                             ref={codeRowRef}
@@ -647,7 +690,6 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                     onChange={(e) => handleCodeChange(index, e.target.value)}
                                     onKeyDown={(e) => handleCodeKeyDown(index, e)}
                                     onPaste={handleCodePaste}
-                                    onClick={(e) => e.stopPropagation()}
                                     onFocus={(e) => e.target.select()}
                                     disabled={loading}
                                     className={
@@ -659,15 +701,56 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 />
                             ))}
                         </div>
-
-                        <button
-                            type="button"
-                            className="registerForm__primaryBtn"
-                            onClick={handleResendCode}
-                            disabled={loading}
-                        >
-                            Получить новый код
-                        </button>
+                    </>
+                );
+            case 4:
+                return (
+                    <>
+                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 1 из 2</h2>
+                        <div className="registerForm__inputGroup">
+                            <label>Имя</label>
+                            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} disabled={loading} />
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Фамилия</label>
+                            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} disabled={loading} />
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Отчество</label>
+                            <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} disabled={loading || formData.noMiddleName} />
+                            <div className="registerForm__checkboxWrap">
+                                <input type="checkbox" id="noMiddleName" name="noMiddleName" checked={formData.noMiddleName} onChange={handleChange} disabled={loading} />
+                                <label htmlFor="noMiddleName">Нет отчества</label>
+                            </div>
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Дата рождения</label>
+                            <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange} disabled={loading} />
+                        </div>
+                    </>
+                );
+            case 5:
+                return (
+                    <>
+                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 2</h2>
+                        <div className="registerForm__inputGroup">
+                            <label>Курс</label>
+                            <select name="course" value={formData.course} onChange={handleChange} disabled={loading}>
+                                <option value="">Выберите курс</option>
+                                {COURSE_OPTIONS.map((c) => (
+                                    <option key={c} value={c}>{c} курс</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Кампус</label>
+                            <select name="campus" value={formData.campus} onChange={handleChange} disabled={loading}>
+                                <option value="">Выберите кампус</option>
+                                {CAMPUS_OPTIONS.map((c) => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
+                        </div>
                     </>
                 );
             default:
@@ -679,9 +762,25 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         'registerForm__messageSlot' +
         (messageLeaving ? ' registerForm__messageSlot--leaving' : '');
 
+    const showStepsCard = isStudent
+        ? step === 2 || step === 4 || step === 5
+        : step >= 2;
+
+    const primaryLabel = () => {
+        if (loading) return 'Отправка…';
+        if (isStudent) {
+            if (step === 3) return 'Подтвердить';
+            if (step === 5) return 'Завершить';
+            if (step === 2) return 'Получить код';
+            return 'Далее';
+        }
+        if (step === 4) return 'Зарегистрироваться';
+        return 'Далее';
+    };
+
     return (
         <div className="registerForm__overlay">
-            <div className={`registerForm__card${step >= 2 && step <= 4 ? ' registerForm__card--steps' : ''}`}>
+            <div className={`registerForm__card${showStepsCard ? ' registerForm__card--steps' : ''}`}>
                 <button
                     type="button"
                     className="registerForm__backBtn"
@@ -698,7 +797,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 <div className="registerForm__form">
                     {renderStepContent()}
 
-                    {step >= 3 && loginPreview ? (
+                    {((isStudent && step >= 2) || (!isStudent && step >= 3)) && loginPreview ? (
                         <p className="registerForm__subheading">
                             Логин для входа: {loginPreview}
                         </p>
@@ -710,14 +809,19 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         onClick={handleNextStep}
                         disabled={loading}
                     >
-                        {loading
-                            ? 'Отправка…'
-                            : step === 5
-                                ? 'Подтвердить'
-                                : step === 4 && !(isStudent && studentAccountCreated)
-                                    ? 'Зарегистрироваться'
-                                    : 'Далее'}
+                        {primaryLabel()}
                     </button>
+
+                    {isStudent && step === 3 ? (
+                        <button
+                            type="button"
+                            className="registerForm__primaryBtn registerForm__primaryBtn--secondary"
+                            onClick={handleResendCode}
+                            disabled={loading}
+                        >
+                            Получить новый код
+                        </button>
+                    ) : null}
                 </div>
             </div>
 

@@ -23,14 +23,15 @@ const SkillsSelection = ({
             />
             <div className="skillsSelection__grid">
                 {filteredSkills.map((skill) => {
-                    const isActive = selectedSkills.includes(skill.id);
+                    const skillId = skill.id;
+                    const isActive = selectedSkills.some((id) => String(id) === String(skillId));
 
                     return (
                         <button
-                            key={skill.id}
+                            key={skillId}
                             type="button"
                             className={`skillsSelection__tag ${isActive ? 'is-active' : ''}`}
-                            onClick={() => onToggle?.(skill.id)}
+                            onClick={() => onToggle?.(skillId)}
                         >
                             {skill.name}
                         </button>
