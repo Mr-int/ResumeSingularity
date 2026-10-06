@@ -7,6 +7,48 @@ export const EMAIL_CONFIRMATION_EMAIL_KEY = 'resume:email-confirmation-email';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
 
+const parseLoginErrorMessage = (status, errorText) => {
+    let serverMessage = '';
+    try {
+        const parsed = JSON.parse(errorText);
+        serverMessage = String(parsed?.message || parsed?.error || '').trim();
+    } catch {
+        serverMessage = String(errorText || '').trim();
+    }
+
+    const lower = serverMessage.toLowerCase();
+    // После регистрации/протухшей сессии JWT-фильтр часто отвечает так вместо Bad credentials
+    if (
+        status === 401
+        && (/authentication is required|full authentication is required|unauthorized/i.test(lower)
+            || !serverMessage)
+    ) {
+        return 'Неверный логин или пароль';
+    }
+    if (status === 401 || status === 403) {
+        return serverMessage || 'Неверный логин или пароль';
+    }
+    return serverMessage || `Ошибка входа (${status})`;
+};
+
+/**
+ * Сброс HttpOnly-сессии на сервере. Нужен перед login: иначе старый ACCESS_TOKEN
+ * из регистрации уходит с credentials:include и /auth/login отвечает 401
+ * "Authentication is required", не доходя до проверки пароля.
+ */
+const clearServerSessionQuietly = async () => {
+    try {
+        await fetch(`${API_BASE_URL}auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (e) {
+        console.warn('[AUTH] pre-login logout failed', e);
+    }
+    localStorage.removeItem(AUTH_FLAG_KEY);
+    localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+};
+
 /**
  * Авторизация пользователя
  * @param {string} username - Имя пользователя
@@ -15,19 +57,21 @@ export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
  */
 export const login = async (username, password) => {
     try {
+        await clearServerSessionQuietly();
+
         const url = `${API_BASE_URL}auth/login`;
         console.log('[AUTH] Attempting login to:', url);
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', 
+            credentials: 'include',
             body: JSON.stringify({
                 username,
-                password
-            })
+                password,
+            }),
         });
 
         console.log('[AUTH] Response status:', response.status);
@@ -36,7 +80,9 @@ export const login = async (username, password) => {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('[AUTH] Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            const err = new Error(parseLoginErrorMessage(response.status, errorText));
+            err.status = response.status;
+            throw err;
         }
 
         const contentType = response.headers.get('content-type');

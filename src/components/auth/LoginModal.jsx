@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { login } from '../../services/authApi.js';
+import React, { useEffect, useState } from 'react';
+import { login, logoutServer } from '../../services/authApi.js';
 import './loginModal.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -25,14 +25,20 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Сброс cookie-сессии после регистрации / протухшего JWT, чтобы /auth/login не ломался с 401
+    useEffect(() => {
+        logoutServer().catch(() => {});
+    }, []);
+
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
         const trimmedUsername = username.trim();
-        const trimmedPassword = password.trim();
+        // пароль не trim — пробелы в конце могут быть частью пароля
+        const nextPassword = password;
 
-        if (!trimmedUsername && !trimmedPassword) {
+        if (!trimmedUsername && !nextPassword) {
             setError('Заполните все поля');
             return;
         }
@@ -40,14 +46,14 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
             setError('Введите логин');
             return;
         }
-        if (!trimmedPassword) {
+        if (!nextPassword) {
             setError('Введите пароль');
             return;
         }
 
         setLoading(true);
         try {
-            await login(trimmedUsername, trimmedPassword);
+            await login(trimmedUsername, nextPassword);
             setTimeout(() => {
                 setLoading(false);
                 onSuccess();
