@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './registerModal.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
 import StudentImage from '../../assets/other/student.png';
 import RecruiterImage from '../../assets/other/recruiter.png';
+import {
+    clearRegistrationDraft,
+    EMAIL_CONFIRMATION_PENDING_KEY,
+} from '../../services/authApi.js';
 
 const RegisterModal = ({ onBack, onSelectRole }) => {
     const [selectedRole, setSelectedRole] = useState(null);
+
+    // Устаревшие email/логин без активного подтверждения — сбрасываем
+    useEffect(() => {
+        if (sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) !== '1') {
+            clearRegistrationDraft();
+        }
+    }, []);
 
     const handleContinue = () => {
         if (selectedRole) {

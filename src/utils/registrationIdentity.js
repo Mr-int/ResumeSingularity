@@ -38,12 +38,14 @@ export const isUsernameTakenError = (err) => {
 };
 
 export const isEmailTakenError = (err) => {
+    const message = String(err?.message || '').toLowerCase();
+    if (/пользователь с такой почтой|почтой уже зарегистрир|email already|already registered/.test(message)) {
+        return true;
+    }
     if (err?.status === 409) {
-        const message = String(err?.message || '').toLowerCase();
         return /email|почт|mail/.test(message) || !/username|логин/.test(message);
     }
-    const message = String(err?.message || '').toLowerCase();
-    return /email|почт|mail/.test(message) && /exist|taken|занят|уже|duplicate|уникал|использу/.test(message);
+    return /email|почт|mail/.test(message) && /exist|taken|занят|уже|duplicate|уникал|использу|зарегистрир/.test(message);
 };
 
 export const isValidEmail = (value) =>

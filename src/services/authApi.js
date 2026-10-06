@@ -4,8 +4,18 @@ const AUTH_FLAG_KEY = 'isAuthenticated';
 /** Пока студент не подтвердил почту, /registration не должен сбрасывать его из‑за cookie. */
 export const EMAIL_CONFIRMATION_PENDING_KEY = 'resume:email-confirmation-pending';
 export const EMAIL_CONFIRMATION_EMAIL_KEY = 'resume:email-confirmation-email';
+export const REGISTRATION_USERNAME_KEY = 'resume:registration-username';
+export const REGISTRATION_TEMP_PASSWORD_KEY = 'resume:registration-temp-password';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
+
+/** Черновик регистрации в sessionStorage (почта/логин/ожидание кода). */
+export const clearRegistrationDraft = () => {
+    sessionStorage.removeItem(EMAIL_CONFIRMATION_PENDING_KEY);
+    sessionStorage.removeItem(EMAIL_CONFIRMATION_EMAIL_KEY);
+    sessionStorage.removeItem(REGISTRATION_USERNAME_KEY);
+    sessionStorage.removeItem(REGISTRATION_TEMP_PASSWORD_KEY);
+};
 
 const parseLoginErrorMessage = (status, errorText) => {
     let serverMessage = '';
@@ -185,6 +195,7 @@ const clearLocalAuth = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
+    clearRegistrationDraft();
     document.cookie.split(';').forEach((c) => {
         document.cookie = c
             .replace(/^ +/, '')
@@ -308,6 +319,23 @@ export const forgotPassword = async (email) => {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/change-password
+ */
+export const changePassword = async (currentPassword, newPassword) => {
+    const url = `${API_BASE_URL}auth/change-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword, newPassword }),
     });
     if (!response.ok) {
         throw await parseAuthError(response);
