@@ -37,11 +37,45 @@ export const isUsernameTakenError = (err) => {
     return /username|логин/.test(message) && /exist|taken|занят|уже|duplicate|уникал/.test(message);
 };
 
-/** Телефон контракта: необязательный + и 7–15 цифр. */
+export const isEmailTakenError = (err) => {
+    if (err?.status === 409) {
+        const message = String(err?.message || '').toLowerCase();
+        return /email|почт|mail/.test(message) || !/username|логин/.test(message);
+    }
+    const message = String(err?.message || '').toLowerCase();
+    return /email|почт|mail/.test(message) && /exist|taken|занят|уже|duplicate|уникал|использу/.test(message);
+};
+
+export const isValidEmail = (value) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+
+/**
+ * РФ мобильный: ровно 11 цифр, начинается с 7 → `+7XXXXXXXXXX` (12 символов).
+ * Принимает ввод 8999… / 999… / +7999…
+ */
 export const normalizePhoneNumber = (value) => {
-    const trimmed = String(value || '').trim();
-    if (!trimmed) return '';
-    const digits = trimmed.replace(/\D/g, '');
-    if (digits.length < 7 || digits.length > 15) return '';
-    return trimmed.startsWith('+') ? `+${digits}` : digits;
+    let digits = String(value || '').replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.startsWith('8') && digits.length === 11) {
+        digits = `7${digits.slice(1)}`;
+    }
+    if (digits.length === 10 && digits.startsWith('9')) {
+        digits = `7${digits}`;
+    }
+    if (digits.length !== 11 || !digits.startsWith('7')) return '';
+    return `+${digits}`;
+};
+
+/** Маска ввода: не больше 11 цифр, всегда с префиксом +7. */
+export const formatRuPhoneInput = (value) => {
+    let digits = String(value || '').replace(/\D/g, '');
+    if (!digits) return '';
+    if (digits.startsWith('8')) {
+        digits = `7${digits.slice(1)}`;
+    }
+    if (!digits.startsWith('7')) {
+        digits = `7${digits}`;
+    }
+    digits = digits.slice(0, 11);
+    return `+${digits}`;
 };

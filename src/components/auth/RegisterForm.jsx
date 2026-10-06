@@ -8,7 +8,10 @@ import {
     resendEmailConfirmation,
 } from '../../services/authApi.js';
 import {
+    formatRuPhoneInput,
+    isEmailTakenError,
     isUsernameTakenError,
+    isValidEmail,
     normalizePhoneNumber,
     usernameFromName,
     usernameWithSuffix,
@@ -53,7 +56,6 @@ const clearEmailConfirmationPending = () => {
     sessionStorage.removeItem(ASSIGNED_USERNAME_KEY);
 };
 
-/** Логин из почты, пока ФИО ещё не собраны (код идёт сразу после email). */
 const usernameFromEmail = (email) => {
     const local = String(email || '').split('@')[0] || '';
     return usernameFromName(local, 'user');
@@ -62,13 +64,13 @@ const usernameFromEmail = (email) => {
 const RegisterForm = ({ role, onBack, onSuccess }) => {
     const isStudent = role === 'student';
     const pendingOnOpen = isStudent && emailConfirmationPending();
-    // Студент: 1 email → 2 пароль+телефон → 3 код → 4 ФИО → 5 курс
-    // Рекрутер: 1 email → 2 ФИО → 3 пароль → 4 компания
+    // Студент: 1 email → 2 пароль+телефон (создание аккаунта + письмо) → 3 код → 4 ФИО (save) → 5 курс (save)
     const [step, setStep] = useState(pendingOnOpen ? 3 : 1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [studentAccountCreated, setStudentAccountCreated] = useState(pendingOnOpen);
     const [emailConfirmed, setEmailConfirmed] = useState(false);
+    const [emailTouched, setEmailTouched] = useState(false);
     const [assignedUsername, setAssignedUsername] = useState(
         pendingOnOpen ? (sessionStorage.getItem(ASSIGNED_USERNAME_KEY) || '') : '',
     );
@@ -139,14 +141,51 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         return () => clearMessageTimers();
     }, []);
 
+    const emailErrorText = () => {
+        const email = formData.email.trim();
+        if (!email) return 'Введите email';
+        if (!isValidEmail(email)) return 'Введите корректный email';
+        return '';
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+        let nextValue = type === 'checkbox' ? checked : value;
+
+        if (name === 'phoneNumber') {
+            nextValue = formatRuPhoneInput(value);
+        }
+
         setFormData((prev) => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value,
+            [name]: nextValue,
         }));
+
+        if (name === 'email') {
+            setEmailTouched(true);
+            const trimmed = String(nextValue || '').trim();
+            if (!trimmed) {
+                setError('Введите email');
+            } else if (!isValidEmail(trimmed)) {
+                setError('Введите корректный email');
+            } else {
+                setError('');
+                clearMessage();
+            }
+            return;
+        }
+
         if (error) setError('');
         clearMessage();
+    };
+
+    const handleEmailBlur = () => {
+        setEmailTouched(true);
+        const msg = emailErrorText();
+        if (msg) {
+            setError(msg);
+            showMessage(msg);
+        }
     };
 
     const loginPreview = assignedUsername
@@ -174,6 +213,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 return username;
             } catch (err) {
                 lastError = err;
+                if (isEmailTakenError(err)) throw err;
                 if (!isUsernameTakenError(err) || attempt === 20) throw err;
             }
         }
@@ -185,6 +225,10 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         try {
             const email = formData.email.trim();
             const phoneNumber = normalizePhoneNumber(formData.phoneNumber);
+            if (!phoneNumber) {
+                setErrorAndShow('Телефон: формат +79991234567 (11 цифр)');
+                return;
+            }
             if (!studentAccountCreated) {
                 const base = usernameFromEmail(email);
                 const username = await registerWithFreeUsername(base, (login) => registerStudent({
@@ -203,7 +247,9 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             setCode(['', '', '', '']);
             setStep(3);
         } catch (err) {
-            const message = err.message || 'Не удалось отправить данные';
+            const message = isEmailTakenError(err)
+                ? 'Эта почта уже используется'
+                : (err.message || 'Не удалось отправить данные');
             setError(message);
             showMessage(message);
         } finally {
@@ -222,7 +268,9 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             }));
             onSuccess(role, username);
         } catch (err) {
-            const message = err.message || 'Не удалось отправить данные';
+            const message = isEmailTakenError(err)
+                ? 'Эта почта уже используется'
+                : (err.message || 'Не удалось отправить данные');
             setError(message);
             showMessage(message);
         } finally {
@@ -252,7 +300,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
     };
 
-    const finishStudentProfile = async () => {
+    const saveStudentStepFio = async () => {
         setLoading(true);
         try {
             await patchStudentMe({
@@ -260,6 +308,21 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 lastName: formData.lastName.trim(),
                 middleName: formData.noMiddleName ? '' : formData.middleName.trim(),
                 birthDate: formData.birthDate,
+            });
+            setStep(5);
+        } catch (err) {
+            const message = err.message || 'Не удалось сохранить данные';
+            setError(message);
+            showMessage(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const saveStudentStepCourse = async () => {
+        setLoading(true);
+        try {
+            await patchStudentMe({
                 course: COURSE_API[Number(formData.course)],
                 city: formData.campus,
             });
@@ -400,10 +463,9 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
 
         if (!isStudent) {
             if (step === 1) {
-                if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-                    setErrorAndShow('Введите корректный email');
-                    return;
-                }
+                setEmailTouched(true);
+                const msg = emailErrorText();
+                if (msg) { setErrorAndShow(msg); return; }
                 setStep(2);
                 return;
             }
@@ -439,10 +501,12 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             return;
         }
 
-        // student
         if (step === 1) {
-            if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-                setErrorAndShow('Введите корректный email');
+            setEmailTouched(true);
+            const msg = emailErrorText();
+            if (msg) { setErrorAndShow(msg); return; }
+            if (studentAccountCreated) {
+                setStep(2);
                 return;
             }
             setStep(2);
@@ -450,8 +514,12 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
 
         if (step === 2) {
+            if (studentAccountCreated) {
+                setStep(3);
+                return;
+            }
             if (!normalizePhoneNumber(formData.phoneNumber)) {
-                setErrorAndShow('Введите телефон: от 7 до 15 цифр, можно с + в начале');
+                setErrorAndShow('Телефон: формат +79991234567 (ровно 11 цифр)');
                 return;
             }
             if (!validateStudentPassword()) return;
@@ -477,36 +545,44 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 setErrorAndShow('Укажите дату рождения');
                 return;
             }
-            setStep(5);
+            saveStudentStepFio();
             return;
         }
 
         if (step === 5) {
             if (!formData.course) { setErrorAndShow('Выберите курс'); return; }
             if (!formData.campus) { setErrorAndShow('Выберите кампус'); return; }
-            finishStudentProfile();
+            saveStudentStepCourse();
         }
     };
 
     const handlePrevStep = () => {
-        if (step > 1) {
-            // После создания аккаунта не даём уйти с кода «назад» на пароль без сброса сессии
-            if (isStudent && step === 3 && studentAccountCreated) {
-                setErrorAndShow('Подтвердите почту кодом из письма');
-                return;
-            }
-            if (isStudent && step === 4 && emailConfirmed) {
-                setStep(3);
-                setError('');
-                clearMessage();
-                return;
-            }
-            setStep((prev) => prev - 1);
-            setError('');
-            clearMessage();
+        setError('');
+        clearMessage();
+
+        if (step <= 1) {
+            onBack();
             return;
         }
-        onBack();
+
+        // С шага кода можно вернуться к паролю/телефону
+        if (isStudent && step === 3) {
+            setStep(2);
+            return;
+        }
+
+        // С анкеты после подтверждения — назад на код (просмотр)
+        if (isStudent && step === 4 && emailConfirmed) {
+            setStep(3);
+            return;
+        }
+
+        setStep((prev) => prev - 1);
+    };
+
+    const emailInputClass = () => {
+        const invalid = emailTouched && Boolean(emailErrorText());
+        return 'registerForm__emailInput' + (invalid || (error && step === 1) ? ' registerForm__emailInput--error' : '');
     };
 
     const renderStepContent = () => {
@@ -530,12 +606,10 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                     autoComplete="email"
                                     value={formData.email}
                                     onChange={handleChange}
+                                    onBlur={handleEmailBlur}
                                     placeholder="youremail@example.com"
                                     disabled={loading}
-                                    className={
-                                        'registerForm__emailInput' +
-                                        (error ? ' registerForm__emailInput--error' : '')
-                                    }
+                                    className={emailInputClass()}
                                 />
                             </div>
                         </>
@@ -601,7 +675,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     <>
                         <h2 className="registerForm__heading">Регистрация</h2>
                         <p className="registerForm__subheading">
-                            Введите почту, на которую придёт письмо с кодом
+                            Введите почту — проверим формат сразу. Код придёт после создания аккаунта
                         </p>
                         <div className="registerForm__emailRow">
                             <div className="registerForm__emailIcon" aria-hidden="true">
@@ -614,12 +688,10 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 autoComplete="email"
                                 value={formData.email}
                                 onChange={handleChange}
+                                onBlur={handleEmailBlur}
                                 placeholder="youremail@example.com"
                                 disabled={loading || studentAccountCreated}
-                                className={
-                                    'registerForm__emailInput' +
-                                    (error ? ' registerForm__emailInput--error' : '')
-                                }
+                                className={emailInputClass()}
                             />
                         </div>
                     </>
@@ -629,7 +701,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     <>
                         <h2 className="registerForm__heading">Данные для входа</h2>
                         <p className="registerForm__subheading">
-                            Пароль и телефон нужны, чтобы создать аккаунт и отправить код на {formData.email}
+                            Чтобы отправить код на {formData.email}, нужны телефон и пароль
+                            {studentAccountCreated ? '. Аккаунт уже создан — можно перейти к коду.' : ''}
                         </p>
                         <div className="registerForm__inputGroup">
                             <label htmlFor="registerForm-phone">Телефон</label>
@@ -640,6 +713,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 autoComplete="tel"
                                 inputMode="tel"
                                 placeholder="+79991234567"
+                                maxLength={12}
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
                                 disabled={loading || studentAccountCreated}
@@ -771,7 +845,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         if (isStudent) {
             if (step === 3) return 'Подтвердить';
             if (step === 5) return 'Завершить';
-            if (step === 2) return 'Получить код';
+            if (step === 2) return studentAccountCreated ? 'К коду' : 'Получить код';
             return 'Далее';
         }
         if (step === 4) return 'Зарегистрироваться';
