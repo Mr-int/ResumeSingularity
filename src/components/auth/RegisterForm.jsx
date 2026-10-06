@@ -42,7 +42,10 @@ const CODE_LENGTH = 4;
 const MESSAGE_TIMEOUT = 3000;
 const MESSAGE_LEAVE_DURATION = 300;
 const TAKEN_EMAILS_KEY = 'resume:taken-emails';
-const USERNAME_RETRY_LIMIT = 5;
+const REGISTER_COOLDOWN_KEY = 'resume:register-cooldown-until';
+/** После 429 не долбим API — сервер режет по IP на несколько минут. */
+const REGISTER_COOLDOWN_MS = 15 * 60 * 1000;
+const USERNAME_RETRY_LIMIT = 2;
 
 const emailConfirmationPending = () =>
     sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
@@ -71,16 +74,35 @@ const markEmailConfirmationPending = (email, username) => {
 
 const usernameFromEmail = (email) => {
     const local = String(email || '').split('@')[0] || '';
-    return usernameFromName(local, 'user');
+    const base = usernameFromName(local, 'user');
+    // Сразу уникальный суффикс — меньше повторных register-student при коллизии логина
+    const suffix = Math.random().toString(36).slice(2, 6);
+    return `${base.slice(0, 59)}_${suffix}`;
 };
 
 const isRateLimitedError = (err) =>
     err?.status === 429
     || /too many|слишком много|rate limit|попробуйте позже/i.test(String(err?.message || ''));
 
+const getRegisterCooldownRemainingMs = () => {
+    const until = Number(sessionStorage.getItem(REGISTER_COOLDOWN_KEY) || 0);
+    if (!until) return 0;
+    return Math.max(0, until - Date.now());
+};
+
+const markRegisterCooldown = () => {
+    sessionStorage.setItem(REGISTER_COOLDOWN_KEY, String(Date.now() + REGISTER_COOLDOWN_MS));
+};
+
+const formatCooldownMessage = (ms) => {
+    const mins = Math.max(1, Math.ceil(ms / 60000));
+    return `Слишком много попыток регистрации (лимит сервера). Подождите ~${mins} мин. и попробуйте снова.`;
+};
+
 const humanizeRegisterError = (err) => {
     if (isRateLimitedError(err)) {
-        return 'Слишком много попыток регистрации. Подождите несколько минут и попробуйте снова.';
+        markRegisterCooldown();
+        return formatCooldownMessage(getRegisterCooldownRemainingMs() || REGISTER_COOLDOWN_MS);
     }
     if (isEmailTakenError(err)) {
         return 'Эта почта уже используется';
