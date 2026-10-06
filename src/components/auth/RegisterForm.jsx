@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    changePassword,
     clearRegistrationDraft,
     confirmEmail,
     EMAIL_CONFIRMATION_EMAIL_KEY,
     EMAIL_CONFIRMATION_PENDING_KEY,
     logoutServer,
-    REGISTRATION_TEMP_PASSWORD_KEY,
     REGISTRATION_USERNAME_KEY,
     registerRecruiter,
     registerStudent,
@@ -44,6 +42,7 @@ const CODE_LENGTH = 4;
 const MESSAGE_TIMEOUT = 3000;
 const MESSAGE_LEAVE_DURATION = 300;
 const TAKEN_EMAILS_KEY = 'resume:taken-emails';
+const USERNAME_RETRY_LIMIT = 5;
 
 const emailConfirmationPending = () =>
     sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
@@ -64,30 +63,10 @@ const rememberTakenEmail = (email) => {
     sessionStorage.setItem(TAKEN_EMAILS_KEY, JSON.stringify([...set]));
 };
 
-const markEmailConfirmationPending = (email, username, tempPassword) => {
+const markEmailConfirmationPending = (email, username) => {
     sessionStorage.setItem(EMAIL_CONFIRMATION_PENDING_KEY, '1');
     sessionStorage.setItem(EMAIL_CONFIRMATION_EMAIL_KEY, email);
     sessionStorage.setItem(REGISTRATION_USERNAME_KEY, username);
-    if (tempPassword) {
-        sessionStorage.setItem(REGISTRATION_TEMP_PASSWORD_KEY, tempPassword);
-    }
-};
-
-const randomTempPassword = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let out = 'Aa1';
-    for (let i = 0; i < 18; i += 1) {
-        out += chars[Math.floor(Math.random() * chars.length)];
-    }
-    return out;
-};
-
-const randomTempPhone = () => {
-    let tail = '';
-    for (let i = 0; i < 9; i += 1) {
-        tail += Math.floor(Math.random() * 10);
-    }
-    return `+79${tail}`;
 };
 
 const usernameFromEmail = (email) => {
@@ -95,18 +74,31 @@ const usernameFromEmail = (email) => {
     return usernameFromName(local, 'user');
 };
 
+const isRateLimitedError = (err) =>
+    err?.status === 429
+    || /too many|слишком много|rate limit|попробуйте позже/i.test(String(err?.message || ''));
+
+const humanizeRegisterError = (err) => {
+    if (isRateLimitedError(err)) {
+        return 'Слишком много попыток регистрации. Подождите несколько минут и попробуйте снова.';
+    }
+    if (isEmailTakenError(err)) {
+        return 'Эта почта уже используется';
+    }
+    return err?.message || 'Не удалось отправить данные';
+};
+
 const RegisterForm = ({ role, onBack, onSuccess }) => {
     const isStudent = role === 'student';
     const hadPendingOnOpen = isStudent && emailConfirmationPending();
 
-    // Студент: 0 выбор продолжения → 1 email (проверка занятости) → 2 код → 3 пароль+телефон → 4 ФИО → 5 курс
+    // Студент: 0 продолжение → 1 email → 2 пароль+телефон (1× register) → 3 код → 4 ФИО → 5 курс
     const [step, setStep] = useState(hadPendingOnOpen ? 0 : 1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [studentAccountCreated, setStudentAccountCreated] = useState(hadPendingOnOpen);
     const [emailConfirmed, setEmailConfirmed] = useState(false);
     const [emailTouched, setEmailTouched] = useState(false);
-    const [emailChecking, setEmailChecking] = useState(false);
     const [assignedUsername, setAssignedUsername] = useState(
         hadPendingOnOpen ? (sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '') : '',
     );
@@ -115,7 +107,6 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     );
     const [code, setCode] = useState(['', '', '', '']);
     const codeRowRef = useRef(null);
-    const emailCheckSeq = useRef(0);
 
     const [messageVisible, setMessageVisible] = useState(false);
     const [messageLeaving, setMessageLeaving] = useState(false);
@@ -215,7 +206,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }));
         setStudentAccountCreated(true);
         setAssignedUsername(sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '');
-        setStep(2);
+        setStep(3);
     };
 
     const emailErrorText = (value = formData.email) => {
@@ -261,9 +252,21 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         clearMessage();
     };
 
+    const handleEmailBlur = () => {
+        setEmailTouched(true);
+        const msg = emailErrorText();
+        if (msg) {
+            setError(msg);
+            showMessage(msg);
+            return;
+        }
+        setError('');
+        clearMessage();
+    };
+
     const registerWithFreeUsername = async (base, submit) => {
         let lastError = null;
-        for (let attempt = 1; attempt <= 20; attempt += 1) {
+        for (let attempt = 1; attempt <= USERNAME_RETRY_LIMIT; attempt += 1) {
             const username = usernameWithSuffix(base, attempt);
             try {
                 await submit(username);
@@ -271,96 +274,66 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 return username;
             } catch (err) {
                 lastError = err;
-                if (isEmailTakenError(err)) throw err;
-                if (!isUsernameTakenError(err) || attempt === 20) throw err;
+                if (isRateLimitedError(err) || isEmailTakenError(err)) throw err;
+                if (!isUsernameTakenError(err) || attempt === USERNAME_RETRY_LIMIT) throw err;
             }
         }
         throw lastError;
     };
 
-    /**
-     * Проверка занятости почты через register-student (отдельного check-email в API нет).
-     * При успехе аккаунт создаётся с временным паролем/телефоном → дальше код.
-     */
-    const checkEmailAndCreateStudent = async (email) => {
-        const tempPassword = randomTempPassword();
-        const tempPhone = randomTempPhone();
-        const base = usernameFromEmail(email);
-        const username = await registerWithFreeUsername(base, (login) => registerStudent({
-            username: login,
-            password: tempPassword,
-            passwordConfirm: tempPassword,
-            firstName: '',
-            lastName: '',
-            middleName: '',
-            email,
-            phoneNumber: tempPhone,
-        }));
-        markEmailConfirmationPending(email, username, tempPassword);
-        setStudentAccountCreated(true);
-        return username;
-    };
-
-    const verifyEmailAvailability = async (email, { advanceOnSuccess } = { advanceOnSuccess: false }) => {
-        const formatMsg = emailErrorText(email);
-        if (formatMsg) {
-            setErrorAndShow(formatMsg);
-            return false;
-        }
-
-        if (studentAccountCreated) {
-            if (advanceOnSuccess) setStep(2);
-            return true;
-        }
-
-        const seq = ++emailCheckSeq.current;
-        setEmailChecking(true);
-        setLoading(true);
-        try {
-            await checkEmailAndCreateStudent(email.trim());
-            if (seq !== emailCheckSeq.current) return false;
-            setError('');
-            clearMessage();
-            if (advanceOnSuccess) {
-                setCode(['', '', '', '']);
-                setStep(2);
-            }
-            return true;
-        } catch (err) {
-            if (seq !== emailCheckSeq.current) return false;
-            if (isEmailTakenError(err)) {
-                rememberTakenEmail(email);
-                setErrorAndShow('Эта почта уже используется');
-                setStep(1);
-                return false;
-            }
-            const message = err.message || 'Не удалось проверить почту';
-            setError(message);
-            showMessage(message);
-            return false;
-        } finally {
-            if (seq === emailCheckSeq.current) {
-                setEmailChecking(false);
-                setLoading(false);
-            }
-        }
-    };
-
-    const handleEmailBlur = () => {
-        setEmailTouched(true);
+    const registerStudentAndSendCode = async () => {
         const email = formData.email.trim();
-        const formatMsg = emailErrorText(email);
-        if (formatMsg) {
-            setError(formatMsg);
-            showMessage(formatMsg);
+        const phoneNumber = normalizePhoneNumber(formData.phoneNumber);
+        if (!phoneNumber) {
+            setErrorAndShow('Телефон: формат +79991234567 (ровно 11 цифр)');
             return;
         }
-        // Занятость проверяем на «Далее» (register-student): на blur не создаём аккаунт из‑за опечаток
-        setError('');
-        clearMessage();
-    };
+        if (formData.password.length < 12) {
+            setErrorAndShow('Пароль должен быть не короче 12 символов');
+            return;
+        }
+        const hasLetter = [...formData.password].some((ch) => /\p{L}/u.test(ch));
+        const hasDigit = [...formData.password].some((ch) => /\d/.test(ch));
+        if (!hasLetter || !hasDigit) {
+            setErrorAndShow('Пароль должен содержать букву и цифру');
+            return;
+        }
+        if (formData.password !== formData.passwordConfirm) {
+            setErrorAndShow('Пароли не совпадают');
+            return;
+        }
 
-    const loginPreview = assignedUsername;
+        setLoading(true);
+        try {
+            if (!studentAccountCreated) {
+                const base = usernameFromEmail(email);
+                const username = await registerWithFreeUsername(base, (login) => registerStudent({
+                    username: login,
+                    password: formData.password,
+                    passwordConfirm: formData.passwordConfirm,
+                    firstName: '',
+                    lastName: '',
+                    middleName: '',
+                    email,
+                    phoneNumber,
+                }));
+                markEmailConfirmationPending(email, username);
+                setStudentAccountCreated(true);
+            }
+            setCode(['', '', '', '']);
+            setStep(3);
+        } catch (err) {
+            const message = humanizeRegisterError(err);
+            if (isEmailTakenError(err)) {
+                rememberTakenEmail(email);
+                setStep(1);
+            }
+            setError(message);
+            showMessage(message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const accountPayload = (username) => ({
         username,
@@ -383,9 +356,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             }));
             onSuccess(role, username);
         } catch (err) {
-            const message = isEmailTakenError(err)
-                ? 'Эта почта уже используется'
-                : (err.message || 'Не удалось отправить данные');
+            const message = humanizeRegisterError(err);
             if (isEmailTakenError(err)) {
                 rememberTakenEmail(formData.email);
                 setStep(1);
@@ -408,52 +379,9 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         try {
             await confirmEmail(fullCode);
             setEmailConfirmed(true);
-            setStep(3);
-        } catch (err) {
-            const message = err.message || 'Неверный код';
-            setError(message);
-            showMessage(message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const saveStudentCredentials = async () => {
-        const phoneNumber = normalizePhoneNumber(formData.phoneNumber);
-        if (!phoneNumber) {
-            setErrorAndShow('Телефон: формат +79991234567 (ровно 11 цифр)');
-            return;
-        }
-        if (formData.password.length < 12) {
-            setErrorAndShow('Пароль должен быть не короче 12 символов');
-            return;
-        }
-        const hasLetter = [...formData.password].some((ch) => /\p{L}/u.test(ch));
-        const hasDigit = [...formData.password].some((ch) => /\d/.test(ch));
-        if (!hasLetter || !hasDigit) {
-            setErrorAndShow('Пароль должен содержать букву и цифру');
-            return;
-        }
-        if (formData.password !== formData.passwordConfirm) {
-            setErrorAndShow('Пароли не совпадают');
-            return;
-        }
-
-        const tempPassword = sessionStorage.getItem(REGISTRATION_TEMP_PASSWORD_KEY);
-        if (!tempPassword) {
-            setErrorAndShow('Сессия регистрации сброшена. Начните заново.');
-            await startFresh();
-            return;
-        }
-
-        setLoading(true);
-        try {
-            await changePassword(tempPassword, formData.password);
-            await patchStudentMe({ phoneNumber });
-            sessionStorage.removeItem(REGISTRATION_TEMP_PASSWORD_KEY);
             setStep(4);
         } catch (err) {
-            const message = err.message || 'Не удалось сохранить пароль и телефон';
+            const message = err.message || 'Неверный код';
             setError(message);
             showMessage(message);
         } finally {
@@ -488,7 +416,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 city: formData.campus,
             });
             clearRegistrationDraft();
-            onSuccess(role, assignedUsername || loginPreview);
+            onSuccess(role, assignedUsername);
         } catch (err) {
             const message = err.message || 'Не удалось сохранить профиль';
             setError(message);
@@ -506,7 +434,9 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             await resendEmailConfirmation();
             showMessage('Код отправлен повторно');
         } catch (err) {
-            const message = err.message || 'Не удалось отправить код';
+            const message = isRateLimitedError(err)
+                ? 'Слишком много запросов. Подождите немного.'
+                : (err.message || 'Не удалось отправить код');
             setError(message);
             showMessage(message);
         } finally {
@@ -601,7 +531,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         focusCodeInput(lastIndex);
     };
 
-    const handleNextStep = async () => {
+    const handleNextStep = () => {
         setError('');
         clearMessage();
 
@@ -649,17 +579,23 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
 
         if (step === 1) {
             setEmailTouched(true);
-            await verifyEmailAvailability(formData.email.trim(), { advanceOnSuccess: true });
+            const msg = emailErrorText();
+            if (msg) { setErrorAndShow(msg); return; }
+            setStep(2);
             return;
         }
 
         if (step === 2) {
-            confirmStudentEmail();
+            if (studentAccountCreated) {
+                setStep(3);
+                return;
+            }
+            registerStudentAndSendCode();
             return;
         }
 
         if (step === 3) {
-            saveStudentCredentials();
+            confirmStudentEmail();
             return;
         }
 
@@ -701,13 +637,13 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             return;
         }
 
-        if (isStudent && step === 2) {
-            setStep(1);
+        if (isStudent && step === 3) {
+            setStep(2);
             return;
         }
 
-        if (isStudent && step === 3 && emailConfirmed) {
-            setStep(2);
+        if (isStudent && step === 4 && emailConfirmed) {
+            setStep(3);
             return;
         }
 
@@ -821,7 +757,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     <>
                         <h2 className="registerForm__heading">Регистрация</h2>
                         <p className="registerForm__subheading">
-                            Введите почту — проверим, свободна ли она
+                            Введите почту для аккаунта
                         </p>
                         <div className="registerForm__emailRow">
                             <div className="registerForm__emailIcon" aria-hidden="true">
@@ -836,13 +772,57 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                                 onChange={handleChange}
                                 onBlur={handleEmailBlur}
                                 placeholder="youremail@example.com"
-                                disabled={loading || emailChecking || studentAccountCreated}
+                                disabled={loading || studentAccountCreated}
                                 className={emailInputClass()}
                             />
                         </div>
                     </>
                 );
             case 2:
+                return (
+                    <>
+                        <h2 className="registerForm__heading">Данные для входа</h2>
+                        <p className="registerForm__subheading">
+                            Телефон и пароль нужны, чтобы создать аккаунт и отправить код на {formData.email || pendingEmail}
+                        </p>
+                        <div className="registerForm__inputGroup">
+                            <label htmlFor="registerForm-phone">Телефон</label>
+                            <input
+                                id="registerForm-phone"
+                                type="tel"
+                                name="phoneNumber"
+                                autoComplete="tel"
+                                inputMode="tel"
+                                placeholder="+79991234567"
+                                maxLength={12}
+                                value={formData.phoneNumber}
+                                onChange={handleChange}
+                                disabled={loading || studentAccountCreated}
+                            />
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Пароль</label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                disabled={loading || studentAccountCreated}
+                            />
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Повтор пароля</label>
+                            <input
+                                type="password"
+                                name="passwordConfirm"
+                                value={formData.passwordConfirm}
+                                onChange={handleChange}
+                                disabled={loading || studentAccountCreated}
+                            />
+                        </div>
+                    </>
+                );
+            case 3:
                 return (
                     <>
                         <h2 className="registerForm__heading">Введите код из письма</h2>
@@ -878,54 +858,10 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
                     </>
                 );
-            case 3:
-                return (
-                    <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 1 из 3</h2>
-                        <p className="registerForm__subheading">
-                            Задайте пароль и телефон для входа
-                        </p>
-                        <div className="registerForm__inputGroup">
-                            <label htmlFor="registerForm-phone">Телефон</label>
-                            <input
-                                id="registerForm-phone"
-                                type="tel"
-                                name="phoneNumber"
-                                autoComplete="tel"
-                                inputMode="tel"
-                                placeholder="+79991234567"
-                                maxLength={12}
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                                disabled={loading}
-                            />
-                        </div>
-                        <div className="registerForm__inputGroup">
-                            <label>Пароль</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                disabled={loading}
-                            />
-                        </div>
-                        <div className="registerForm__inputGroup">
-                            <label>Повтор пароля</label>
-                            <input
-                                type="password"
-                                name="passwordConfirm"
-                                value={formData.passwordConfirm}
-                                onChange={handleChange}
-                                disabled={loading}
-                            />
-                        </div>
-                    </>
-                );
             case 4:
                 return (
                     <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 3</h2>
+                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 1 из 2</h2>
                         <div className="registerForm__inputGroup">
                             <label>Имя</label>
                             <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} disabled={loading} />
@@ -951,7 +887,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             case 5:
                 return (
                     <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 3 из 3</h2>
+                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 2</h2>
                         <div className="registerForm__inputGroup">
                             <label>Курс</label>
                             <select name="course" value={formData.course} onChange={handleChange} disabled={loading}>
@@ -982,16 +918,16 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         (messageLeaving ? ' registerForm__messageSlot--leaving' : '');
 
     const showStepsCard = isStudent
-        ? step === 3 || step === 4 || step === 5
+        ? step === 2 || step === 4 || step === 5
         : step >= 2;
 
     const primaryLabel = () => {
-        if (loading || emailChecking) return 'Проверка…';
+        if (loading) return 'Отправка…';
         if (isStudent) {
             if (step === 0) return null;
-            if (step === 2) return 'Подтвердить';
+            if (step === 3) return 'Подтвердить';
             if (step === 5) return 'Завершить';
-            if (step === 1) return studentAccountCreated ? 'К коду' : 'Далее';
+            if (step === 2) return studentAccountCreated ? 'К коду' : 'Получить код';
             return 'Далее';
         }
         if (step === 4) return 'Зарегистрироваться';
@@ -1017,7 +953,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 <div className="registerForm__form">
                     {renderStepContent()}
 
-                    {assignedUsername && step >= 2 && step !== 0 ? (
+                    {assignedUsername && ((isStudent && step >= 2 && step !== 0) || (!isStudent && step >= 3)) ? (
                         <p className="registerForm__subheading">
                             Логин для входа: {assignedUsername}
                         </p>
@@ -1047,13 +983,13 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             type="button"
                             className="registerForm__primaryBtn"
                             onClick={handleNextStep}
-                            disabled={loading || emailChecking}
+                            disabled={loading}
                         >
                             {primaryLabel()}
                         </button>
                     )}
 
-                    {isStudent && step === 2 ? (
+                    {isStudent && step === 3 ? (
                         <button
                             type="button"
                             className="registerForm__primaryBtn registerForm__primaryBtn--secondary"
