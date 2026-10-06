@@ -1,6 +1,19 @@
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
 
+const withPageQuery = (endpoint, pageable = { page: 0, size: 100 }) => {
+    const page = typeof pageable.page === 'number' ? pageable.page : 0;
+    const size = typeof pageable.size === 'number' ? pageable.size : 100;
+    return `${endpoint}?page=${page}&size=${size}`;
+};
+
+const pageItems = (resp) => {
+    if (Array.isArray(resp?.data)) return resp.data;
+    if (Array.isArray(resp?.content)) return resp.content;
+    if (Array.isArray(resp)) return resp;
+    return [];
+};
+
 export const getAllStudents = async () => {
     try {
         const pageSize = 200;
@@ -49,23 +62,11 @@ export const getStudentById = async (id) => {
 
 export const getPortfolioByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`portfolio/filter`, {
+        const data = await apiClientJson(withPageQuery('portfolio/filter'), {
             method: 'POST',
-            body: JSON.stringify({
-                studentId: studentId,
-                page: 0,
-                size: 100
-            })
+            body: JSON.stringify({ studentId }),
         });
-
-        if (data && data.data) {
-            return data.data;
-        } else if (data && data.content) {
-            return data.content;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
+        return pageItems(data);
     } catch (error) {
         return [];
     }
@@ -84,21 +85,11 @@ export const getInstitutionById = async (id) => {
 
 export const getInstitutionsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`institution/filter`, {
+        const data = await apiClientJson(withPageQuery('institution/filter'), {
             method: 'POST',
-            body: JSON.stringify({
-                studentId: studentId,
-                page: 0,
-                size: 100
-            })
+            body: JSON.stringify({ studentId }),
         });
-
-        if (data && data.data) {
-            return data.data;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
+        return pageItems(data);
     } catch (error) {
         return [];
     }
@@ -117,21 +108,11 @@ export const getExperienceById = async (id) => {
 
 export const getExperienceByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`experience/filter`, {
+        const data = await apiClientJson(withPageQuery('experience/filter'), {
             method: 'POST',
-            body: JSON.stringify({
-                studentId: studentId,
-                page: 0,
-                size: 100
-            })
+            body: JSON.stringify({ studentId }),
         });
-
-        if (data && data.data) {
-            return data.data;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
+        return pageItems(data);
     } catch (error) {
         return [];
     }
@@ -204,25 +185,30 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
     }
 };
 
-export const getAllEducation = async () => {
-    try {
-        const data = await apiClientJson(`institution/filter`, {
-            method: 'POST',
-            body: JSON.stringify({
-                page: 0,
-                size: 1000
-            })
-        });
+const toPageResponse = (resp, pageable) => {
+    const page = typeof pageable?.page === 'number' ? pageable.page : 0;
+    const size = typeof pageable?.size === 'number' ? pageable.size : 100;
+    return {
+        data: pageItems(resp),
+        page: typeof resp?.page === 'number' ? resp.page : page,
+        size: typeof resp?.size === 'number' ? resp.size : size,
+        totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
+        totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
+    };
+};
 
-        if (data && data.data) {
-            return data.data;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
-    } catch (error) {
-        throw error;
-    }
+/** POST /education/filter — справочник вузов. Тело FilterEducationReq, pageable в query. */
+export const filterEducation = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
+    const resp = await apiClientJson(withPageQuery('education/filter', pageable), {
+        method: 'POST',
+        body: JSON.stringify(filterReq),
+    });
+    return toPageResponse(resp, pageable);
+};
+
+export const getAllEducation = async () => {
+    const pageRes = await filterEducation({}, { page: 0, size: 1000 });
+    return pageRes.data;
 };
 
 export const getEducationById = async (id) => {
@@ -238,13 +224,9 @@ export const getEducationById = async (id) => {
 
 export const getEducationDetailsByStudentId = async (studentId) => {
     try {
-        const educationList = await apiClientJson(`institution/filter`, {
+        const educationList = await apiClientJson(withPageQuery('institution/filter'), {
             method: 'POST',
-            body: JSON.stringify({
-                studentId: studentId,
-                page: 0,
-                size: 100
-            })
+            body: JSON.stringify({ studentId }),
         });
 
         let educationArray = [];
@@ -282,21 +264,11 @@ export const getEducationDetailsByStudentId = async (studentId) => {
 
 export const getEducationByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`institution/filter`, {
+        const data = await apiClientJson(withPageQuery('institution/filter'), {
             method: 'POST',
-            body: JSON.stringify({
-                studentId: studentId,
-                page: 0,
-                size: 100
-            })
+            body: JSON.stringify({ studentId }),
         });
-
-        if (data && data.data) {
-            return data.data;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
+        return pageItems(data);
     } catch (error) {
         return [];
     }
@@ -304,20 +276,11 @@ export const getEducationByStudentId = async (studentId) => {
 
 export const getAllExperience = async () => {
     try {
-        const data = await apiClientJson(`experience/filter`, {
+        const data = await apiClientJson(withPageQuery('experience/filter', { page: 0, size: 1000 }), {
             method: 'POST',
-            body: JSON.stringify({
-                page: 0,
-                size: 1000
-            })
+            body: JSON.stringify({}),
         });
-
-        if (data && data.data) {
-            return data.data;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
+        return pageItems(data);
     } catch (error) {
         throw error;
     }
@@ -336,23 +299,8 @@ export const getSkillById = async (id) => {
 
 export const getSkillsByStudentId = async (studentId) => {
     try {
-        const data = await apiClientJson(`skill/filter`, {
-            method: 'POST',
-            body: JSON.stringify({
-                studentId: studentId,
-                page: 0,
-                size: 100
-            })
-        });
-
-        if (data && data.data) {
-            return data.data;
-        } else if (data && data.content) {
-            return data.content;
-        } else if (Array.isArray(data)) {
-            return data;
-        }
-        return [];
+        const data = await apiClientJson(`student/${studentId}`, { method: 'GET' });
+        return Array.isArray(data?.skills) ? data.skills : [];
     } catch (error) {
         return [];
     }
@@ -495,3 +443,48 @@ export const getPortfolioById = async (id) => {
         throw error;
     }
 };
+
+/** POST /skill/filter — справочник навыков. FilterSkillReq: { name }. */
+export const filterSkills = async (filterReq = {}, pageable = { page: 0, size: 200 }) => {
+    const resp = await apiClientJson(withPageQuery('skill/filter', pageable), {
+        method: 'POST',
+        body: JSON.stringify(filterReq),
+    });
+    return toPageResponse(resp, pageable);
+};
+
+export const createCompany = (body) =>
+    apiClientJson('company', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
+export const createExperience = (body) =>
+    apiClientJson('experience', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
+export const updateExperience = (id, body) =>
+    apiClientJson(`experience/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });
+
+export const deleteExperience = (id) =>
+    apiClientJson(`experience/${id}`, { method: 'DELETE' });
+
+export const createInstitution = (body) =>
+    apiClientJson('institution', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
+export const updateInstitution = (id, body) =>
+    apiClientJson(`institution/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });
+
+export const deleteInstitution = (id) =>
+    apiClientJson(`institution/${id}`, { method: 'DELETE' });

@@ -1,0 +1,19 @@
+.studentCreatorLayout {
+    min-height: 100vh;
+    background-color: #131313;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+}
+
+.studentCreatorLayout__content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+}
+
+@media (max-width: 860px) {
+    .studentCreatorLayout__content {
+        padding: 24px 12px;
+    }
+}

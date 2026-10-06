@@ -1,0 +1,31 @@
+.studentCreatorGrid {
+    width: 100%;
+    max-width: 1100px;
+    background-color: #202123;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.studentCreatorGrid__columns {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.studentCreatorGrid__left,
+.studentCreatorGrid__right {
+    min-width: 0;
+}
+
+@media (max-width: 860px) {
+    .studentCreatorGrid {
+        padding: 24px 16px;
+    }
+
+    .studentCreatorGrid__columns {
+        grid-template-columns: 1fr;
+        margin-bottom: 24px;
+    }
+}

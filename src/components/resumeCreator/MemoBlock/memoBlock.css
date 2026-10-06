@@ -1,0 +1,56 @@
+.memoBlock {
+    background-color: #191A1B;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.memoBlock__title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.memoBlock__item {
+    border-bottom: 1px solid #2c2c2e;
+}
+
+.memoBlock__item:last-child {
+    border-bottom: none;
+}
+
+.memoBlock__trigger {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #ffffff;
+    text-align: left;
+    padding: 14px 0;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.memoBlock__chevron {
+    color: #8e8e93;
+    transition: transform 0.2s ease;
+}
+
+.memoBlock__item.is-open .memoBlock__chevron {
+    transform: rotate(180deg);
+}
+
+.memoBlock__content {
+    display: none;
+    color: #8e8e93;
+    font-size: 13px;
+    line-height: 1.5;
+    padding-bottom: 14px;
+}
+
+.memoBlock__item.is-open .memoBlock__content {
+    display: block;
+}

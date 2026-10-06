@@ -1,0 +1,31 @@
+.photoExamples {
+    margin-top: 20px;
+}
+
+.photoExamples__title {
+    font-size: 12px;
+    color: #8e8e93;
+    margin-bottom: 10px;
+}
+
+.photoExamples__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.photoExamples__item {
+    aspect-ratio: 3 / 4;
+    border-radius: 10px;
+    background: #2c2c2e;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 0;
+}
+
+.photoExamples__item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
