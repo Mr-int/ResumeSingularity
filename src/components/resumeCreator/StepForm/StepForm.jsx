@@ -1,10 +1,10 @@
 import './stepForm.css';
 
 export const COURSE_OPTIONS = [
-    { ui: '1', value: 'FIRST', courseNum: 1 },
-    { ui: '2', value: 'SECOND', courseNum: 2 },
-    { ui: '3', value: 'THIRD', courseNum: 3 },
-    { ui: '4', value: 'FOURTH', courseNum: 4 },
+    { ui: '1', value: 'FIRST' },
+    { ui: '2', value: 'SECOND' },
+    { ui: '3', value: 'THIRD' },
+    { ui: '4', value: 'FOURTH' },
 ];
 
 export const courseUiLabel = (course) => {
@@ -63,7 +63,7 @@ const StepForm = ({
         <section className="stepForm">
             <h2>Основные данные</h2>
 
-            <div className="stepForm__stack">
+            <div className="stepForm__grid">
                 <div className="stepForm__field">
                     <label htmlFor="student-first-name">Имя</label>
                     <input
@@ -75,6 +75,15 @@ const StepForm = ({
                     />
                 </div>
                 <div className="stepForm__field">
+                    <label htmlFor="student-city">Город</label>
+                    <input
+                        id="student-city"
+                        type="text"
+                        value={city}
+                        onChange={(event) => onChange?.('city', event.target.value)}
+                    />
+                </div>
+                <div className="stepForm__field">
                     <label htmlFor="student-last-name">Фамилия</label>
                     <input
                         id="student-last-name"
@@ -82,18 +91,6 @@ const StepForm = ({
                         placeholder="Введите фамилию"
                         value={lastName}
                         onChange={(event) => onChange?.('lastName', event.target.value)}
-                    />
-                </div>
-            </div>
-
-            <div className="stepForm__stack">
-                <div className="stepForm__field">
-                    <label htmlFor="student-city">Город</label>
-                    <input
-                        id="student-city"
-                        type="text"
-                        value={city}
-                        onChange={(event) => onChange?.('city', event.target.value)}
                     />
                 </div>
                 <div className="stepForm__field">
@@ -115,7 +112,7 @@ const StepForm = ({
                             key={item.value}
                             type="button"
                             className={
-                                `stepForm__courseBtn stepForm__courseBtn--${item.courseNum}`
+                                'stepForm__courseBtn'
                                 + (course === item.value ? ' is-active' : '')
                             }
                             aria-pressed={course === item.value}

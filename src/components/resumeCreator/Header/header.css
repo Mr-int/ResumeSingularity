@@ -81,7 +81,7 @@
     transition:
         color 0.4s var(--nav-ease),
         opacity 0.4s var(--nav-ease),
-        transform 0.35s var(--nav-ease);
+        background-color 0.3s var(--nav-ease);
 }
 
 .studentCreatorHeader__navButtonLabel {
@@ -100,11 +100,7 @@
 }
 
 .studentCreatorHeader__navButton:hover:not(.is-active):not(.is-disabled) {
-    transform: translateY(-0.5px);
-}
-
-.studentCreatorHeader__navButton:hover:not(.is-active):not(.is-disabled) .studentCreatorHeader__navButtonLabel {
-    filter: brightness(1.08);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .studentCreatorHeader__navButton.is-active {
