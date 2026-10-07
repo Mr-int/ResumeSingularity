@@ -3,6 +3,7 @@
     width: 100%;
     max-width: 1240px;
     height: 530px;
+    max-height: 100%;
     box-sizing: border-box;
     background: linear-gradient(to bottom right, #202123, #252728);
     border: 1px solid #41464B;

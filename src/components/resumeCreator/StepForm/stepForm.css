@@ -57,6 +57,18 @@
     color: #737D85;
 }
 
+#student-first-name,
+#student-last-name {
+    background-color: #191A1B;
+    border: none;
+    color: #ffffff;
+}
+
+#student-first-name::placeholder,
+#student-last-name::placeholder {
+    color: #737D85;
+}
+
 .stepForm__course {
     margin-bottom: 24px;
 }

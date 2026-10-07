@@ -1,5 +1,6 @@
 import './stepForm.css';
 import starIco from '../../../assets/icons/Star.svg';
+import BirthDatePicker from './BirthDatePicker/BirthDatePicker.jsx';
 
 export const COURSE_OPTIONS = [
     { ui: '1', value: 'FIRST', kind: 'number' },
@@ -98,11 +99,10 @@ const StepForm = ({
                 </div>
                 <div className="stepForm__field">
                     <label htmlFor="student-birth-date">Дата рождения</label>
-                    <input
+                    <BirthDatePicker
                         id="student-birth-date"
-                        type="date"
                         value={birthDate}
-                        onChange={(event) => onChange?.('birthDate', event.target.value)}
+                        onChange={(next) => onChange?.('birthDate', next)}
                     />
                 </div>
             </div>
