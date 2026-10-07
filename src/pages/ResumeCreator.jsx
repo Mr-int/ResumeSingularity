@@ -239,7 +239,6 @@ const ResumeCreator = () => {
                     <StepperFooter
                         currentStep={step}
                         totalSteps={TOTAL_STEPS}
-                        hideBack={false}
                         showSkip={step === 6}
                         nextHidden={false}
                         nextDisabled={

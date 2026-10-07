@@ -8,7 +8,8 @@
     border-radius: 48px;
     padding: 40px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .studentCreatorGrid__columns {
@@ -17,13 +18,29 @@
     gap: 40px;
     height: 100%;
     min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
 }
 
 .studentCreatorGrid__left,
 .studentCreatorGrid__right {
     min-width: 0;
     min-height: 0;
+    max-width: 100%;
+}
+
+.studentCreatorGrid__left {
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.studentCreatorGrid__right {
     overflow: auto;
+}
+
+.studentCreatorGrid__left > * {
+    max-width: 100%;
+    min-width: 0;
 }
 
 @media (max-width: 860px) {

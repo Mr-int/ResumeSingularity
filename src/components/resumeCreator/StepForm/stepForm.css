@@ -1,3 +1,11 @@
+.stepForm {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
 .stepForm h2 {
     font-size: 16px;
     font-weight: 500;
@@ -59,19 +67,20 @@
 }
 
 .stepForm__courseButtons {
+    --course-gap: 8px;
     display: flex;
     width: 100%;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: var(--course-gap);
     flex-wrap: nowrap;
 }
 
-/* Шрифт как у .course-btn; высота фиксирована, active только шире */
+/* Равная доля ширины; active чуть шире за счёт shrink соседей — ширина ряда не меняется */
 .stepForm__courseBtn {
-    width: 96px;
-    min-width: 96px;
-    max-width: 120px;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
     height: 32px;
     min-height: 32px;
     max-height: 32px;
@@ -84,12 +93,15 @@
     font-weight: 500;
     line-height: 1;
     cursor: pointer;
-    transition: width 0.25s ease, min-width 0.25s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition:
+        flex-grow 0.25s ease,
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
     font-family: 'StratosBoldItalic', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 auto;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -99,8 +111,7 @@
 }
 
 .stepForm__courseBtn.is-active {
-    width: 120px;
-    min-width: 120px;
+    flex: 1.35 1 0;
     height: 32px;
     min-height: 32px;
     max-height: 32px;
@@ -125,11 +136,10 @@
     margin-bottom: 8px;
 }
 
-/* Края совпадают с stepForm__grid; слева/справа отдельные кнопки */
+/* Края совпадают с stepForm__grid; кнопки делят ширину ряда */
 .stepForm__genderButtons {
     display: flex;
     width: 100%;
-    justify-content: space-between;
     align-items: center;
     gap: 12px;
     background: none;
@@ -138,12 +148,12 @@
 }
 
 .stepForm__genderBtn {
-    width: 96px;
-    min-width: 96px;
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
     height: 32px;
     min-height: 32px;
     max-height: 32px;
-    flex: 0 0 auto;
     box-sizing: border-box;
     background: transparent;
     border: 1px solid #737D85;
@@ -157,7 +167,11 @@
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-    transition: width 0.25s ease, min-width 0.25s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition:
+        flex-grow 0.25s ease,
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease;
     overflow: hidden;
 }
 
@@ -166,8 +180,7 @@
 }
 
 .stepForm__genderBtn.is-active {
-    width: 120px;
-    min-width: 120px;
+    flex: 1.2 1 0;
     height: 32px;
     min-height: 32px;
     max-height: 32px;

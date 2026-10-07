@@ -11,7 +11,10 @@ const StepperFooter = ({
     nextHidden = false,
     showSkip = false,
     hideBack = false,
+    title = 'Оформление карточки',
 }) => {
+    const canGoBack = !hideBack && currentStep > 1;
+
     return (
         <div className="stepperFooter">
             <div className="stepperFooter__progress">
@@ -24,21 +27,38 @@ const StepperFooter = ({
             </div>
 
             <div className="stepperFooter__bar">
-                <div>
-                    <h3 className="stepperFooter__infoTitle">Шаг {currentStep} из {totalSteps}</h3>
-                    <button type="button" className="stepperFooter__infoHint" onClick={onSave}>
+                <div className="stepperFooter__lead">
+                    <div className="stepperFooter__copy">
+                        <p className="stepperFooter__subtitle">{title}</p>
+                        <p className="stepperFooter__stepLabel">
+                            Шаг {currentStep} из {totalSteps}
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        className="stepperFooter__saveProgress"
+                        onClick={onSave}
+                    >
                         Сохранить прогресс
                     </button>
                 </div>
 
                 <div className="stepperFooter__actions">
-                    {!hideBack && (
-                        <button type="button" className="stepperFooter__nav stepperFooter__nav--back" onClick={onBack}>
+                    {canGoBack ? (
+                        <button
+                            type="button"
+                            className="stepperFooter__nav stepperFooter__nav--back"
+                            onClick={onBack}
+                        >
                             Назад
                         </button>
-                    )}
+                    ) : null}
                     {showSkip ? (
-                        <button type="button" className="stepperFooter__nav stepperFooter__nav--skip" onClick={onSkip}>
+                        <button
+                            type="button"
+                            className="stepperFooter__nav stepperFooter__nav--skip"
+                            onClick={onSkip}
+                        >
                             Пропустить
                         </button>
                     ) : null}

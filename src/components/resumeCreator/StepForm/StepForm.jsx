@@ -4,9 +4,9 @@ import starIco from '../../../assets/icons/Star.svg';
 export const COURSE_OPTIONS = [
     { ui: '1', value: 'FIRST', kind: 'number' },
     { ui: '2', value: 'SECOND', kind: 'number' },
-    { ui: 'star', value: 'NEW', kind: 'star' },
     { ui: '3', value: 'THIRD', kind: 'number' },
     { ui: '4', value: 'FOURTH', kind: 'number' },
+    { ui: 'star', value: 'NEW', kind: 'star' },
 ];
 
 export const courseUiLabel = (course) => {
