@@ -1,31 +1,40 @@
 .studentCreatorGrid {
     width: 100%;
     max-width: 1100px;
-    background-color: #202123;
-    border-radius: 24px;
+    height: 500px;
+    box-sizing: border-box;
+    background: linear-gradient(to bottom right, #202123, #252728);
+    border: 1px solid #41464B;
+    border-radius: 48px;
     padding: 40px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: auto;
 }
 
 .studentCreatorGrid__columns {
     display: grid;
     grid-template-columns: 1.2fr 1fr;
     gap: 40px;
-    margin-bottom: 40px;
+    height: 100%;
+    min-height: 0;
 }
 
 .studentCreatorGrid__left,
 .studentCreatorGrid__right {
     min-width: 0;
+    min-height: 0;
+    overflow: auto;
 }
 
 @media (max-width: 860px) {
     .studentCreatorGrid {
+        height: auto;
+        min-height: 500px;
         padding: 24px 16px;
     }
 
     .studentCreatorGrid__columns {
         grid-template-columns: 1fr;
-        margin-bottom: 24px;
+        height: auto;
     }
 }

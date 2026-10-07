@@ -231,33 +231,30 @@ const ResumeCreator = () => {
                 onAvatarClick={() => navigate('/settings')}
             />
             <div className="studentCreatorLayout__content">
-                <Grid
-                    left={left}
-                    right={right}
-                    footer={(
-                        <StepperFooter
-                            currentStep={step}
-                            totalSteps={TOTAL_STEPS}
-                            hideBack={false}
-                            showSkip={step === 6}
-                            nextHidden={false}
-                            nextDisabled={step === 5 && selectedSkills.length === 0}
-                            onBack={handleBack}
-                            onNext={handleNext}
-                            onSkip={handleNext}
-                            onSave={() => {
-                                console.log('[PLUG] save progress', {
-                                    step,
-                                    profile,
-                                    bio,
-                                    selectedSkills,
-                                    experiences,
-                                    educationsAdded,
-                                });
-                            }}
-                        />
-                    )}
-                />
+                <div className="studentCreatorLayout__stage">
+                    <Grid left={left} right={right} />
+                    <StepperFooter
+                        currentStep={step}
+                        totalSteps={TOTAL_STEPS}
+                        hideBack={false}
+                        showSkip={step === 6}
+                        nextHidden={false}
+                        nextDisabled={step === 5 && selectedSkills.length === 0}
+                        onBack={handleBack}
+                        onNext={handleNext}
+                        onSkip={handleNext}
+                        onSave={() => {
+                            console.log('[PLUG] save progress', {
+                                step,
+                                profile,
+                                bio,
+                                selectedSkills,
+                                experiences,
+                                educationsAdded,
+                            });
+                        }}
+                    />
+                </div>
             </div>
         </Layout>
     );

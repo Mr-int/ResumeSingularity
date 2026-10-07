@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import './header.css';
 import Logo from './Logo/Logo.jsx';
 import NavButton from './NavButton/NavButton.jsx';
@@ -24,6 +24,9 @@ const Header = ({
     avatarSrc,
 }) => {
     const [activeNavId, setActiveNavId] = useState(activeNavIdProp || 'career');
+    const navRef = useRef(null);
+    const btnRefs = useRef({});
+    const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false });
 
     const currentActive = activeNavIdProp ?? activeNavId;
 
@@ -42,13 +45,29 @@ const Header = ({
         });
     }, [navItems, currentActive, resumeComplete]);
 
+    useLayoutEffect(() => {
+        const updateIndicator = () => {
+            const nav = navRef.current;
+            const btn = btnRefs.current[currentActive];
+            if (!nav || !btn) return;
+            const navRect = nav.getBoundingClientRect();
+            const btnRect = btn.getBoundingClientRect();
+            setIndicator({
+                left: btnRect.left - navRect.left,
+                width: btnRect.width,
+                ready: true,
+            });
+        };
+
+        updateIndicator();
+        window.addEventListener('resize', updateIndicator);
+        return () => window.removeEventListener('resize', updateIndicator);
+    }, [currentActive, items, resumeComplete]);
+
     const handleNavClick = (event, item) => {
         if (item.disabled) {
             event.preventDefault();
             return;
-        }
-        if (!item.href || item.href === '#') {
-            event.preventDefault();
         }
         if (activeNavIdProp == null) {
             setActiveNavId(item.id);
@@ -62,11 +81,24 @@ const Header = ({
             <div className="studentCreatorHeader__inner">
                 <Logo />
 
-                <nav className="studentCreatorHeader__nav">
+                <nav className="studentCreatorHeader__nav" ref={navRef}>
+                    <span
+                        className={
+                            'studentCreatorHeader__navIndicator'
+                            + (indicator.ready ? ' is-ready' : '')
+                        }
+                        style={{
+                            transform: `translateX(${indicator.left}px)`,
+                            width: `${indicator.width}px`,
+                        }}
+                        aria-hidden="true"
+                    />
                     {items.map((item) => (
                         <NavButton
                             key={item.id}
-                            href={item.href}
+                            ref={(node) => {
+                                btnRefs.current[item.id] = node;
+                            }}
                             active={item.active}
                             disabled={item.disabled}
                             onClick={(event) => handleNavClick(event, item)}
