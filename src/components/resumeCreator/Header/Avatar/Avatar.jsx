@@ -1,3 +1,5 @@
+import profileStockIco from '../../../../assets/icons/profileStockIco.png';
+
 const Avatar = ({ src, alt = 'Пользователь', onClick }) => {
     return (
         <button
@@ -6,13 +8,16 @@ const Avatar = ({ src, alt = 'Пользователь', onClick }) => {
             onClick={onClick}
             aria-label={alt}
         >
-            {src ? (
-                <img src={src} alt={alt} />
-            ) : (
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                </svg>
-            )}
+            <img
+                src={src || profileStockIco}
+                alt={alt}
+                className={
+                    'studentCreatorHeader__avatarImg'
+                    + (src ? ' studentCreatorHeader__avatarImg--custom' : '')
+                }
+                width={src ? 56 : 42}
+                height={src ? 56 : 42}
+            />
         </button>
     );
 };

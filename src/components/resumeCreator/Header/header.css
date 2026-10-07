@@ -1,6 +1,7 @@
 .studentCreatorHeader {
     width: 100%;
-    background-color: #202020;
+    background-color: #131313;
+    border-bottom: 1px solid #202020;
 }
 
 .studentCreatorHeader__inner {
@@ -23,37 +24,50 @@
 }
 
 .studentCreatorHeader__logoShape {
-    width: 42px;
-    height: 22px;
-    background: linear-gradient(90deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
-    clip-path: polygon(0 25%, 85% 0, 100% 25%, 30% 100%, 30% 65%, 0 65%);
+    display: block;
+    width: 95px;
+    height: 30px;
+    object-fit: contain;
 }
 
 .studentCreatorHeader__logoText {
     display: flex;
     flex-direction: column;
-    font-size: 13px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 15px;
     line-height: 1.2;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: 0.02em;
 }
 
 .studentCreatorHeader__nav {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 100px;
-    padding: 6px 10px;
+    box-sizing: border-box;
+    width: 547px;
+    height: 44px;
     display: flex;
-    align-items: center;
-    gap: 6px;
+    align-items: stretch;
+    gap: 3px;
+    padding: 0;
+    background: linear-gradient(to bottom right, #0F0F0F, #1B1B1B);
+    border: 1px solid #202020;
+    border-radius: 100px;
+    overflow: hidden;
 }
 
 .studentCreatorHeader__navButton {
+    flex: 1 1 0;
+    width: 25%;
+    min-width: 0;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #b3b3b7;
     text-decoration: none;
+    font-family: 'StratosSemiLight', sans-serif;
     font-size: 14px;
     font-weight: 400;
-    padding: 8px 20px;
+    padding: 0 8px;
     border-radius: 100px;
     transition: color 0.2s ease, background-color 0.2s ease;
     white-space: nowrap;
@@ -66,7 +80,9 @@
 }
 
 .studentCreatorHeader__navButton.is-active {
-    font-weight: 600;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
     background: linear-gradient(90deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -85,53 +101,37 @@
     flex-shrink: 0;
 }
 
-.studentCreatorHeader__search {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 100px;
-    padding: 8px 14px;
-    color: #b3b3b7;
-}
-
-.studentCreatorHeader__searchInput {
-    background: transparent;
-    border: none;
-    outline: none;
-    color: #ffffff;
-    font-size: 13px;
-    font-family: inherit;
-    min-width: 140px;
-}
-
-.studentCreatorHeader__searchInput::placeholder {
-    color: #555558;
-}
-
 .studentCreatorHeader__iconButton {
     background: none;
     border: none;
-    color: #b3b3b7;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s ease;
     padding: 0;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
 }
 
 .studentCreatorHeader__iconButton:hover {
-    color: #ffffff;
+    opacity: 1;
+}
+
+.studentCreatorHeader__chatsIco {
+    display: block;
+    width: 20px;
+    height: 18px;
+    object-fit: contain;
 }
 
 .studentCreatorHeader__avatar {
-    width: 38px;
-    height: 38px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #2c2c2e 0%, #3a3a3c 100%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #4B4B4B;
+    border: none;
+    outline: none;
+    box-shadow: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -140,19 +140,20 @@
     padding: 0;
 }
 
-.studentCreatorHeader__avatar svg {
-    width: 20px;
-    height: 20px;
-    fill: #d1d1d6;
+.studentCreatorHeader__avatarImg {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    display: block;
 }
 
-.studentCreatorHeader__avatar img {
+.studentCreatorHeader__avatarImg--custom {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-@media (max-width: 820px) {
+@media (max-width: 900px) {
     .studentCreatorHeader__inner {
         padding: 12px 16px;
     }
@@ -161,12 +162,14 @@
         display: none;
     }
 
-    .studentCreatorHeader__navButton {
-        padding: 8px 12px;
-        font-size: 13px;
+    .studentCreatorHeader__nav {
+        width: auto;
+        max-width: 100%;
+        flex: 1;
     }
 
-    .studentCreatorHeader__searchInput {
-        min-width: 80px;
+    .studentCreatorHeader__navButton {
+        font-size: 12px;
+        padding: 0 4px;
     }
 }

@@ -69,7 +69,6 @@ const MEMO_BY_STEP = {
 const ResumeCreator = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
-    const [searchValue, setSearchValue] = useState('');
     const [photoPreview, setPhotoPreview] = useState(null);
     const [bio, setBio] = useState('');
     const [selectedSkills, setSelectedSkills] = useState([]);
@@ -220,8 +219,6 @@ const ResumeCreator = () => {
     return (
         <Layout>
             <Header
-                searchValue={searchValue}
-                onSearchChange={(event) => setSearchValue(event.target.value)}
                 onMessagesClick={() => navigate('/chats')}
                 onAvatarClick={() => navigate('/settings')}
             />
