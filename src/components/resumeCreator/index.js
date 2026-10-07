@@ -13,6 +13,7 @@ export { default as PhotoUploader } from './PhotoUploader/PhotoUploader.jsx';
 export { default as ImageDropzone } from './PhotoUploader/ImageDropzone/ImageDropzone.jsx';
 export { default as PhotoExamples } from './PhotoUploader/PhotoExamples/PhotoExamples.jsx';
 export { default as PhotoCropModal } from './PhotoUploader/PhotoCropModal/PhotoCropModal.jsx';
+export { default as PhotoReadyCard } from './PhotoUploader/PhotoReadyCard/PhotoReadyCard.jsx';
 export { default as ResumeBioForm } from './ResumeBioForm/ResumeBioForm.jsx';
 export { default as MemoBlock } from './MemoBlock/MemoBlock.jsx';
 export { default as SkillsSelection } from './SkillsSelection/SkillsSelection.jsx';

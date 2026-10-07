@@ -3,6 +3,7 @@
     width: 531px;
     max-width: 100%;
     height: 163px;
+    min-height: 140px;
     background-color: transparent;
     border: 1px dashed #40444b;
     border-radius: 16px;
@@ -13,6 +14,7 @@
     cursor: pointer;
     user-select: none;
     transition: border-color 0.2s, background-color 0.2s;
+    padding: 16px;
 }
 
 .imageDropzone:hover,
@@ -30,6 +32,7 @@
     width: 56px;
     height: 40px;
     margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .imageDropzone__iconBg {
@@ -72,4 +75,21 @@
     font-weight: 400;
     letter-spacing: -0.1px;
     text-align: center;
+}
+
+@media (max-width: 600px) {
+    .imageDropzone {
+        width: 100%;
+        height: 140px;
+    }
+
+    .imageDropzone__icon {
+        margin-bottom: 12px;
+        transform: scale(0.9);
+    }
+
+    .imageDropzone__text {
+        font-size: 13px;
+        padding: 0 8px;
+    }
 }

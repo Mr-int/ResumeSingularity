@@ -11,6 +11,7 @@ const SpecialtyList = ({ specialties = [], specialityId = null, onSpecialtyChang
 
     const syncThumb = useCallback(() => {
         const el = listRef.current;
+        const rail = railRef.current;
         if (!el) return;
 
         const { scrollTop, scrollHeight, clientHeight } = el;
@@ -20,8 +21,9 @@ const SpecialtyList = ({ specialties = [], specialityId = null, onSpecialtyChang
             return;
         }
 
-        const height = Math.max(MIN_THUMB, (clientHeight / scrollHeight) * clientHeight);
-        const maxTop = clientHeight - height;
+        const trackHeight = rail?.clientHeight || clientHeight;
+        const height = Math.max(MIN_THUMB, (clientHeight / scrollHeight) * trackHeight);
+        const maxTop = Math.max(0, trackHeight - height);
         const top = maxTop * (scrollTop / overflow);
         setThumb({ top, height, visible: true });
     }, []);
@@ -50,7 +52,8 @@ const SpecialtyList = ({ specialties = [], specialityId = null, onSpecialtyChang
             const overflow = el.scrollHeight - el.clientHeight;
             if (overflow <= 0) return;
 
-            const maxTop = el.clientHeight - drag.thumbHeight;
+            const trackHeight = railRef.current?.clientHeight || el.clientHeight;
+            const maxTop = Math.max(1, trackHeight - drag.thumbHeight);
             const nextTop = Math.min(maxTop, Math.max(0, event.clientY - drag.startY + drag.originTop));
             el.scrollTop = (nextTop / maxTop) * overflow;
         };
@@ -86,7 +89,8 @@ const SpecialtyList = ({ specialties = [], specialityId = null, onSpecialtyChang
 
         const rect = railRef.current.getBoundingClientRect();
         const y = event.clientY - rect.top;
-        const maxTop = el.clientHeight - thumb.height;
+        const trackHeight = railRef.current.clientHeight;
+        const maxTop = Math.max(1, trackHeight - thumb.height);
         const nextTop = Math.min(maxTop, Math.max(0, y - thumb.height / 2));
         const overflow = el.scrollHeight - el.clientHeight;
         el.scrollTop = (nextTop / maxTop) * overflow;

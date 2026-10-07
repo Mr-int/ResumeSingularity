@@ -1,5 +1,7 @@
 .photoExamples {
     margin-top: 20px;
+    width: 100%;
+    min-width: 0;
 }
 
 .photoExamples__title {
@@ -60,4 +62,39 @@
 
 .photoExamples__item--wrong .photoExamples__badge {
     background: #EF4444;
+}
+
+@media (max-width: 700px) {
+    .photoExamples__grid {
+        gap: 16px;
+    }
+
+    .photoExamples__item {
+        width: 110px;
+        height: 119px;
+        border-radius: 12px;
+    }
+
+    .photoExamples__item img {
+        border-radius: 12px;
+    }
+
+    .photoExamples__badge {
+        width: 20px;
+        height: 20px;
+        top: 6px;
+        right: 6px;
+    }
+}
+
+@media (max-width: 420px) {
+    .photoExamples__grid {
+        gap: 12px;
+    }
+
+    .photoExamples__item {
+        width: calc((100% - 24px) / 3);
+        height: auto;
+        aspect-ratio: 138 / 149;
+    }
 }

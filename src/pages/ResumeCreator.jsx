@@ -62,20 +62,82 @@ const MOCK_EDUCATIONS = [
 
 const MEMO_BY_STEP = {
     4: [
-        { id: 'bio-1', title: 'Что писать в «О себе»?', content: 'Кратко: кто вы, чем интересны, к какой роли идёте.' },
-        { id: 'bio-2', title: 'Чего избегать', content: 'Общие фразы без фактов и слишком длинный текст.' },
+        {
+            id: 'bio-1',
+            tone: 'success',
+            title: 'Что нужно писать в резюме?',
+            bullets: [
+                'Профессиональный профиль: Краткий итог вашего опыта — кто вы, сколько лет в профессии и в чем ваша главная специализация.',
+                'Главные достижения: Измеримые результаты (например, увеличил продажи на 20%, сократил время обработки заявок).',
+                'Полезные навыки и контекст: Узкоспециализированные допуски, знание редких программ или методологий.',
+                'Релевантные увлечения: Профильные хобби, ведение профессионального блога или участие в отраслевых сообществах.',
+            ],
+        },
+        {
+            id: 'bio-2',
+            tone: 'error',
+            title: 'Что НЕ нужно писать в резюме?',
+            bullets: [
+                'Информация, не связанная с желаемой должностью, избыточные личные данные и неактуальный стаж работы многолетней давности.',
+            ],
+        },
     ],
     5: [
-        { id: 'skills-1', title: 'Сколько навыков', content: 'Достаточно 5–12 релевантных тегов, не весь список.' },
-        { id: 'skills-2', title: 'Приоритет', content: 'Сначала то, что подтверждается опытом или проектами.' },
+        {
+            id: 'skills-1',
+            tone: 'success',
+            title: 'Какие навыки указывать?',
+            bullets: [
+                'Достаточно 5–12 релевантных тегов, не весь список технологий.',
+                'Сначала то, что подтверждается опытом или проектами.',
+            ],
+        },
+        {
+            id: 'skills-2',
+            tone: 'error',
+            title: 'Чего избегать в навыках?',
+            bullets: [
+                'Устаревшие инструменты без контекста и навыки, не связанные с выбранной специальностью.',
+            ],
+        },
     ],
     6: [
-        { id: 'exp-1', title: 'Как описать опыт', content: 'Роль, период, 1–2 конкретных результата.' },
-        { id: 'exp-2', title: 'Нет опыта', content: 'Можно пропустить шаг и добавить стажировки позже.' },
+        {
+            id: 'exp-1',
+            tone: 'success',
+            title: 'Как описать опыт?',
+            bullets: [
+                'Роль, период и 1–2 конкретных результата с цифрами, если есть.',
+                'Фокус на задачах, близких к желаемой позиции.',
+            ],
+        },
+        {
+            id: 'exp-2',
+            tone: 'error',
+            title: 'Чего не писать в опыте?',
+            bullets: [
+                'Длинные списки обязанностей без результата и нерелевантные подработки без пояснения.',
+            ],
+        },
     ],
     7: [
-        { id: 'edu-1', title: 'Образование', content: 'Вуз и годы обучения. Курс уточняется в профиле.' },
-        { id: 'edu-2', title: 'Несколько вузов', content: 'Добавляйте записи по одной.' },
+        {
+            id: 'edu-1',
+            tone: 'success',
+            title: 'Что указать в образовании?',
+            bullets: [
+                'Вуз, направление и годы обучения. Курс уточняется в профиле.',
+                'Можно добавить несколько вузов по одной записи.',
+            ],
+        },
+        {
+            id: 'edu-2',
+            tone: 'error',
+            title: 'Чего избегать?',
+            bullets: [
+                'Неактуальные краткосрочные курсы без связи со специальностью и избыточные школьные детали.',
+            ],
+        },
     ],
 };
 
@@ -90,7 +152,9 @@ const ResumeCreator = () => {
     const saveToastTimerRef = useRef(null);
     const [resumeComplete, setResumeComplete] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const [photoName, setPhotoName] = useState('');
     const [cropSrc, setCropSrc] = useState(null);
+    const pendingPhotoNameRef = useRef('');
     const cropDraftUrlRef = useRef(null);
     const [bio, setBio] = useState('');
     const [selectedSkills, setSelectedSkills] = useState([]);
@@ -192,17 +256,28 @@ const ResumeCreator = () => {
 
     const handlePhotoFile = (file) => {
         if (!file) return;
+        pendingPhotoNameRef.current = file.name || 'photo.jpeg';
         openCropModal(URL.createObjectURL(file), { isObjectUrl: true });
     };
 
     const handleCropConfirm = (dataUrl) => {
         setPhotoPreview(dataUrl);
+        setPhotoName(pendingPhotoNameRef.current || 'photo.jpeg');
+        pendingPhotoNameRef.current = '';
         clearCropDraft();
     };
 
     const handleCropReset = () => {
         clearCropDraft();
+        pendingPhotoNameRef.current = '';
         setPhotoPreview(null);
+        setPhotoName('');
+    };
+
+    const handleReplacePhoto = () => {
+        setPhotoPreview(null);
+        setPhotoName('');
+        pendingPhotoNameRef.current = '';
     };
 
     const left = (() => {
@@ -224,9 +299,16 @@ const ResumeCreator = () => {
                 return (
                     <PhotoUploader
                         examples={PHOTO_EXAMPLES}
+                        photoSrc={photoPreview}
+                        photoName={photoName}
                         onFileSelect={handlePhotoFile}
+                        onReplacePhoto={handleReplacePhoto}
                         onExampleSelect={(example) => {
-                            if (example?.src) openCropModal(example.src);
+                            if (!example?.src) return;
+                            pendingPhotoNameRef.current = example.id
+                                ? `${example.id}.jpeg`
+                                : 'example.jpeg';
+                            openCropModal(example.src);
                         }}
                     />
                 );

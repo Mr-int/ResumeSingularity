@@ -12,7 +12,9 @@
     position: relative;
     width: 16px;
     flex-shrink: 0;
-    align-self: stretch;
+    align-self: flex-start;
+    height: calc(100% - var(--studentCreatorGrid-pad-y, 40px) - 24px);
+    max-height: calc(100% - var(--studentCreatorGrid-pad-y, 40px) - 24px);
     border-radius: 16px;
     opacity: 0;
     pointer-events: none;

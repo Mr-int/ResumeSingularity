@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import trafaretSrc from '../../../../assets/photoExamples/trafaret.png';
 import './photoCropModal.css';
 
-/** Соотношение кадра как у cardPreview__photo: 159×173 */
-const FRAME_W = 280;
-const FRAME_H = Math.round((280 * 173) / 159);
-const OUT_W = 318;
-const OUT_H = Math.round((318 * 173) / 159);
+const FRAME_W = 330;
+const FRAME_H = 410;
+const OUT_W = 330;
+const OUT_H = 410;
 
 const PhotoCropModal = ({ src, onCrop, onReset }) => {
     const imgRef = useRef(null);
@@ -164,7 +164,7 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                     Выровняйте фото по трафарету
                 </h2>
                 <p className="photoCropModal__hint">
-                    Перетащите изображение и прокрутите колёсиком для масштаба
+                    Совместите лицо и плечи с силуэтом, затем нажмите «Обрезать»
                 </p>
 
                 <div
@@ -190,7 +190,18 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                             opacity: ready ? 1 : 0,
                         }}
                     />
-                    <div className="photoCropModal__stencil" aria-hidden="true" />
+
+                    <div className="photoCropModal__frame" aria-hidden="true">
+                        <div className="photoCropModal__corners" />
+                        <div className="photoCropModal__sideLines" />
+                        <div className="photoCropModal__edgeLines" />
+                        <img
+                            className="photoCropModal__silhouette"
+                            src={trafaretSrc}
+                            alt=""
+                            draggable={false}
+                        />
+                    </div>
                 </div>
 
                 <div className="photoCropModal__zoom">
