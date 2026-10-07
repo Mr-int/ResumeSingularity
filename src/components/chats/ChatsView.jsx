@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './chatsView.css';
 import {
     getMyChats,
@@ -82,6 +82,7 @@ async function resolveMe() {
 }
 
 const ChatsView = () => {
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [loadingList, setLoadingList] = useState(false);
     const [listError, setListError] = useState('');
@@ -238,12 +239,23 @@ const ChatsView = () => {
             setTitles(nextTitles);
             setSubtitles(nextSubtitles);
         } catch (e) {
+            // Чаты недоступны (профиль не дозаполнен и т.п.) — не разлогиниваем, показываем error-страницу
+            if (e?.status === 403 || e?.status === 404) {
+                navigate('/error/404', {
+                    replace: true,
+                    state: {
+                        title: 'Чаты пока недоступны',
+                        message: e.message || 'Дозаполните профиль, чтобы открыть переписку.',
+                    },
+                });
+                return;
+            }
             setListError(e.message || 'Не удалось загрузить чаты');
             setChats([]);
         } finally {
             setLoadingList(false);
         }
-    }, [enrichChatMeta]);
+    }, [enrichChatMeta, navigate]);
 
     const loadMessages = useCallback(
         async (chatId) => {

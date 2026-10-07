@@ -8,13 +8,27 @@ const EducationForm = ({
 }) => {
     const {
         educationId = '',
+        institutionName = '',
         startYear = '',
         endYear = '',
     } = values;
 
+    const handleUniversityChange = (raw) => {
+        const nextName = raw;
+        const match = educations.find(
+            (item) => (item?.institution || '').trim().toLowerCase() === nextName.trim().toLowerCase(),
+        );
+        onChange?.({
+            institutionName: nextName,
+            educationId: match?.id != null ? String(match.id) : '',
+        });
+    };
+
     const handleAdd = () => {
+        const name = institutionName.trim();
         onAdd?.({
             educationId: educationId === '' ? undefined : Number(educationId),
+            institutionName: name,
             startYear: startYear === '' ? undefined : Number(startYear),
             endYear: endYear === '' ? undefined : Number(endYear),
         });
@@ -26,18 +40,21 @@ const EducationForm = ({
 
             <div className="educationForm__field">
                 <label htmlFor="education-university">Вуз</label>
-                <select
+                <input
                     id="education-university"
-                    value={educationId}
-                    onChange={(event) => onChange?.('educationId', event.target.value)}
-                >
-                    <option value="">Выберите вуз</option>
+                    type="text"
+                    list="education-university-list"
+                    value={institutionName}
+                    placeholder="Начните вводить или выберите из списка"
+                    autoComplete="off"
+                    onChange={(event) => handleUniversityChange(event.target.value)}
+                />
+                <datalist id="education-university-list">
                     {educations.map((item) => (
-                        <option key={item.id} value={item.id}>
-                            {item.institution}
-                        </option>
+                        <option key={item.id} value={item.institution} />
                     ))}
-                </select>
+                </datalist>
+                <p className="educationForm__hint">Можно выбрать из списка или вписать свой вуз</p>
             </div>
 
             <div className="educationForm__row">
@@ -49,7 +66,7 @@ const EducationForm = ({
                         min="1900"
                         max="2100"
                         value={startYear}
-                        onChange={(event) => onChange?.('startYear', event.target.value)}
+                        onChange={(event) => onChange?.({ startYear: event.target.value })}
                     />
                 </div>
                 <div className="educationForm__field">
@@ -60,7 +77,7 @@ const EducationForm = ({
                         min="1900"
                         max="2100"
                         value={endYear}
-                        onChange={(event) => onChange?.('endYear', event.target.value)}
+                        onChange={(event) => onChange?.({ endYear: event.target.value })}
                     />
                 </div>
             </div>

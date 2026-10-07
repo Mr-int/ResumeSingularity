@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import './statusError.css';
 
 const STATUS_CONTENT = {
@@ -32,8 +32,15 @@ const normalizeCode = (value) => {
 
 const StatusError = ({ code: codeProp }) => {
     const { code: codeParam } = useParams();
+    const location = useLocation();
     const code = normalizeCode(codeProp ?? codeParam);
-    const content = STATUS_CONTENT[code];
+    const base = STATUS_CONTENT[code];
+    const override = location.state && typeof location.state === 'object' ? location.state : null;
+    const content = {
+        ...base,
+        title: override?.title || base.title,
+        message: override?.message || base.message,
+    };
     const circleRef = useRef(null);
     const slashRef = useRef(null);
 

@@ -40,25 +40,43 @@ const mondayOffset = (year, month) => {
     return day === 0 ? 6 : day - 1;
 };
 
+/**
+ * Кастомный календарь (портал).
+ * По умолчанию — диапазон даты рождения (14–100 лет).
+ * Для опыта: передайте minYear / maxYear (и опционально minDate / maxDate ISO).
+ */
 const BirthDatePicker = ({
     id = 'student-birth-date',
     value = '',
     onChange,
     placeholder = 'ДД.ММ.ГГГГ',
+    minYear: minYearProp,
+    maxYear: maxYearProp,
+    minDate: minDateProp = '',
+    maxDate: maxDateProp = '',
+    ariaLabel = 'Календарь',
 }) => {
     const today = useMemo(() => startOfDay(new Date()), []);
-    const minYear = today.getFullYear() - 100;
-    const maxYear = today.getFullYear() - 14;
+    const minBound = parseISO(minDateProp);
+    const maxBound = parseISO(maxDateProp);
+
+    const minYear = minYearProp
+        ?? minBound?.getFullYear()
+        ?? (today.getFullYear() - 100);
+    const maxYear = maxYearProp
+        ?? maxBound?.getFullYear()
+        ?? (today.getFullYear() - 14);
+
     const years = useMemo(
-        () => Array.from({ length: maxYear - minYear + 1 }, (_, i) => maxYear - i),
+        () => Array.from({ length: Math.max(0, maxYear - minYear) + 1 }, (_, i) => maxYear - i),
         [minYear, maxYear],
     );
 
     const selected = parseISO(value);
     const [open, setOpen] = useState(false);
     const [view, setView] = useState('days');
-    const [viewYear, setViewYear] = useState(selected?.getFullYear() ?? maxYear - 4);
-    const [viewMonth, setViewMonth] = useState(selected?.getMonth() ?? 0);
+    const [viewYear, setViewYear] = useState(selected?.getFullYear() ?? maxYear);
+    const [viewMonth, setViewMonth] = useState(selected?.getMonth() ?? today.getMonth());
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 280 });
     const rootRef = useRef(null);
     const popoverRef = useRef(null);
@@ -120,8 +138,25 @@ const BirthDatePicker = ({
         };
     }, [open]);
 
+    const rangeStart = minBound || new Date(minYear, 0, 1);
+    const rangeEnd = (() => {
+        if (maxBound) return maxBound;
+        const endOfMaxYear = new Date(maxYear, 11, 31);
+        return endOfMaxYear > today ? today : endOfMaxYear;
+    })();
+
+    const isDateDisabled = (date) => {
+        const day = startOfDay(date);
+        return day < rangeStart || day > rangeEnd;
+    };
+
     const openPicker = () => {
-        const base = selected || new Date(maxYear - 4, 0, 1);
+        const fallback = new Date(
+            Math.min(maxYear, Math.max(minYear, today.getFullYear())),
+            today.getMonth(),
+            1,
+        );
+        const base = selected || minBound || fallback;
         setViewYear(Math.min(maxYear, Math.max(minYear, base.getFullYear())));
         setViewMonth(base.getMonth());
         setView('days');
@@ -154,7 +189,7 @@ const BirthDatePicker = ({
                 ref={popoverRef}
                 className="birthDatePicker__popover"
                 role="dialog"
-                aria-label="Календарь даты рождения"
+                aria-label={ariaLabel}
                 style={{ top: coords.top, left: coords.left, width: coords.width }}
             >
                 <div className="birthDatePicker__header">
@@ -206,7 +241,7 @@ const BirthDatePicker = ({
                                 const iso = toISO(date);
                                 const isSelected = value === iso;
                                 const isToday = toISO(today) === iso;
-                                const disabled = date > today || date.getFullYear() < minYear;
+                                const disabled = isDateDisabled(date);
                                 return (
                                     <button
                                         key={iso}

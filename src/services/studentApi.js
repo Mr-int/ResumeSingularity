@@ -211,6 +211,28 @@ export const getAllEducation = async () => {
     return pageRes.data;
 };
 
+export const createEducation = (body) =>
+    apiClientJson('education', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
+/** Найти id вуза в справочнике по точному имени (без учёта регистра). */
+export const findEducationIdByName = async (name) => {
+    const trimmed = name?.trim();
+    if (!trimmed) return null;
+    try {
+        const pageRes = await filterEducation({ institution: trimmed }, { page: 0, size: 50 });
+        const items = Array.isArray(pageRes?.data) ? pageRes.data : [];
+        const exact = items.find(
+            (item) => (item?.institution || '').trim().toLowerCase() === trimmed.toLowerCase(),
+        );
+        return exact?.id ?? null;
+    } catch {
+        return null;
+    }
+};
+
 export const getEducationById = async (id) => {
     try {
         const data = await apiClientJson(`education/${id}`, {
@@ -458,6 +480,30 @@ export const createCompany = (body) =>
         method: 'POST',
         body: JSON.stringify(body),
     });
+
+/** POST /company/filter — поиск компаний по имени. */
+export const filterCompanies = async (filterReq = {}, pageable = { page: 0, size: 20 }) => {
+    const resp = await apiClientJson(withPageQuery('company/filter', pageable), {
+        method: 'POST',
+        body: JSON.stringify(filterReq),
+    });
+    return pageItems(resp);
+};
+
+/** Найти id компании по точному имени (без учёта регистра). */
+export const findCompanyIdByName = async (name) => {
+    const trimmed = name?.trim();
+    if (!trimmed) return null;
+    try {
+        const items = await filterCompanies({ name: trimmed }, { page: 0, size: 30 });
+        const exact = items.find(
+            (item) => (item?.name || '').trim().toLowerCase() === trimmed.toLowerCase(),
+        );
+        return exact?.id ?? null;
+    } catch {
+        return null;
+    }
+};
 
 export const createExperience = (body) =>
     apiClientJson('experience', {

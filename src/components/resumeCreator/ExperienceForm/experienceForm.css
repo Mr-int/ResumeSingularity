@@ -4,6 +4,34 @@
     margin-bottom: 16px;
 }
 
+.experienceForm__list {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.experienceForm__listItem {
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #131313;
+    border: 1px solid #2f2f2f;
+}
+
+.experienceForm__listTitle {
+    font-size: 14px;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.experienceForm__listDates {
+    font-size: 12px;
+    color: #8e8e93;
+}
+
 .experienceForm__field {
     display: flex;
     flex-direction: column;
@@ -27,6 +55,10 @@
     font-family: inherit;
     outline: none;
     width: 100%;
+}
+
+.experienceForm__row .birthDatePicker__trigger {
+    border-color: #3a3a3c;
 }
 
 .experienceForm__row {

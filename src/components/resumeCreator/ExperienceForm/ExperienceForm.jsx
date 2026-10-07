@@ -1,7 +1,19 @@
+import BirthDatePicker from '../StepForm/BirthDatePicker/BirthDatePicker.jsx';
 import './experienceForm.css';
+
+const EXPERIENCE_MIN_YEAR = new Date().getFullYear() - 60;
+const EXPERIENCE_MAX_YEAR = new Date().getFullYear();
+
+const formatDateLabel = (value) => {
+    if (!value) return 'н.в.';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    const [y, m, d] = value.split('-');
+    return `${d}.${m}.${y}`;
+};
 
 const ExperienceForm = ({
     values = {},
+    items = [],
     onChange,
     onAdd,
 }) => {
@@ -29,6 +41,24 @@ const ExperienceForm = ({
         <section className="experienceForm">
             <h2>Опыт работы</h2>
 
+            {items.length > 0 ? (
+                <ul className="experienceForm__list">
+                    {items.map((item) => (
+                        <li key={item.id || `${item.position}-${item.startDate}`} className="experienceForm__listItem">
+                            <div className="experienceForm__listTitle">
+                                {item.position || 'Должность'}
+                                {item.companyName ? ` · ${item.companyName}` : ''}
+                            </div>
+                            <div className="experienceForm__listDates">
+                                {formatDateLabel(item.startDate)}
+                                {' — '}
+                                {formatDateLabel(item.endDate)}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
+
             <div className="experienceForm__field">
                 <label htmlFor="experience-company">Компания</label>
                 <input
@@ -54,20 +84,33 @@ const ExperienceForm = ({
             <div className="experienceForm__row">
                 <div className="experienceForm__field">
                     <label htmlFor="experience-start">Начало</label>
-                    <input
+                    <BirthDatePicker
                         id="experience-start"
-                        type="date"
                         value={startDate}
-                        onChange={(event) => onChange?.('startDate', event.target.value)}
+                        placeholder="ДД.ММ.ГГГГ"
+                        minYear={EXPERIENCE_MIN_YEAR}
+                        maxYear={EXPERIENCE_MAX_YEAR}
+                        maxDate={endDate || undefined}
+                        ariaLabel="Дата начала работы"
+                        onChange={(next) => {
+                            onChange?.('startDate', next);
+                            if (endDate && next && endDate < next) {
+                                onChange?.('endDate', '');
+                            }
+                        }}
                     />
                 </div>
                 <div className="experienceForm__field">
                     <label htmlFor="experience-end">Окончание</label>
-                    <input
+                    <BirthDatePicker
                         id="experience-end"
-                        type="date"
                         value={endDate}
-                        onChange={(event) => onChange?.('endDate', event.target.value)}
+                        placeholder="ДД.ММ.ГГГГ"
+                        minYear={EXPERIENCE_MIN_YEAR}
+                        maxYear={EXPERIENCE_MAX_YEAR}
+                        minDate={startDate || undefined}
+                        ariaLabel="Дата окончания работы"
+                        onChange={(next) => onChange?.('endDate', next)}
                     />
                 </div>
             </div>

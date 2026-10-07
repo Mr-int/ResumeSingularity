@@ -27,9 +27,12 @@ import {
     getAllSpecialities,
     getAllEducation,
     filterSkills,
-    createCompany,
+    createEducation,
     createExperience,
     createInstitution,
+    findCompanyIdByName,
+    findEducationIdByName,
+    getExperienceDetailsByStudentId,
     getInstitutionsByStudentId,
 } from '../services/studentApi.js';
 import {
@@ -38,12 +41,31 @@ import {
     validateResumeStep,
 } from './resumeCreatorValidation.js';
 import {
+    clearExperienceDraft,
     clearResumeCreatorStep,
+    loadExperienceDraft,
     loadResumeCreatorStep,
+    saveExperienceDraft,
     saveResumeCreatorStep,
 } from './resumeCreatorStepStorage.js';
 
 const TOTAL_STEPS = 7;
+
+/** Фоллбек, если каталог навыков с API пуст (для UI). */
+const TEST_SKILLS = [
+    { id: 'test-1', name: 'Figma' },
+    { id: 'test-2', name: 'Illustrator' },
+    { id: 'test-3', name: 'Photoshop' },
+    { id: 'test-4', name: 'Типографика' },
+    { id: 'test-5', name: 'Колористика' },
+    { id: 'test-6', name: 'UI/UX дизайн' },
+    { id: 'test-7', name: 'HTML/CSS' },
+    { id: 'test-8', name: 'JavaScript' },
+    { id: 'test-9', name: 'React' },
+    { id: 'test-10', name: 'Python' },
+    { id: 'test-11', name: 'Git' },
+    { id: 'test-12', name: 'Командная работа' },
+];
 
 const PHOTO_EXAMPLES = [
     { id: 'correct-1', src: correctPhoto, status: 'correct', alt: 'Удачный пример фото' },
@@ -246,20 +268,49 @@ const ResumeCreator = () => {
             setBootError('');
             try {
                 const me = await getStudentMe();
-                const [specs, skillsPage, edus, institutions] = await Promise.all([
+                const [specs, skillsPage, edus, institutions, experienceDetails] = await Promise.all([
                     getAllSpecialities(),
                     filterSkills({}, { page: 0, size: 500 }),
                     getAllEducation(),
                     getInstitutionsByStudentId(me.id),
+                    getExperienceDetailsByStudentId(me.id),
                 ]);
                 if (cancelled) return;
 
                 setStudentId(me.id);
                 setSpecialties(Array.isArray(specs) ? specs : []);
-                setSkillsCatalog(Array.isArray(skillsPage?.data) ? skillsPage.data : []);
+                const apiSkills = Array.isArray(skillsPage?.data)
+                    ? skillsPage.data
+                    : (Array.isArray(skillsPage) ? skillsPage : []);
+                const mergedSkills = [...apiSkills];
+                TEST_SKILLS.forEach((skill) => {
+                    if (!mergedSkills.some((item) => item?.name === skill.name)) {
+                        mergedSkills.push(skill);
+                    }
+                });
+                setSkillsCatalog(mergedSkills);
                 setEducationsCatalog(Array.isArray(edus) ? edus : []);
 
                 setSavedInstitutionCount(Array.isArray(institutions) ? institutions.length : 0);
+                setExperiences(
+                    Array.isArray(experienceDetails)
+                        ? experienceDetails.map((item) => ({
+                            id: item.id,
+                            companyId: item.companyId,
+                            companyName: item.company || '',
+                            position: item.position || '',
+                            startDate: item.startDate || '',
+                            endDate: item.current || item.endDate === 'по настоящее время'
+                                ? ''
+                                : (item.endDate || ''),
+                            additionalInfo: item.description || '',
+                        }))
+                        : [],
+                );
+                const restoredExperienceDraft = loadExperienceDraft(me.id);
+                if (restoredExperienceDraft) {
+                    setExperienceDraft(restoredExperienceDraft);
+                }
                 setProfile({
                     firstName: me.firstName || '',
                     lastName: me.lastName || '',
@@ -315,8 +366,11 @@ const ResumeCreator = () => {
             body.specialityId = Number(profile.specialityId);
         }
         if (bio?.trim()) body.bio = bio.trim();
-        if (selectedSkills.length > 0) {
-            body.skillsIds = selectedSkills.map((id) => Number(id));
+        const skillIds = selectedSkills
+            .map((id) => Number(id))
+            .filter((id) => Number.isFinite(id) && id > 0);
+        if (skillIds.length > 0) {
+            body.skillsIds = skillIds;
         }
         return body;
     };
@@ -369,6 +423,7 @@ const ResumeCreator = () => {
                 );
                 return;
             }
+            await flushExperienceDraftIfReady();
             saveResumeCreatorStep(studentId, step);
             showToast('Прогресс успешно сохранён');
         } catch (err) {
@@ -398,6 +453,9 @@ const ResumeCreator = () => {
                     return;
                 }
             }
+            if (step === 6) {
+                await flushExperienceDraftIfReady();
+            }
             if (step >= TOTAL_STEPS) {
                 const result = await persistProfile();
                 if (result?.cityMismatch) {
@@ -408,6 +466,7 @@ const ResumeCreator = () => {
                     return;
                 }
                 clearResumeCreatorStep(studentId);
+                clearExperienceDraft(studentId);
                 setResumeComplete(true);
                 showToast('Резюме сохранено');
                 navigate('/settings');
@@ -490,6 +549,64 @@ const ResumeCreator = () => {
         pendingPhotoNameRef.current = '';
     };
 
+    const buildExperienceBody = async (entry) => {
+        const companyName = entry.companyName?.trim() || '';
+        let companyId = entry.companyId ? Number(entry.companyId) : undefined;
+        // POST /company студенту запрещён — только поиск существующей
+        if (!companyId && companyName) {
+            companyId = (await findCompanyIdByName(companyName)) || undefined;
+        }
+
+        let additionalInfo = (entry.additionalInfo || '').trim();
+        if (!companyId && companyName) {
+            additionalInfo = additionalInfo
+                ? `Компания: ${companyName}\n${additionalInfo}`
+                : `Компания: ${companyName}`;
+        }
+
+        const body = {
+            position: entry.position.trim(),
+            startDate: entry.startDate,
+        };
+        if (companyId) body.companyId = companyId;
+        if (additionalInfo) body.additionalInfo = additionalInfo;
+        if (entry.endDate) body.endDate = entry.endDate;
+        return { body, companyName, companyId };
+    };
+
+    const persistExperienceEntry = async (entry) => {
+        const { body, companyName, companyId } = await buildExperienceBody(entry);
+        const created = await createExperience(body);
+        const id = created?.experience?.id || created?.id;
+        const saved = {
+            ...entry,
+            id,
+            companyId: companyId || entry.companyId,
+            companyName: companyName || entry.companyName || '',
+        };
+        setExperiences((prev) => [...prev, saved]);
+        setExperienceDraft({});
+        clearExperienceDraft(studentId);
+        return saved;
+    };
+
+    const flushExperienceDraftIfReady = async () => {
+        const entry = {
+            companyId: experienceDraft.companyId || undefined,
+            companyName: (experienceDraft.companyName || '').trim(),
+            position: (experienceDraft.position || '').trim(),
+            additionalInfo: experienceDraft.additionalInfo || '',
+            startDate: experienceDraft.startDate || '',
+            endDate: experienceDraft.endDate || undefined,
+        };
+        if (!entry.position || !entry.startDate) {
+            saveExperienceDraft(studentId, experienceDraft);
+            return false;
+        }
+        await persistExperienceEntry(entry);
+        return true;
+    };
+
     const handleAddExperience = async (entry) => {
         if (!entry?.position?.trim() || !entry?.startDate) {
             showToast('Укажите должность и дату начала', { error: true });
@@ -497,20 +614,7 @@ const ResumeCreator = () => {
         }
         setSaving(true);
         try {
-            let companyId = entry.companyId ? Number(entry.companyId) : undefined;
-            if (!companyId && entry.companyName?.trim()) {
-                const company = await createCompany({ name: entry.companyName.trim() });
-                companyId = company?.id;
-            }
-            const created = await createExperience({
-                companyId,
-                position: entry.position.trim(),
-                additionalInfo: entry.additionalInfo || undefined,
-                startDate: entry.startDate,
-                endDate: entry.endDate || undefined,
-            });
-            setExperiences((prev) => [...prev, { ...entry, id: created?.experience?.id || created?.id }]);
-            setExperienceDraft({});
+            await persistExperienceEntry(entry);
             showToast('Опыт добавлен');
         } catch (err) {
             showToast(err?.message || 'Не удалось добавить опыт', { error: true });
@@ -520,8 +624,9 @@ const ResumeCreator = () => {
     };
 
     const handleAddEducation = async (entry) => {
-        if (!entry?.educationId) {
-            showToast('Выберите вуз', { error: true });
+        const institutionName = entry?.institutionName?.trim() || '';
+        if (!entry?.educationId && !institutionName) {
+            showToast('Укажите вуз', { error: true });
             return;
         }
         if (entry.startYear == null || entry.endYear == null) {
@@ -530,12 +635,55 @@ const ResumeCreator = () => {
         }
         setSaving(true);
         try {
-            const created = await createInstitution({
-                educationId: Number(entry.educationId),
+            let educationId = entry.educationId ? Number(entry.educationId) : undefined;
+            if (!educationId && institutionName) {
+                const fromCatalog = educationsCatalog.find(
+                    (item) => (item?.institution || '').trim().toLowerCase() === institutionName.toLowerCase(),
+                );
+                educationId = fromCatalog?.id != null
+                    ? Number(fromCatalog.id)
+                    : ((await findEducationIdByName(institutionName)) || undefined);
+            }
+
+            // Свой вуз: пробуем создать в справочнике (может быть только ADMIN)
+            if (!educationId && institutionName) {
+                try {
+                    const createdEdu = await createEducation({
+                        institution: institutionName,
+                        additionalInfo: 'Добавлено студентом',
+                        webUrl: 'https://',
+                    });
+                    educationId = createdEdu?.id != null ? Number(createdEdu.id) : undefined;
+                    if (educationId) {
+                        setEducationsCatalog((prev) => (
+                            prev.some((item) => Number(item.id) === educationId)
+                                ? prev
+                                : [...prev, createdEdu]
+                        ));
+                    }
+                } catch {
+                    /* student may not create education dictionary */
+                }
+            }
+
+            const body = {
                 startYear: entry.startYear,
                 endYear: entry.endYear,
-            });
-            setEducationsAdded((prev) => [...prev, { ...entry, id: created?.institution?.id || created?.educationId }]);
+            };
+            if (educationId) {
+                body.educationId = educationId;
+            } else if (institutionName) {
+                // как в CreateStudentInstitutionReq — название, если id нет
+                body.institution = institutionName;
+            }
+
+            const created = await createInstitution(body);
+            setEducationsAdded((prev) => [...prev, {
+                ...entry,
+                educationId,
+                institutionName,
+                id: created?.institution?.id || created?.educationId || educationId,
+            }]);
             setEducationDraft({});
             showToast('Образование добавлено');
         } catch (err) {
@@ -621,8 +769,13 @@ const ResumeCreator = () => {
                 return (
                     <ExperienceForm
                         values={experienceDraft}
+                        items={experiences}
                         onChange={(field, value) => {
-                            setExperienceDraft((prev) => ({ ...prev, [field]: value }));
+                            setExperienceDraft((prev) => {
+                                const next = { ...prev, [field]: value };
+                                saveExperienceDraft(studentId, next);
+                                return next;
+                            });
                         }}
                         onAdd={handleAddExperience}
                     />
@@ -632,8 +785,8 @@ const ResumeCreator = () => {
                     <EducationForm
                         values={educationDraft}
                         educations={educationsCatalog}
-                        onChange={(field, value) => {
-                            setEducationDraft((prev) => ({ ...prev, [field]: value }));
+                        onChange={(patch) => {
+                            setEducationDraft((prev) => ({ ...prev, ...patch }));
                         }}
                         onAdd={handleAddEducation}
                     />

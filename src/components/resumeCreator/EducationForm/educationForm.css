@@ -16,6 +16,12 @@
     color: #8e8e93;
 }
 
+.educationForm__hint {
+    margin: 0;
+    font-size: 12px;
+    color: #6a6d73;
+}
+
 .educationForm__field input,
 .educationForm__field select {
     background: transparent;
