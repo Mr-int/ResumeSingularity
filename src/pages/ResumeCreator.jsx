@@ -11,6 +11,7 @@ import {
     ResumeBioForm,
     MemoBlock,
     SkillsSelection,
+    SkillsAside,
     ExperienceForm,
     EducationForm,
 } from '../components/resumeCreator/index.js';
@@ -36,6 +37,11 @@ import {
     validatePartialSave,
     validateResumeStep,
 } from './resumeCreatorValidation.js';
+import {
+    clearResumeCreatorStep,
+    loadResumeCreatorStep,
+    saveResumeCreatorStep,
+} from './resumeCreatorStepStorage.js';
 
 const TOTAL_STEPS = 7;
 
@@ -70,20 +76,33 @@ const MEMO_BY_STEP = {
     5: [
         {
             id: 'skills-1',
-            tone: 'success',
-            title: 'Какие навыки указывать?',
-            bullets: [
-                'Достаточно 5–12 релевантных тегов, не весь список технологий.',
-                'Сначала то, что подтверждается опытом или проектами.',
-            ],
+            title: 'Что если у меня мало навыков?',
+            content:
+                'Укажите базовые навыки, которые вы успели освоить во время обучения, прохождения курсов или выполнения учебных проектов. Также можно сделать упор на soft-скиллы и готовность быстро обучаться.',
         },
         {
             id: 'skills-2',
-            tone: 'error',
-            title: 'Чего избегать в навыках?',
-            bullets: [
-                'Устаревшие инструменты без контекста и навыки, не связанные с выбранной специальностью.',
-            ],
+            title: 'Если я не уверен в навыке на 100%, добавлять?',
+            content:
+                'Если вы понимаете базовые принципы технологии и сможете ответить на базовые вопросы на интервью, навык стоит добавить, но не завышайте свой уровень владения.',
+        },
+        {
+            id: 'skills-3',
+            title: 'Сколько навыков добавить?',
+            content:
+                'Оптимально указывать от 7 до 15 ключевых навыков, которые максимально точно соответствуют требованиям вакансии.',
+        },
+        {
+            id: 'skills-4',
+            title: 'На сколько важны Soft-скиллы?',
+            content:
+                'Личностные качества крайне важны, особенно для начинающих специалистов. Они показывают, как вы взаимодействуете в команде.',
+        },
+        {
+            id: 'skills-5',
+            title: 'Что представляют из себя навыки в резюме?',
+            content:
+                'Это ваш профессиональный фундамент, разделенный на Hard-скиллы (технические знания) и Soft-скиллы (социальные качества).',
         },
     ],
     6: [
@@ -186,16 +205,6 @@ const ResumeCreator = () => {
         return found?.name || 'Специализация';
     }, [profile.specialityId, specialties]);
 
-    const primarySkill = useMemo(() => {
-        const firstId = selectedSkills[0];
-        const skill = skillsCatalog.find((item) => String(item.id) === String(firstId));
-        if (!skill) return { code: '—', label: 'Навык' };
-        return {
-            code: skill.name.slice(0, 2).toUpperCase(),
-            label: skill.name,
-        };
-    }, [selectedSkills, skillsCatalog]);
-
     const validationCtx = useMemo(
         () => resumeValidationContext({
             profile,
@@ -271,6 +280,9 @@ const ResumeCreator = () => {
                     setPhotoPreview(getImageUrl(me.imagePath));
                     setPhotoName('avatar.jpeg');
                 }
+
+                const savedStep = loadResumeCreatorStep(me.id);
+                if (savedStep) setStep(savedStep);
             } catch (err) {
                 if (cancelled) return;
                 const status = err?.status;
@@ -357,6 +369,7 @@ const ResumeCreator = () => {
                 );
                 return;
             }
+            saveResumeCreatorStep(studentId, step);
             showToast('Прогресс успешно сохранён');
         } catch (err) {
             showToast(err?.message || 'Не удалось сохранить прогресс', { error: true });
@@ -394,12 +407,15 @@ const ResumeCreator = () => {
                     );
                     return;
                 }
+                clearResumeCreatorStep(studentId);
                 setResumeComplete(true);
                 showToast('Резюме сохранено');
                 navigate('/settings');
                 return;
             }
-            setStep((prev) => prev + 1);
+            const nextStep = step + 1;
+            saveResumeCreatorStep(studentId, nextStep);
+            setStep(nextStep);
         } catch (err) {
             showToast(err?.message || 'Не удалось сохранить шаг', { error: true });
         } finally {
@@ -412,7 +428,9 @@ const ResumeCreator = () => {
             navigate('/');
             return;
         }
-        setStep((prev) => prev - 1);
+        const prevStep = step - 1;
+        saveResumeCreatorStep(studentId, prevStep);
+        setStep(prevStep);
     };
 
     const clearCropDraft = () => {
@@ -590,10 +608,10 @@ const ResumeCreator = () => {
                     <SkillsSelection
                         skills={skillsCatalog}
                         selectedSkills={selectedSkills}
-                        onToggle={(id) => {
+                        onAdd={(id) => {
                             setSelectedSkills((prev) => (
                                 prev.some((item) => String(item) === String(id))
-                                    ? prev.filter((item) => String(item) !== String(id))
+                                    ? prev
                                     : [...prev, id]
                             ));
                         }}
@@ -633,9 +651,21 @@ const ResumeCreator = () => {
                     lastName={profile.lastName || 'Фамилия'}
                     specialty={specialtyName}
                     course={profile.course}
-                    skillCode={primarySkill.code}
-                    skillLabel={primarySkill.label}
                     photoSrc={photoPreview}
+                />
+            );
+        }
+        if (step === 5) {
+            return (
+                <SkillsAside
+                    skills={skillsCatalog}
+                    selectedSkills={selectedSkills}
+                    memoItems={MEMO_BY_STEP[5] || []}
+                    onRemove={(id) => {
+                        setSelectedSkills((prev) =>
+                            prev.filter((item) => String(item) !== String(id))
+                        );
+                    }}
                 />
             );
         }

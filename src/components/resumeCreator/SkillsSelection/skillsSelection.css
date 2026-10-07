@@ -1,40 +1,123 @@
-.skillsSelection h2 {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 16px;
+.skillsSelection {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.skillsSelection__title {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 400;
+    color: #e3e4e6;
+    font-family: 'StratosSemiLight', sans-serif;
+}
+
+.skillsSelection__subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: #8a8e94;
+}
+
+.skillsSelection__searchWrap {
+    position: relative;
+    margin-bottom: 28px;
+    flex-shrink: 0;
 }
 
 .skillsSelection__search {
+    box-sizing: border-box;
     width: 100%;
-    background: transparent;
-    border: 1px solid #3a3a3c;
-    border-radius: 10px;
-    padding: 12px 16px;
+    max-width: 340px;
+    height: 46px;
+    background-color: #212326;
+    border: 1px solid transparent;
+    border-radius: 23px;
+    padding: 0 20px 0 46px;
     color: #ffffff;
-    font-size: 14px;
+    font-size: 15px;
     font-family: inherit;
     outline: none;
-    margin-bottom: 16px;
+    transition: border-color 0.2s;
 }
 
-.skillsSelection__grid {
+.skillsSelection__search:focus {
+    border-color: #4f4f52;
+}
+
+.skillsSelection__search::placeholder {
+    color: #55585e;
+}
+
+.skillsSelection__searchIcon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    fill: #55585e;
+    pointer-events: none;
+}
+
+.skillsSelection__pool {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    align-content: flex-start;
+    gap: 10px 8px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
-.skillsSelection__tag {
-    background: transparent;
-    border: 1px solid #3a3a3c;
-    color: #ffffff;
-    border-radius: 100px;
-    padding: 8px 14px;
-    cursor: pointer;
-    font-size: 13px;
+.skillsSelection__poolBadge {
+    background-color: #212326;
+    color: #a5a6a9;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
     font-family: inherit;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        background-color 0.15s,
+        color 0.15s,
+        opacity 0.15s;
 }
 
-.skillsSelection__tag.is-active {
-    background: #3a3a3c;
-    border-color: #007bff;
+.skillsSelection__poolBadge:hover:not(:disabled) {
+    background-color: #2b2e32;
+    color: #ffffff;
+}
+
+.skillsSelection__poolBadge.is-added,
+.skillsSelection__poolBadge:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.skillsSelection__poolEmpty {
+    font-size: 14px;
+    color: #55585e;
+    padding: 6px 0;
+}
+
+@media (max-width: 600px) {
+    .skillsSelection__subtitle {
+        margin-bottom: 16px;
+    }
+
+    .skillsSelection__searchWrap {
+        margin-bottom: 18px;
+    }
+
+    .skillsSelection__search {
+        max-width: none;
+    }
 }

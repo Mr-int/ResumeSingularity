@@ -1,5 +1,6 @@
 import './cardPreview.css';
 import { getImageUrl } from '../../../config/api.js';
+import { getSpecialtyIcon } from '../../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../StepForm/StepForm.jsx';
 
 const courseTone = (course) => {
@@ -25,8 +26,6 @@ const CardPreview = ({
     lastName = 'Фамилия',
     specialty = 'Специализация',
     course = '',
-    skillCode = 'PY',
-    skillLabel = 'Python',
     photoSrc,
     imagePath,
 }) => {
@@ -40,6 +39,18 @@ const CardPreview = ({
         ? `cardPreview__badge--course cardPreview__badge--course-${tone}`
         : 'cardPreview__badge--course';
     const photoUrl = photoSrc || getImageUrl(imagePath);
+    const specialtyIcon = getSpecialtyIcon(specialty);
+    const hasSpecialty = Boolean(specialty && specialty !== 'Специализация');
+
+    const skillBadge = specialtyIcon ? (
+        <img
+            src={specialtyIcon}
+            alt={hasSpecialty ? specialty : ''}
+            className="cardPreview__badgeIcon"
+        />
+    ) : (
+        <span className="cardPreview__badgePlaceholder" aria-hidden="true">—</span>
+    );
 
     return (
         <section className="cardPreview">
@@ -52,7 +63,12 @@ const CardPreview = ({
                 <div className="cardPreview__photo">
                     {photoUrl ? <img src={photoUrl} alt={fullName} /> : null}
                     <div className="cardPreview__badges">
-                        <div className="cardPreview__badge cardPreview__badge--skill">{skillCode}</div>
+                        <div
+                            className="cardPreview__badge cardPreview__badge--skill"
+                            title={hasSpecialty ? specialty : 'Специальность'}
+                        >
+                            {skillBadge}
+                        </div>
                         <div className={`cardPreview__badge ${badgeCourseClass}`}>{courseLabel}</div>
                     </div>
                 </div>
@@ -69,7 +85,9 @@ const CardPreview = ({
                     Ваш номер курса
                 </div>
                 <div className="cardPreview__legend">
-                    <span className="cardPreview__legendBadge cardPreview__legendBadge--skill">{skillCode}</span>
+                    <span className="cardPreview__legendBadge cardPreview__legendBadge--skill">
+                        {skillBadge}
+                    </span>
                     проф. знак вашей специальности
                 </div>
             </div>

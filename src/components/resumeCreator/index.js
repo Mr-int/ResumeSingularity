@@ -17,5 +17,6 @@ export { default as PhotoReadyCard } from './PhotoUploader/PhotoReadyCard/PhotoR
 export { default as ResumeBioForm } from './ResumeBioForm/ResumeBioForm.jsx';
 export { default as MemoBlock } from './MemoBlock/MemoBlock.jsx';
 export { default as SkillsSelection } from './SkillsSelection/SkillsSelection.jsx';
+export { default as SkillsAside } from './SkillsAside/SkillsAside.jsx';
 export { default as ExperienceForm } from './ExperienceForm/ExperienceForm.jsx';
 export { default as EducationForm } from './EducationForm/EducationForm.jsx';
