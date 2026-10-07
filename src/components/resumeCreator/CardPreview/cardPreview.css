@@ -1,5 +1,10 @@
 .cardPreview {
+    box-sizing: border-box;
+    width: 560px;
+    height: 450px;
+    max-width: 100%;
     background-color: #191A1B;
+    border: 1px solid #2F2F2F;
     border-radius: 16px;
     padding: 30px;
     display: flex;
@@ -7,7 +12,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    min-height: 360px;
+    overflow: hidden;
 }
 
 .cardPreview__title {
@@ -35,19 +40,26 @@
 }
 
 .cardPreview__card {
-    background-color: #202020;
-    border: 1px solid #2c2c2e;
+    box-sizing: border-box;
+    width: 173px;
+    height: 276px;
+    background-color: #2F2F2F;
+    border: 1px solid #41464B;
     border-radius: 16px;
-    width: 190px;
-    padding: 14px;
+    padding: 2px 2px 12px;
     text-align: center;
     margin: 28px 0 30px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .cardPreview__photo {
-    width: 100%;
-    height: 160px;
+    box-sizing: border-box;
+    width: 169px;
+    height: 173px;
+    flex-shrink: 0;
     background: linear-gradient(180deg, #444a65 0%, #29314c 100%);
     border-radius: 12px;
     position: relative;
@@ -90,11 +102,35 @@
 }
 
 .cardPreview__badge--course {
-    background-color: #007bff;
     color: #fff;
+    background: #3a3a3c;
+}
+
+.cardPreview__badge--course-1 {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.cardPreview__badge--course-2 {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.cardPreview__badge--course-3 {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.cardPreview__badge--course-4 {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
+}
+
+.cardPreview__badge--course-star {
+    background: linear-gradient(135deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
 }
 
 .cardPreview__name {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 12px;
+    text-align: left;
     font-size: 15px;
     font-weight: 600;
     line-height: 1.3;
@@ -102,6 +138,10 @@
 }
 
 .cardPreview__spec {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 12px;
+    text-align: left;
     font-size: 11px;
     color: #8e8e93;
 }
@@ -129,8 +169,31 @@
 }
 
 .cardPreview__legendBadge--course {
-    background-color: #00bcd4;
-    color: #000;
+    color: #fff;
+    background: #3a3a3c;
+    font-family: 'StratosBoldItalic', sans-serif;
+    min-width: 28px;
+    text-align: center;
+}
+
+.cardPreview__legendBadge--course-1 {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.cardPreview__legendBadge--course-2 {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.cardPreview__legendBadge--course-3 {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.cardPreview__legendBadge--course-4 {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
+}
+
+.cardPreview__legendBadge--course-star {
+    background: linear-gradient(135deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
 }
 
 .cardPreview__legendBadge--skill {
