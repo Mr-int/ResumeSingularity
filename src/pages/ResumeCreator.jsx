@@ -69,6 +69,7 @@ const MEMO_BY_STEP = {
 const ResumeCreator = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
+    const [resumeComplete, setResumeComplete] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
     const [bio, setBio] = useState('');
     const [selectedSkills, setSelectedSkills] = useState([]);
@@ -106,7 +107,13 @@ const ResumeCreator = () => {
         setProfile((prev) => ({ ...prev, [field]: value }));
     };
 
-    const handleNext = () => setStep((prev) => Math.min(TOTAL_STEPS, prev + 1));
+    const handleNext = () => {
+        if (step >= TOTAL_STEPS) {
+            setResumeComplete(true);
+            return;
+        }
+        setStep((prev) => prev + 1);
+    };
     const handleBack = () => {
         if (step <= 1) {
             navigate('/');
@@ -219,6 +226,7 @@ const ResumeCreator = () => {
     return (
         <Layout>
             <Header
+                resumeComplete={resumeComplete}
                 onMessagesClick={() => navigate('/chats')}
                 onAvatarClick={() => navigate('/settings')}
             />

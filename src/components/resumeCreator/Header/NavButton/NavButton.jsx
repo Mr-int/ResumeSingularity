@@ -20,9 +20,9 @@ const NavButton = ({
     }
 
     return (
-        <a href={href} className={className} onClick={onClick}>
+        <button type="button" className={className} onClick={onClick}>
             {children}
-        </a>
+        </button>
     );
 };
 

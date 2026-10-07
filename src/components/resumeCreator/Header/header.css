@@ -48,8 +48,8 @@
     align-items: stretch;
     gap: 3px;
     padding: 0;
-    background: linear-gradient(to bottom right, #0F0F0F, #1B1B1B);
-    border: 1px solid #202020;
+    background: linear-gradient(to right, #0f0f0f, #1b1b1b);
+    border: 1px solid #2F2F2F;
     border-radius: 100px;
     overflow: hidden;
 }
@@ -62,20 +62,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #b3b3b7;
+    color: #ffffff;
     text-decoration: none;
     font-family: 'StratosSemiLight', sans-serif;
     font-size: 14px;
     font-weight: 400;
-    padding: 0 8px;
+    padding: 0;
+    border: none;
+    background: transparent;
     border-radius: 100px;
-    transition: color 0.2s ease, background-color 0.2s ease;
+    transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
     white-space: nowrap;
     cursor: pointer;
 }
 
 .studentCreatorHeader__navButton:hover:not(.is-active):not(.is-disabled) {
-    color: #ffffff;
     background: rgba(255, 255, 255, 0.05);
 }
 
@@ -87,11 +88,13 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    color: transparent;
 }
 
 .studentCreatorHeader__navButton.is-disabled {
     color: #4a4a4e;
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
 .studentCreatorHeader__actions {
@@ -128,7 +131,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #4B4B4B;
+    background: #262626;
     border: none;
     outline: none;
     box-shadow: none;
@@ -170,6 +173,5 @@
 
     .studentCreatorHeader__navButton {
         font-size: 12px;
-        padding: 0 4px;
     }
 }
