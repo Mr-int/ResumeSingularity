@@ -49,6 +49,35 @@
     flex-shrink: 0;
 }
 
+.studentCreatorSaveToast {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    z-index: 1300;
+    transform: translate(-50%, 12px);
+    padding: 10px 16px;
+    border-radius: 10px;
+    background: #1e1f21;
+    border: 1px solid #41464B;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 13px;
+    line-height: 1.3;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease;
+}
+
+.studentCreatorSaveToast.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    pointer-events: auto;
+}
+
 @media (max-width: 860px) {
     .studentCreatorLayout__content {
         padding: 20px 12px;

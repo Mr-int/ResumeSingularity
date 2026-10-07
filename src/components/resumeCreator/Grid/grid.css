@@ -32,8 +32,17 @@
 }
 
 .studentCreatorGrid__left {
+    height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+}
+
+.studentCreatorGrid__left:has(.stepForm--specialties) {
+    overflow: hidden;
+}
+
+.studentCreatorGrid__left:has(.stepForm--specialties) > * {
+    height: 100%;
 }
 
 .studentCreatorGrid__right {

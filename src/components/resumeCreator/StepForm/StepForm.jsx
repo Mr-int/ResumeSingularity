@@ -39,7 +39,7 @@ const StepForm = ({
 
     if (step === 2) {
         return (
-            <section className="stepForm">
+            <section className="stepForm stepForm--specialties">
                 <h2>Выбор специальности</h2>
                 <div className="stepForm__specialtyList">
                     {specialties.map((item) => {
@@ -51,10 +51,11 @@ const StepForm = ({
                             <button
                                 key={id}
                                 type="button"
-                                className={`stepForm__specialtyItem ${isActive ? 'is-active' : ''}`}
+                                className={`stepForm__specialtyItem${isActive ? ' is-active' : ''}`}
                                 onClick={() => onSpecialtyChange?.(id)}
                             >
-                                {name}
+                                <span className="stepForm__specialtyDot" aria-hidden="true" />
+                                <span className="stepForm__specialtyName">{name}</span>
                             </button>
                         );
                     })}

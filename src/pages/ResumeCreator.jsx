@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Layout,
@@ -23,6 +23,13 @@ const MOCK_SPECIALTIES = [
     { id: 3, name: 'Data Science' },
     { id: 4, name: 'Mobile' },
     { id: 5, name: 'DevOps' },
+    { id: 6, name: 'QA / Testing' },
+    { id: 7, name: 'Product Design' },
+    { id: 8, name: 'System Analyst' },
+    { id: 9, name: 'ML Engineer' },
+    { id: 10, name: 'Cybersecurity' },
+    { id: 11, name: 'Game Development' },
+    { id: 12, name: 'Fullstack' },
 ];
 
 const MOCK_SKILLS = [
@@ -69,6 +76,8 @@ const MEMO_BY_STEP = {
 const ResumeCreator = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
+    const [saveToastVisible, setSaveToastVisible] = useState(false);
+    const saveToastTimerRef = useRef(null);
     const [resumeComplete, setResumeComplete] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
     const [bio, setBio] = useState('');
@@ -105,6 +114,30 @@ const ResumeCreator = () => {
 
     const updateProfile = (field, value) => {
         setProfile((prev) => ({ ...prev, [field]: value }));
+    };
+
+    useEffect(() => () => {
+        if (saveToastTimerRef.current) {
+            window.clearTimeout(saveToastTimerRef.current);
+        }
+    }, []);
+
+    const handleSaveProgress = () => {
+        console.log('[PLUG] save progress', {
+            step,
+            profile,
+            bio,
+            selectedSkills,
+            experiences,
+            educationsAdded,
+        });
+        setSaveToastVisible(true);
+        if (saveToastTimerRef.current) {
+            window.clearTimeout(saveToastTimerRef.current);
+        }
+        saveToastTimerRef.current = window.setTimeout(() => {
+            setSaveToastVisible(false);
+        }, 2500);
     };
 
     const canGoNextFromStep1 = Boolean(profile.course && profile.gender);
@@ -248,18 +281,16 @@ const ResumeCreator = () => {
                         onBack={handleBack}
                         onNext={handleNext}
                         onSkip={handleNext}
-                        onSave={() => {
-                            console.log('[PLUG] save progress', {
-                                step,
-                                profile,
-                                bio,
-                                selectedSkills,
-                                experiences,
-                                educationsAdded,
-                            });
-                        }}
+                        onSave={handleSaveProgress}
                     />
                 </div>
+            </div>
+            <div
+                className={`studentCreatorSaveToast${saveToastVisible ? ' is-visible' : ''}`}
+                role="status"
+                aria-live="polite"
+            >
+                Прогресс успешно сохранён
             </div>
         </Layout>
     );
