@@ -18,7 +18,7 @@
 
 .studentCreatorLayout__stage {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1240px;
     display: flex;
     flex-direction: column;
     gap: 20px;

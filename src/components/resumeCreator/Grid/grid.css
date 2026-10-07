@@ -1,25 +1,26 @@
 .studentCreatorGrid {
+    /* 560 (preview) + gap 40 + left ~520 + padding 80 ≈ 1200 */
     width: 100%;
-    max-width: 1100px;
-    height: 500px;
+    max-width: 1240px;
+    height: 530px;
     box-sizing: border-box;
     background: linear-gradient(to bottom right, #202123, #252728);
     border: 1px solid #41464B;
     border-radius: 48px;
     padding: 40px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .studentCreatorGrid__columns {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns: minmax(0, 1fr) 560px;
     gap: 40px;
     height: 100%;
     min-height: 0;
     min-width: 0;
-    overflow-x: hidden;
+    align-items: start;
+    overflow: hidden;
 }
 
 .studentCreatorGrid__left,
@@ -35,7 +36,9 @@
 }
 
 .studentCreatorGrid__right {
-    overflow: auto;
+    width: 560px;
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
 .studentCreatorGrid__left > * {
@@ -43,15 +46,37 @@
     min-width: 0;
 }
 
-@media (max-width: 860px) {
+.studentCreatorGrid__right > * {
+    width: 560px;
+    max-width: 560px;
+}
+
+@media (max-width: 1100px) {
     .studentCreatorGrid {
         height: auto;
-        min-height: 500px;
-        padding: 24px 16px;
+        min-height: 530px;
+        overflow: visible;
     }
 
     .studentCreatorGrid__columns {
         grid-template-columns: 1fr;
         height: auto;
+    }
+
+    .studentCreatorGrid__right {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .studentCreatorGrid__right > * {
+        width: min(560px, 100%);
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 860px) {
+    .studentCreatorGrid {
+        padding: 24px 16px;
     }
 }
