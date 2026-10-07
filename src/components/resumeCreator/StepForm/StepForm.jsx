@@ -1,6 +1,7 @@
 import './stepForm.css';
 import starIco from '../../../assets/icons/Star.svg';
 import BirthDatePicker from './BirthDatePicker/BirthDatePicker.jsx';
+import SpecialtyList from './SpecialtyList/SpecialtyList.jsx';
 
 export const COURSE_OPTIONS = [
     { ui: '1', value: 'FIRST', kind: 'number' },
@@ -30,7 +31,7 @@ const StepForm = ({
     const {
         firstName = '',
         lastName = '',
-        city = 'г. Москва',
+        city = '',
         birthDate = '',
         course = '',
         gender = '',
@@ -41,25 +42,11 @@ const StepForm = ({
         return (
             <section className="stepForm stepForm--specialties">
                 <h2>Выбор специальности</h2>
-                <div className="stepForm__specialtyList">
-                    {specialties.map((item) => {
-                        const id = item?.id;
-                        const name = item?.name || '';
-                        const isActive = specialityId != null && String(specialityId) === String(id);
-
-                        return (
-                            <button
-                                key={id}
-                                type="button"
-                                className={`stepForm__specialtyItem${isActive ? ' is-active' : ''}`}
-                                onClick={() => onSpecialtyChange?.(id)}
-                            >
-                                <span className="stepForm__specialtyDot" aria-hidden="true" />
-                                <span className="stepForm__specialtyName">{name}</span>
-                            </button>
-                        );
-                    })}
-                </div>
+                <SpecialtyList
+                    specialties={specialties}
+                    specialityId={specialityId}
+                    onSpecialtyChange={onSpecialtyChange}
+                />
             </section>
         );
     }
@@ -84,6 +71,7 @@ const StepForm = ({
                     <input
                         id="student-city"
                         type="text"
+                        placeholder="г. Москва"
                         value={city}
                         onChange={(event) => onChange?.('city', event.target.value)}
                     />

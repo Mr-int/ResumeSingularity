@@ -1,0 +1,136 @@
+.photoCropModal {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.72);
+    box-sizing: border-box;
+}
+
+.photoCropModal__card {
+    width: min(420px, 100%);
+    box-sizing: border-box;
+    background: #1e1f21;
+    border: 1px solid #41464B;
+    border-radius: 24px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.photoCropModal__title {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: #ffffff;
+    text-align: center;
+}
+
+.photoCropModal__hint {
+    margin: 8px 0 20px;
+    font-size: 13px;
+    color: #8e8e93;
+    text-align: center;
+}
+
+.photoCropModal__stage {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    background: #131313;
+    user-select: none;
+}
+
+.photoCropModal__stage:active {
+    cursor: grabbing;
+}
+
+.photoCropModal__image {
+    position: absolute;
+    left: 0;
+    top: 0;
+    max-width: none;
+    transform-origin: 0 0;
+    pointer-events: none;
+}
+
+.photoCropModal__stencil {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.55);
+    border: 2px solid rgba(62, 142, 255, 0.85);
+    pointer-events: none;
+}
+
+.photoCropModal__zoom {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.photoCropModal__zoomBtn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid #41464B;
+    background: transparent;
+    color: #ffffff;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.photoCropModal__zoomBtn:hover {
+    border-color: #3E8EFF;
+}
+
+.photoCropModal__actions {
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.photoCropModal__btn {
+    flex: 1;
+    height: 44px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.photoCropModal__btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.photoCropModal__btn--reset {
+    background: transparent;
+    border: 1px solid #737D85;
+    color: #ffffff;
+}
+
+.photoCropModal__btn--reset:hover {
+    border-color: #ffffff;
+}
+
+.photoCropModal__btn--crop {
+    background: #3E8EFF;
+    color: #ffffff;
+}
+
+.photoCropModal__btn--crop:hover:not(:disabled) {
+    filter: brightness(1.06);
+}

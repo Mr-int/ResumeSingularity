@@ -1,5 +1,7 @@
 .studentCreatorGrid {
     /* 560 (preview) + gap 40 + left ~520 + padding 80 ≈ 1200 */
+    --studentCreatorGrid-pad-y: 40px;
+    --studentCreatorGrid-pad-x: 40px;
     width: 100%;
     max-width: 1240px;
     height: 530px;
@@ -8,7 +10,7 @@
     background: linear-gradient(to bottom right, #202123, #252728);
     border: 1px solid #41464B;
     border-radius: 48px;
-    padding: 40px;
+    padding: var(--studentCreatorGrid-pad-y) var(--studentCreatorGrid-pad-x);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
     overflow: hidden;
 }
@@ -24,6 +26,10 @@
     overflow: hidden;
 }
 
+.studentCreatorGrid:has(.stepForm--specialties) .studentCreatorGrid__columns {
+    overflow: visible;
+}
+
 .studentCreatorGrid__left,
 .studentCreatorGrid__right {
     min-width: 0;
@@ -37,12 +43,20 @@
     overflow-y: auto;
 }
 
+/* Список специальностей доходит до края карточки и клипается border-radius грида */
 .studentCreatorGrid__left:has(.stepForm--specialties) {
-    overflow: hidden;
+    overflow: visible;
+    margin-top: calc(-1 * var(--studentCreatorGrid-pad-y));
+    margin-bottom: calc(-1 * var(--studentCreatorGrid-pad-y));
+    height: calc(100% + 2 * var(--studentCreatorGrid-pad-y));
+    padding-top: var(--studentCreatorGrid-pad-y);
+    padding-bottom: 0;
+    box-sizing: border-box;
 }
 
 .studentCreatorGrid__left:has(.stepForm--specialties) > * {
     height: 100%;
+    min-height: 0;
 }
 
 .studentCreatorGrid__right {
@@ -87,6 +101,7 @@
 
 @media (max-width: 860px) {
     .studentCreatorGrid {
-        padding: 24px 16px;
+        --studentCreatorGrid-pad-y: 24px;
+        --studentCreatorGrid-pad-x: 16px;
     }
 }

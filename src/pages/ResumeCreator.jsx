@@ -14,8 +14,18 @@ import {
     ExperienceForm,
     EducationForm,
 } from '../components/resumeCreator/index.js';
+import PhotoCropModal from '../components/resumeCreator/PhotoUploader/PhotoCropModal/PhotoCropModal.jsx';
+import correctPhoto from '../assets/photoExamples/CorrectPhoto.png';
+import correctPhoto2 from '../assets/photoExamples/CorrectPhoto2.png';
+import wrongPhoto from '../assets/photoExamples/wrongPhoto.png';
 
 const TOTAL_STEPS = 7;
+
+const PHOTO_EXAMPLES = [
+    { id: 'correct-1', src: correctPhoto, status: 'correct', alt: 'Удачный пример фото' },
+    { id: 'correct-2', src: correctPhoto2, status: 'correct', alt: 'Удачный пример фото' },
+    { id: 'wrong-1', src: wrongPhoto, status: 'wrong', alt: 'Неудачный пример фото' },
+];
 
 const MOCK_SPECIALTIES = [
     { id: 1, name: 'Backend' },
@@ -80,6 +90,8 @@ const ResumeCreator = () => {
     const saveToastTimerRef = useRef(null);
     const [resumeComplete, setResumeComplete] = useState(false);
     const [photoPreview, setPhotoPreview] = useState(null);
+    const [cropSrc, setCropSrc] = useState(null);
+    const cropDraftUrlRef = useRef(null);
     const [bio, setBio] = useState('');
     const [selectedSkills, setSelectedSkills] = useState([]);
     const [experienceDraft, setExperienceDraft] = useState({});
@@ -90,7 +102,7 @@ const ResumeCreator = () => {
     const [profile, setProfile] = useState({
         firstName: '',
         lastName: '',
-        city: 'г. Москва',
+        city: '',
         birthDate: '',
         course: '',
         gender: '',
@@ -158,10 +170,39 @@ const ResumeCreator = () => {
         setStep((prev) => prev - 1);
     };
 
+    const clearCropDraft = () => {
+        if (cropDraftUrlRef.current) {
+            URL.revokeObjectURL(cropDraftUrlRef.current);
+            cropDraftUrlRef.current = null;
+        }
+        setCropSrc(null);
+    };
+
+    const openCropModal = (src, { isObjectUrl = false } = {}) => {
+        if (!src) return;
+        if (cropDraftUrlRef.current) {
+            URL.revokeObjectURL(cropDraftUrlRef.current);
+            cropDraftUrlRef.current = null;
+        }
+        if (isObjectUrl) {
+            cropDraftUrlRef.current = src;
+        }
+        setCropSrc(src);
+    };
+
     const handlePhotoFile = (file) => {
         if (!file) return;
-        const url = URL.createObjectURL(file);
-        setPhotoPreview(url);
+        openCropModal(URL.createObjectURL(file), { isObjectUrl: true });
+    };
+
+    const handleCropConfirm = (dataUrl) => {
+        setPhotoPreview(dataUrl);
+        clearCropDraft();
+    };
+
+    const handleCropReset = () => {
+        clearCropDraft();
+        setPhotoPreview(null);
     };
 
     const left = (() => {
@@ -182,9 +223,11 @@ const ResumeCreator = () => {
             case 3:
                 return (
                     <PhotoUploader
-                        examples={[]}
+                        examples={PHOTO_EXAMPLES}
                         onFileSelect={handlePhotoFile}
-                        onExampleSelect={() => {}}
+                        onExampleSelect={(example) => {
+                            if (example?.src) openCropModal(example.src);
+                        }}
                     />
                 );
             case 4:
@@ -292,6 +335,13 @@ const ResumeCreator = () => {
             >
                 Прогресс успешно сохранён
             </div>
+            {cropSrc ? (
+                <PhotoCropModal
+                    src={cropSrc}
+                    onCrop={handleCropConfirm}
+                    onReset={handleCropReset}
+                />
+            ) : null}
         </Layout>
     );
 };

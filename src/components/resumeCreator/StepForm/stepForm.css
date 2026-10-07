@@ -207,61 +207,17 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow: visible;
 }
 
 .stepForm--specialties h2 {
     flex-shrink: 0;
 }
 
-.stepForm__specialtyList {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    /* скроллбар слева */
-    direction: rtl;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-left: 4px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) #151618;
-}
-
-.stepForm__specialtyList::-webkit-scrollbar {
-    width: 10px;
-}
-
-.stepForm__specialtyList::-webkit-scrollbar-track {
-    background: linear-gradient(
-        180deg,
-        #1d1f21 0%,
-        #121314 100%
-    );
-    border-radius: 20px;
-}
-
-.stepForm__specialtyList::-webkit-scrollbar-thumb,
-.stepForm__specialtyList::-webkit-scrollbar-thumb:hover,
-.stepForm__specialtyList::-webkit-scrollbar-thumb:active {
-    border-radius: 20px;
-    background: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.28) 0%,
-        rgba(255, 255, 255, 0.12) 50%,
-        rgba(255, 255, 255, 0.22) 100%
-    ) !important;
-    box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.45),
-        inset 0 2px 4px rgba(255, 255, 255, 0.15),
-        0 2px 5px rgba(0, 0, 0, 0.5) !important;
-    border: none !important;
-}
-
 .stepForm__specialtyItem {
-    direction: ltr;
     box-sizing: border-box;
-    width: 100%;
+    width: 88%;
+    align-self: flex-start;
     height: 41px;
     min-height: 41px;
     max-height: 41px;
@@ -278,6 +234,10 @@
     font-size: 14px;
     font-family: inherit;
     flex-shrink: 0;
+    transition:
+        width 0.25s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 .stepForm__specialtyDot {
@@ -286,6 +246,7 @@
     border-radius: 50%;
     background: #5F5F5F;
     flex-shrink: 0;
+    transition: background-color 0.2s ease;
 }
 
 .stepForm__specialtyName {
@@ -296,9 +257,11 @@
 }
 
 .stepForm__specialtyItem.is-active {
-    background: #131313;
+    width: 100%;
+    background: #3E8EFF;
+    color: #ffffff;
 }
 
 .stepForm__specialtyItem.is-active .stepForm__specialtyDot {
-    background: #3E8EFF;
+    background: #ffffff;
 }
