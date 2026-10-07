@@ -8,14 +8,14 @@ export const COURSE_OPTIONS = [
     { ui: '2', value: 'SECOND', kind: 'number' },
     { ui: '3', value: 'THIRD', kind: 'number' },
     { ui: '4', value: 'FOURTH', kind: 'number' },
-    { ui: 'star', value: 'NEW', kind: 'star' },
+    { ui: 'star', value: 'FIFTH', kind: 'star' },
 ];
 
 export const courseUiLabel = (course) => {
     const fromOptions = COURSE_OPTIONS.find((item) => item.value === course);
     if (fromOptions?.kind === 'star') return '★';
     if (fromOptions) return fromOptions.ui;
-    if (course === 'FIFTH') return '5';
+    if (course === 'NEW' || course === 'FIFTH') return '★';
     return course || '';
 };
 

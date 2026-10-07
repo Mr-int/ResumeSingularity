@@ -18,6 +18,23 @@ import PhotoCropModal from '../components/resumeCreator/PhotoUploader/PhotoCropM
 import correctPhoto from '../assets/photoExamples/CorrectPhoto.png';
 import correctPhoto2 from '../assets/photoExamples/CorrectPhoto2.png';
 import wrongPhoto from '../assets/photoExamples/wrongPhoto.png';
+import { getImageUrl } from '../config/api.js';
+import { getStudentMe } from '../services/getApi.js';
+import { patchStudentMe, uploadStudentPhoto } from '../services/accountApi.js';
+import {
+    getAllSpecialities,
+    getAllEducation,
+    filterSkills,
+    createCompany,
+    createExperience,
+    createInstitution,
+    getInstitutionsByStudentId,
+} from '../services/studentApi.js';
+import {
+    resumeValidationContext,
+    validateResumeStep,
+    validateResumeThroughStep,
+} from './resumeCreatorValidation.js';
 
 const TOTAL_STEPS = 7;
 
@@ -25,39 +42,6 @@ const PHOTO_EXAMPLES = [
     { id: 'correct-1', src: correctPhoto, status: 'correct', alt: 'Удачный пример фото' },
     { id: 'correct-2', src: correctPhoto2, status: 'correct', alt: 'Удачный пример фото' },
     { id: 'wrong-1', src: wrongPhoto, status: 'wrong', alt: 'Неудачный пример фото' },
-];
-
-const MOCK_SPECIALTIES = [
-    { id: 1, name: 'Backend' },
-    { id: 2, name: 'Frontend' },
-    { id: 3, name: 'Data Science' },
-    { id: 4, name: 'Mobile' },
-    { id: 5, name: 'DevOps' },
-    { id: 6, name: 'QA / Testing' },
-    { id: 7, name: 'Product Design' },
-    { id: 8, name: 'System Analyst' },
-    { id: 9, name: 'ML Engineer' },
-    { id: 10, name: 'Cybersecurity' },
-    { id: 11, name: 'Game Development' },
-    { id: 12, name: 'Fullstack' },
-];
-
-const MOCK_SKILLS = [
-    { id: 1, name: 'Python' },
-    { id: 2, name: 'JavaScript' },
-    { id: 3, name: 'React' },
-    { id: 4, name: 'SQL' },
-    { id: 5, name: 'Docker' },
-    { id: 6, name: 'Git' },
-    { id: 7, name: 'TypeScript' },
-    { id: 8, name: 'Java' },
-];
-
-const MOCK_EDUCATIONS = [
-    { id: 1, institution: 'МГУ' },
-    { id: 2, institution: 'МФТИ' },
-    { id: 3, institution: 'ВШЭ' },
-    { id: 4, institution: 'ИТМО' },
 ];
 
 const MEMO_BY_STEP = {
@@ -141,16 +125,37 @@ const MEMO_BY_STEP = {
     ],
 };
 
+const dataUrlToFile = async (dataUrl, fileName = 'avatar.jpeg') => {
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
+    const type = blob.type || 'image/jpeg';
+    const safeName = fileName.endsWith('.png') || fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')
+        ? fileName
+        : `${fileName}.jpeg`;
+    return new File([blob], safeName, { type });
+};
+
+const toApiCourse = (course) => (course === 'NEW' ? 'FIFTH' : course);
+
 /**
- * PLUG-страница: локальная сборка resumeCreator без модерации админа и без API.
- * Маршрут: /plug
+ * Создание / дозаполнение резюме студента через API.
+ * Маршрут: /plug (ProtectedRoute)
  */
 const ResumeCreator = () => {
     const navigate = useNavigate();
+    const [bootLoading, setBootLoading] = useState(true);
+    const [bootError, setBootError] = useState('');
+    const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState({ visible: false, text: '', error: false });
+    const toastTimerRef = useRef(null);
+
     const [step, setStep] = useState(1);
-    const [saveToastVisible, setSaveToastVisible] = useState(false);
-    const saveToastTimerRef = useRef(null);
     const [resumeComplete, setResumeComplete] = useState(false);
+    const [studentId, setStudentId] = useState(null);
+    const [specialties, setSpecialties] = useState([]);
+    const [skillsCatalog, setSkillsCatalog] = useState([]);
+    const [educationsCatalog, setEducationsCatalog] = useState([]);
+
     const [photoPreview, setPhotoPreview] = useState(null);
     const [photoName, setPhotoName] = useState('');
     const [cropSrc, setCropSrc] = useState(null);
@@ -162,6 +167,7 @@ const ResumeCreator = () => {
     const [educationDraft, setEducationDraft] = useState({});
     const [experiences, setExperiences] = useState([]);
     const [educationsAdded, setEducationsAdded] = useState([]);
+    const [savedInstitutionCount, setSavedInstitutionCount] = useState(0);
 
     const [profile, setProfile] = useState({
         firstName: '',
@@ -171,61 +177,189 @@ const ResumeCreator = () => {
         course: '',
         gender: '',
         specialityId: null,
+        busyness: 'FREE',
     });
 
     const specialtyName = useMemo(() => {
-        const found = MOCK_SPECIALTIES.find((item) => String(item.id) === String(profile.specialityId));
+        const found = specialties.find((item) => String(item.id) === String(profile.specialityId));
         return found?.name || 'Специализация';
-    }, [profile.specialityId]);
+    }, [profile.specialityId, specialties]);
 
     const primarySkill = useMemo(() => {
         const firstId = selectedSkills[0];
-        const skill = MOCK_SKILLS.find((item) => String(item.id) === String(firstId));
+        const skill = skillsCatalog.find((item) => String(item.id) === String(firstId));
         if (!skill) return { code: '—', label: 'Навык' };
         return {
             code: skill.name.slice(0, 2).toUpperCase(),
             label: skill.name,
         };
-    }, [selectedSkills]);
+    }, [selectedSkills, skillsCatalog]);
+
+    const validationCtx = useMemo(
+        () => resumeValidationContext({
+            profile,
+            bio,
+            selectedSkills,
+            photoPreview,
+            educationsAdded,
+            savedInstitutionCount,
+        }),
+        [profile, bio, selectedSkills, photoPreview, educationsAdded, savedInstitutionCount],
+    );
+
+    const currentStepValid = useMemo(
+        () => validateResumeStep(step, validationCtx).valid,
+        [step, validationCtx],
+    );
 
     const updateProfile = (field, value) => {
         setProfile((prev) => ({ ...prev, [field]: value }));
     };
 
+    const showToast = (text, { error = false } = {}) => {
+        setToast({ visible: true, text, error });
+        if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = window.setTimeout(() => {
+            setToast({ visible: false, text: '', error: false });
+        }, 2800);
+    };
+
     useEffect(() => () => {
-        if (saveToastTimerRef.current) {
-            window.clearTimeout(saveToastTimerRef.current);
-        }
+        if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
     }, []);
 
-    const handleSaveProgress = () => {
-        console.log('[PLUG] save progress', {
-            step,
-            profile,
-            bio,
-            selectedSkills,
-            experiences,
-            educationsAdded,
-        });
-        setSaveToastVisible(true);
-        if (saveToastTimerRef.current) {
-            window.clearTimeout(saveToastTimerRef.current);
+    useEffect(() => {
+        let cancelled = false;
+
+        const boot = async () => {
+            setBootLoading(true);
+            setBootError('');
+            try {
+                const me = await getStudentMe();
+                const [specs, skillsPage, edus, institutions] = await Promise.all([
+                    getAllSpecialities(),
+                    filterSkills({}, { page: 0, size: 500 }),
+                    getAllEducation(),
+                    getInstitutionsByStudentId(me.id),
+                ]);
+                if (cancelled) return;
+
+                setStudentId(me.id);
+                setSpecialties(Array.isArray(specs) ? specs : []);
+                setSkillsCatalog(Array.isArray(skillsPage?.data) ? skillsPage.data : []);
+                setEducationsCatalog(Array.isArray(edus) ? edus : []);
+
+                setSavedInstitutionCount(Array.isArray(institutions) ? institutions.length : 0);
+                setProfile({
+                    firstName: me.firstName || '',
+                    lastName: me.lastName || '',
+                    city: me.city || '',
+                    birthDate: me.birthDate || '',
+                    course: me.course === 'NEW' ? 'FIFTH' : (me.course || ''),
+                    gender: me.gender || '',
+                    specialityId: me.specialityId ?? null,
+                    busyness: me.busyness || 'FREE',
+                });
+                setBio(me.bio || '');
+                setSelectedSkills(
+                    Array.isArray(me.skills)
+                        ? me.skills.map((item) => item.id).filter((id) => id != null)
+                        : [],
+                );
+                if (me.imagePath) {
+                    setPhotoPreview(getImageUrl(me.imagePath));
+                    setPhotoName('avatar.jpeg');
+                }
+            } catch (err) {
+                if (cancelled) return;
+                const status = err?.status;
+                if (status === 404 || status === 403) {
+                    setBootError('Карточка студента не найдена. Войдите как студент или завершите регистрацию.');
+                } else {
+                    setBootError(err?.message || 'Не удалось загрузить данные резюме');
+                }
+            } finally {
+                if (!cancelled) setBootLoading(false);
+            }
+        };
+
+        boot();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const buildPatchBody = () => {
+        const body = {};
+        if (profile.firstName?.trim()) body.firstName = profile.firstName.trim();
+        if (profile.lastName?.trim()) body.lastName = profile.lastName.trim();
+        if (profile.city?.trim()) body.city = profile.city.trim();
+        if (profile.birthDate) body.birthDate = profile.birthDate;
+        if (profile.course) body.course = toApiCourse(profile.course);
+        if (profile.gender) body.gender = profile.gender;
+        body.busyness = profile.busyness || 'FREE';
+        if (profile.specialityId != null && profile.specialityId !== '') {
+            body.specialityId = Number(profile.specialityId);
         }
-        saveToastTimerRef.current = window.setTimeout(() => {
-            setSaveToastVisible(false);
-        }, 2500);
+        if (bio?.trim()) body.bio = bio.trim();
+        if (selectedSkills.length > 0) {
+            body.skillsIds = selectedSkills.map((id) => Number(id));
+        }
+        return body;
     };
 
-    const canGoNextFromStep1 = Boolean(profile.course && profile.gender);
+    const persistProfile = async () => {
+        const body = buildPatchBody();
+        if (Object.keys(body).length === 0) return null;
+        return patchStudentMe(body);
+    };
 
-    const handleNext = () => {
-        if (step === 1 && !canGoNextFromStep1) return;
-        if (step >= TOTAL_STEPS) {
-            setResumeComplete(true);
+    const handleSaveProgress = async () => {
+        if (saving) return;
+        const check = validateResumeThroughStep(step, validationCtx);
+        if (!check.valid) {
+            showToast(check.message, { error: true });
             return;
         }
-        setStep((prev) => prev + 1);
+        setSaving(true);
+        try {
+            await persistProfile();
+            showToast('Прогресс успешно сохранён');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось сохранить прогресс', { error: true });
+        } finally {
+            setSaving(false);
+        }
     };
+
+    const handleNext = async () => {
+        if (saving) return;
+        const check = validateResumeStep(step, validationCtx);
+        if (!check.valid) {
+            showToast(check.message, { error: true });
+            return;
+        }
+
+        setSaving(true);
+        try {
+            if (step === 1 || step === 2 || step === 4 || step === 5) {
+                await persistProfile();
+            }
+            if (step >= TOTAL_STEPS) {
+                await persistProfile();
+                setResumeComplete(true);
+                showToast('Резюме сохранено');
+                navigate('/settings');
+                return;
+            }
+            setStep((prev) => prev + 1);
+        } catch (err) {
+            showToast(err?.message || 'Не удалось сохранить шаг', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleBack = () => {
         if (step <= 1) {
             navigate('/');
@@ -260,18 +394,29 @@ const ResumeCreator = () => {
         openCropModal(URL.createObjectURL(file), { isObjectUrl: true });
     };
 
-    const handleCropConfirm = (dataUrl) => {
+    const handleCropConfirm = async (dataUrl) => {
+        const name = pendingPhotoNameRef.current || 'photo.jpeg';
         setPhotoPreview(dataUrl);
-        setPhotoName(pendingPhotoNameRef.current || 'photo.jpeg');
+        setPhotoName(name);
         pendingPhotoNameRef.current = '';
         clearCropDraft();
+
+        if (!studentId) return;
+        setSaving(true);
+        try {
+            const file = await dataUrlToFile(dataUrl, name);
+            await uploadStudentPhoto(studentId, file);
+            showToast('Фото сохранено');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось загрузить фото', { error: true });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleCropReset = () => {
         clearCropDraft();
         pendingPhotoNameRef.current = '';
-        setPhotoPreview(null);
-        setPhotoName('');
     };
 
     const handleReplacePhoto = () => {
@@ -279,6 +424,83 @@ const ResumeCreator = () => {
         setPhotoName('');
         pendingPhotoNameRef.current = '';
     };
+
+    const handleAddExperience = async (entry) => {
+        if (!entry?.position?.trim() || !entry?.startDate) {
+            showToast('Укажите должность и дату начала', { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            let companyId = entry.companyId ? Number(entry.companyId) : undefined;
+            if (!companyId && entry.companyName?.trim()) {
+                const company = await createCompany({ name: entry.companyName.trim() });
+                companyId = company?.id;
+            }
+            const created = await createExperience({
+                companyId,
+                position: entry.position.trim(),
+                additionalInfo: entry.additionalInfo || undefined,
+                startDate: entry.startDate,
+                endDate: entry.endDate || undefined,
+            });
+            setExperiences((prev) => [...prev, { ...entry, id: created?.experience?.id || created?.id }]);
+            setExperienceDraft({});
+            showToast('Опыт добавлен');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось добавить опыт', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleAddEducation = async (entry) => {
+        if (!entry?.educationId) {
+            showToast('Выберите вуз', { error: true });
+            return;
+        }
+        if (entry.startYear == null || entry.endYear == null) {
+            showToast('Укажите год начала и год окончания обучения', { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            const created = await createInstitution({
+                educationId: Number(entry.educationId),
+                startYear: entry.startYear,
+                endYear: entry.endYear,
+            });
+            setEducationsAdded((prev) => [...prev, { ...entry, id: created?.institution?.id || created?.educationId }]);
+            setEducationDraft({});
+            showToast('Образование добавлено');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось добавить образование', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (bootLoading) {
+        return (
+            <Layout>
+                <Header resumeComplete={false} onMessagesClick={() => navigate('/chats')} onAvatarClick={() => navigate('/settings')} />
+                <div className="studentCreatorLayout__content">
+                    <p style={{ color: '#8e8e93' }}>Загружаем резюме…</p>
+                </div>
+            </Layout>
+        );
+    }
+
+    if (bootError) {
+        return (
+            <Layout>
+                <Header resumeComplete={false} onMessagesClick={() => navigate('/chats')} onAvatarClick={() => navigate('/settings')} />
+                <div className="studentCreatorLayout__content">
+                    <p style={{ color: '#e74c3c', maxWidth: 520, textAlign: 'center' }}>{bootError}</p>
+                </div>
+            </Layout>
+        );
+    }
 
     const left = (() => {
         switch (step) {
@@ -288,7 +510,7 @@ const ResumeCreator = () => {
                     <StepForm
                         step={step}
                         values={profile}
-                        specialties={MOCK_SPECIALTIES}
+                        specialties={specialties}
                         onChange={updateProfile}
                         onCourseChange={(course) => updateProfile('course', course)}
                         onGenderChange={(gender) => updateProfile('gender', gender)}
@@ -319,7 +541,7 @@ const ResumeCreator = () => {
             case 5:
                 return (
                     <SkillsSelection
-                        skills={MOCK_SKILLS}
+                        skills={skillsCatalog}
                         selectedSkills={selectedSkills}
                         onToggle={(id) => {
                             setSelectedSkills((prev) => (
@@ -337,24 +559,18 @@ const ResumeCreator = () => {
                         onChange={(field, value) => {
                             setExperienceDraft((prev) => ({ ...prev, [field]: value }));
                         }}
-                        onAdd={(entry) => {
-                            setExperiences((prev) => [...prev, entry]);
-                            setExperienceDraft({});
-                        }}
+                        onAdd={handleAddExperience}
                     />
                 );
             case 7:
                 return (
                     <EducationForm
                         values={educationDraft}
-                        educations={MOCK_EDUCATIONS}
+                        educations={educationsCatalog}
                         onChange={(field, value) => {
                             setEducationDraft((prev) => ({ ...prev, [field]: value }));
                         }}
-                        onAdd={(entry) => {
-                            setEducationsAdded((prev) => [...prev, entry]);
-                            setEducationDraft({});
-                        }}
+                        onAdd={handleAddEducation}
                     />
                 );
             default:
@@ -399,10 +615,7 @@ const ResumeCreator = () => {
                         totalSteps={TOTAL_STEPS}
                         showSkip={step === 6}
                         nextHidden={false}
-                        nextDisabled={
-                            (step === 1 && !canGoNextFromStep1)
-                            || (step === 5 && selectedSkills.length === 0)
-                        }
+                        nextDisabled={saving || !currentStepValid}
                         onBack={handleBack}
                         onNext={handleNext}
                         onSkip={handleNext}
@@ -411,11 +624,14 @@ const ResumeCreator = () => {
                 </div>
             </div>
             <div
-                className={`studentCreatorSaveToast${saveToastVisible ? ' is-visible' : ''}`}
+                className={
+                    `studentCreatorSaveToast${toast.visible ? ' is-visible' : ''}`
+                    + (toast.error ? ' is-error' : '')
+                }
                 role="status"
                 aria-live="polite"
             >
-                Прогресс успешно сохранён
+                {toast.text}
             </div>
             {cropSrc ? (
                 <PhotoCropModal

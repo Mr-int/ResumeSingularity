@@ -2,9 +2,9 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    background-color: transparent;
-    border-radius: 0;
-    padding: 8px 4px 0;
+    background-color: #131313;
+    border-radius: 16px;
+    padding: 24px;
     color: #ffffff;
 }
 

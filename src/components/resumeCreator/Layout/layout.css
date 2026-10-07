@@ -78,6 +78,11 @@
     pointer-events: auto;
 }
 
+.studentCreatorSaveToast.is-error {
+    border-color: #e74c3c;
+    color: #ffb4b0;
+}
+
 @media (max-width: 860px) {
     .studentCreatorLayout__content {
         padding: 20px 12px;

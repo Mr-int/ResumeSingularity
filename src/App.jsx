@@ -61,8 +61,11 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } />
           <Route path='/account' element={<Navigate to="/settings" replace />} />
-          {/* PLUG: создание резюме без модерации админа — для доработки UI */}
-          <Route path='/plug' element={<ResumeCreator />} />
+          <Route path='/plug' element={
+            <ProtectedRoute>
+              <ResumeCreator />
+            </ProtectedRoute>
+          } />
           <Route path='/error/:code' element={<StatusError />} />
           <Route path='*' element={<StatusError code="404" />} />
         </Routes>
