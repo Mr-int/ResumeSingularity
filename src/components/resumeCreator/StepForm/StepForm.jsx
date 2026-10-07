@@ -1,10 +1,10 @@
 import './stepForm.css';
 
 export const COURSE_OPTIONS = [
-    { ui: '1', value: 'FIRST' },
-    { ui: '2', value: 'SECOND' },
-    { ui: '3', value: 'THIRD' },
-    { ui: '4', value: 'FOURTH' },
+    { ui: '1', value: 'FIRST', courseNum: 1 },
+    { ui: '2', value: 'SECOND', courseNum: 2 },
+    { ui: '3', value: 'THIRD', courseNum: 3 },
+    { ui: '4', value: 'FOURTH', courseNum: 4 },
 ];
 
 export const courseUiLabel = (course) => {
@@ -63,7 +63,7 @@ const StepForm = ({
         <section className="stepForm">
             <h2>Основные данные</h2>
 
-            <div className="stepForm__row">
+            <div className="stepForm__stack">
                 <div className="stepForm__field">
                     <label htmlFor="student-first-name">Имя</label>
                     <input
@@ -86,7 +86,7 @@ const StepForm = ({
                 </div>
             </div>
 
-            <div className="stepForm__row">
+            <div className="stepForm__stack">
                 <div className="stepForm__field">
                     <label htmlFor="student-city">Город</label>
                     <input
@@ -109,12 +109,16 @@ const StepForm = ({
 
             <div className="stepForm__course">
                 <p className="stepForm__groupLabel">Номер курса</p>
-                <div className="stepForm__courseButtons">
+                <div className="stepForm__courseButtons" role="group" aria-label="Номер курса">
                     {COURSE_OPTIONS.map((item) => (
                         <button
                             key={item.value}
                             type="button"
-                            className={`stepForm__courseBtn ${course === item.value ? 'is-active' : ''}`}
+                            className={
+                                `stepForm__courseBtn stepForm__courseBtn--${item.courseNum}`
+                                + (course === item.value ? ' is-active' : '')
+                            }
+                            aria-pressed={course === item.value}
                             onClick={() => onCourseChange?.(item.value)}
                         >
                             {item.ui}
@@ -123,12 +127,13 @@ const StepForm = ({
                 </div>
             </div>
 
-            <div>
+            <div className="stepForm__gender">
                 <p className="stepForm__groupLabel">Пол</p>
-                <div className="stepForm__genderButtons">
+                <div className="stepForm__genderButtons" role="group" aria-label="Пол">
                     <button
                         type="button"
                         className={`stepForm__genderBtn ${gender === 'MALE' ? 'is-active' : ''}`}
+                        aria-pressed={gender === 'MALE'}
                         onClick={() => onGenderChange?.('MALE')}
                     >
                         Мужской
@@ -136,6 +141,7 @@ const StepForm = ({
                     <button
                         type="button"
                         className={`stepForm__genderBtn ${gender === 'FEMALE' ? 'is-active' : ''}`}
+                        aria-pressed={gender === 'FEMALE'}
                         onClick={() => onGenderChange?.('FEMALE')}
                     >
                         Женский

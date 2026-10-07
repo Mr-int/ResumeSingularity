@@ -56,28 +56,6 @@
     overflow: hidden;
 }
 
-.studentCreatorHeader__navIndicator {
-    position: absolute;
-    top: 2px;
-    bottom: 2px;
-    left: 0;
-    border-radius: 100px;
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 0;
-    will-change: transform, width;
-    transition:
-        transform 0.45s var(--nav-ease),
-        width 0.45s var(--nav-ease),
-        opacity 0.3s ease;
-}
-
-.studentCreatorHeader__navIndicator.is-ready {
-    opacity: 1;
-}
-
 .studentCreatorHeader__navButton {
     position: relative;
     z-index: 1;
@@ -129,12 +107,13 @@
     filter: brightness(1.08);
 }
 
-.studentCreatorHeader__navButton.is-active .studentCreatorHeader__navButtonLabel {
-    background-image: linear-gradient(90deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
+.studentCreatorHeader__navButton.is-active {
+    background: transparent;
+    color: transparent;
 }
 
-.studentCreatorHeader__navButton.is-active {
-    color: transparent;
+.studentCreatorHeader__navButton.is-active .studentCreatorHeader__navButtonLabel {
+    background-image: linear-gradient(90deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
 }
 
 .studentCreatorHeader__navButton.is-disabled {
@@ -236,7 +215,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .studentCreatorHeader__navIndicator,
     .studentCreatorHeader__navButton,
     .studentCreatorHeader__navButtonLabel,
     .studentCreatorHeader__iconButton,
