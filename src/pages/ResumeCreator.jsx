@@ -19,6 +19,7 @@ import correctPhoto from '../assets/photoExamples/CorrectPhoto.png';
 import correctPhoto2 from '../assets/photoExamples/CorrectPhoto2.png';
 import wrongPhoto from '../assets/photoExamples/wrongPhoto.png';
 import { getImageUrl } from '../config/api.js';
+import { isCampusCity } from '../constants/campusCities.js';
 import { getStudentMe } from '../services/getApi.js';
 import { patchStudentMe, uploadStudentPhoto } from '../services/accountApi.js';
 import {
@@ -32,8 +33,8 @@ import {
 } from '../services/studentApi.js';
 import {
     resumeValidationContext,
+    validatePartialSave,
     validateResumeStep,
-    validateResumeThroughStep,
 } from './resumeCreatorValidation.js';
 
 const TOTAL_STEPS = 7;
@@ -293,7 +294,7 @@ const ResumeCreator = () => {
         const body = {};
         if (profile.firstName?.trim()) body.firstName = profile.firstName.trim();
         if (profile.lastName?.trim()) body.lastName = profile.lastName.trim();
-        if (profile.city?.trim()) body.city = profile.city.trim();
+        if (isCampusCity(profile.city)) body.city = profile.city.trim();
         if (profile.birthDate) body.birthDate = profile.birthDate;
         if (profile.course) body.course = toApiCourse(profile.course);
         if (profile.gender) body.gender = profile.gender;
@@ -341,7 +342,7 @@ const ResumeCreator = () => {
 
     const handleSaveProgress = async () => {
         if (saving) return;
-        const check = validateResumeThroughStep(step, validationCtx);
+        const check = validatePartialSave(validationCtx);
         if (!check.valid) {
             showToast(check.message, { error: true });
             return;

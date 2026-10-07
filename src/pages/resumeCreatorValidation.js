@@ -59,6 +59,19 @@ export const validateResumeStep = (step, ctx) => {
     }
 };
 
+/** Частичное сохранение: только то, что может сломать PATCH или ввести в заблуждение. */
+export const validatePartialSave = (ctx) => {
+    const { profile = {}, bio = '' } = ctx;
+    if (bio.length > 600) {
+        return fail('Описание не должно превышать 600 символов');
+    }
+    const city = profile.city?.trim();
+    if (city && !isCampusCity(city)) {
+        return fail('Выберите город из списка или сбросьте поле');
+    }
+    return ok();
+};
+
 /** Проверка шагов 1…maxStep; шаг 6 (опыт) пропускаем. */
 export const validateResumeThroughStep = (maxStep, ctx) => {
     const last = Math.min(Math.max(maxStep, 1), 7);
