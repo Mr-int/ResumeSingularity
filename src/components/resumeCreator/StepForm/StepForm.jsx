@@ -1,14 +1,17 @@
 import './stepForm.css';
+import starIco from '../../../assets/icons/Star.svg';
 
 export const COURSE_OPTIONS = [
-    { ui: '1', value: 'FIRST' },
-    { ui: '2', value: 'SECOND' },
-    { ui: '3', value: 'THIRD' },
-    { ui: '4', value: 'FOURTH' },
+    { ui: '1', value: 'FIRST', kind: 'number' },
+    { ui: '2', value: 'SECOND', kind: 'number' },
+    { ui: 'star', value: 'NEW', kind: 'star' },
+    { ui: '3', value: 'THIRD', kind: 'number' },
+    { ui: '4', value: 'FOURTH', kind: 'number' },
 ];
 
 export const courseUiLabel = (course) => {
     const fromOptions = COURSE_OPTIONS.find((item) => item.value === course);
+    if (fromOptions?.kind === 'star') return '★';
     if (fromOptions) return fromOptions.ui;
     if (course === 'FIFTH') return '5';
     return course || '';
@@ -28,8 +31,8 @@ const StepForm = ({
         lastName = '',
         city = 'г. Москва',
         birthDate = '',
-        course = 'FIRST',
-        gender = 'MALE',
+        course = '',
+        gender = '',
         specialityId = null,
     } = values;
 
@@ -107,20 +110,35 @@ const StepForm = ({
             <div className="stepForm__course">
                 <p className="stepForm__groupLabel">Номер курса</p>
                 <div className="stepForm__courseButtons" role="group" aria-label="Номер курса">
-                    {COURSE_OPTIONS.map((item) => (
-                        <button
-                            key={item.value}
-                            type="button"
-                            className={
-                                'stepForm__courseBtn'
-                                + (course === item.value ? ' is-active' : '')
-                            }
-                            aria-pressed={course === item.value}
-                            onClick={() => onCourseChange?.(item.value)}
-                        >
-                            {item.ui}
-                        </button>
-                    ))}
+                    {COURSE_OPTIONS.map((item) => {
+                        const isActive = course === item.value;
+                        return (
+                            <button
+                                key={item.value}
+                                type="button"
+                                className={
+                                    'stepForm__courseBtn'
+                                    + (item.kind === 'star' ? ' stepForm__courseBtn--star' : '')
+                                    + (isActive ? ' is-active' : '')
+                                }
+                                aria-pressed={isActive}
+                                aria-label={item.kind === 'star' ? 'Новый курс' : `Курс ${item.ui}`}
+                                onClick={() => onCourseChange?.(item.value)}
+                            >
+                                {item.kind === 'star' ? (
+                                    <img
+                                        src={starIco}
+                                        alt=""
+                                        className="stepForm__courseStar"
+                                        width={18}
+                                        height={17}
+                                    />
+                                ) : (
+                                    item.ui
+                                )}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 

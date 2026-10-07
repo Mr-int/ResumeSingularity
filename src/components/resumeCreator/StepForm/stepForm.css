@@ -60,15 +60,21 @@
 
 .stepForm__courseButtons {
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
     align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
 }
 
-/* Шрифт как у .course-btn в studentsList; размер/active — по макету creator */
+/* Шрифт как у .course-btn; высота фиксирована, active только шире */
 .stepForm__courseBtn {
     width: 96px;
+    min-width: 96px;
+    max-width: 120px;
     height: 32px;
+    min-height: 32px;
+    max-height: 32px;
     padding: 0;
     border: 1px solid #737D85;
     border-radius: 5px;
@@ -78,13 +84,14 @@
     font-weight: 500;
     line-height: 1;
     cursor: pointer;
-    transition: width 0.25s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition: width 0.25s ease, min-width 0.25s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     font-family: 'StratosBoldItalic', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
     flex: 0 0 auto;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .stepForm__courseBtn:hover:not(.is-active) {
@@ -93,28 +100,49 @@
 
 .stepForm__courseBtn.is-active {
     width: 120px;
+    min-width: 120px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
     border-color: #3E8EFF;
     background: #3E8EFF;
     color: #fff;
+}
+
+.stepForm__courseStar {
+    display: block;
+    width: 18px;
+    height: 17px;
+    object-fit: contain;
+    transition: filter 0.2s ease;
+}
+
+.stepForm__courseBtn.is-active .stepForm__courseStar {
+    filter: brightness(0) invert(1);
 }
 
 .stepForm__gender {
     margin-bottom: 8px;
 }
 
-/* Две отдельные кнопки слева/справа, не общий переключатель */
+/* Края совпадают с stepForm__grid; слева/справа отдельные кнопки */
 .stepForm__genderButtons {
     display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
     gap: 12px;
     background: none;
     border: none;
     padding: 0;
-    align-items: center;
 }
 
 .stepForm__genderBtn {
     width: 96px;
+    min-width: 96px;
     height: 32px;
+    min-height: 32px;
+    max-height: 32px;
     flex: 0 0 auto;
     box-sizing: border-box;
     background: transparent;
@@ -129,7 +157,8 @@
     align-items: center;
     justify-content: center;
     white-space: nowrap;
-    transition: width 0.25s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition: width 0.25s ease, min-width 0.25s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    overflow: hidden;
 }
 
 .stepForm__genderBtn:hover:not(.is-active) {
@@ -138,6 +167,10 @@
 
 .stepForm__genderBtn.is-active {
     width: 120px;
+    min-width: 120px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
     border-color: #3E8EFF;
     background: #3E8EFF;
     color: #ffffff;

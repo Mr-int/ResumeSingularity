@@ -83,8 +83,8 @@ const ResumeCreator = () => {
         lastName: '',
         city: 'г. Москва',
         birthDate: '',
-        course: 'FIRST',
-        gender: 'MALE',
+        course: '',
+        gender: '',
         specialityId: null,
     });
 
@@ -107,7 +107,10 @@ const ResumeCreator = () => {
         setProfile((prev) => ({ ...prev, [field]: value }));
     };
 
+    const canGoNextFromStep1 = Boolean(profile.course && profile.gender);
+
     const handleNext = () => {
+        if (step === 1 && !canGoNextFromStep1) return;
         if (step >= TOTAL_STEPS) {
             setResumeComplete(true);
             return;
@@ -239,7 +242,10 @@ const ResumeCreator = () => {
                         hideBack={false}
                         showSkip={step === 6}
                         nextHidden={false}
-                        nextDisabled={step === 5 && selectedSkills.length === 0}
+                        nextDisabled={
+                            (step === 1 && !canGoNextFromStep1)
+                            || (step === 5 && selectedSkills.length === 0)
+                        }
                         onBack={handleBack}
                         onNext={handleNext}
                         onSkip={handleNext}
