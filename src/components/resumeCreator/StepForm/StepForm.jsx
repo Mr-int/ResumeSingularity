@@ -1,5 +1,6 @@
 import './stepForm.css';
 import starIco from '../../../assets/icons/Star.svg';
+import { CAMPUS_OPTIONS } from '../../../constants/campusCities.js';
 import BirthDatePicker from './BirthDatePicker/BirthDatePicker.jsx';
 import SpecialtyList from './SpecialtyList/SpecialtyList.jsx';
 
@@ -67,14 +68,22 @@ const StepForm = ({
                     />
                 </div>
                 <div className="stepForm__field">
-                    <label htmlFor="student-city">Город</label>
-                    <input
+                    <label htmlFor="student-city">Город / кампус</label>
+                    <select
                         id="student-city"
-                        type="text"
-                        placeholder="г. Москва"
                         value={city}
                         onChange={(event) => onChange?.('city', event.target.value)}
-                    />
+                    >
+                        <option value="">Выберите город</option>
+                        {CAMPUS_OPTIONS.map((name) => (
+                            <option key={name} value={name}>
+                                {name}
+                            </option>
+                        ))}
+                        {city && !CAMPUS_OPTIONS.includes(city) ? (
+                            <option value={city}>{city}</option>
+                        ) : null}
+                    </select>
                 </div>
                 <div className="stepForm__field">
                     <label htmlFor="student-last-name">Фамилия</label>

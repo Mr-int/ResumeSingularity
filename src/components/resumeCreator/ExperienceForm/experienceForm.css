@@ -35,6 +35,12 @@
     gap: 16px;
 }
 
+@media (max-width: 520px) {
+    .experienceForm__row {
+        grid-template-columns: 1fr;
+    }
+}
+
 .experienceForm__add {
     margin-top: 8px;
     background: #007bff;

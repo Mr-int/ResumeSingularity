@@ -1,3 +1,5 @@
+import { isCampusCity } from '../constants/campusCities.js';
+
 const ok = () => ({ valid: true, message: '' });
 
 const fail = (message) => ({ valid: false, message });
@@ -21,7 +23,7 @@ export const validateResumeStep = (step, ctx) => {
             if (!profile.firstName?.trim()) return fail('Укажите имя');
             if (!profile.lastName?.trim()) return fail('Укажите фамилию');
             if (!profile.birthDate) return fail('Укажите дату рождения');
-            if (!profile.city?.trim()) return fail('Укажите город');
+            if (!isCampusCity(profile.city)) return fail('Выберите город из списка');
             if (!profile.course) return fail('Выберите курс');
             if (!profile.gender) return fail('Укажите пол');
             return ok();

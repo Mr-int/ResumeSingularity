@@ -25,11 +25,7 @@ import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
 import EmailIcon from '../../assets/icons/email.svg';
 
-const CAMPUS_OPTIONS = [
-    'Москва', 'Санкт-Петербург', 'Казань', 'Новосибирск',
-    'Екатеринбург', 'Нижний Новгород', 'Краснодар', 'Ростов-на-Дону',
-    'Самара', 'Воронеж', 'Уфа', 'Пермь', 'Чебоксары', 'Челябинск', 'Онлайн',
-];
+import { CAMPUS_OPTIONS } from '../../constants/campusCities.js';
 
 const COURSE_OPTIONS = [1, 2, 3, 4];
 const COURSE_API = {

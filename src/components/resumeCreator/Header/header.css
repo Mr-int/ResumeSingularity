@@ -210,6 +210,37 @@
     }
 }
 
+@media (max-width: 520px) {
+    .studentCreatorHeader__inner {
+        padding: 10px 12px;
+        gap: 10px;
+    }
+
+    .studentCreatorHeader__logoShape {
+        width: 72px;
+        height: 24px;
+    }
+
+    .studentCreatorHeader__nav {
+        height: 40px;
+    }
+
+    .studentCreatorHeader__navButton {
+        font-size: 11px;
+        padding: 0 4px;
+    }
+
+    .studentCreatorHeader__avatar {
+        width: 44px;
+        height: 44px;
+    }
+
+    .studentCreatorHeader__avatarImg {
+        width: 34px;
+        height: 34px;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .studentCreatorHeader__navButton,
     .studentCreatorHeader__navButtonLabel,

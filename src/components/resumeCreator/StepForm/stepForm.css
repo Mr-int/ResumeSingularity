@@ -58,10 +58,16 @@
 }
 
 #student-first-name,
-#student-last-name {
+#student-last-name,
+#student-city {
     background-color: #191A1B;
     border: none;
     color: #ffffff;
+}
+
+#student-city:invalid,
+#student-city option[value=""] {
+    color: #737D85;
 }
 
 #student-first-name::placeholder,
@@ -86,6 +92,22 @@
     align-items: center;
     gap: var(--course-gap);
     flex-wrap: nowrap;
+}
+
+@media (max-width: 400px) {
+    .stepForm__courseButtons {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .stepForm__courseBtn {
+        flex: 0 1 calc(20% - var(--course-gap));
+        min-width: 44px;
+    }
+
+    .stepForm__courseBtn.is-active {
+        flex: 0 1 calc(22% - var(--course-gap));
+    }
 }
 
 /* Равная доля ширины; active чуть шире за счёт shrink соседей — ширина ряда не меняется */

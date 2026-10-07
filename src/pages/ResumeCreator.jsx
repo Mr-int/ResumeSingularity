@@ -308,10 +308,35 @@ const ResumeCreator = () => {
         return body;
     };
 
+    const applyMeToProfile = (me) => {
+        if (!me) return;
+        setProfile((prev) => ({
+            ...prev,
+            firstName: me.firstName ?? prev.firstName,
+            lastName: me.lastName ?? prev.lastName,
+            city: me.city ?? prev.city,
+            birthDate: me.birthDate ?? prev.birthDate,
+            course: me.course === 'NEW' ? 'FIFTH' : (me.course ?? prev.course),
+            gender: me.gender ?? prev.gender,
+            specialityId: me.specialityId ?? prev.specialityId,
+            busyness: me.busyness ?? prev.busyness,
+        }));
+        if (me.bio != null) setBio(me.bio);
+        if (Array.isArray(me.skills)) {
+            setSelectedSkills(me.skills.map((item) => item.id).filter((id) => id != null));
+        }
+    };
+
     const persistProfile = async () => {
         const body = buildPatchBody();
-        if (Object.keys(body).length === 0) return null;
-        return patchStudentMe(body);
+        const sentCity = body.city;
+        await patchStudentMe(body);
+        const me = await getStudentMe();
+        applyMeToProfile(me);
+        return {
+            cityMismatch: Boolean(sentCity && me.city !== sentCity),
+            actualCity: me.city,
+        };
     };
 
     const handleSaveProgress = async () => {
@@ -323,7 +348,14 @@ const ResumeCreator = () => {
         }
         setSaving(true);
         try {
-            await persistProfile();
+            const result = await persistProfile();
+            if (result?.cityMismatch) {
+                showToast(
+                    `Город не обновился (на сервере: ${result.actualCity || '—'}). Выберите город из списка.`,
+                    { error: true },
+                );
+                return;
+            }
             showToast('Прогресс успешно сохранён');
         } catch (err) {
             showToast(err?.message || 'Не удалось сохранить прогресс', { error: true });
@@ -343,10 +375,24 @@ const ResumeCreator = () => {
         setSaving(true);
         try {
             if (step === 1 || step === 2 || step === 4 || step === 5) {
-                await persistProfile();
+                const result = await persistProfile();
+                if (result?.cityMismatch) {
+                    showToast(
+                        `Город не обновился (на сервере: ${result.actualCity || '—'}). Выберите город из списка.`,
+                        { error: true },
+                    );
+                    return;
+                }
             }
             if (step >= TOTAL_STEPS) {
-                await persistProfile();
+                const result = await persistProfile();
+                if (result?.cityMismatch) {
+                    showToast(
+                        `Город не обновился (на сервере: ${result.actualCity || '—'}). Выберите город из списка.`,
+                        { error: true },
+                    );
+                    return;
+                }
                 setResumeComplete(true);
                 showToast('Резюме сохранено');
                 navigate('/settings');

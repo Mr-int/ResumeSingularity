@@ -103,5 +103,19 @@
     .studentCreatorGrid {
         --studentCreatorGrid-pad-y: 24px;
         --studentCreatorGrid-pad-x: 16px;
+        border-radius: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .studentCreatorGrid {
+        --studentCreatorGrid-pad-y: 18px;
+        --studentCreatorGrid-pad-x: 12px;
+        border-radius: 20px;
+        min-height: 0;
+    }
+
+    .studentCreatorGrid__columns {
+        gap: 20px;
     }
 }
