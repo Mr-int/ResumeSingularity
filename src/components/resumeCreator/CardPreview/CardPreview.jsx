@@ -56,7 +56,10 @@ const CardPreview = ({
                         <div className={`cardPreview__badge ${badgeCourseClass}`}>{courseLabel}</div>
                     </div>
                 </div>
-                <div className="cardPreview__name">{fullName || 'Имя Фамилия'}</div>
+                <div className="cardPreview__name">
+                    <span>{firstName || 'Имя'}</span>
+                    <span>{lastName || 'Фамилия'}</span>
+                </div>
                 <div className="cardPreview__spec">{specialty}</div>
             </div>
 

@@ -90,6 +90,7 @@
     justify-content: center;
     gap: 6px;
     flex: 1;
+    font-family: 'StratosSemiLight', sans-serif;
 }
 
 .birthDatePicker__titleBtn {
@@ -98,7 +99,7 @@
     color: #ffffff;
     font-size: 14px;
     font-weight: 600;
-    font-family: inherit;
+    font-family: 'StratosSemiLight', sans-serif;
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 8px;
