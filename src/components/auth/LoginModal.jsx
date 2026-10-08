@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-    EMAIL_CONFIRMATION_EMAIL_KEY,
     isEmailConfirmationPending,
     login,
     logoutServer,
@@ -29,9 +28,6 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const pendingEmail = isEmailConfirmationPending()
-        ? (sessionStorage.getItem(EMAIL_CONFIRMATION_EMAIL_KEY) || '')
-        : '';
 
     // Сброс протухшего JWT перед логином. НЕ трогаем сессию, если ждём код подтверждения почты —
     // register-student уже создал аккаунт, confirm-email нужен тот же cookie.
@@ -117,21 +113,6 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
                 </div>
 
                 <h2 className="loginModal__heading">Вход</h2>
-
-                {pendingEmail ? (
-                    <p className="loginModal__subheading" style={{ marginBottom: 12 }}>
-                        Не завершена регистрация для {pendingEmail}.
-                        {' '}
-                        <button
-                            type="button"
-                            className="loginModal__registerLink"
-                            style={{ display: 'inline', padding: 0, margin: 0 }}
-                            onClick={onRegisterClick}
-                        >
-                            Ввести код
-                        </button>
-                    </p>
-                ) : null}
 
                 <form onSubmit={handleLogin} className="loginModal__form" noValidate>
                     <div className="loginModal__inputGroup">
