@@ -158,6 +158,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
             return;
         }
 
+        // Отдельного API «проверить код» нет — проверка на сервере в reset-password.
         setStep(3);
     };
 
@@ -167,6 +168,12 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         setError('');
         setInfo('');
 
+        const fullCode = code.join('').trim();
+        if (!/^\d{4}$/.test(fullCode)) {
+            setStep(2);
+            setErrorAndShow('Введите код из 4 цифр из письма');
+            return;
+        }
         if (password.length < MIN_PASSWORD_LENGTH) {
             setErrorAndShow(`Пароль должен быть не короче ${MIN_PASSWORD_LENGTH} символов`);
             return;
@@ -186,7 +193,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         try {
             await resetPassword({
                 email: email.trim(),
-                code: code.join('').trim(),
+                code: fullCode,
                 newPassword: password,
                 passwordConfirm,
             });
@@ -197,6 +204,17 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
             const message =
                 (err && err.message && String(err.message).trim()) ||
                 'Не удалось сохранить пароль';
+            const lower = message.toLowerCase();
+            // Неверный код — возвращаем на шаг ввода кода
+            if (
+                lower.includes('код')
+                || lower.includes('code')
+                || lower.includes('invalid')
+                || lower.includes('неверн')
+            ) {
+                setCode(['', '', '', '']);
+                setStep(2);
+            }
             setErrorAndShow(message);
         } finally {
             setLoading(false);
@@ -308,7 +326,6 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         }
         if (step === 3) {
             setStep(2);
-            setCode(['', '', '', '']);
             setPassword('');
             setPasswordConfirm('');
             clearMessages();
