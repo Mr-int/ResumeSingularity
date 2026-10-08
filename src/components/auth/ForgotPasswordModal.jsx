@@ -411,13 +411,13 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                             </a>
                         </span>
                     </>
-                ) : step === 2 ? (
+                ) : (
                     <>
-                        <h2 className="forgotModal__heading">Введите код из письма</h2>
+                        <h2 className="forgotModal__heading">Код и новый пароль</h2>
                         <p className="forgotModal__subheading">
-                            Если почтовый ящик зарегистрирован, мы отправили код на{' '}
-                            <span className="forgotModal__codeEmail">{email}</span>,
-                            {' '}если входящих нет, проверьте спам
+                            Введите код из письма на{' '}
+                            <span className="forgotModal__codeEmail">{email}</span>
+                            {' '}и придумайте новый пароль. Код проверяет сервер.
                         </p>
 
                         <div className="forgotModal__form">
@@ -439,7 +439,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                         onPaste={handleCodePaste}
                                         onClick={(e) => e.stopPropagation()}
                                         onFocus={(e) => e.target.select()}
-                                        disabled={loading}
+                                        disabled={loading || passwordSaved}
                                         className={
                                             'forgotModal__codeInput' +
                                             (digit ? ' forgotModal__codeInput--filled' : '') +
@@ -450,33 +450,6 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                 ))}
                             </div>
 
-                            <button
-                                type="button"
-                                className="forgotModal__primaryBtn"
-                                onClick={() => handleConfirmCode()}
-                                disabled={loading}
-                            >
-                                Далее
-                            </button>
-
-                            <button
-                                type="button"
-                                className="forgotModal__primaryBtn forgotModal__primaryBtn--resend"
-                                onClick={handleResendCode}
-                                disabled={loading}
-                            >
-                                Получить новый код
-                            </button>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <h2 className="forgotModal__heading">Новый пароль</h2>
-                        <p className="forgotModal__subheading">
-                            Придумайте новый пароль для входа в аккаунт
-                        </p>
-
-                        <div className="forgotModal__form">
                             <div className="forgotModal__inputGroup">
                                 <label
                                     htmlFor="forgotModal-password"
@@ -491,7 +464,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                         autoComplete="new-password"
                                         value={password}
                                         onChange={handlePasswordChange}
-                                        disabled={loading}
+                                        disabled={loading || passwordSaved}
                                         className={error ? 'forgotModal__input--error' : undefined}
                                     />
                                 </div>
@@ -511,7 +484,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                         autoComplete="new-password"
                                         value={passwordConfirm}
                                         onChange={handlePasswordConfirmChange}
-                                        disabled={loading}
+                                        disabled={loading || passwordSaved}
                                         className={error ? 'forgotModal__input--error' : undefined}
                                     />
                                 </div>
@@ -524,6 +497,15 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
                                 disabled={loading || passwordSaved}
                             >
                                 {loading ? 'Сохранение…' : 'Сохранить пароль'}
+                            </button>
+
+                            <button
+                                type="button"
+                                className="forgotModal__primaryBtn forgotModal__primaryBtn--resend"
+                                onClick={handleResendCode}
+                                disabled={loading || passwordSaved}
+                            >
+                                Получить новый код
                             </button>
                         </div>
                     </>
