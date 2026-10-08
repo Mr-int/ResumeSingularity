@@ -146,27 +146,22 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         }
     };
 
-    const handleConfirmCode = (codeArray) => {
-        setError('');
-        setInfo('');
-
-        const source = codeArray || code;
-        const fullCode = source.join('').trim();
-
-        if (!/^\d{4}$/.test(fullCode)) {
-            setErrorAndShow('Введите код из 4 цифр');
-            return;
-        }
-
-        setStep(3);
-    };
-
+    /**
+     * Код проверяется только на бэкенде вместе с паролем:
+     * POST /auth/reset-password { email, code, newPassword, passwordConfirm }.
+     * Отдельного «подтвердить код» для сброса нет — нельзя пускать дальше по одним 4 цифрам.
+     */
     const handleSavePassword = async () => {
         if (loading || passwordSaved) return;
 
         setError('');
         setInfo('');
 
+        const fullCode = code.join('').trim();
+        if (!/^\d{4}$/.test(fullCode)) {
+            setErrorAndShow('Введите код из 4 цифр из письма');
+            return;
+        }
         if (password.length < MIN_PASSWORD_LENGTH) {
             setErrorAndShow(`Пароль должен быть не короче ${MIN_PASSWORD_LENGTH} символов`);
             return;
@@ -186,7 +181,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         try {
             await resetPassword({
                 email: email.trim(),
-                code: code.join('').trim(),
+                code: fullCode,
                 newPassword: password,
                 passwordConfirm,
             });
@@ -197,6 +192,15 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
             const message =
                 (err && err.message && String(err.message).trim()) ||
                 'Не удалось сохранить пароль';
+            const lower = message.toLowerCase();
+            if (
+                lower.includes('код')
+                || lower.includes('code')
+                || lower.includes('invalid')
+                || lower.includes('неверн')
+            ) {
+                setCode(['', '', '', '']);
+            }
             setErrorAndShow(message);
         } finally {
             setLoading(false);
@@ -275,7 +279,7 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         }
         if (e.key === 'Enter') {
             e.preventDefault();
-            handleConfirmCode();
+            handleSavePassword();
         }
     };
 
@@ -306,17 +310,11 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
             leaveFlow();
             return;
         }
-        if (step === 3) {
-            setStep(2);
-            setCode(['', '', '', '']);
-            setPassword('');
-            setPasswordConfirm('');
-            clearMessages();
-            return;
-        }
         if (step === 2) {
             setStep(1);
             setCode(['', '', '', '']);
+            setPassword('');
+            setPasswordConfirm('');
             clearMessages();
             return;
         }

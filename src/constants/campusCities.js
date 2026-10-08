@@ -6,6 +6,7 @@ export const CAMPUS_OPTIONS = [
     'Тюмень',
     'Нижний Новгород',
     'Хабаровск',
+    'Другой город'
 ];
 
 export const isCampusCity = (city) => {
