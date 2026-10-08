@@ -369,9 +369,42 @@ export const resetPassword = async ({ email, code, newPassword, passwordConfirm 
     return {};
 };
 
-/**
- * POST /auth/refresh
- */
+
+export const verifyResetPasswordCode = async (email, code) => {
+    const probeA = `ProbeOk1!${Date.now()}`;
+    const probeB = `ProbeBad2!${Date.now()}`;
+    try {
+        await resetPassword({
+            email,
+            code,
+            newPassword: probeA,
+            passwordConfirm: probeB,
+        });
+        return 'ok';
+    } catch (err) {
+        const message = String(err?.message || '').toLowerCase();
+        const looksLikeBadCode =
+            /код|code|otp|истёк|истек|expired|неверн|invalid|wrong|incorrect/.test(message);
+        const looksLikeMismatch =
+            /совпад|match|confirm|одинаков|различ|не совпад/.test(message);
+
+        if (looksLikeBadCode && !looksLikeMismatch) {
+            throw err;
+        }
+        if (looksLikeMismatch) {
+            return 'ok';
+        }
+        if (looksLikeBadCode) {
+            throw err;
+        }
+        const unknown = new Error(
+            message || 'Не удалось проверить код. Запросите новый или попробуйте снова.',
+        );
+        unknown.status = err?.status;
+        throw unknown;
+    }
+};
+
 export const refreshSession = async () => {
     const url = `${API_BASE_URL}auth/refresh`;
     const response = await fetch(url, {
@@ -392,9 +425,6 @@ export const refreshSession = async () => {
     return {};
 };
 
-/**
- * POST /auth/logout + очистка клиента
- */
 export const logoutServer = async () => {
     try {
         await fetch(`${API_BASE_URL}auth/logout`, {

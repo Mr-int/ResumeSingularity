@@ -3,7 +3,7 @@ import './forgotPasswordModal.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
 import EmailIcon from '../../assets/icons/email.svg';
-import { forgotPassword, resetPassword } from '../../services/authApi.js';
+import { forgotPassword, resetPassword, verifyResetPasswordCode } from '../../services/authApi.js';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_LENGTH = 4;
@@ -146,7 +146,8 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
         }
     };
 
-    const handleConfirmCode = (codeArray) => {
+    const handleConfirmCode = async (codeArray) => {
+        if (loading) return;
         setError('');
         setInfo('');
 
@@ -158,8 +159,20 @@ const ForgotPasswordModal = ({ onBack, onClose }) => {
             return;
         }
 
-        // Отдельного API «проверить код» нет — проверка на сервере в reset-password.
-        setStep(3);
+        setLoading(true);
+        try {
+            // В Network будет POST /auth/reset-password (проверка кода на бэкенде)
+            await verifyResetPasswordCode(email.trim(), fullCode);
+            setStep(3);
+        } catch (err) {
+            const message =
+                (err && err.message && String(err.message).trim()) ||
+                'Неверный код';
+            setCode(['', '', '', '']);
+            setErrorAndShow(message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSavePassword = async () => {
