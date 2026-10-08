@@ -1,0 +1,121 @@
+.studentCreatorGrid {
+    /* 560 (preview) + gap 40 + left ~520 + padding 80 ≈ 1200 */
+    --studentCreatorGrid-pad-y: 40px;
+    --studentCreatorGrid-pad-x: 40px;
+    width: 100%;
+    max-width: 1240px;
+    height: 530px;
+    max-height: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(to bottom right, #202123, #252728);
+    border: 1px solid #41464B;
+    border-radius: 48px;
+    padding: var(--studentCreatorGrid-pad-y) var(--studentCreatorGrid-pad-x);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.studentCreatorGrid__columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 560px;
+    gap: 40px;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    align-items: start;
+    overflow: hidden;
+}
+
+.studentCreatorGrid:has(.stepForm--specialties) .studentCreatorGrid__columns {
+    overflow: visible;
+}
+
+.studentCreatorGrid__left,
+.studentCreatorGrid__right {
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+}
+
+.studentCreatorGrid__left {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Список специальностей доходит до края карточки и клипается border-radius грида */
+.studentCreatorGrid__left:has(.stepForm--specialties) {
+    overflow: visible;
+    margin-top: calc(-1 * var(--studentCreatorGrid-pad-y));
+    margin-bottom: calc(-1 * var(--studentCreatorGrid-pad-y));
+    height: calc(100% + 2 * var(--studentCreatorGrid-pad-y));
+    padding-top: var(--studentCreatorGrid-pad-y);
+    padding-bottom: 0;
+    box-sizing: border-box;
+}
+
+.studentCreatorGrid__left:has(.stepForm--specialties) > * {
+    height: 100%;
+    min-height: 0;
+}
+
+.studentCreatorGrid__right {
+    width: 560px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.studentCreatorGrid__left > * {
+    max-width: 100%;
+    min-width: 0;
+}
+
+.studentCreatorGrid__right > * {
+    width: 560px;
+    max-width: 560px;
+}
+
+@media (max-width: 1100px) {
+    .studentCreatorGrid {
+        height: auto;
+        min-height: 530px;
+        overflow: visible;
+    }
+
+    .studentCreatorGrid__columns {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .studentCreatorGrid__right {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .studentCreatorGrid__right > * {
+        width: min(560px, 100%);
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 860px) {
+    .studentCreatorGrid {
+        --studentCreatorGrid-pad-y: 24px;
+        --studentCreatorGrid-pad-x: 16px;
+        border-radius: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .studentCreatorGrid {
+        --studentCreatorGrid-pad-y: 18px;
+        --studentCreatorGrid-pad-x: 12px;
+        border-radius: 20px;
+        min-height: 0;
+    }
+
+    .studentCreatorGrid__columns {
+        gap: 20px;
+    }
+}

@@ -1,0 +1,193 @@
+.stepperFooter {
+    width: 100%;
+    margin-top: 0;
+}
+
+.stepperFooter__progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+}
+
+.stepperFooter__step {
+    height: 4px;
+    flex: 1;
+    background-color: #2c2c2e;
+    border-radius: 2px;
+}
+
+.stepperFooter__step.is-active {
+    background-color: #007bff;
+}
+
+.stepperFooter__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+.stepperFooter__lead {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 46px;
+    min-height: 46px;
+}
+
+.stepperFooter__copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    height: 46px;
+}
+
+.stepperFooter__subtitle {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #ffffff;
+}
+
+.stepperFooter__stepLabel {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    color: #3E8EFF;
+}
+
+.stepperFooter__saveProgress {
+    box-sizing: border-box;
+    width: 234px;
+    height: 46px;
+    min-width: 234px;
+    min-height: 46px;
+    max-height: 46px;
+    padding: 0;
+    background-color: transparent;
+    color: #3b82f6;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.stepperFooter__saveProgress:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+
+.stepperFooter__saveProgress:active {
+    transform: scale(0.98);
+}
+
+.stepperFooter__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 46px;
+}
+
+.stepperFooter__nav {
+    height: 46px;
+    padding: 0 32px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stepperFooter__nav--back {
+    background-color: #3a3a3c;
+    color: #8e8e93;
+}
+
+.stepperFooter__nav--next {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.stepperFooter__nav--skip {
+    background-color: #3a3a3c;
+    color: #ffffff;
+}
+
+.stepperFooter__nav:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (max-width: 860px) {
+    .stepperFooter__bar {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .stepperFooter__lead {
+        width: 100%;
+        flex-wrap: wrap;
+        height: auto;
+        min-height: 46px;
+    }
+
+    .stepperFooter__saveProgress {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: auto;
+    }
+
+    .stepperFooter__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 520px) {
+    .stepperFooter__lead {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .stepperFooter__saveProgress {
+        width: 100%;
+        max-width: none;
+    }
+
+    .stepperFooter__actions {
+        flex-wrap: wrap;
+        gap: 10px;
+        height: auto;
+    }
+
+    .stepperFooter__nav {
+        flex: 1 1 calc(50% - 5px);
+        padding: 0 16px;
+    }
+
+    .stepperFooter__nav--skip {
+        flex: 1 1 100%;
+    }
+
+    .stepperFooter__subtitle {
+        font-size: 14px;
+    }
+}

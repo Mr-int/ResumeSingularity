@@ -1,8 +1,66 @@
 import { API_BASE_URL } from '../config/api.js';
 
 const AUTH_FLAG_KEY = 'isAuthenticated';
+/** Пока студент не подтвердил почту, /registration не должен сбрасывать его из‑за cookie. */
+export const EMAIL_CONFIRMATION_PENDING_KEY = 'resume:email-confirmation-pending';
+export const EMAIL_CONFIRMATION_EMAIL_KEY = 'resume:email-confirmation-email';
+export const REGISTRATION_USERNAME_KEY = 'resume:registration-username';
+export const REGISTRATION_TEMP_PASSWORD_KEY = 'resume:registration-temp-password';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
+
+/** Черновик регистрации в sessionStorage (почта/логин/ожидание кода). */
+export const clearRegistrationDraft = () => {
+    sessionStorage.removeItem(EMAIL_CONFIRMATION_PENDING_KEY);
+    sessionStorage.removeItem(EMAIL_CONFIRMATION_EMAIL_KEY);
+    sessionStorage.removeItem(REGISTRATION_USERNAME_KEY);
+    sessionStorage.removeItem(REGISTRATION_TEMP_PASSWORD_KEY);
+};
+
+export const isEmailConfirmationPending = () =>
+    sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
+
+const parseLoginErrorMessage = (status, errorText) => {
+    let serverMessage = '';
+    try {
+        const parsed = JSON.parse(errorText);
+        serverMessage = String(parsed?.message || parsed?.error || '').trim();
+    } catch {
+        serverMessage = String(errorText || '').trim();
+    }
+
+    const lower = serverMessage.toLowerCase();
+    // После регистрации/протухшей сессии JWT-фильтр часто отвечает так вместо Bad credentials
+    if (
+        status === 401
+        && (/authentication is required|full authentication is required|unauthorized/i.test(lower)
+            || !serverMessage)
+    ) {
+        return 'Неверный логин или пароль';
+    }
+    if (status === 401 || status === 403) {
+        return serverMessage || 'Неверный логин или пароль';
+    }
+    return serverMessage || `Ошибка входа (${status})`;
+};
+
+/**
+ * Сброс HttpOnly-сессии на сервере. Нужен перед login: иначе старый ACCESS_TOKEN
+ * из регистрации уходит с credentials:include и /auth/login отвечает 401
+ * "Authentication is required", не доходя до проверки пароля.
+ */
+const clearServerSessionQuietly = async () => {
+    try {
+        await fetch(`${API_BASE_URL}auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (e) {
+        console.warn('[AUTH] pre-login logout failed', e);
+    }
+    localStorage.removeItem(AUTH_FLAG_KEY);
+    localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+};
 
 /**
  * Авторизация пользователя
@@ -12,19 +70,21 @@ export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
  */
 export const login = async (username, password) => {
     try {
+        await clearServerSessionQuietly();
+
         const url = `${API_BASE_URL}auth/login`;
         console.log('[AUTH] Attempting login to:', url);
-        
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include', 
+            credentials: 'include',
             body: JSON.stringify({
                 username,
-                password
-            })
+                password,
+            }),
         });
 
         console.log('[AUTH] Response status:', response.status);
@@ -33,7 +93,9 @@ export const login = async (username, password) => {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('[AUTH] Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+            const err = new Error(parseLoginErrorMessage(response.status, errorText));
+            err.status = response.status;
+            throw err;
         }
 
         const contentType = response.headers.get('content-type');
@@ -136,6 +198,8 @@ const clearLocalAuth = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
+    // Черновик подтверждения почты НЕ трогаем — иначе после ухода на /login
+    // сессия confirm-email теряется, а почта на сервере уже занята.
     document.cookie.split(';').forEach((c) => {
         document.cookie = c
             .replace(/^ +/, '')
@@ -199,6 +263,108 @@ export const registerRecruiter = async (body) => {
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
+    }
+    return {};
+};
+
+const parseAuthError = async (response) => {
+    const text = await response.text();
+    let msg = text;
+    try {
+        msg = JSON.parse(text).message || text;
+    } catch {
+        /* empty */
+    }
+    const err = new Error(msg || `Ошибка ${response.status}`);
+    err.status = response.status;
+    return err;
+};
+
+/**
+ * POST /auth/confirm-email
+ * @param {string} code
+ */
+export const confirmEmail = async (code) => {
+    const url = `${API_BASE_URL}auth/confirm-email`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ code }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/resend-email-confirmation
+ */
+export const resendEmailConfirmation = async () => {
+    const url = `${API_BASE_URL}auth/resend-email-confirmation`;
+    const response = await fetch(url, {
+        method: 'POST',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/forgot-password
+ */
+export const forgotPassword = async (email) => {
+    const url = `${API_BASE_URL}auth/forgot-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/change-password
+ */
+export const changePassword = async (currentPassword, newPassword) => {
+    const url = `${API_BASE_URL}auth/change-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
+    }
+    return {};
+};
+
+/**
+ * POST /auth/reset-password
+ */
+export const resetPassword = async ({ email, code, newPassword, passwordConfirm }) => {
+    const url = `${API_BASE_URL}auth/reset-password`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+            email,
+            code,
+            newPassword,
+            passwordConfirm,
+        }),
+    });
+    if (!response.ok) {
+        throw await parseAuthError(response);
     }
     return {};
 };

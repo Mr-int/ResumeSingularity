@@ -1,0 +1,98 @@
+.experienceForm h2 {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 16px;
+}
+
+.experienceForm__list {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.experienceForm__listItem {
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #131313;
+    border: 1px solid #2f2f2f;
+}
+
+.experienceForm__listTitle {
+    font-size: 14px;
+    color: #ffffff;
+    margin-bottom: 4px;
+}
+
+.experienceForm__listDates {
+    font-size: 12px;
+    color: #8e8e93;
+}
+
+.experienceForm__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.experienceForm__field label {
+    font-size: 12px;
+    color: #8e8e93;
+}
+
+.experienceForm__hint {
+    margin: 0;
+    font-size: 12px;
+    color: #6a6d73;
+}
+
+.experienceForm__field input,
+.experienceForm__field textarea {
+    background: transparent;
+    border: 1px solid #3a3a3c;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+}
+
+.experienceForm__row .birthDatePicker__trigger {
+    border-color: #3a3a3c;
+}
+
+.experienceForm__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 520px) {
+    .experienceForm__row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.experienceForm__add {
+    margin-top: 8px;
+    background: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+@media (max-width: 600px) {
+    .experienceForm__row {
+        grid-template-columns: 1fr;
+    }
+}

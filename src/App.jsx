@@ -8,6 +8,9 @@ import Chats from "./pages/Chats.jsx";
 import ProtectedRoute from './components/auth/ProtectedRoute.jsx';
 import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 import Auth from './pages/Auth.jsx';
+import StatusError from './pages/StatusError.jsx';
+import ResumeCreator from './pages/ResumeCreator.jsx';
+import { routerBasename } from './utils/appBase.js';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -58,6 +61,13 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } />
           <Route path='/account' element={<Navigate to="/settings" replace />} />
+          <Route path='/plug' element={
+            <ProtectedRoute>
+              <ResumeCreator />
+            </ProtectedRoute>
+          } />
+          <Route path='/error/:code' element={<StatusError />} />
+          <Route path='*' element={<StatusError code="404" />} />
         </Routes>
         <FloatingButton />
 
@@ -72,7 +82,7 @@ const AppRoutes = () => {
 
 function App() {
   return (
-    <Router>
+    <Router basename={routerBasename}>
         <AppRoutes />
     </Router>
   )

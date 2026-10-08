@@ -1,0 +1,100 @@
+.resumeBioForm {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.resumeBioForm__title {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 400;
+    color: #e3e4e6;
+    font-family: 'StratosSemiLight', sans-serif;
+}
+
+.resumeBioForm__subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: #8a8e94;
+}
+
+.resumeBioForm__box {
+    position: relative;
+    box-sizing: border-box;
+    width: 535px;
+    max-width: 100%;
+    height: 347px;
+    background-color: #131313;
+    border-radius: 12px;
+    padding: 20px 20px 45px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.resumeBioForm__box:focus-within {
+    border-color: #4f4f52;
+}
+
+.resumeBioForm__label {
+    display: block;
+    font-size: 15px;
+    color: #a5a6a9;
+    margin-bottom: 12px;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.resumeBioForm__textarea {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+    background: none;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-size: 15px;
+    font-family: inherit;
+    line-height: 1.5;
+    resize: none;
+    padding: 0;
+}
+
+.resumeBioForm__textarea::placeholder {
+    color: #52555a;
+}
+
+.resumeBioForm__counter {
+    position: absolute;
+    bottom: 16px;
+    right: 20px;
+    font-size: 13px;
+    color: #52555a;
+    user-select: none;
+}
+
+.resumeBioForm__counterCurrent {
+    color: #8a8e94;
+}
+
+.resumeBioForm__counterCurrent.is-empty {
+    color: #e74c3c;
+}
+
+@media (max-width: 600px) {
+    .resumeBioForm__title {
+        font-size: 16px;
+    }
+
+    .resumeBioForm__box {
+        height: 300px;
+        padding: 16px 16px 40px;
+    }
+
+    .resumeBioForm__subtitle {
+        margin-bottom: 16px;
+    }
+}

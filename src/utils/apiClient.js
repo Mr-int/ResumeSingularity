@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api.js';
 import { refreshSession } from '../services/authApi.js';
+import { appPath } from './appBase.js';
 
 const clearAuthAndRedirect = () => {
     localStorage.removeItem('isAuthenticated');
@@ -7,8 +8,10 @@ const clearAuthAndRedirect = () => {
     sessionStorage.setItem('showLoginAfter403', 'true');
     window.dispatchEvent(new CustomEvent('resume:auth-required'));
     const path = window.location.pathname;
-    if (!path.startsWith('/login') && !path.startsWith('/registration')) {
-        window.location.href = '/login';
+    const loginPath = appPath('login');
+    const registrationPath = appPath('registration');
+    if (!path.startsWith(loginPath) && !path.startsWith(registrationPath)) {
+        window.location.href = loginPath;
     }
 };
 
@@ -60,14 +63,13 @@ export const apiClientJson = async (endpoint, options = {}) => {
             } catch (_) {
                 responseBody = { message: errorText };
             }
-            if (!skipSessionClearOn403) {
-                console.log('[API] 403 Forbidden - access denied, clearing client auth and requesting login');
-                localStorage.removeItem('isAuthenticated');
-                localStorage.removeItem('isAuthenticated_time');
-                sessionStorage.setItem('showLoginAfter403', 'true');
-                window.dispatchEvent(new CustomEvent('resume:auth-required'));
+            // 403 = доступ запрещён при живой сессии; сессию не сбрасываем
+            // (иначе студент вылетает из аккаунта на create company и т.п.).
+            // skipSessionClearOn403 оставлен для совместимости вызовов.
+            if (skipSessionClearOn403) {
+                console.log('[API] 403 Forbidden (soft probe)');
             } else {
-                console.log('[API] 403 Forbidden (session not cleared — soft probe)');
+                console.log('[API] 403 Forbidden - access denied (session kept)');
             }
             const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
             error.status = 403;

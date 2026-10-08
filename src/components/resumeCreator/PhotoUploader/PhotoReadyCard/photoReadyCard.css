@@ -1,0 +1,152 @@
+.photoReadyCard {
+    box-sizing: border-box;
+    width: 610px;
+    max-width: 100%;
+    height: 200px;
+    background-color: #2b2e33;
+    border-radius: 20px;
+    display: flex;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.photoReadyCard__photo {
+    width: 170px;
+    flex-shrink: 0;
+    height: 100%;
+    background-color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+.photoReadyCard__photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+}
+
+.photoReadyCard__placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #505257, #2f3136);
+}
+
+.photoReadyCard__info {
+    flex: 1;
+    min-width: 0;
+    padding: 30px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.photoReadyCard__text {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.photoReadyCard__label {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0;
+}
+
+.photoReadyCard__filename {
+    color: #838891;
+    font-size: 15px;
+    font-weight: 400;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.photoReadyCard__action {
+    width: fit-content;
+    height: 44px;
+    background-color: #3b82f6;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-size: 15px;
+    font-weight: 400;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.photoReadyCard__action:hover {
+    background-color: #2563eb;
+}
+
+.photoReadyCard__action svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (max-width: 720px) {
+    .photoReadyCard {
+        height: 170px;
+        border-radius: 16px;
+    }
+
+    .photoReadyCard__photo {
+        width: 130px;
+    }
+
+    .photoReadyCard__info {
+        padding: 20px 16px;
+    }
+
+    .photoReadyCard__label {
+        font-size: 15px;
+    }
+
+    .photoReadyCard__filename {
+        font-size: 13px;
+    }
+
+    .photoReadyCard__action {
+        height: 40px;
+        padding: 0 14px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .photoReadyCard {
+        height: auto;
+        min-height: 0;
+        flex-direction: column;
+    }
+
+    .photoReadyCard__photo {
+        width: 100%;
+        height: 180px;
+    }
+
+    .photoReadyCard__info {
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .photoReadyCard__action {
+        width: 100%;
+        justify-content: center;
+    }
+}

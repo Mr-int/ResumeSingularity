@@ -78,7 +78,11 @@ const pageQuery = (page, size, sortFields = []) => {
  * GET /chat — список чатов (постранично, как в OpenAPI: pageable обязателен).
  */
 export const getMyChats = (page = 0, size = 50) =>
-    apiClientJson(`chat?${pageQuery(page, size, ['lastActivityAt,desc'])}`, { method: 'GET' });
+    apiClientJson(`chat?${pageQuery(page, size, ['lastActivityAt,desc'])}`, {
+        method: 'GET',
+        // 403 «Дозаполните профиль…» — не разлогиниваем
+        skipSessionClearOn403: true,
+    });
 
 /**
  * GET /chat/{chatId}/messages

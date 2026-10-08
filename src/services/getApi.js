@@ -19,44 +19,6 @@ export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { metho
 export const getRecruiterMe = () =>
     apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true });
 
-const catalogRows = (json) => {
-    if (Array.isArray(json)) return json;
-    if (Array.isArray(json?.data)) return json.data;
-    if (Array.isArray(json?.content)) return json.content;
-    return [];
-};
-
-const fetchJsonSafe = async (url, options) => {
-    const response = await fetch(url, { credentials: 'include', ...options });
-    if (!response.ok) return null;
-    try {
-        return await response.json();
-    } catch {
-        return null;
-    }
-};
-
-/** Справочник специальностей для формы регистрации (без сброса сессии при 401). */
-export const getSpecialitiesForRegistration = async () => {
-    const publicRes = await fetchJsonSafe(
-        `${API_BASE_URL}public/registration/specialities?page=0&size=200`,
-        { method: 'GET' },
-    );
-    let rows = catalogRows(publicRes);
-    if (rows.length) return rows;
-
-    const filterRes = await fetchJsonSafe(`${API_BASE_URL}speciality/filter?page=0&size=200`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-    });
-    rows = catalogRows(filterRes);
-    if (rows.length) return rows;
-
-    const listRes = await fetchJsonSafe(`${API_BASE_URL}speciality`, { method: 'GET' });
-    return catalogRows(listRes);
-};
-
 // ---- Dictionaries / entities ----
 export const getSpecialityById = (id) => apiClientJson(`speciality/${id}`, { method: 'GET' });
 export const getSkillById = (id) => apiClientJson(`skill/${id}`, { method: 'GET' });

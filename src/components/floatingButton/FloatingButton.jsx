@@ -89,7 +89,12 @@ const FloatingButton = () => {
         return Promise.resolve();
     };
 
-    if (isHidden || location.pathname === '/chats' || location.pathname === '/settings') {
+    if (
+        isHidden
+        || location.pathname === '/chats'
+        || location.pathname === '/settings'
+        || location.pathname === '/plug'
+    ) {
         return null;
     }
 

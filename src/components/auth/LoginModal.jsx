@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
-import { login } from '../../services/authApi.js';
+import React, { useEffect, useState } from 'react';
+import {
+    EMAIL_CONFIRMATION_EMAIL_KEY,
+    isEmailConfirmationPending,
+    login,
+    logoutServer,
+} from '../../services/authApi.js';
 import './loginModal.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -24,15 +29,26 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const pendingEmail = isEmailConfirmationPending()
+        ? (sessionStorage.getItem(EMAIL_CONFIRMATION_EMAIL_KEY) || '')
+        : '';
+
+    // Сброс протухшего JWT перед логином. НЕ трогаем сессию, если ждём код подтверждения почты —
+    // register-student уже создал аккаунт, confirm-email нужен тот же cookie.
+    useEffect(() => {
+        if (isEmailConfirmationPending()) return;
+        logoutServer().catch(() => {});
+    }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
         const trimmedUsername = username.trim();
-        const trimmedPassword = password.trim();
+        // пароль не trim — пробелы в конце могут быть частью пароля
+        const nextPassword = password;
 
-        if (!trimmedUsername && !trimmedPassword) {
+        if (!trimmedUsername && !nextPassword) {
             setError('Заполните все поля');
             return;
         }
@@ -40,14 +56,14 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
             setError('Введите логин');
             return;
         }
-        if (!trimmedPassword) {
+        if (!nextPassword) {
             setError('Введите пароль');
             return;
         }
 
         setLoading(true);
         try {
-            await login(trimmedUsername, trimmedPassword);
+            await login(trimmedUsername, nextPassword);
             setTimeout(() => {
                 setLoading(false);
                 onSuccess();
@@ -101,6 +117,21 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
                 </div>
 
                 <h2 className="loginModal__heading">Вход</h2>
+
+                {pendingEmail ? (
+                    <p className="loginModal__subheading" style={{ marginBottom: 12 }}>
+                        Не завершена регистрация для {pendingEmail}.
+                        {' '}
+                        <button
+                            type="button"
+                            className="loginModal__registerLink"
+                            style={{ display: 'inline', padding: 0, margin: 0 }}
+                            onClick={onRegisterClick}
+                        >
+                            Ввести код
+                        </button>
+                    </p>
+                ) : null}
 
                 <form onSubmit={handleLogin} className="loginModal__form" noValidate>
                     <div className="loginModal__inputGroup">

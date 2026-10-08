@@ -1,0 +1,125 @@
+.skillsSelection {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.skillsSelection__title {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 400;
+    color: #e3e4e6;
+    font-family: 'StratosSemiLight', sans-serif;
+}
+
+.skillsSelection__subtitle {
+    margin: 0 0 24px;
+    font-size: 14px;
+    color: #8a8e94;
+}
+
+.skillsSelection__searchWrap {
+    position: relative;
+    margin-bottom: 28px;
+    flex-shrink: 0;
+}
+
+.skillsSelection__search {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 340px;
+    height: 46px;
+    background-color: transparent;
+    border: 1px solid #737D85;
+    border-radius: 23px;
+    padding: 0 20px 0 46px;
+    color: #737D85;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, color 0.2s;
+}
+
+.skillsSelection__search:focus {
+    border-color: #737D85;
+    color: #ffffff;
+}
+
+.skillsSelection__search::placeholder {
+    color: #737D85;
+}
+
+.skillsSelection__searchIcon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    fill: #737D85;
+    pointer-events: none;
+}
+
+.skillsSelection__pool {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 10px 8px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.skillsSelection__poolBadge {
+    background-color: #131313;
+    color: #a5a6a9;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    user-select: none;
+    transition:
+        background-color 0.15s,
+        color 0.15s;
+}
+
+.skillsSelection__poolBadge:hover:not(:disabled) {
+    background-color: #131313;
+    color: #ffffff;
+}
+
+.skillsSelection__poolBadge.is-added,
+.skillsSelection__poolBadge:disabled {
+    background-color: #ffffff;
+    color: #161719;
+    cursor: default;
+    opacity: 1;
+}
+
+.skillsSelection__poolEmpty {
+    font-size: 14px;
+    color: #55585e;
+    padding: 6px 0;
+}
+
+@media (max-width: 600px) {
+    .skillsSelection__subtitle {
+        margin-bottom: 16px;
+    }
+
+    .skillsSelection__searchWrap {
+        margin-bottom: 18px;
+    }
+
+    .skillsSelection__search {
+        max-width: none;
+    }
+}

@@ -37,6 +37,9 @@ const Header = () => {
                 </Link>
 
                 <div className="header__rightCluster">
+                    <Link to="/plug" className="header__navLink header__navLink--plug">
+                        PLUG
+                    </Link>
                     {authed ? (
                         <>
                             <Link to="/chats" className="header__navLink">
@@ -121,6 +124,13 @@ const Header = () => {
                     onClick={handleMobileLinkClick}
                 >
                     настройки
+                </Link>
+                <Link
+                    to="/plug"
+                    className="header__mobileBtn"
+                    onClick={handleMobileLinkClick}
+                >
+                    PLUG
                 </Link>
                 {authed ? (
                     <>

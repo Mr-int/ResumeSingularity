@@ -414,6 +414,18 @@
     cursor: not-allowed;
 }
 
+.registerForm__primaryBtn--secondary {
+    margin-top: 8px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+}
+
+.registerForm__primaryBtn--secondary:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.06);
+}
+
 .registerForm__messageSlot {
     position: absolute;
     left: 50%;
