@@ -38,7 +38,7 @@ const Header = () => {
 
                 <div className="header__rightCluster">
                     <Link to="/plug" className="header__navLink header__navLink--plug">
-                        PLUG
+                        Резюме
                     </Link>
                     {authed ? (
                         <>
@@ -130,7 +130,7 @@ const Header = () => {
                     className="header__mobileBtn"
                     onClick={handleMobileLinkClick}
                 >
-                    PLUG
+                    Резюме
                 </Link>
                 {authed ? (
                     <>
