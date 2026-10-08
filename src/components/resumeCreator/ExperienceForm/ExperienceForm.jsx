@@ -14,6 +14,7 @@ const formatDateLabel = (value) => {
 const ExperienceForm = ({
     values = {},
     items = [],
+    companies = [],
     onChange,
     onAdd,
 }) => {
@@ -25,6 +26,17 @@ const ExperienceForm = ({
         endDate = '',
         additionalInfo = '',
     } = values;
+
+    const handleCompanyChange = (raw) => {
+        const nextName = raw;
+        const match = companies.find(
+            (item) => (item?.name || '').trim().toLowerCase() === nextName.trim().toLowerCase(),
+        );
+        onChange?.({
+            companyName: nextName,
+            companyId: match?.id != null ? String(match.id) : '',
+        });
+    };
 
     const handleAdd = () => {
         onAdd?.({
@@ -64,10 +76,20 @@ const ExperienceForm = ({
                 <input
                     id="experience-company"
                     type="text"
+                    list="experience-company-list"
                     value={companyName}
-                    placeholder="Название компании"
-                    onChange={(event) => onChange?.('companyName', event.target.value)}
+                    placeholder="Выберите из списка или введите название"
+                    autoComplete="off"
+                    onChange={(event) => handleCompanyChange(event.target.value)}
                 />
+                <datalist id="experience-company-list">
+                    {companies.map((item) => (
+                        <option key={item.id} value={item.name} />
+                    ))}
+                </datalist>
+                <p className="experienceForm__hint">
+                    Компания должна быть в справочнике (иначе опыт не сохранится)
+                </p>
             </div>
 
             <div className="experienceForm__field">
@@ -77,7 +99,7 @@ const ExperienceForm = ({
                     type="text"
                     value={position}
                     placeholder="Ваша роль"
-                    onChange={(event) => onChange?.('position', event.target.value)}
+                    onChange={(event) => onChange?.({ position: event.target.value })}
                 />
             </div>
 
@@ -93,9 +115,9 @@ const ExperienceForm = ({
                         maxDate={endDate || undefined}
                         ariaLabel="Дата начала работы"
                         onChange={(next) => {
-                            onChange?.('startDate', next);
+                            onChange?.({ startDate: next });
                             if (endDate && next && endDate < next) {
-                                onChange?.('endDate', '');
+                                onChange?.({ endDate: '' });
                             }
                         }}
                     />
@@ -110,7 +132,7 @@ const ExperienceForm = ({
                         maxYear={EXPERIENCE_MAX_YEAR}
                         minDate={startDate || undefined}
                         ariaLabel="Дата окончания работы"
-                        onChange={(next) => onChange?.('endDate', next)}
+                        onChange={(next) => onChange?.({ endDate: next })}
                     />
                 </div>
             </div>
@@ -122,7 +144,7 @@ const ExperienceForm = ({
                     rows="4"
                     value={additionalInfo}
                     placeholder="Что вы делали и какого результата достигли"
-                    onChange={(event) => onChange?.('additionalInfo', event.target.value)}
+                    onChange={(event) => onChange?.({ additionalInfo: event.target.value })}
                 />
             </div>
 

@@ -479,6 +479,7 @@ export const createCompany = (body) =>
     apiClientJson('company', {
         method: 'POST',
         body: JSON.stringify(body),
+        skipSessionClearOn403: true,
     });
 
 /** POST /company/filter — поиск компаний по имени. */
@@ -486,8 +487,17 @@ export const filterCompanies = async (filterReq = {}, pageable = { page: 0, size
     const resp = await apiClientJson(withPageQuery('company/filter', pageable), {
         method: 'POST',
         body: JSON.stringify(filterReq),
+        skipSessionClearOn403: true,
     });
     return pageItems(resp);
+};
+
+export const getAllCompanies = async () => {
+    try {
+        return await filterCompanies({}, { page: 0, size: 500 });
+    } catch {
+        return [];
+    }
 };
 
 /** Найти id компании по точному имени (без учёта регистра). */
@@ -499,10 +509,49 @@ export const findCompanyIdByName = async (name) => {
         const exact = items.find(
             (item) => (item?.name || '').trim().toLowerCase() === trimmed.toLowerCase(),
         );
-        return exact?.id ?? null;
+        const id = exact?.id != null ? Number(exact.id) : NaN;
+        return Number.isFinite(id) && id > 0 ? id : null;
     } catch {
         return null;
     }
+};
+
+/**
+ * Нужен companyId > 0 (бэкенд: @Positive — «должно быть больше 0»).
+ * Ищем в справочнике, иначе пробуем создать.
+ */
+export const resolveCompanyId = async (companyName, existingId) => {
+    const fromEntry = Number(existingId);
+    if (Number.isFinite(fromEntry) && fromEntry > 0) return fromEntry;
+
+    const trimmed = companyName?.trim() || '';
+    if (!trimmed) {
+        const err = new Error('Укажите компанию');
+        err.status = 400;
+        throw err;
+    }
+
+    const found = await findCompanyIdByName(trimmed);
+    if (found) return found;
+
+    try {
+        const created = await createCompany({ name: trimmed });
+        const id = Number(created?.id);
+        if (Number.isFinite(id) && id > 0) return id;
+    } catch (e) {
+        if (e?.status === 403) {
+            const err = new Error(
+                'Компания не найдена в справочнике. Выберите компанию из подсказок или попросите администратора добавить её.',
+            );
+            err.status = 403;
+            throw err;
+        }
+        throw e;
+    }
+
+    const err = new Error('Не удалось определить компанию. Выберите её из списка.');
+    err.status = 400;
+    throw err;
 };
 
 export const createExperience = (body) =>

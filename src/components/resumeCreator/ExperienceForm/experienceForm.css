@@ -44,6 +44,12 @@
     color: #8e8e93;
 }
 
+.experienceForm__hint {
+    margin: 0;
+    font-size: 12px;
+    color: #6a6d73;
+}
+
 .experienceForm__field input,
 .experienceForm__field textarea {
     background: transparent;

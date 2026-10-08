@@ -30,10 +30,11 @@ import {
     createEducation,
     createExperience,
     createInstitution,
-    findCompanyIdByName,
     findEducationIdByName,
+    getAllCompanies,
     getExperienceDetailsByStudentId,
     getInstitutionsByStudentId,
+    resolveCompanyId,
 } from '../services/studentApi.js';
 import {
     resumeValidationContext,
@@ -197,6 +198,7 @@ const ResumeCreator = () => {
     const [specialties, setSpecialties] = useState([]);
     const [skillsCatalog, setSkillsCatalog] = useState([]);
     const [educationsCatalog, setEducationsCatalog] = useState([]);
+    const [companiesCatalog, setCompaniesCatalog] = useState([]);
 
     const [photoPreview, setPhotoPreview] = useState(null);
     const [photoName, setPhotoName] = useState('');
@@ -268,17 +270,19 @@ const ResumeCreator = () => {
             setBootError('');
             try {
                 const me = await getStudentMe();
-                const [specs, skillsPage, edus, institutions, experienceDetails] = await Promise.all([
+                const [specs, skillsPage, edus, institutions, experienceDetails, companies] = await Promise.all([
                     getAllSpecialities(),
                     filterSkills({}, { page: 0, size: 500 }),
                     getAllEducation(),
                     getInstitutionsByStudentId(me.id),
                     getExperienceDetailsByStudentId(me.id),
+                    getAllCompanies(),
                 ]);
                 if (cancelled) return;
 
                 setStudentId(me.id);
                 setSpecialties(Array.isArray(specs) ? specs : []);
+                setCompaniesCatalog(Array.isArray(companies) ? companies : []);
                 const apiSkills = Array.isArray(skillsPage?.data)
                     ? skillsPage.data
                     : (Array.isArray(skillsPage) ? skillsPage : []);
@@ -551,24 +555,15 @@ const ResumeCreator = () => {
 
     const buildExperienceBody = async (entry) => {
         const companyName = entry.companyName?.trim() || '';
-        let companyId = entry.companyId ? Number(entry.companyId) : undefined;
-        // POST /company студенту запрещён — только поиск существующей
-        if (!companyId && companyName) {
-            companyId = (await findCompanyIdByName(companyName)) || undefined;
-        }
-
-        let additionalInfo = (entry.additionalInfo || '').trim();
-        if (!companyId && companyName) {
-            additionalInfo = additionalInfo
-                ? `Компания: ${companyName}\n${additionalInfo}`
-                : `Компания: ${companyName}`;
-        }
+        // Бэкенд требует companyId > 0 («должно быть больше 0»), без id уходит 0
+        const companyId = await resolveCompanyId(companyName, entry.companyId);
+        const additionalInfo = (entry.additionalInfo || '').trim();
 
         const body = {
+            companyId,
             position: entry.position.trim(),
             startDate: entry.startDate,
         };
-        if (companyId) body.companyId = companyId;
         if (additionalInfo) body.additionalInfo = additionalInfo;
         if (entry.endDate) body.endDate = entry.endDate;
         return { body, companyName, companyId };
@@ -603,18 +598,33 @@ const ResumeCreator = () => {
             saveExperienceDraft(studentId, experienceDraft);
             return false;
         }
+        if (!entry.companyName && !(Number(entry.companyId) > 0)) {
+            saveExperienceDraft(studentId, experienceDraft);
+            return false;
+        }
         await persistExperienceEntry(entry);
         return true;
     };
 
     const handleAddExperience = async (entry) => {
+        if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
+            showToast('Укажите компанию', { error: true });
+            return;
+        }
         if (!entry?.position?.trim() || !entry?.startDate) {
             showToast('Укажите должность и дату начала', { error: true });
             return;
         }
         setSaving(true);
         try {
-            await persistExperienceEntry(entry);
+            const saved = await persistExperienceEntry(entry);
+            if (saved?.companyId && saved?.companyName) {
+                setCompaniesCatalog((prev) => (
+                    prev.some((item) => Number(item.id) === Number(saved.companyId))
+                        ? prev
+                        : [...prev, { id: saved.companyId, name: saved.companyName }]
+                ));
+            }
             showToast('Опыт добавлен');
         } catch (err) {
             showToast(err?.message || 'Не удалось добавить опыт', { error: true });
@@ -770,9 +780,10 @@ const ResumeCreator = () => {
                     <ExperienceForm
                         values={experienceDraft}
                         items={experiences}
-                        onChange={(field, value) => {
+                        companies={companiesCatalog}
+                        onChange={(patch) => {
                             setExperienceDraft((prev) => {
-                                const next = { ...prev, [field]: value };
+                                const next = { ...prev, ...patch };
                                 saveExperienceDraft(studentId, next);
                                 return next;
                             });
