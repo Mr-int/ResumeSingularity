@@ -215,22 +215,88 @@ export const createEducation = (body) =>
     apiClientJson('education', {
         method: 'POST',
         body: JSON.stringify(body),
+        skipSessionClearOn403: true,
     });
 
-/** Найти id вуза в справочнике по точному имени (без учёта регистра). */
+const pickEducationId = (items, name) => {
+    const trimmed = name.trim().toLowerCase();
+    if (!trimmed || !Array.isArray(items)) return null;
+    const exact = items.find(
+        (item) => (item?.institution || '').trim().toLowerCase() === trimmed,
+    );
+    if (exact?.id != null) {
+        const id = Number(exact.id);
+        return Number.isFinite(id) && id > 0 ? id : null;
+    }
+    const partial = items.find((item) => {
+        const label = (item?.institution || '').trim().toLowerCase();
+        return label.includes(trimmed) || trimmed.includes(label);
+    });
+    if (partial?.id != null) {
+        const id = Number(partial.id);
+        return Number.isFinite(id) && id > 0 ? id : null;
+    }
+    return null;
+};
+
+/** Найти id образовательной организации в справочнике. */
 export const findEducationIdByName = async (name) => {
     const trimmed = name?.trim();
     if (!trimmed) return null;
     try {
         const pageRes = await filterEducation({ institution: trimmed }, { page: 0, size: 50 });
         const items = Array.isArray(pageRes?.data) ? pageRes.data : [];
-        const exact = items.find(
-            (item) => (item?.institution || '').trim().toLowerCase() === trimmed.toLowerCase(),
-        );
-        return exact?.id ?? null;
+        return pickEducationId(items, trimmed);
     } catch {
         return null;
     }
+};
+
+/**
+ * Нужен educationId > 0 (иначе бэкенд ищет id 0 → NOT_FOUND).
+ * Справочник education студенту создавать нельзя (403).
+ */
+export const resolveEducationId = async (institutionName, existingId, localCatalog = []) => {
+    const fromEntry = Number(existingId);
+    if (Number.isFinite(fromEntry) && fromEntry > 0) return fromEntry;
+
+    const trimmed = institutionName?.trim() || '';
+    if (!trimmed) {
+        const err = new Error('Укажите образовательную организацию');
+        err.status = 400;
+        throw err;
+    }
+
+    const fromLocal = pickEducationId(localCatalog, trimmed);
+    if (fromLocal) return fromLocal;
+
+    const found = await findEducationIdByName(trimmed);
+    if (found) return found;
+
+    try {
+        const created = await createEducation({
+            institution: trimmed,
+            additionalInfo: 'Добавлено студентом',
+            webUrl: 'https://',
+        });
+        const id = Number(created?.id);
+        if (Number.isFinite(id) && id > 0) return id;
+    } catch (e) {
+        if (e?.status === 403) {
+            const err = new Error(
+                'Организация не найдена в справочнике. Выберите её из подсказок или попросите администратора добавить.',
+            );
+            err.status = 403;
+            throw err;
+        }
+        throw e;
+    }
+
+    const err = new Error(
+        'Не удалось определить организацию. Выберите её из списка.',
+    );
+    err.status = 400;
+    throw err;
 };
 
 export const getEducationById = async (id) => {

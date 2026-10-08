@@ -15,12 +15,17 @@ const EducationForm = ({
 
     const handleUniversityChange = (raw) => {
         const nextName = raw;
-        const match = educations.find(
-            (item) => (item?.institution || '').trim().toLowerCase() === nextName.trim().toLowerCase(),
+        const needle = nextName.trim().toLowerCase();
+        const exact = educations.find(
+            (item) => (item?.institution || '').trim().toLowerCase() === needle,
         );
+        const partial = exact || educations.find((item) => {
+            const label = (item?.institution || '').trim().toLowerCase();
+            return needle && (label.includes(needle) || needle.includes(label));
+        });
         onChange?.({
             institutionName: nextName,
-            educationId: match?.id != null ? String(match.id) : '',
+            educationId: partial?.id != null ? String(partial.id) : '',
         });
     };
 
@@ -39,7 +44,7 @@ const EducationForm = ({
             <h2>Образование</h2>
 
             <div className="educationForm__field">
-                <label htmlFor="education-university">Вуз</label>
+                <label htmlFor="education-university">Образовательная организация</label>
                 <input
                     id="education-university"
                     type="text"
@@ -54,7 +59,9 @@ const EducationForm = ({
                         <option key={item.id} value={item.institution} />
                     ))}
                 </datalist>
-                <p className="educationForm__hint">Можно выбрать из списка или вписать свой вуз</p>
+                <p className="educationForm__hint">
+                    Выберите организацию из подсказок — своя запись в справочник студенту недоступна
+                </p>
             </div>
 
             <div className="educationForm__row">

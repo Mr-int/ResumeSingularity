@@ -27,14 +27,13 @@ import {
     getAllSpecialities,
     getAllEducation,
     filterSkills,
-    createEducation,
     createExperience,
     createInstitution,
-    findEducationIdByName,
     getAllCompanies,
     getExperienceDetailsByStudentId,
     getInstitutionsByStudentId,
     resolveCompanyId,
+    resolveEducationId,
 } from '../services/studentApi.js';
 import {
     resumeValidationContext,
@@ -635,8 +634,8 @@ const ResumeCreator = () => {
 
     const handleAddEducation = async (entry) => {
         const institutionName = entry?.institutionName?.trim() || '';
-        if (!entry?.educationId && !institutionName) {
-            showToast('Укажите вуз', { error: true });
+        if (!(Number(entry?.educationId) > 0) && !institutionName) {
+            showToast('Укажите образовательную организацию', { error: true });
             return;
         }
         if (entry.startYear == null || entry.endYear == null) {
@@ -645,53 +644,25 @@ const ResumeCreator = () => {
         }
         setSaving(true);
         try {
-            let educationId = entry.educationId ? Number(entry.educationId) : undefined;
-            if (!educationId && institutionName) {
-                const fromCatalog = educationsCatalog.find(
-                    (item) => (item?.institution || '').trim().toLowerCase() === institutionName.toLowerCase(),
-                );
-                educationId = fromCatalog?.id != null
-                    ? Number(fromCatalog.id)
-                    : ((await findEducationIdByName(institutionName)) || undefined);
-            }
-
-            // Свой вуз: пробуем создать в справочнике (может быть только ADMIN)
-            if (!educationId && institutionName) {
-                try {
-                    const createdEdu = await createEducation({
-                        institution: institutionName,
-                        additionalInfo: 'Добавлено студентом',
-                        webUrl: 'https://',
-                    });
-                    educationId = createdEdu?.id != null ? Number(createdEdu.id) : undefined;
-                    if (educationId) {
-                        setEducationsCatalog((prev) => (
-                            prev.some((item) => Number(item.id) === educationId)
-                                ? prev
-                                : [...prev, createdEdu]
-                        ));
-                    }
-                } catch {
-                    /* student may not create education dictionary */
-                }
-            }
-
-            const body = {
+            // Бэкенд требует educationId > 0; без id ищет «education with id0»
+            const educationId = await resolveEducationId(
+                institutionName,
+                entry.educationId,
+                educationsCatalog,
+            );
+            const created = await createInstitution({
+                educationId,
                 startYear: entry.startYear,
                 endYear: entry.endYear,
-            };
-            if (educationId) {
-                body.educationId = educationId;
-            } else if (institutionName) {
-                // как в CreateStudentInstitutionReq — название, если id нет
-                body.institution = institutionName;
-            }
+            });
+            const resolvedName = educationsCatalog.find(
+                (item) => Number(item.id) === Number(educationId),
+            )?.institution || institutionName;
 
-            const created = await createInstitution(body);
             setEducationsAdded((prev) => [...prev, {
                 ...entry,
                 educationId,
-                institutionName,
+                institutionName: resolvedName,
                 id: created?.institution?.id || created?.educationId || educationId,
             }]);
             setEducationDraft({});
