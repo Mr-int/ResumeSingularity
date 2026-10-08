@@ -92,7 +92,7 @@
 }
 
 .skillsSelection__poolBadge:hover:not(:disabled) {
-    background-color: #1c1c1c;
+    background-color: #131313;
     color: #ffffff;
 }
 
