@@ -212,20 +212,22 @@ const SettingsPage = () => {
                             />
 
                             <div ref={accountRef} id="account-settings" className="accountPage__accountBlock">
-                                <h2 className="accountPage__cardTitle">Настройки аккаунта</h2>
-                                <p className="accountPage__settingsNav">
-                                    <Link to="/chats" className="accountPage__settingsNavLink">
-                                        Перейти к чатам
-                                    </Link>
+                                <div className="accountPage__accountBar">
+                                    <div>
+                                        <h2 className="accountPage__accountTitle">Аккаунт</h2>
+                                        <p className="accountPage__accountHint">
+                                            Управление сессией и входящими заявками
+                                        </p>
+                                    </div>
                                     <button
                                         type="button"
-                                        className="accountPage__settingsNavLink accountPage__settingsNavLink--btn"
+                                        className="accountPage__logoutBtn"
                                         onClick={handleLogout}
                                         disabled={loggingOut}
                                     >
                                         {loggingOut ? 'Выходим…' : 'Выйти'}
                                     </button>
-                                </p>
+                                </div>
                                 <StudentRequestsSection studentId={profile.id} />
                             </div>
                         </>
