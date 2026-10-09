@@ -15,8 +15,8 @@ const Avatar = ({ src, alt = 'Пользователь', onClick }) => {
                     'studentCreatorHeader__avatarImg'
                     + (src ? ' studentCreatorHeader__avatarImg--custom' : '')
                 }
-                width={src ? 56 : 42}
-                height={src ? 56 : 42}
+                width={42}
+                height={42}
             />
         </button>
     );
