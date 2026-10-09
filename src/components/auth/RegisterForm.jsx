@@ -4,7 +4,9 @@ import {
     confirmEmail,
     EMAIL_CONFIRMATION_EMAIL_KEY,
     EMAIL_CONFIRMATION_PENDING_KEY,
+    isRegistrationPendingForRole,
     logoutServer,
+    REGISTRATION_PENDING_ROLE_KEY,
     REGISTRATION_USERNAME_KEY,
     registerRecruiter,
     registerStudent,
@@ -43,9 +45,6 @@ const REGISTER_COOLDOWN_KEY = 'resume:register-cooldown-until';
 const REGISTER_COOLDOWN_MS = 15 * 60 * 1000;
 const USERNAME_RETRY_LIMIT = 2;
 
-const emailConfirmationPending = () =>
-    sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
-
 const readTakenEmails = () => {
     try {
         const raw = sessionStorage.getItem(TAKEN_EMAILS_KEY);
@@ -62,10 +61,13 @@ const rememberTakenEmail = (email) => {
     sessionStorage.setItem(TAKEN_EMAILS_KEY, JSON.stringify([...set]));
 };
 
-const markEmailConfirmationPending = (email, username) => {
+const markEmailConfirmationPending = (email, username, role) => {
     sessionStorage.setItem(EMAIL_CONFIRMATION_PENDING_KEY, '1');
     sessionStorage.setItem(EMAIL_CONFIRMATION_EMAIL_KEY, email);
     sessionStorage.setItem(REGISTRATION_USERNAME_KEY, username);
+    if (role) {
+        sessionStorage.setItem(REGISTRATION_PENDING_ROLE_KEY, role);
+    }
 };
 
 const usernameFromEmail = (email) => {
@@ -108,13 +110,14 @@ const humanizeRegisterError = (err) => {
 
 const RegisterForm = ({ role, onBack, onSuccess }) => {
     const isStudent = role === 'student';
-    const hadPendingOnOpen = isStudent && emailConfirmationPending();
+    // «Продолжить?» только если снова выбрали ту же роль, что в незавершённой регистрации
+    const hadPendingOnOpen = isRegistrationPendingForRole(role);
 
     // Студент: 0 продолжение → 1 email → 2 пароль+телефон (1× register) → 3 код → 4 ФИО → 5 курс
     const [step, setStep] = useState(hadPendingOnOpen ? 0 : 1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [studentAccountCreated, setStudentAccountCreated] = useState(hadPendingOnOpen);
+    const [studentAccountCreated, setStudentAccountCreated] = useState(hadPendingOnOpen && isStudent);
     const [emailConfirmed, setEmailConfirmed] = useState(false);
     const [emailTouched, setEmailTouched] = useState(false);
     const [assignedUsername, setAssignedUsername] = useState(
@@ -229,6 +232,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             markEmailConfirmationPending(
                 email,
                 sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || assignedUsername || usernameFromEmail(email),
+                role,
             );
         }
         setCode(['', '', '', '']);
@@ -343,7 +347,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     email,
                     phoneNumber,
                 }));
-                markEmailConfirmationPending(email, username);
+                markEmailConfirmationPending(email, username, role);
                 setStudentAccountCreated(true);
             }
             setCode(['', '', '', '']);
@@ -654,7 +658,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         setError('');
         clearMessage();
 
-        if (isStudent && step === 0) {
+        if (step === 0) {
             onBack();
             return;
         }
@@ -987,7 +991,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </p>
                     ) : null}
 
-                    {isStudent && step === 0 ? (
+                    {step === 0 ? (
                         <>
                             <button
                                 type="button"

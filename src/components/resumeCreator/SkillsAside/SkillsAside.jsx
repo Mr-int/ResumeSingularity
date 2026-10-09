@@ -35,7 +35,7 @@ const SkillsAside = ({
     skills = [],
     selectedSkills = [],
     memoItems = [],
-    onRemove,
+    onToggle,
 }) => {
     const [openId, setOpenId] = useState(null);
 
@@ -60,17 +60,18 @@ const SkillsAside = ({
                         <div className="skillsAside__selectedEmpty">Пока ничего не выбрано</div>
                     ) : (
                         selectedList.map((skill) => (
-                            <div key={skill.id} className="skillsAside__selectedBadge">
+                            <button
+                                key={skill.id}
+                                type="button"
+                                className="skillsAside__selectedBadge"
+                                aria-label={`Убрать ${skill.name}`}
+                                onClick={() => onToggle?.(skill.id)}
+                            >
                                 <span>{skill.name}</span>
-                                <button
-                                    type="button"
-                                    className="skillsAside__remove"
-                                    aria-label={`Убрать ${skill.name}`}
-                                    onClick={() => onRemove?.(skill.id)}
-                                >
+                                <span className="skillsAside__remove" aria-hidden="true">
                                     <RemoveIcon />
-                                </button>
-                            </div>
+                                </span>
+                            </button>
                         ))
                     )}
                 </div>

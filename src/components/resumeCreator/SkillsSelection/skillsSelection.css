@@ -91,17 +91,19 @@
         color 0.15s;
 }
 
-.skillsSelection__poolBadge:hover:not(:disabled) {
+.skillsSelection__poolBadge:hover {
     background-color: #131313;
     color: #ffffff;
 }
 
-.skillsSelection__poolBadge.is-added,
-.skillsSelection__poolBadge:disabled {
+.skillsSelection__poolBadge.is-added {
     background-color: #ffffff;
     color: #161719;
-    cursor: default;
-    opacity: 1;
+}
+
+.skillsSelection__poolBadge.is-added:hover {
+    background-color: #e8e9eb;
+    color: #161719;
 }
 
 .skillsSelection__poolEmpty {

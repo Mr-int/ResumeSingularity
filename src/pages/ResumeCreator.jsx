@@ -51,21 +51,16 @@ import {
 
 const TOTAL_STEPS = 7;
 
-/** Фоллбек, если каталог навыков с API пуст (для UI). */
-const TEST_SKILLS = [
-    { id: 'test-1', name: 'Figma' },
-    { id: 'test-2', name: 'Illustrator' },
-    { id: 'test-3', name: 'Photoshop' },
-    { id: 'test-4', name: 'Типографика' },
-    { id: 'test-5', name: 'Колористика' },
-    { id: 'test-6', name: 'UI/UX дизайн' },
-    { id: 'test-7', name: 'HTML/CSS' },
-    { id: 'test-8', name: 'JavaScript' },
-    { id: 'test-9', name: 'React' },
-    { id: 'test-10', name: 'Python' },
-    { id: 'test-11', name: 'Git' },
-    { id: 'test-12', name: 'Командная работа' },
-];
+const skillEntityId = (item) => {
+    if (item == null || typeof item !== 'object') return null;
+    const raw = item.id ?? item.skillId;
+    return raw != null ? raw : null;
+};
+
+const toPersistableSkillIds = (ids) =>
+    (Array.isArray(ids) ? ids : [])
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id) && id > 0);
 
 const PHOTO_EXAMPLES = [
     { id: 'correct-1', src: correctPhoto, status: 'correct', alt: 'Удачный пример фото' },
@@ -285,13 +280,14 @@ const ResumeCreator = () => {
                 const apiSkills = Array.isArray(skillsPage?.data)
                     ? skillsPage.data
                     : (Array.isArray(skillsPage) ? skillsPage : []);
-                const mergedSkills = [...apiSkills];
-                TEST_SKILLS.forEach((skill) => {
-                    if (!mergedSkills.some((item) => item?.name === skill.name)) {
-                        mergedSkills.push(skill);
-                    }
+                const meSkills = Array.isArray(me.skills) ? me.skills : [];
+                const catalogById = new Map();
+                [...apiSkills, ...meSkills].forEach((skill) => {
+                    const id = skillEntityId(skill);
+                    if (id == null) return;
+                    if (!catalogById.has(String(id))) catalogById.set(String(id), skill);
                 });
-                setSkillsCatalog(mergedSkills);
+                setSkillsCatalog([...catalogById.values()]);
                 setEducationsCatalog(Array.isArray(edus) ? edus : []);
 
                 setSavedInstitutionCount(Array.isArray(institutions) ? institutions.length : 0);
@@ -326,9 +322,7 @@ const ResumeCreator = () => {
                 });
                 setBio(me.bio || '');
                 setSelectedSkills(
-                    Array.isArray(me.skills)
-                        ? me.skills.map((item) => item.id).filter((id) => id != null)
-                        : [],
+                    meSkills.map((item) => skillEntityId(item)).filter((id) => id != null),
                 );
                 if (me.imagePath) {
                     setPhotoPreview(getImageUrl(me.imagePath));
@@ -369,16 +363,10 @@ const ResumeCreator = () => {
             body.specialityId = Number(profile.specialityId);
         }
         if (bio?.trim()) body.bio = bio.trim();
-        const skillIds = selectedSkills
-            .map((id) => Number(id))
-            .filter((id) => Number.isFinite(id) && id > 0);
-        if (skillIds.length > 0) {
-            body.skillsIds = skillIds;
-        }
         return body;
     };
 
-    const applyMeToProfile = (me) => {
+    const applyMeToProfile = (me, { keepLocalSkills = false } = {}) => {
         if (!me) return;
         setProfile((prev) => ({
             ...prev,
@@ -393,19 +381,52 @@ const ResumeCreator = () => {
         }));
         if (me.bio != null) setBio(me.bio);
         if (Array.isArray(me.skills)) {
-            setSelectedSkills(me.skills.map((item) => item.id).filter((id) => id != null));
+            const fromServer = me.skills
+                .map((item) => skillEntityId(item))
+                .filter((id) => id != null);
+            // Если PATCH не принял skillsIds, не затираем локальный выбор пустым ответом
+            if (fromServer.length > 0 || !keepLocalSkills) {
+                setSelectedSkills(fromServer);
+            }
+            if (fromServer.length > 0) {
+                setSkillsCatalog((prev) => {
+                    const byId = new Map(prev.map((s) => [String(skillEntityId(s)), s]));
+                    me.skills.forEach((skill) => {
+                        const id = skillEntityId(skill);
+                        if (id != null && !byId.has(String(id))) byId.set(String(id), skill);
+                    });
+                    return [...byId.values()];
+                });
+            }
         }
     };
 
-    const persistProfile = async () => {
+    const persistProfile = async ({ syncSkills = false } = {}) => {
         const body = buildPatchBody();
         const sentCity = body.city;
+        const sentSkillIds = toPersistableSkillIds(selectedSkills);
+        // На шаге навыков всегда шлём ids (в т.ч. пустой). На других — только если есть что сохранить.
+        if (syncSkills || sentSkillIds.length > 0) {
+            body.skillsIds = sentSkillIds;
+            // совместимость с DTO, где поле называется skillIds
+            body.skillIds = sentSkillIds;
+        }
+        if (syncSkills && selectedSkills.length > 0 && sentSkillIds.length === 0) {
+            throw new Error('Выбранные навыки нельзя сохранить — обновите страницу и выберите навыки из каталога');
+        }
         await patchStudentMe(body);
         const me = await getStudentMe();
-        applyMeToProfile(me);
+        const serverSkillIds = toPersistableSkillIds(
+            Array.isArray(me.skills) ? me.skills.map((item) => skillEntityId(item)) : [],
+        );
+        const skillsMismatch = Boolean(body.skillsIds)
+            && sentSkillIds.length > 0
+            && !sentSkillIds.every((id) => serverSkillIds.includes(id));
+        applyMeToProfile(me, { keepLocalSkills: skillsMismatch });
         return {
             cityMismatch: Boolean(sentCity && me.city !== sentCity),
             actualCity: me.city,
+            skillsMismatch,
         };
     };
 
@@ -418,12 +439,16 @@ const ResumeCreator = () => {
         }
         setSaving(true);
         try {
-            const result = await persistProfile();
+            const result = await persistProfile({ syncSkills: step === 5 });
             if (result?.cityMismatch) {
                 showToast(
                     `Город не обновился (на сервере: ${result.actualCity || '—'}). Выберите город из списка.`,
                     { error: true },
                 );
+                return;
+            }
+            if (result?.skillsMismatch) {
+                showToast('Навыки не сохранились на сервере. Попробуйте ещё раз.', { error: true });
                 return;
             }
             await flushExperienceDraftIfReady();
@@ -447,12 +472,16 @@ const ResumeCreator = () => {
         setSaving(true);
         try {
             if (step === 1 || step === 2 || step === 4 || step === 5) {
-                const result = await persistProfile();
+                const result = await persistProfile({ syncSkills: step === 5 });
                 if (result?.cityMismatch) {
                     showToast(
                         `Город не обновился (на сервере: ${result.actualCity || '—'}). Выберите город из списка.`,
                         { error: true },
                     );
+                    return;
+                }
+                if (result?.skillsMismatch && step === 5) {
+                    showToast('Навыки не сохранились на сервере. Попробуйте ещё раз.', { error: true });
                     return;
                 }
             }
@@ -737,10 +766,10 @@ const ResumeCreator = () => {
                     <SkillsSelection
                         skills={skillsCatalog}
                         selectedSkills={selectedSkills}
-                        onAdd={(id) => {
+                        onToggle={(id) => {
                             setSelectedSkills((prev) => (
                                 prev.some((item) => String(item) === String(id))
-                                    ? prev
+                                    ? prev.filter((item) => String(item) !== String(id))
                                     : [...prev, id]
                             ));
                         }}
@@ -796,7 +825,7 @@ const ResumeCreator = () => {
                     skills={skillsCatalog}
                     selectedSkills={selectedSkills}
                     memoItems={MEMO_BY_STEP[5] || []}
-                    onRemove={(id) => {
+                    onToggle={(id) => {
                         setSelectedSkills((prev) =>
                             prev.filter((item) => String(item) !== String(id))
                         );

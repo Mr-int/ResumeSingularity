@@ -6,6 +6,8 @@ export const EMAIL_CONFIRMATION_PENDING_KEY = 'resume:email-confirmation-pending
 export const EMAIL_CONFIRMATION_EMAIL_KEY = 'resume:email-confirmation-email';
 export const REGISTRATION_USERNAME_KEY = 'resume:registration-username';
 export const REGISTRATION_TEMP_PASSWORD_KEY = 'resume:registration-temp-password';
+/** Роль незавершённой регистрации: student | recruiter — спрашивать «продолжить?» только при повторном выборе той же. */
+export const REGISTRATION_PENDING_ROLE_KEY = 'resume:registration-pending-role';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
 
@@ -15,10 +17,20 @@ export const clearRegistrationDraft = () => {
     sessionStorage.removeItem(EMAIL_CONFIRMATION_EMAIL_KEY);
     sessionStorage.removeItem(REGISTRATION_USERNAME_KEY);
     sessionStorage.removeItem(REGISTRATION_TEMP_PASSWORD_KEY);
+    sessionStorage.removeItem(REGISTRATION_PENDING_ROLE_KEY);
 };
 
 export const isEmailConfirmationPending = () =>
     sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
+
+/** Есть незавершённая регистрация именно для этой роли. */
+export const isRegistrationPendingForRole = (role) => {
+    if (!isEmailConfirmationPending() || !role) return false;
+    const pendingRole = sessionStorage.getItem(REGISTRATION_PENDING_ROLE_KEY);
+    // Старые сессии без ключа роли — только студент (раньше pending был только у студента)
+    if (!pendingRole) return role === 'student';
+    return pendingRole === role;
+};
 
 const parseLoginErrorMessage = (status, errorText) => {
     let serverMessage = '';

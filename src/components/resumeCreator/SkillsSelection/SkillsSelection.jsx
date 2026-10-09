@@ -10,7 +10,7 @@ const SearchIcon = () => (
 const SkillsSelection = ({
     skills = [],
     selectedSkills = [],
-    onAdd,
+    onToggle,
 }) => {
     const [query, setQuery] = useState('');
     const normalizedQuery = query.trim().toLowerCase();
@@ -51,10 +51,8 @@ const SkillsSelection = ({
                                 key={skillId}
                                 type="button"
                                 className={`skillsSelection__poolBadge${isAdded ? ' is-added' : ''}`}
-                                disabled={isAdded}
-                                onClick={() => {
-                                    if (!isAdded) onAdd?.(skillId);
-                                }}
+                                aria-pressed={isAdded}
+                                onClick={() => onToggle?.(skillId)}
                             >
                                 {skill.name}
                             </button>
