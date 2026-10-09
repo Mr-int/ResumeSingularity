@@ -15,8 +15,12 @@ const ExperienceForm = ({
     values = {},
     items = [],
     companies = [],
+    editingId = null,
     onChange,
     onAdd,
+    onUpdate,
+    onSelectItem,
+    onCancelEdit,
 }) => {
     const {
         companyId = '',
@@ -26,6 +30,8 @@ const ExperienceForm = ({
         endDate = '',
         additionalInfo = '',
     } = values;
+
+    const isEditing = editingId != null && editingId !== '';
 
     const handleCompanyChange = (raw) => {
         const nextName = raw;
@@ -38,15 +44,22 @@ const ExperienceForm = ({
         });
     };
 
-    const handleAdd = () => {
-        onAdd?.({
-            companyId: companyId || undefined,
-            companyName: companyName.trim(),
-            position: position.trim(),
-            additionalInfo,
-            startDate,
-            endDate: endDate || undefined,
-        });
+    const buildEntry = () => ({
+        companyId: companyId || undefined,
+        companyName: companyName.trim(),
+        position: position.trim(),
+        additionalInfo,
+        startDate,
+        endDate: endDate || undefined,
+    });
+
+    const handleSubmit = () => {
+        const entry = buildEntry();
+        if (isEditing) {
+            onUpdate?.({ ...entry, id: editingId });
+            return;
+        }
+        onAdd?.(entry);
     };
 
     return (
@@ -55,19 +68,46 @@ const ExperienceForm = ({
 
             {items.length > 0 ? (
                 <ul className="experienceForm__list">
-                    {items.map((item) => (
-                        <li key={item.id || `${item.position}-${item.startDate}`} className="experienceForm__listItem">
-                            <div className="experienceForm__listTitle">
-                                {item.position || 'Должность'}
-                                {item.companyName ? ` · ${item.companyName}` : ''}
-                            </div>
-                            <div className="experienceForm__listDates">
-                                {formatDateLabel(item.startDate)}
-                                {' — '}
-                                {formatDateLabel(item.endDate)}
-                            </div>
-                        </li>
-                    ))}
+                    {items.map((item) => {
+                        const itemKey = item.id || `${item.position}-${item.startDate}`;
+                        const isActive = isEditing && String(item.id) === String(editingId);
+                        return (
+                            <li key={itemKey}>
+                                <button
+                                    type="button"
+                                    className={
+                                        'experienceForm__listItem'
+                                        + (isActive ? ' experienceForm__listItem--active' : '')
+                                    }
+                                    onClick={() => onSelectItem?.(item)}
+                                >
+                                    <div className="experienceForm__listItemTop">
+                                        <span className="experienceForm__listTitle">
+                                            {item.position || 'Должность'}
+                                        </span>
+                                        <span className="experienceForm__listEditHint">
+                                            {isActive ? 'Редактируется' : 'Изменить'}
+                                        </span>
+                                    </div>
+                                    {item.companyName ? (
+                                        <div className="experienceForm__listCompany">
+                                            {item.companyName}
+                                        </div>
+                                    ) : null}
+                                    <div className="experienceForm__listDates">
+                                        {formatDateLabel(item.startDate)}
+                                        {' — '}
+                                        {formatDateLabel(item.endDate)}
+                                    </div>
+                                    {item.additionalInfo ? (
+                                        <p className="experienceForm__listDesc">
+                                            {item.additionalInfo}
+                                        </p>
+                                    ) : null}
+                                </button>
+                            </li>
+                        );
+                    })}
                 </ul>
             ) : null}
 
@@ -148,9 +188,20 @@ const ExperienceForm = ({
                 />
             </div>
 
-            <button type="button" className="experienceForm__add" onClick={handleAdd}>
-                Добавить
-            </button>
+            <div className="experienceForm__actions">
+                <button type="button" className="experienceForm__add" onClick={handleSubmit}>
+                    {isEditing ? 'Сохранить' : 'Добавить'}
+                </button>
+                {isEditing ? (
+                    <button
+                        type="button"
+                        className="experienceForm__cancel"
+                        onClick={() => onCancelEdit?.()}
+                    >
+                        Отмена
+                    </button>
+                ) : null}
+            </div>
         </section>
     );
 };

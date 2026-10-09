@@ -28,6 +28,7 @@ import {
     getAllEducation,
     filterSkills,
     createExperience,
+    updateExperience,
     createInstitution,
     getAllCompanies,
     getExperienceDetailsByStudentId,
@@ -204,6 +205,7 @@ const ResumeCreator = () => {
     const [experienceDraft, setExperienceDraft] = useState({});
     const [educationDraft, setEducationDraft] = useState({});
     const [experiences, setExperiences] = useState([]);
+    const [editingExperienceId, setEditingExperienceId] = useState(null);
     const [educationsAdded, setEducationsAdded] = useState([]);
     const [savedInstitutionCount, setSavedInstitutionCount] = useState(0);
 
@@ -634,6 +636,27 @@ const ResumeCreator = () => {
         return true;
     };
 
+    const clearExperienceEditor = () => {
+        setEditingExperienceId(null);
+        setExperienceDraft({});
+        clearExperienceDraft(studentId);
+    };
+
+    const handleSelectExperience = (item) => {
+        if (!item) return;
+        setEditingExperienceId(item.id ?? null);
+        const next = {
+            companyId: item.companyId != null ? String(item.companyId) : '',
+            companyName: item.companyName || '',
+            position: item.position || '',
+            startDate: item.startDate || '',
+            endDate: item.endDate || '',
+            additionalInfo: item.additionalInfo || '',
+        };
+        setExperienceDraft(next);
+        saveExperienceDraft(studentId, next);
+    };
+
     const handleAddExperience = async (entry) => {
         if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
             showToast('Укажите компанию', { error: true });
@@ -646,6 +669,7 @@ const ResumeCreator = () => {
         setSaving(true);
         try {
             const saved = await persistExperienceEntry(entry);
+            setEditingExperienceId(null);
             if (saved?.companyId && saved?.companyName) {
                 setCompaniesCatalog((prev) => (
                     prev.some((item) => Number(item.id) === Number(saved.companyId))
@@ -656,6 +680,49 @@ const ResumeCreator = () => {
             showToast('Опыт добавлен');
         } catch (err) {
             showToast(err?.message || 'Не удалось добавить опыт', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleUpdateExperience = async (entry) => {
+        const id = entry?.id ?? editingExperienceId;
+        if (id == null || id === '') {
+            showToast('Нельзя обновить запись без id', { error: true });
+            return;
+        }
+        if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
+            showToast('Укажите компанию', { error: true });
+            return;
+        }
+        if (!entry?.position?.trim() || !entry?.startDate) {
+            showToast('Укажите должность и дату начала', { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            const { body, companyName, companyId } = await buildExperienceBody(entry);
+            await updateExperience(id, body);
+            const saved = {
+                ...entry,
+                id,
+                companyId: companyId || entry.companyId,
+                companyName: companyName || entry.companyName || '',
+            };
+            setExperiences((prev) =>
+                prev.map((item) => (String(item.id) === String(id) ? { ...item, ...saved } : item)),
+            );
+            if (saved.companyId && saved.companyName) {
+                setCompaniesCatalog((prev) => (
+                    prev.some((item) => Number(item.id) === Number(saved.companyId))
+                        ? prev
+                        : [...prev, { id: saved.companyId, name: saved.companyName }]
+                ));
+            }
+            clearExperienceEditor();
+            showToast('Опыт обновлён');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось обновить опыт', { error: true });
         } finally {
             setSaving(false);
         }
@@ -781,6 +848,7 @@ const ResumeCreator = () => {
                         values={experienceDraft}
                         items={experiences}
                         companies={companiesCatalog}
+                        editingId={editingExperienceId}
                         onChange={(patch) => {
                             setExperienceDraft((prev) => {
                                 const next = { ...prev, ...patch };
@@ -789,6 +857,9 @@ const ResumeCreator = () => {
                             });
                         }}
                         onAdd={handleAddExperience}
+                        onUpdate={handleUpdateExperience}
+                        onSelectItem={handleSelectExperience}
+                        onCancelEdit={clearExperienceEditor}
                     />
                 );
             case 7:
