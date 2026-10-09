@@ -1,11 +1,12 @@
+import { Link } from 'react-router-dom';
 import NewResumeLogo from '../../../../assets/logos/NewResumeLogo.svg';
 
-const Logo = ({ href = '#' }) => {
+const Logo = ({ to = '/' }) => {
     return (
-        <a href={href} className="studentCreatorHeader__logo">
+        <Link to={to} className="studentCreatorHeader__logo">
             <img
                 src={NewResumeLogo}
-                alt=""
+                alt="Сингулярити резюме"
                 className="studentCreatorHeader__logoShape"
                 width={95}
                 height={30}
@@ -14,7 +15,7 @@ const Logo = ({ href = '#' }) => {
                 <span>сингулярити</span>
                 <span>резюме</span>
             </span>
-        </a>
+        </Link>
     );
 };
 

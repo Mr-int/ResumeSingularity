@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "../components/header/Header.jsx";
 import Hero from "../components/hero/Hero.jsx";
 import StudentSlider from "../components/studentSlider/StudentSlider.jsx";
@@ -8,6 +9,17 @@ import Projects from "../components/projects/Projects.jsx";
 import Banner from "../components/banner/Banner.jsx";
 
 const Home = () => {
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.hash !== '#projects') return;
+        const el = document.getElementById('projects');
+        if (!el) return;
+        requestAnimationFrame(() => {
+            el.scrollIntoView({ behavior: 'smooth' });
+        });
+    }, [location.hash]);
+
     return (
         <>
             <Header />

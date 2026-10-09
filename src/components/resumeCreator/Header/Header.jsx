@@ -1,17 +1,28 @@
 import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './header.css';
 import Logo from './Logo/Logo.jsx';
 import NavButton from './NavButton/NavButton.jsx';
 import IconButton from './IconButton/IconButton.jsx';
 import Avatar from './Avatar/Avatar.jsx';
 import chatsIco from '../../../assets/icons/chatsIco.svg';
+import { isAuthenticated } from '../../../services/authApi.js';
 
 const NAV_DEFS = [
-    { id: 'career', label: 'Центр карьеры' },
-    { id: 'projects', label: 'Проекты' },
-    { id: 'resume', label: 'Резюме' },
-    { id: 'vacancies', label: 'Вакансии' },
+    { id: 'career', label: 'Центр карьеры', path: '/' },
+    { id: 'projects', label: 'Проекты', path: '/#projects' },
+    { id: 'resume', label: 'Резюме', path: '/plug' },
+    { id: 'vacancies', label: 'Вакансии', path: null },
 ];
+
+const navIdFromLocation = (pathname, hash) => {
+    if (pathname.startsWith('/plug')) return 'resume';
+    if (pathname === '/' && hash === '#projects') return 'projects';
+    if (pathname === '/' || pathname.startsWith('/students') || pathname.startsWith('/studentsResume')) {
+        return 'career';
+    }
+    return null;
+};
 
 const Header = ({
     navItems,
@@ -23,9 +34,12 @@ const Header = ({
     onAvatarClick,
     avatarSrc,
 }) => {
-    const [activeNavId, setActiveNavId] = useState(activeNavIdProp || 'career');
+    const navigate = useNavigate();
+    const location = useLocation();
+    const routeActiveId = navIdFromLocation(location.pathname, location.hash);
+    const [activeNavId, setActiveNavId] = useState(activeNavIdProp || routeActiveId || 'career');
 
-    const currentActive = activeNavIdProp ?? activeNavId;
+    const currentActive = activeNavIdProp ?? routeActiveId ?? activeNavId;
 
     const items = useMemo(() => {
         const source = navItems || NAV_DEFS;
@@ -42,6 +56,35 @@ const Header = ({
         });
     }, [navItems, currentActive, resumeComplete]);
 
+    const goAuthed = (path) => {
+        if (isAuthenticated()) {
+            navigate(path);
+            return;
+        }
+        navigate('/login', { state: { from: path } });
+    };
+
+    const defaultNavigate = (item) => {
+        if (item.id === 'career') {
+            navigate('/');
+            return;
+        }
+        if (item.id === 'projects') {
+            if (location.pathname === '/') {
+                const el = document.getElementById('projects');
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+            }
+            navigate('/#projects');
+            return;
+        }
+        if (item.id === 'resume') {
+            goAuthed('/plug');
+        }
+    };
+
     const handleNavClick = (event, item) => {
         if (item.disabled) {
             event.preventDefault();
@@ -51,7 +94,27 @@ const Header = ({
             setActiveNavId(item.id);
         }
         onNavChange?.(item.id);
-        item.onClick?.(event);
+        if (item.onClick) {
+            item.onClick(event);
+            return;
+        }
+        defaultNavigate(item);
+    };
+
+    const handleMessages = () => {
+        if (onMessagesClick) {
+            onMessagesClick();
+            return;
+        }
+        goAuthed('/chats');
+    };
+
+    const handleAvatar = () => {
+        if (onAvatarClick) {
+            onAvatarClick();
+            return;
+        }
+        goAuthed('/settings');
     };
 
     return (
@@ -73,7 +136,7 @@ const Header = ({
                 </nav>
 
                 <div className="studentCreatorHeader__actions">
-                    <IconButton ariaLabel="Сообщения" onClick={onMessagesClick}>
+                    <IconButton ariaLabel="Чаты" onClick={handleMessages}>
                         <img
                             src={chatsIco}
                             alt=""
@@ -82,7 +145,7 @@ const Header = ({
                             height={18}
                         />
                     </IconButton>
-                    <Avatar src={avatarSrc} onClick={onAvatarClick} />
+                    <Avatar src={avatarSrc} onClick={handleAvatar} alt="Профиль" />
                 </div>
             </div>
         </header>

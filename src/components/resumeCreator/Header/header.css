@@ -2,6 +2,9 @@
     width: 100%;
     background-color: #131313;
     border-bottom: 1px solid #202020;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .studentCreatorHeader__inner {
