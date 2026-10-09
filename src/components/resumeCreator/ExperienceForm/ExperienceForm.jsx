@@ -21,6 +21,7 @@ const ExperienceForm = ({
     onUpdate,
     onSelectItem,
     onCancelEdit,
+    onDelete,
 }) => {
     const {
         companyId = '',
@@ -45,6 +46,7 @@ const ExperienceForm = ({
     };
 
     const buildEntry = () => ({
+        id: editingId || undefined,
         companyId: companyId || undefined,
         companyName: companyName.trim(),
         position: position.trim(),
@@ -56,7 +58,7 @@ const ExperienceForm = ({
     const handleSubmit = () => {
         const entry = buildEntry();
         if (isEditing) {
-            onUpdate?.({ ...entry, id: editingId });
+            onUpdate?.(entry);
             return;
         }
         onAdd?.(entry);
@@ -72,7 +74,7 @@ const ExperienceForm = ({
                         const itemKey = item.id || `${item.position}-${item.startDate}`;
                         const isActive = isEditing && String(item.id) === String(editingId);
                         return (
-                            <li key={itemKey}>
+                            <li key={itemKey} className="experienceForm__listRow">
                                 <button
                                     type="button"
                                     className={
@@ -104,6 +106,17 @@ const ExperienceForm = ({
                                             {item.additionalInfo}
                                         </p>
                                     ) : null}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="experienceForm__listDelete"
+                                    aria-label={`Удалить опыт: ${item.position || 'запись'}`}
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        onDelete?.(item);
+                                    }}
+                                >
+                                    Удалить
                                 </button>
                             </li>
                         );

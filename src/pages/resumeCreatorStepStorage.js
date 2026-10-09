@@ -57,6 +57,7 @@ export const saveExperienceDraft = (studentId, draft) => {
                 || draft.startDate
                 || draft.endDate
                 || draft.additionalInfo?.trim()
+                || draft.id != null
             ),
         );
         if (!hasContent) {

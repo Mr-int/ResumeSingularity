@@ -168,8 +168,16 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                     ? (companyNameById.get(companyId) || '')
                     : '';
 
+                const rawId = item.id ?? experience.id ?? item.experienceId ?? null;
+                const numericId = Number(rawId);
+                const id = Number.isFinite(numericId) && numericId > 0
+                    ? numericId
+                    : (rawId != null && String(rawId).trim() && !String(rawId).startsWith('exp-')
+                        ? rawId
+                        : null);
+
                 return {
-                    id: experience.id || item.experienceId || `exp-${index}`,
+                    id,
                     companyId,
                     position: (experience.position || item.position || '').toString().trim(),
                     company: companyFromMap,

@@ -29,6 +29,7 @@ import {
     filterSkills,
     createExperience,
     updateExperience,
+    deleteExperience,
     createInstitution,
     getAllCompanies,
     getExperienceDetailsByStudentId,
@@ -62,6 +63,31 @@ const toPersistableSkillIds = (ids) =>
     (Array.isArray(ids) ? ids : [])
         .map((id) => Number(id))
         .filter((id) => Number.isFinite(id) && id > 0);
+
+const pickExperienceId = (payload) => {
+    if (payload == null || typeof payload !== 'object') return null;
+    const candidates = [
+        payload.id,
+        payload.experienceId,
+        payload.experience?.id,
+        payload.data?.id,
+        payload.data?.experience?.id,
+    ];
+    for (const raw of candidates) {
+        if (raw == null || raw === '') continue;
+        const num = Number(raw);
+        if (Number.isFinite(num) && num > 0) return num;
+        if (!String(raw).startsWith('exp-')) return raw;
+    }
+    return null;
+};
+
+const isPersistedExperienceId = (id) => {
+    if (id == null || id === '') return false;
+    const num = Number(id);
+    if (Number.isFinite(num)) return num > 0;
+    return !String(id).startsWith('exp-');
+};
 
 const PHOTO_EXAMPLES = [
     { id: 'correct-1', src: correctPhoto, status: 'correct', alt: 'Удачный пример фото' },
@@ -295,22 +321,28 @@ const ResumeCreator = () => {
                 setSavedInstitutionCount(Array.isArray(institutions) ? institutions.length : 0);
                 setExperiences(
                     Array.isArray(experienceDetails)
-                        ? experienceDetails.map((item) => ({
-                            id: item.id,
-                            companyId: item.companyId,
-                            companyName: item.company || '',
-                            position: item.position || '',
-                            startDate: item.startDate || '',
-                            endDate: item.current || item.endDate === 'по настоящее время'
-                                ? ''
-                                : (item.endDate || ''),
-                            additionalInfo: item.description || '',
-                        }))
+                        ? experienceDetails
+                            .map((item) => ({
+                                id: pickExperienceId(item),
+                                companyId: item.companyId,
+                                companyName: item.company || '',
+                                position: item.position || '',
+                                startDate: item.startDate || '',
+                                endDate: item.current || item.endDate === 'по настоящее время'
+                                    ? ''
+                                    : (item.endDate || ''),
+                                additionalInfo: item.description || '',
+                            }))
+                            .filter((item) => isPersistedExperienceId(item.id))
                         : [],
                 );
                 const restoredExperienceDraft = loadExperienceDraft(me.id);
                 if (restoredExperienceDraft) {
                     setExperienceDraft(restoredExperienceDraft);
+                    const draftEditId = pickExperienceId(restoredExperienceDraft);
+                    if (isPersistedExperienceId(draftEditId)) {
+                        setEditingExperienceId(draftEditId);
+                    }
                 }
                 setProfile({
                     firstName: me.firstName || '',
@@ -599,41 +631,13 @@ const ResumeCreator = () => {
         return { body, companyName, companyId };
     };
 
-    const persistExperienceEntry = async (entry) => {
-        const { body, companyName, companyId } = await buildExperienceBody(entry);
-        const created = await createExperience(body);
-        const id = created?.experience?.id || created?.id;
-        const saved = {
-            ...entry,
-            id,
-            companyId: companyId || entry.companyId,
-            companyName: companyName || entry.companyName || '',
-        };
-        setExperiences((prev) => [...prev, saved]);
-        setExperienceDraft({});
-        clearExperienceDraft(studentId);
-        return saved;
-    };
-
-    const flushExperienceDraftIfReady = async () => {
-        const entry = {
-            companyId: experienceDraft.companyId || undefined,
-            companyName: (experienceDraft.companyName || '').trim(),
-            position: (experienceDraft.position || '').trim(),
-            additionalInfo: experienceDraft.additionalInfo || '',
-            startDate: experienceDraft.startDate || '',
-            endDate: experienceDraft.endDate || undefined,
-        };
-        if (!entry.position || !entry.startDate) {
-            saveExperienceDraft(studentId, experienceDraft);
-            return false;
-        }
-        if (!entry.companyName && !(Number(entry.companyId) > 0)) {
-            saveExperienceDraft(studentId, experienceDraft);
-            return false;
-        }
-        await persistExperienceEntry(entry);
-        return true;
+    const rememberCompany = (companyId, companyName) => {
+        if (!companyId || !companyName) return;
+        setCompaniesCatalog((prev) => (
+            prev.some((item) => Number(item.id) === Number(companyId))
+                ? prev
+                : [...prev, { id: companyId, name: companyName }]
+        ));
     };
 
     const clearExperienceEditor = () => {
@@ -642,10 +646,109 @@ const ResumeCreator = () => {
         clearExperienceDraft(studentId);
     };
 
+    const resolveEditingExperienceId = (entry = {}) => {
+        if (isPersistedExperienceId(editingExperienceId)) return editingExperienceId;
+        if (isPersistedExperienceId(entry.id)) return entry.id;
+        if (isPersistedExperienceId(experienceDraft.id)) return experienceDraft.id;
+        return null;
+    };
+
+    const validateExperienceEntry = (entry) => {
+        if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
+            return 'Укажите компанию';
+        }
+        if (!entry?.position?.trim() || !entry?.startDate) {
+            return 'Укажите должность и дату начала';
+        }
+        return '';
+    };
+
+    /** Создание нового опыта → очистка формы. */
+    const persistExperienceEntry = async (entry) => {
+        const { body, companyName, companyId } = await buildExperienceBody(entry);
+        const created = await createExperience(body);
+        const id = pickExperienceId(created);
+        if (!isPersistedExperienceId(id)) {
+            throw new Error('Сервер не вернул id опыта — обновите страницу');
+        }
+        const saved = {
+            ...entry,
+            id,
+            companyId: companyId || entry.companyId,
+            companyName: companyName || entry.companyName || '',
+        };
+        setExperiences((prev) => [...prev, saved]);
+        rememberCompany(saved.companyId, saved.companyName);
+        clearExperienceEditor();
+        return saved;
+    };
+
+    /** Обновление существующего опыта → очистка формы (режим создания). */
+    const persistExperienceUpdate = async (entry, id) => {
+        const { body, companyName, companyId } = await buildExperienceBody(entry);
+        await updateExperience(id, body);
+        const saved = {
+            ...entry,
+            id,
+            companyId: companyId || entry.companyId,
+            companyName: companyName || entry.companyName || '',
+        };
+        setExperiences((prev) =>
+            prev.map((item) => (String(item.id) === String(id) ? { ...item, ...saved } : item)),
+        );
+        rememberCompany(saved.companyId, saved.companyName);
+        clearExperienceEditor();
+        return saved;
+    };
+
+    /**
+     * Сохранить черновик опыта: если editingExperienceId — UPDATE, иначе CREATE.
+     * Вызывается и из «Сохранить прогресс», и при «Далее» на шаге 6.
+     */
+    const flushExperienceDraftIfReady = async () => {
+        const entry = {
+            companyId: experienceDraft.companyId || undefined,
+            companyName: (experienceDraft.companyName || '').trim(),
+            position: (experienceDraft.position || '').trim(),
+            additionalInfo: experienceDraft.additionalInfo || '',
+            startDate: experienceDraft.startDate || '',
+            endDate: experienceDraft.endDate || undefined,
+            id: experienceDraft.id,
+        };
+        const isEmpty = !entry.position && !entry.startDate && !entry.companyName
+            && !(Number(entry.companyId) > 0) && !String(entry.additionalInfo || '').trim();
+        if (isEmpty) {
+            clearExperienceDraft(studentId);
+            return false;
+        }
+        if (!entry.position || !entry.startDate) {
+            saveExperienceDraft(studentId, { ...experienceDraft, id: editingExperienceId ?? experienceDraft.id });
+            return false;
+        }
+        if (!entry.companyName && !(Number(entry.companyId) > 0)) {
+            saveExperienceDraft(studentId, { ...experienceDraft, id: editingExperienceId ?? experienceDraft.id });
+            return false;
+        }
+
+        const editId = resolveEditingExperienceId(entry);
+        if (editId != null) {
+            await persistExperienceUpdate(entry, editId);
+        } else {
+            await persistExperienceEntry(entry);
+        }
+        return true;
+    };
+
     const handleSelectExperience = (item) => {
         if (!item) return;
-        setEditingExperienceId(item.id ?? null);
+        const id = pickExperienceId(item);
+        if (!isPersistedExperienceId(id)) {
+            showToast('У этой записи нет id — обновите страницу', { error: true });
+            return;
+        }
+        setEditingExperienceId(id);
         const next = {
+            id,
             companyId: item.companyId != null ? String(item.companyId) : '',
             companyName: item.companyName || '',
             position: item.position || '',
@@ -658,25 +761,14 @@ const ResumeCreator = () => {
     };
 
     const handleAddExperience = async (entry) => {
-        if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
-            showToast('Укажите компанию', { error: true });
-            return;
-        }
-        if (!entry?.position?.trim() || !entry?.startDate) {
-            showToast('Укажите должность и дату начала', { error: true });
+        const error = validateExperienceEntry(entry);
+        if (error) {
+            showToast(error, { error: true });
             return;
         }
         setSaving(true);
         try {
-            const saved = await persistExperienceEntry(entry);
-            setEditingExperienceId(null);
-            if (saved?.companyId && saved?.companyName) {
-                setCompaniesCatalog((prev) => (
-                    prev.some((item) => Number(item.id) === Number(saved.companyId))
-                        ? prev
-                        : [...prev, { id: saved.companyId, name: saved.companyName }]
-                ));
-            }
+            await persistExperienceEntry(entry);
             showToast('Опыт добавлен');
         } catch (err) {
             showToast(err?.message || 'Не удалось добавить опыт', { error: true });
@@ -686,43 +778,43 @@ const ResumeCreator = () => {
     };
 
     const handleUpdateExperience = async (entry) => {
-        const id = entry?.id ?? editingExperienceId;
-        if (id == null || id === '') {
+        const id = resolveEditingExperienceId(entry);
+        if (!isPersistedExperienceId(id)) {
             showToast('Нельзя обновить запись без id', { error: true });
             return;
         }
-        if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
-            showToast('Укажите компанию', { error: true });
-            return;
-        }
-        if (!entry?.position?.trim() || !entry?.startDate) {
-            showToast('Укажите должность и дату начала', { error: true });
+        const error = validateExperienceEntry(entry);
+        if (error) {
+            showToast(error, { error: true });
             return;
         }
         setSaving(true);
         try {
-            const { body, companyName, companyId } = await buildExperienceBody(entry);
-            await updateExperience(id, body);
-            const saved = {
-                ...entry,
-                id,
-                companyId: companyId || entry.companyId,
-                companyName: companyName || entry.companyName || '',
-            };
-            setExperiences((prev) =>
-                prev.map((item) => (String(item.id) === String(id) ? { ...item, ...saved } : item)),
-            );
-            if (saved.companyId && saved.companyName) {
-                setCompaniesCatalog((prev) => (
-                    prev.some((item) => Number(item.id) === Number(saved.companyId))
-                        ? prev
-                        : [...prev, { id: saved.companyId, name: saved.companyName }]
-                ));
-            }
-            clearExperienceEditor();
+            await persistExperienceUpdate(entry, id);
             showToast('Опыт обновлён');
         } catch (err) {
             showToast(err?.message || 'Не удалось обновить опыт', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteExperience = async (item) => {
+        const id = pickExperienceId(item);
+        if (!isPersistedExperienceId(id)) {
+            showToast('Нельзя удалить запись без id', { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            await deleteExperience(id);
+            setExperiences((prev) => prev.filter((row) => String(row.id) !== String(id)));
+            if (String(editingExperienceId) === String(id)) {
+                clearExperienceEditor();
+            }
+            showToast('Опыт удалён');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось удалить опыт', { error: true });
         } finally {
             setSaving(false);
         }
@@ -851,7 +943,11 @@ const ResumeCreator = () => {
                         editingId={editingExperienceId}
                         onChange={(patch) => {
                             setExperienceDraft((prev) => {
-                                const next = { ...prev, ...patch };
+                                const next = {
+                                    ...prev,
+                                    ...patch,
+                                    id: editingExperienceId ?? prev.id,
+                                };
                                 saveExperienceDraft(studentId, next);
                                 return next;
                             });
@@ -860,6 +956,7 @@ const ResumeCreator = () => {
                         onUpdate={handleUpdateExperience}
                         onSelectItem={handleSelectExperience}
                         onCancelEdit={clearExperienceEditor}
+                        onDelete={handleDeleteExperience}
                     />
                 );
             case 7:
