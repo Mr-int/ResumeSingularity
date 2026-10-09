@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './header.css';
 import Logo from './Logo/Logo.jsx';
@@ -6,7 +6,10 @@ import NavButton from './NavButton/NavButton.jsx';
 import IconButton from './IconButton/IconButton.jsx';
 import Avatar from './Avatar/Avatar.jsx';
 import chatsIco from '../../../assets/icons/chatsIco.svg';
+import { getImageUrl } from '../../../config/api.js';
+import { getRecruiterMe, getStudentMe } from '../../../services/getApi.js';
 import { isAuthenticated } from '../../../services/authApi.js';
+import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js';
 
 const NAV_DEFS = [
     { id: 'career', label: 'Центр карьеры', path: '/' },
@@ -38,8 +41,48 @@ const Header = ({
     const location = useLocation();
     const routeActiveId = navIdFromLocation(location.pathname, location.hash);
     const [activeNavId, setActiveNavId] = useState(activeNavIdProp || routeActiveId || 'career');
+    const [loadedAvatarSrc, setLoadedAvatarSrc] = useState(null);
 
     const currentActive = activeNavIdProp ?? routeActiveId ?? activeNavId;
+    const displayAvatarSrc = avatarSrc || loadedAvatarSrc;
+
+    useEffect(() => {
+        if (avatarSrc) {
+            setLoadedAvatarSrc(null);
+            return undefined;
+        }
+        if (!isAuthenticated()) {
+            setLoadedAvatarSrc(null);
+            return undefined;
+        }
+
+        let cancelled = false;
+        const loadAvatar = async () => {
+            try {
+                const me = await getStudentMe();
+                if (cancelled) return;
+                if (hasStudentProfilePhoto(me)) {
+                    setLoadedAvatarSrc(getImageUrl(me.imagePath || me.image || me.photo || me.avatar));
+                    return;
+                }
+            } catch {
+                /* не студент — пробуем рекрутера */
+            }
+            try {
+                const me = await getRecruiterMe();
+                if (cancelled) return;
+                const path = me?.imagePath || me?.image || me?.photo || me?.avatar;
+                setLoadedAvatarSrc(path ? getImageUrl(path) : null);
+            } catch {
+                if (!cancelled) setLoadedAvatarSrc(null);
+            }
+        };
+
+        loadAvatar();
+        return () => {
+            cancelled = true;
+        };
+    }, [avatarSrc, location.pathname]);
 
     const items = useMemo(() => {
         const source = navItems || NAV_DEFS;
@@ -145,7 +188,7 @@ const Header = ({
                             height={18}
                         />
                     </IconButton>
-                    <Avatar src={avatarSrc} onClick={handleAvatar} alt="Профиль" />
+                    <Avatar src={displayAvatarSrc} onClick={handleAvatar} alt="Профиль" />
                 </div>
             </div>
         </header>

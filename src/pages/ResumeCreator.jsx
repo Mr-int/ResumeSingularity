@@ -845,6 +845,7 @@ const ResumeCreator = () => {
         <Layout>
             <Header
                 resumeComplete={resumeComplete}
+                avatarSrc={photoPreview || undefined}
                 onMessagesClick={() => navigate('/chats')}
                 onAvatarClick={() => navigate('/settings')}
             />

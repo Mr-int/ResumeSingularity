@@ -2,7 +2,7 @@ import './resumeBioForm.css';
 
 const ResumeBioForm = ({
     value = '',
-    maxLength = 600,
+    maxLength = 2000,
     onChange,
 }) => {
     const length = value.length;

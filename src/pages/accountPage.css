@@ -28,6 +28,10 @@
 
 .accountPage__settingsNav {
     margin: 0 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    align-items: center;
 }
 
 .accountPage__settingsNavLink {
@@ -38,11 +42,24 @@
     text-decoration: none;
     border-bottom: 1px solid rgba(196, 181, 253, 0.45);
     padding-bottom: 2px;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font: inherit;
+    cursor: pointer;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .accountPage__settingsNavLink:hover {
     color: #fff;
     border-bottom-color: rgba(255, 255, 255, 0.5);
+}
+
+.accountPage__settingsNavLink:disabled {
+    opacity: 0.6;
+    cursor: default;
 }
 
 .accountPage__code {

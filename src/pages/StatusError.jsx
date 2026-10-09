@@ -109,9 +109,23 @@ const StatusError = ({ code: codeProp }) => {
                     <p className="statusError__message">{content.message}</p>
                 </div>
 
-                <Link to="/" className="statusError__homeLink">
-                    На главную
-                </Link>
+                <div className="statusError__actions">
+                    {override?.ctaTo && override?.ctaLabel ? (
+                        <Link to={override.ctaTo} className="statusError__homeLink">
+                            {override.ctaLabel}
+                        </Link>
+                    ) : null}
+                    <Link
+                        to="/"
+                        className={
+                            override?.ctaTo
+                                ? 'statusError__homeLink statusError__homeLink--secondary'
+                                : 'statusError__homeLink'
+                        }
+                    >
+                        На главную
+                    </Link>
+                </div>
             </div>
         </main>
     );

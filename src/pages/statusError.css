@@ -295,6 +295,14 @@
     margin-bottom: 40px;
 }
 
+.statusError__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 20px 28px;
+}
+
 .statusError__homeLink {
     color: var(--text-main);
     text-decoration: none;
@@ -302,6 +310,10 @@
     font-weight: 500;
     position: relative;
     padding-bottom: 4px;
+}
+
+.statusError__homeLink--secondary {
+    color: var(--text-muted);
 }
 
 .statusError__homeLink::after {

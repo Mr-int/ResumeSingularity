@@ -40,7 +40,7 @@ export const validateResumeStep = (step, ctx) => {
         }
         case 4: {
             if (!bio?.trim()) return fail('Заполните описание резюме');
-            if (bio.length > 600) return fail('Описание не должно превышать 600 символов');
+            if (bio.length > 2000) return fail('Описание не должно превышать 2000 символов');
             return ok();
         }
         case 5: {
@@ -62,8 +62,8 @@ export const validateResumeStep = (step, ctx) => {
 /** Частичное сохранение: только то, что может сломать PATCH или ввести в заблуждение. */
 export const validatePartialSave = (ctx) => {
     const { profile = {}, bio = '' } = ctx;
-    if (bio.length > 600) {
-        return fail('Описание не должно превышать 600 символов');
+    if (bio.length > 2000) {
+        return fail('Описание не должно превышать 2000 символов');
     }
     const city = profile.city?.trim();
     if (city && !isCampusCity(city)) {

@@ -65,15 +65,11 @@ export const apiClientJson = async (endpoint, options = {}) => {
             }
             // 403 = доступ запрещён при живой сессии; сессию не сбрасываем
             // (иначе студент вылетает из аккаунта на create company и т.п.).
-            // skipSessionClearOn403 оставлен для совместимости вызовов.
-            if (skipSessionClearOn403) {
-                console.log('[API] 403 Forbidden (soft probe)');
-            } else {
-                console.log('[API] 403 Forbidden - access denied (session kept)');
-            }
+            // skipSessionClearOn403 — ожидаемый soft-probe (чаты до заполнения профиля и т.п.)
             const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
             error.status = 403;
             error.responseBody = responseBody;
+            error.softForbidden = skipSessionClearOn403;
             throw error;
         }
 
@@ -107,6 +103,14 @@ export const apiClientJson = async (endpoint, options = {}) => {
             return {};
         }
     } catch (error) {
+        // Уже размеченные ответы API (403 soft и т.п.) — без повторного error в консоль
+        if (error?.status) {
+            if (!error.softForbidden) {
+                console.warn(`[API] ${error.status} for ${endpoint}:`, error.message);
+            }
+            throw error;
+        }
+
         console.error(`[API] Error for endpoint ${endpoint}:`, error);
         console.error('[API] Full URL was:', url);
 

@@ -239,13 +239,18 @@ const ChatsView = () => {
             setTitles(nextTitles);
             setSubtitles(nextSubtitles);
         } catch (e) {
-            // Чаты недоступны (профиль не дозаполнен и т.п.) — не разлогиниваем, показываем error-страницу
+            // Чаты недоступны (профиль не дозаполнен и т.п.) — не разлогиниваем
             if (e?.status === 403 || e?.status === 404) {
-                navigate('/error/404', {
+                const msg = e.message || 'Дозаполните профиль, чтобы открыть переписку.';
+                const needsResume = /дозаполн|профил|резюме/i.test(msg);
+                navigate(needsResume ? '/error/403' : '/error/404', {
                     replace: true,
                     state: {
                         title: 'Чаты пока недоступны',
-                        message: e.message || 'Дозаполните профиль, чтобы открыть переписку.',
+                        message: msg,
+                        ...(needsResume
+                            ? { ctaTo: '/plug', ctaLabel: 'Заполнить резюме' }
+                            : {}),
                     },
                 });
                 return;

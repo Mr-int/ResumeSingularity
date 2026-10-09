@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
+import { logoutServer } from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
 
@@ -40,12 +41,25 @@ const ReadOnlyInput = ({ value, ...rest }) => (
 );
 
 const SettingsPage = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [loggingOut, setLoggingOut] = useState(false);
     const [error, setError] = useState('');
     const [role, setRole] = useState(null);
     const [profile, setProfile] = useState(null);
     const [studentForm, setStudentForm] = useState(studentToForm({}));
     const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
+
+    const handleLogout = async () => {
+        if (loggingOut) return;
+        setLoggingOut(true);
+        try {
+            await logoutServer();
+        } finally {
+            navigate('/', { replace: true });
+            setLoggingOut(false);
+        }
+    };
 
     const loadProfile = useCallback(async () => {
         setLoading(true);
@@ -102,6 +116,14 @@ const SettingsPage = () => {
                         <Link to="/chats" className="accountPage__settingsNavLink">
                             Перейти к чатам
                         </Link>
+                        <button
+                            type="button"
+                            className="accountPage__settingsNavLink accountPage__settingsNavLink--btn"
+                            onClick={handleLogout}
+                            disabled={loggingOut}
+                        >
+                            {loggingOut ? 'Выходим…' : 'Выйти'}
+                        </button>
                     </p>
 
                     {loading && <div className="accountPage__muted">Загрузка…</div>}
