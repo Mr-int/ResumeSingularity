@@ -408,6 +408,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             setStep(4);
         } catch (err) {
             const message = err.message || 'Неверный код';
+            setCode(['', '', '', '']);
             setError(message);
             showMessage(message);
         } finally {
