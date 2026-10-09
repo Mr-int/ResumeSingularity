@@ -11,6 +11,20 @@
     margin: 0 auto;
 }
 
+.accountPage--profile {
+    background: #0a0a0a;
+}
+
+.accountPage__inner--wide {
+    max-width: 1300px;
+}
+
+.accountPage__accountBlock {
+    margin-top: 40px;
+    padding-top: 28px;
+    border-top: 1px solid #2a2a2a;
+}
+
 .accountPage__title {
     font-family: 'StratosSkyeng', 'StratosLight', sans-serif;
     font-size: clamp(28px, 4vw, 36px);
