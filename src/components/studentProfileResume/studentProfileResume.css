@@ -271,15 +271,16 @@
     flex: 1.6;
     background: linear-gradient(180deg, #393D41 0%, #2E3338 100%);
     border-radius: 16px;
-    padding: 24px;
+    padding: 30px;
     min-width: 0;
 }
 
 .studentProfileResume__bioText {
-    color: #e5e7eb;
+    color: #BDBDBD;
     font-size: 15px;
     line-height: 1.6;
     margin-top: 16px;
+    margin-bottom: 0;
     white-space: pre-line;
 }
 
