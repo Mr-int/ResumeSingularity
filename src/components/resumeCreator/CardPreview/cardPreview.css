@@ -120,6 +120,9 @@
 .cardPreview__badge--course {
     color: #fff;
     background: #3a3a3c;
+    font-family: 'StratosBoldItalic', sans-serif;
+    font-weight: 500;
+    line-height: 1;
 }
 
 .cardPreview__badge--course-1 {
@@ -127,7 +130,7 @@
 }
 
 .cardPreview__badge--course-2 {
-    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+    background: url('../../../assets/courses/grade-2.jpg') center / cover no-repeat;
 }
 
 .cardPreview__badge--course-3 {
@@ -202,7 +205,7 @@
 }
 
 .cardPreview__legendBadge--course-2 {
-    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+    background: url('../../../assets/courses/grade-2.jpg') center / cover no-repeat;
 }
 
 .cardPreview__legendBadge--course-3 {

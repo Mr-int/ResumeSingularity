@@ -236,9 +236,9 @@ const StudentProfileResume = ({
                         </div>
 
                         <div className="studentProfileResume__infoSkills">
-                            <div>
+                            <div className="studentProfileResume__infoBlock">
                                 <h3 className="studentProfileResume__sectionTitle">
-                                    <svg className="studentProfileResume__iconBlue" width="13" height="13" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <svg className="studentProfileResume__iconBlue" width="16" height="16" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <polygon
                                             points="60,25 100,95 20,95"
                                             fill="#3E8EFF"
@@ -258,9 +258,9 @@ const StudentProfileResume = ({
                                 </div>
                             </div>
 
-                            <div>
+                            <div className="studentProfileResume__skillsBlock">
                                 <h3 className="studentProfileResume__sectionTitle">
-                                    <svg className="studentProfileResume__iconPink" width="13" height="13" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <svg className="studentProfileResume__iconPink" width="18" height="18" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                         <polygon
                                             points="60,20 100,50 85,95 35,95 20,50"
                                             fill="#e02bf2"
