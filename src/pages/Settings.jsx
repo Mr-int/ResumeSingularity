@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
 import StudentProfileResume from '../components/studentProfileResume/StudentProfileResume.jsx';
-import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
 import {
@@ -201,26 +200,6 @@ const SettingsPage = () => {
                                 onAddOccupation={() => navigate('/plug')}
                                 onEmployerView={() => navigate(`/studentsResume/${profile.id}`)}
                             />
-
-                            <div id="account-settings" className="accountPage__accountBlock">
-                                <div className="accountPage__accountBar">
-                                    <div>
-                                        <h2 className="accountPage__accountTitle">Аккаунт</h2>
-                                        <p className="accountPage__accountHint">
-                                            Управление сессией и входящими заявками
-                                        </p>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        className="accountPage__logoutBtn"
-                                        onClick={handleLogout}
-                                        disabled={loggingOut}
-                                    >
-                                        {loggingOut ? 'Выходим…' : 'Выйти'}
-                                    </button>
-                                </div>
-                                <StudentRequestsSection studentId={profile.id} />
-                            </div>
                         </>
                     ) : null}
 

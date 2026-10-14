@@ -1,6 +1,6 @@
 import './studentProfileResume.css';
 import editIcon from '../../assets/icons/edit.svg';
-import folderIcon from '../../assets/icons/folder.jpg';
+import folderIcon from '../../assets/icons/folder.svg';
 import expIcon from '../../assets/icons/exp.svg';
 import educationIcon from '../../assets/icons/education.svg';
 import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
