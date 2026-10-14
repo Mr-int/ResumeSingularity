@@ -607,22 +607,27 @@
 }
 
 .studentProfileResume__educationCard a {
-    color: #60a5fa;
+    color: #3E8EFF;
     font-size: 13px;
     font-weight: 500;
     text-decoration: none;
 }
 
 .studentProfileResume__educationTag {
-    display: inline-block;
-    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 200px;
+    height: 30px;
+    padding: 0 12px;
+    margin: 0;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 500;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.8);
-    width: fit-content;
-    margin-top: 8px;
+    border: 1px solid #3E8EFF;
+    background: rgba(62, 142, 255, 0.1);
+    color: #3E8EFF;
 }
 
 .studentProfileResume__educationCard--blue {
