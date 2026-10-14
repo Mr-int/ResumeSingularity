@@ -206,6 +206,7 @@ const SettingsPage = () => {
                                 onEdit={() => navigate('/plug')}
                                 onEditAvatar={() => navigate('/plug')}
                                 onAddOccupation={() => navigate('/plug')}
+                                onEmployerView={() => navigate(`/studentsResume/${profile.id}`)}
                             />
 
                             <div ref={accountRef} id="account-settings" className="accountPage__accountBlock">

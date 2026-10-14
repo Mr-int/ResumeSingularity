@@ -235,6 +235,13 @@
     font-size: 14px;
 }
 
+.studentProfileResume__btn--secondary {
+    background-color: #41464B;
+    color: #B3B5B7;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
+}
+
 .studentProfileResume__btn--addOccupation {
     display: inline-flex;
     align-items: center;

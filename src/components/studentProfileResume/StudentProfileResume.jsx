@@ -77,6 +77,7 @@ const StudentProfileResume = ({
     onEdit,
     onEditAvatar,
     onAddOccupation,
+    onEmployerView,
 }) => {
     const firstName = student.firstName || '';
     const lastName = student.lastName || '';
@@ -211,6 +212,9 @@ const StudentProfileResume = ({
                         <button type="button" className="studentProfileResume__btn studentProfileResume__btn--primary" onClick={onEdit}>
                             Редактировать
                             <IconEdit />
+                        </button>
+                        <button type="button" className="studentProfileResume__btn studentProfileResume__btn--secondary" onClick={onEmployerView}>
+                            Вид от работодателя
                         </button>
                     </nav>
 
