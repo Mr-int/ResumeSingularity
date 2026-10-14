@@ -626,7 +626,7 @@
 }
 
 .studentProfileResume__educationCard--blue {
-    background: #3E8EFF;
+    background: rgba(62, 142, 255, 0.1);
     border: 1px solid #41464B;
 }
 
