@@ -1,5 +1,6 @@
 import './studentProfileResume.css';
 import editIcon from '../../assets/icons/edit.svg';
+import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
 import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 
@@ -120,13 +121,18 @@ const StudentProfileResume = ({
         }))
         .filter((item) => item.href);
 
-    const experienceItems = (Array.isArray(experiences) ? experiences : []).map((item) => ({
-        id: item.id,
-        title: item.position || item.role || item.company || 'Опыт',
-        text: item.description || item.additionalInfo || '',
-        href: (item.webUrl || item.link || item.companyUrl || '').toString().trim(),
-        hrefLabel: item.webUrl || item.link || item.companyUrl || '',
-    }));
+    const experienceItems = (Array.isArray(experiences) ? experiences : []).map((item) => {
+        const href = (item.webUrl || item.link || item.companyUrl || '').toString().trim();
+        return {
+            id: item.id,
+            company: (item.company || item.companyName || '').toString().trim(),
+            period: formatExperiencePeriodText(item.startDate, item.endDate, item.current),
+            position: (item.position || item.role || '').toString().trim(),
+            description: (item.description || item.additionalInfo || '').toString().trim(),
+            href,
+            hrefLabel: href,
+        };
+    });
 
     const educationItems = (Array.isArray(educations) ? educations : []).map((item, index) => ({
         id: item.id || `edu-${index}`,
@@ -327,10 +333,25 @@ const StudentProfileResume = ({
                             <div className="studentProfileResume__experienceGrid">
                                 {experienceItems.map((item, index) => (
                                     <article key={item.id || index} className="studentProfileResume__experienceCard">
-                                        <h3>{item.title}</h3>
-                                        {item.text ? <p>{item.text}</p> : null}
+                                        <h3 className="studentProfileResume__experienceCompany">
+                                            {item.company || 'Компания не указана'}
+                                        </h3>
+                                        {item.period ? (
+                                            <p className="studentProfileResume__experiencePeriod">{item.period}</p>
+                                        ) : null}
+                                        {item.position ? (
+                                            <p className="studentProfileResume__experiencePosition">{item.position}</p>
+                                        ) : null}
+                                        {item.description ? (
+                                            <p className="studentProfileResume__experienceDescription">{item.description}</p>
+                                        ) : null}
                                         {item.href ? (
-                                            <a href={item.href} target="_blank" rel="noopener noreferrer">
+                                            <a
+                                                className="studentProfileResume__experienceLink"
+                                                href={item.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
                                                 {item.hrefLabel}
                                             </a>
                                         ) : null}

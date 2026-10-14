@@ -248,6 +248,7 @@
     justify-content: center;
     gap: 8px;
     padding: 12px 24px;
+    margin-bottom: 12px;
     font-family: 'StratosSemiLight', sans-serif;
     font-size: 14px;
     font-weight: 400;
@@ -431,9 +432,11 @@
 .studentProfileResume__section {
     display: flex;
     flex-direction: column;
+    gap: 21px;
 }
 
 .studentProfileResume__section > .studentProfileResume__sectionTitle {
+    font-family: "Sansation", sans-serif;
     font-size: 14px;
 }
 
@@ -496,7 +499,12 @@
     background: linear-gradient(135deg, #f8d7da 0%, #fbcfe8 100%);
 }
 
-.studentProfileResume__experienceGrid,
+.studentProfileResume__experienceGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 442px);
+    gap: 20px;
+}
+
 .studentProfileResume__educationGrid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -504,37 +512,58 @@
 }
 
 .studentProfileResume__experienceCard {
-    background-color: var(--spr-card);
+    width: 442px;
+    min-height: 187px;
+    height: auto;
+    box-sizing: border-box;
+    background-color: #2F2F2F;
     border-radius: 20px;
     padding: 24px;
-    border: 1px solid var(--spr-border);
+    border: 1px solid #41464B;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.studentProfileResume__experienceCard h3 {
+.studentProfileResume__experienceCompany {
     font-size: 16px;
     font-weight: 600;
+    color: #fff;
     margin: 0;
 }
 
-.studentProfileResume__experienceCard p {
-    color: var(--spr-muted);
+.studentProfileResume__experiencePeriod {
+    color: #a3a3a3;
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.studentProfileResume__experiencePosition {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.studentProfileResume__experienceDescription {
+    color: #bdbdbd;
     font-size: 14px;
     line-height: 1.5;
     margin: 0;
+    flex: 1;
 }
 
-.studentProfileResume__experienceCard a {
-    color: var(--spr-accent);
+.studentProfileResume__experienceLink {
+    color: #3e8eff;
     font-size: 14px;
     font-weight: 500;
     text-decoration: none;
     word-break: break-all;
+    margin-top: auto;
 }
 
-.studentProfileResume__experienceCard a:hover {
+.studentProfileResume__experienceLink:hover {
     color: #60a5fa;
 }
 
@@ -662,6 +691,11 @@
     .studentProfileResume__experienceGrid,
     .studentProfileResume__educationGrid {
         grid-template-columns: 1fr;
+    }
+
+    .studentProfileResume__experienceCard {
+        width: 100%;
+        max-width: 442px;
     }
 
     .studentProfileResume__sidebar {
