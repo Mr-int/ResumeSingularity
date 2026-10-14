@@ -1,5 +1,8 @@
 import './studentProfileResume.css';
 import editIcon from '../../assets/icons/edit.svg';
+import folderIcon from '../../assets/icons/folder.jpg';
+import expIcon from '../../assets/icons/exp.svg';
+import educationIcon from '../../assets/icons/education.svg';
 import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
 import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
@@ -296,9 +299,7 @@ const StudentProfileResume = ({
 
                     <section className="studentProfileResume__section" aria-labelledby="spr-portfolio-title">
                         <h2 id="spr-portfolio-title" className="studentProfileResume__sectionTitle">
-                            <svg className="studentProfileResume__iconGreen" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                            </svg>
+                            <img className="studentProfileResume__iconGreen" src={folderIcon} alt="" width={16} height={16} aria-hidden="true" />
                             Портфолио
                         </h2>
                         {portfolioItems.length > 0 ? (
@@ -323,10 +324,7 @@ const StudentProfileResume = ({
 
                     <section className="studentProfileResume__section" aria-labelledby="spr-experience-title">
                         <h2 id="spr-experience-title" className="studentProfileResume__sectionTitle">
-                            <svg className="studentProfileResume__iconOrange" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                            </svg>
+                            <img className="studentProfileResume__iconOrange" src={expIcon} alt="" width={16} height={16} aria-hidden="true" />
                             Опыт работы
                         </h2>
                         {experienceItems.length > 0 ? (
@@ -365,10 +363,7 @@ const StudentProfileResume = ({
 
                     <section className="studentProfileResume__section" aria-labelledby="spr-education-title">
                         <h2 id="spr-education-title" className="studentProfileResume__sectionTitle">
-                            <svg className="studentProfileResume__iconPurple" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                                <path d="M6 12v5c3 3 9 3 12 0v-5" />
-                            </svg>
+                            <img className="studentProfileResume__iconPurple" src={educationIcon} alt="" width={16} height={16} aria-hidden="true" />
                             Образование
                         </h2>
                         {educationItems.length > 0 ? (

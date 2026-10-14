@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
@@ -37,7 +37,6 @@ const specialtyLabel = (student) => {
 
 const SettingsPage = () => {
     const navigate = useNavigate();
-    const accountRef = useRef(null);
     const [loading, setLoading] = useState(true);
     const [loggingOut, setLoggingOut] = useState(false);
     const [error, setError] = useState('');
@@ -138,17 +137,23 @@ const SettingsPage = () => {
 
     const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
     const isStudentProfile = role === 'student' && profile;
+    const showStudentShell = loading || isStudentProfile;
 
     return (
         <>
             <Header />
-            <main className={`accountPage${isStudentProfile ? ' accountPage--profile' : ''}`}>
-                <div className={`accountPage__inner${isStudentProfile ? ' accountPage__inner--wide' : ''}`}>
-                    {!isStudentProfile ? (
-                        <>
-                            <h1 className="accountPage__title">Настройки</h1>
-                            <p className="accountPage__lead">
-                                Просмотр профиля. Изменения в анкете вносит администратор после модерации.
+            <main className={`accountPage${showStudentShell ? ' accountPage--profile' : ''}`}>
+                <div className={`accountPage__inner${showStudentShell ? ' accountPage__inner--wide' : ''}`}>
+                    {loading ? (
+                        <div className="accountPage__muted">Загрузка…</div>
+                    ) : null}
+
+                    {!loading && role === 'recruiter_pending' && (
+                        <section className="accountPage__card">
+                            <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
+                            <p className="accountPage__text">
+                                Профиль ещё не привязан. Оставьте заявку на сайте — после одобрения администратором
+                                данные появятся здесь.
                             </p>
                             <p className="accountPage__settingsNav">
                                 <Link to="/chats" className="accountPage__settingsNavLink">
@@ -162,18 +167,6 @@ const SettingsPage = () => {
                                 >
                                     {loggingOut ? 'Выходим…' : 'Выйти'}
                                 </button>
-                            </p>
-                        </>
-                    ) : null}
-
-                    {loading && <div className="accountPage__muted">Загрузка…</div>}
-
-                    {!loading && role === 'recruiter_pending' && (
-                        <section className="accountPage__card">
-                            <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
-                            <p className="accountPage__text">
-                                Профиль ещё не привязан. Оставьте заявку на сайте — после одобрения администратором
-                                данные появятся здесь.
                             </p>
                         </section>
                     )}
@@ -209,7 +202,7 @@ const SettingsPage = () => {
                                 onEmployerView={() => navigate(`/studentsResume/${profile.id}`)}
                             />
 
-                            <div ref={accountRef} id="account-settings" className="accountPage__accountBlock">
+                            <div id="account-settings" className="accountPage__accountBlock">
                                 <div className="accountPage__accountBar">
                                     <div>
                                         <h2 className="accountPage__accountTitle">Аккаунт</h2>
@@ -233,6 +226,23 @@ const SettingsPage = () => {
 
                     {!loading && role === 'recruiter' && profile && (
                         <>
+                            <h1 className="accountPage__title">Настройки</h1>
+                            <p className="accountPage__lead">
+                                Просмотр профиля. Изменения в анкете вносит администратор после модерации.
+                            </p>
+                            <p className="accountPage__settingsNav">
+                                <Link to="/chats" className="accountPage__settingsNavLink">
+                                    Перейти к чатам
+                                </Link>
+                                <button
+                                    type="button"
+                                    className="accountPage__settingsNavLink accountPage__settingsNavLink--btn"
+                                    onClick={handleLogout}
+                                    disabled={loggingOut}
+                                >
+                                    {loggingOut ? 'Выходим…' : 'Выйти'}
+                                </button>
+                            </p>
                             <section className="accountPage__card">
                                 <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
                                 <div className="accountPage__form accountPage__form--readonly">
