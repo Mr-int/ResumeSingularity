@@ -29,7 +29,7 @@
 }
 
 .studentProfileResume__sidebar {
-    width: 280px;
+    width: 230px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -37,22 +37,33 @@
 }
 
 .studentProfileResume__profileCard {
-    background-color: var(--spr-card);
-    border-radius: 24px;
-    padding: 20px;
+    width: 230px;
+    height: 368px;
+    box-sizing: border-box;
+    background: rgba(26, 26, 26, 0.55);
+    border-radius: 28px;
+    padding: 10px 10px 16px;
     text-align: center;
     position: relative;
-    border: 1px solid var(--spr-border);
+    border: none;
+    box-shadow: inset 0 0 0 1.16px #41464B;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
 }
 
 .studentProfileResume__avatar {
     position: relative;
-    width: 100%;
-    height: 220px;
-    border-radius: 16px;
+    width: 210px;
+    height: 230px;
+    border-radius: 20px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     background-color: #333;
+    flex-shrink: 0;
 }
 
 .studentProfileResume__avatarImg {
@@ -62,16 +73,26 @@
     display: block;
 }
 
-.studentProfileResume__badge {
+.studentProfileResume__badges {
     position: absolute;
+    left: 8px;
+    bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 2;
+}
+
+.studentProfileResume__badge {
     width: 28px;
     height: 28px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid var(--spr-bg);
+    border: 2px solid transparent;
     padding: 0;
+    flex-shrink: 0;
 }
 
 .studentProfileResume__badge svg {
@@ -80,29 +101,71 @@
 }
 
 .studentProfileResume__badge--edit {
-    top: 10px;
-    left: 10px;
+    position: static;
     background-color: rgba(168, 85, 247, 0.9);
     color: white;
     cursor: pointer;
     border-style: solid;
+    border-color: rgba(10, 10, 10, 0.6);
+}
+
+.studentProfileResume__badge--course {
+    position: static;
+    color: #fff;
+    background: #3a3a3c;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    border-color: rgba(10, 10, 10, 0.6);
+}
+
+.studentProfileResume__badge--course-1 {
+    background: linear-gradient(135deg, #00FFDD 0.64%, #00A2FF 99.36%);
+}
+
+.studentProfileResume__badge--course-2 {
+    background: radial-gradient(49.36% 49.36% at 50% 50%, #00A400 13.46%, #00FF51 100%);
+}
+
+.studentProfileResume__badge--course-3 {
+    background: conic-gradient(from 47.52deg at 50% 50%, #FF5558 0deg, #FF8C00 360deg);
+}
+
+.studentProfileResume__badge--course-4 {
+    background: conic-gradient(from 90.96deg at 50% 50%, #E95A57 0deg, #E53BCF 270deg, #3E8EFF 360deg);
+}
+
+.studentProfileResume__badge--course-star {
+    background: linear-gradient(135deg, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
 }
 
 .studentProfileResume__badge--verified {
-    bottom: 10px;
+    position: absolute;
+    top: 10px;
     left: 10px;
     background-color: var(--spr-accent);
     color: white;
+    border-color: rgba(10, 10, 10, 0.6);
+    z-index: 2;
 }
 
 .studentProfileResume__name {
-    font-size: 22px;
+    font-size: 23px;
     font-weight: 700;
     margin: 0 0 4px;
+    line-height: 1.15;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.studentProfileResume__name span {
+    display: block;
 }
 
 .studentProfileResume__specialty {
-    color: var(--spr-muted);
+    color: #fff;
     font-size: 14px;
     margin: 0;
 }
@@ -476,8 +539,9 @@
     }
 
     .studentProfileResume__profileCard {
-        flex: 1;
-        min-width: 250px;
+        flex: 0 0 230px;
+        width: 230px;
+        height: 368px;
     }
 
     .studentProfileResume__nav {

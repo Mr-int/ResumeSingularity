@@ -1,7 +1,7 @@
 .studentCreatorHeader {
     width: 100%;
     background-color: #131313;
-    border-bottom: 1px solid #202020;
+    border-bottom: none;
     position: sticky;
     top: 0;
     z-index: 1000;

@@ -1,7 +1,26 @@
 import './studentProfileResume.css';
+import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 
 const PORTFOLIO_TONES = ['blue', 'yellow', 'green', 'pink'];
 const SKILLS_VISIBLE = 8;
+
+const courseTone = (course) => {
+    switch (course) {
+        case 'FIRST':
+            return 1;
+        case 'SECOND':
+            return 2;
+        case 'THIRD':
+            return 3;
+        case 'FOURTH':
+            return 4;
+        case 'NEW':
+        case 'FIFTH':
+            return 'star';
+        default:
+            return '';
+    }
+};
 
 const IconEdit = () => (
     <svg className="studentProfileResume__btnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -67,8 +86,17 @@ const StudentProfileResume = ({
     onEmployerView,
     onSettings,
 }) => {
-    const fullName = [student.firstName, student.lastName].filter(Boolean).join(' ').trim() || 'Без имени';
-    const specialty = student.speciality || student.profession || student.specialityName || 'Специальность не указана';
+    const firstName = student.firstName || '';
+    const lastName = student.lastName || '';
+    const specialty = typeof student.speciality === 'string'
+        ? student.speciality
+        : (student.speciality?.name || student.profession || student.specialityName || 'Специальность не указана');
+    const course = student.course || '';
+    const courseLabel = courseUiLabel(course);
+    const tone = courseTone(course);
+    const courseBadgeClass = tone
+        ? `studentProfileResume__badge studentProfileResume__badge--course studentProfileResume__badge--course-${tone}`
+        : 'studentProfileResume__badge studentProfileResume__badge--course';
     const bio = student.bio || student.description || student.about || '';
     const age = calcAge(student.birthDate);
     const city = student.city ? (String(student.city).startsWith('г.') ? student.city : `г. ${student.city}`) : '';
@@ -120,16 +148,6 @@ const StudentProfileResume = ({
                                     className="studentProfileResume__avatarImg"
                                 />
                             ) : null}
-                            {onEditAvatar ? (
-                                <button
-                                    type="button"
-                                    className="studentProfileResume__badge studentProfileResume__badge--edit"
-                                    aria-label="Редактировать аватар"
-                                    onClick={onEditAvatar}
-                                >
-                                    <IconEdit />
-                                </button>
-                            ) : null}
                             {verified ? (
                                 <span
                                     className="studentProfileResume__badge studentProfileResume__badge--verified"
@@ -140,8 +158,31 @@ const StudentProfileResume = ({
                                     </svg>
                                 </span>
                             ) : null}
+                            <div className="studentProfileResume__badges">
+                                {onEditAvatar ? (
+                                    <button
+                                        type="button"
+                                        className="studentProfileResume__badge studentProfileResume__badge--edit"
+                                        aria-label="Редактировать аватар"
+                                        onClick={onEditAvatar}
+                                    >
+                                        <IconEdit />
+                                    </button>
+                                ) : null}
+                                {courseLabel ? (
+                                    <span
+                                        className={courseBadgeClass}
+                                        aria-label={`Курс: ${courseLabel}`}
+                                    >
+                                        {courseLabel}
+                                    </span>
+                                ) : null}
+                            </div>
                         </div>
-                        <h1 className="studentProfileResume__name">{fullName}</h1>
+                        <h1 className="studentProfileResume__name">
+                            <span>{firstName || 'Имя'}</span>
+                            <span>{lastName || 'Фамилия'}</span>
+                        </h1>
                         <p className="studentProfileResume__specialty">{specialty}</p>
                     </header>
 
