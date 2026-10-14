@@ -238,10 +238,14 @@ const StudentProfileResume = ({
                         <div className="studentProfileResume__infoSkills">
                             <div>
                                 <h3 className="studentProfileResume__sectionTitle">
-                                    <svg className="studentProfileResume__iconBlue" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="10" />
-                                        <line x1="12" y1="16" x2="12" y2="12" />
-                                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                                    <svg className="studentProfileResume__iconBlue" width="13" height="13" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <polygon
+                                            points="60,25 100,95 20,95"
+                                            fill="#3E8EFF"
+                                            stroke="#3E8EFF"
+                                            strokeWidth="12"
+                                            strokeLinejoin="round"
+                                        />
                                     </svg>
                                     Инфо
                                 </h3>
@@ -256,8 +260,14 @@ const StudentProfileResume = ({
 
                             <div>
                                 <h3 className="studentProfileResume__sectionTitle">
-                                    <svg className="studentProfileResume__iconPink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <svg className="studentProfileResume__iconPink" width="13" height="13" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <polygon
+                                            points="60,20 100,50 85,95 35,95 20,50"
+                                            fill="#e02bf2"
+                                            stroke="#e02bf2"
+                                            strokeWidth="6"
+                                            strokeLinejoin="round"
+                                        />
                                     </svg>
                                     Навыки
                                 </h3>

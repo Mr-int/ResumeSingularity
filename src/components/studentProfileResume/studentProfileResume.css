@@ -95,6 +95,7 @@
     flex-shrink: 0;
     font-size: 12px;
     font-weight: 700;
+    box-sizing: border-box;
 }
 
 .studentProfileResume__badge svg {
@@ -118,6 +119,8 @@
 
 .studentProfileResume__badge--edit {
     position: static;
+    width: 37px;
+    height: 37px;
     background-color: #fff;
     color: #000;
     padding: 3px;
@@ -127,6 +130,8 @@
 
 .studentProfileResume__badge--course {
     position: static;
+    width: 37px;
+    height: 37px;
     color: #fff;
     background: #3a3a3c;
     line-height: 1;
@@ -261,7 +266,7 @@
 .studentProfileResume__about {
     display: flex;
     gap: 30px;
-    background: linear-gradient(180deg, #202123 0%, #121315 100%);
+    background: linear-gradient(90deg, #202123 0%, #121315 100%);
     border-radius: 24px;
     padding: 20px;
     border: 1px solid var(--spr-border);
@@ -272,6 +277,7 @@
     background: linear-gradient(180deg, #393D41 0%, #2E3338 100%);
     border-radius: 16px;
     padding: 30px;
+    padding-bottom: 70px;
     min-width: 0;
 }
 
@@ -310,8 +316,18 @@
     flex-shrink: 0;
 }
 
-.studentProfileResume__iconBlue { color: #3b82f6; }
-.studentProfileResume__iconPink { color: #d946ef; }
+.studentProfileResume__sectionTitle .studentProfileResume__iconBlue {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    display: block;
+}
+.studentProfileResume__sectionTitle .studentProfileResume__iconPink {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    display: block;
+}
 .studentProfileResume__iconGreen { color: #10b981; }
 .studentProfileResume__iconOrange { color: #f59e0b; }
 .studentProfileResume__iconPurple { color: #8b5cf6; }
