@@ -1,4 +1,5 @@
 import './studentProfileResume.css';
+import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 
 const PORTFOLIO_TONES = ['blue', 'yellow', 'green', 'pink'];
@@ -91,6 +92,17 @@ const StudentProfileResume = ({
     const specialty = typeof student.speciality === 'string'
         ? student.speciality
         : (student.speciality?.name || student.profession || student.specialityName || 'Специальность не указана');
+    const specialtyIcon = getSpecialtyIcon(specialty);
+    const hasSpecialty = Boolean(specialty && specialty !== 'Специальность не указана');
+    const specialtyBadgeContent = specialtyIcon ? (
+        <img
+            src={specialtyIcon}
+            alt={hasSpecialty ? specialty : ''}
+            className="studentProfileResume__badgeIcon"
+        />
+    ) : (
+        <span className="studentProfileResume__badgePlaceholder" aria-hidden="true">—</span>
+    );
     const course = student.course || '';
     const courseLabel = courseUiLabel(course);
     const tone = courseTone(course);
@@ -164,11 +176,19 @@ const StudentProfileResume = ({
                                         type="button"
                                         className="studentProfileResume__badge studentProfileResume__badge--edit"
                                         aria-label="Редактировать аватар"
+                                        title={hasSpecialty ? specialty : 'Специальность'}
                                         onClick={onEditAvatar}
                                     >
-                                        <IconEdit />
+                                        {specialtyBadgeContent}
                                     </button>
-                                ) : null}
+                                ) : (
+                                    <span
+                                        className="studentProfileResume__badge studentProfileResume__badge--edit"
+                                        title={hasSpecialty ? specialty : 'Специальность'}
+                                    >
+                                        {specialtyBadgeContent}
+                                    </span>
+                                )}
                                 {courseLabel ? (
                                     <span
                                         className={courseBadgeClass}
