@@ -626,7 +626,8 @@
 }
 
 .studentProfileResume__educationCard--blue {
-    background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+    background: #3E8EFF;
+    border: 1px solid #41464B;
 }
 
 .studentProfileResume__educationCard--green {
