@@ -190,7 +190,7 @@ const SettingsPage = () => {
                                     speciality: specialtyLabel(profile),
                                 }}
                                 skills={Array.isArray(profile.skills) ? profile.skills : []}
-                                portfolio={portfolio}
+                                experiences={experiences}
                                 educations={educations}
                                 avatarSrc={avatarUrl}
                                 verified={Boolean(profile.publicProfileConsent)}

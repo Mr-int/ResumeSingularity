@@ -7,15 +7,15 @@ import whiteFolder from '../../assets/folders/white_folder.png';
 import yellowFolder from '../../assets/folders/yellow_folder.png';
 import greenFolder from '../../assets/folders/green_folder.png';
 import pinkFolder from '../../assets/folders/pink_folder.png';
+import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
 import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 
-const PORTFOLIO_TONES = ['blue', 'yellow', 'green', 'pink'];
-const EXPERIENCE_FOLDERS = [
-    { id: 'white', src: whiteFolder, alt: 'Папка опыта' },
-    { id: 'yellow', src: yellowFolder, alt: 'Папка опыта' },
-    { id: 'green', src: greenFolder, alt: 'Папка опыта' },
-    { id: 'pink', src: pinkFolder, alt: 'Папка опыта' },
+const PORTFOLIO_FOLDERS = [
+    { id: 'white', src: whiteFolder, alt: 'Папка портфолио' },
+    { id: 'yellow', src: yellowFolder, alt: 'Папка портфолио' },
+    { id: 'green', src: greenFolder, alt: 'Папка портфолио' },
+    { id: 'pink', src: pinkFolder, alt: 'Папка портфолио' },
 ];
 const SKILLS_VISIBLE = 8;
 
@@ -82,7 +82,7 @@ const formatEduPeriod = (start, end) => {
 const StudentProfileResume = ({
     student = {},
     skills = [],
-    portfolio = [],
+    experiences = [],
     educations = [],
     avatarSrc,
     verified = true,
@@ -123,14 +123,18 @@ const StudentProfileResume = ({
     const visibleSkills = skillList.slice(0, SKILLS_VISIBLE);
     const hiddenSkills = Math.max(0, skillList.length - SKILLS_VISIBLE);
 
-    const portfolioItems = (Array.isArray(portfolio) ? portfolio : [])
-        .map((item) => ({
+    const experienceItems = (Array.isArray(experiences) ? experiences : []).map((item) => {
+        const href = (item.webUrl || item.link || item.companyUrl || '').toString().trim();
+        return {
             id: item.id,
-            title: item.name || item.title || 'Проект',
-            subtitle: item.description || item.additionalInfo || item.link || item.url || '',
-            href: (item.link || item.url || item.website || '').toString().trim(),
-        }))
-        .filter((item) => item.href);
+            company: (item.company || item.companyName || '').toString().trim(),
+            period: formatExperiencePeriodText(item.startDate, item.endDate, item.current),
+            position: (item.position || item.role || '').toString().trim(),
+            description: (item.description || item.additionalInfo || '').toString().trim(),
+            href,
+            hrefLabel: href,
+        };
+    });
 
     const educationItems = (Array.isArray(educations) ? educations : []).map((item, index) => ({
         id: item.id || `edu-${index}`,
@@ -297,36 +301,11 @@ const StudentProfileResume = ({
                             <img className="studentProfileResume__iconGreen" src={folderIcon} alt="" width={16} height={16} aria-hidden="true" />
                             Портфолио
                         </h2>
-                        {portfolioItems.length > 0 ? (
-                            <div className="studentProfileResume__portfolioGrid">
-                                {portfolioItems.map((item, index) => (
-                                    <a
-                                        key={item.id || index}
-                                        href={item.href}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={`studentProfileResume__portfolioCard studentProfileResume__portfolioCard--${PORTFOLIO_TONES[index % PORTFOLIO_TONES.length]}`}
-                                    >
-                                        <h3>{item.title}</h3>
-                                        {item.subtitle ? <p>{item.subtitle}</p> : null}
-                                    </a>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="studentProfileResume__empty">Портфолио пока пусто</p>
-                        )}
-                    </section>
-
-                    <section className="studentProfileResume__section" aria-labelledby="spr-experience-title">
-                        <h2 id="spr-experience-title" className="studentProfileResume__sectionTitle">
-                            <img className="studentProfileResume__iconOrange" src={expIcon} alt="" width={16} height={16} aria-hidden="true" />
-                            Опыт работы
-                        </h2>
-                        <div className="studentProfileResume__experienceFolders">
-                            {EXPERIENCE_FOLDERS.map((folder) => (
+                        <div className="studentProfileResume__portfolioFolders">
+                            {PORTFOLIO_FOLDERS.map((folder) => (
                                 <img
                                     key={folder.id}
-                                    className="studentProfileResume__experienceFolder"
+                                    className="studentProfileResume__portfolioFolder"
                                     src={folder.src}
                                     alt={folder.alt}
                                     width={210}
@@ -334,6 +313,45 @@ const StudentProfileResume = ({
                                 />
                             ))}
                         </div>
+                    </section>
+
+                    <section className="studentProfileResume__section" aria-labelledby="spr-experience-title">
+                        <h2 id="spr-experience-title" className="studentProfileResume__sectionTitle">
+                            <img className="studentProfileResume__iconOrange" src={expIcon} alt="" width={16} height={16} aria-hidden="true" />
+                            Опыт работы
+                        </h2>
+                        {experienceItems.length > 0 ? (
+                            <div className="studentProfileResume__experienceGrid">
+                                {experienceItems.map((item, index) => (
+                                    <article key={item.id || index} className="studentProfileResume__experienceCard">
+                                        <h3 className="studentProfileResume__experienceCompany">
+                                            {item.company || 'Компания не указана'}
+                                        </h3>
+                                        {item.period ? (
+                                            <p className="studentProfileResume__experiencePeriod">{item.period}</p>
+                                        ) : null}
+                                        {item.position ? (
+                                            <p className="studentProfileResume__experiencePosition">{item.position}</p>
+                                        ) : null}
+                                        {item.description ? (
+                                            <p className="studentProfileResume__experienceDescription">{item.description}</p>
+                                        ) : null}
+                                        {item.href ? (
+                                            <a
+                                                className="studentProfileResume__experienceLink"
+                                                href={item.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {item.hrefLabel}
+                                            </a>
+                                        ) : null}
+                                    </article>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="studentProfileResume__empty">Опыт пока не добавлен</p>
+                        )}
                     </section>
 
                     <section className="studentProfileResume__section" aria-labelledby="spr-education-title">

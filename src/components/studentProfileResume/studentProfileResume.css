@@ -505,13 +505,13 @@
     background: linear-gradient(135deg, #f8d7da 0%, #fbcfe8 100%);
 }
 
-.studentProfileResume__experienceFolders {
+.studentProfileResume__portfolioFolders {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
 }
 
-.studentProfileResume__experienceFolder {
+.studentProfileResume__portfolioFolder {
     width: 210px;
     height: 135px;
     object-fit: contain;
