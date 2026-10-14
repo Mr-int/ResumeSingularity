@@ -137,6 +137,7 @@
     line-height: 1;
     font-family: 'StratosBoldItalic', sans-serif;
     font-weight: 500;
+    font-size: 21px;
 }
 
 .studentProfileResume__badge--course-1 {
@@ -207,9 +208,9 @@
     padding: 14px 16px;
     border-radius: 12px;
     border: none;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 14px;
-    font-family: inherit;
+    font-family: "Sansation", sans-serif;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -225,25 +226,28 @@
 }
 
 .studentProfileResume__btn--primary {
-    background-color: var(--spr-accent);
+    background-color: #3E8EFF;
     color: white;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
 }
 
 .studentProfileResume__btn--secondary {
-    background-color: var(--spr-card);
-    color: var(--spr-muted);
-    border: 1px solid var(--spr-border);
-}
-
-.studentProfileResume__btn--secondary:hover {
-    background-color: var(--spr-card-light);
-    color: var(--spr-text);
+    background-color: #41464B;
+    color: #B3B5B7;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
 }
 
 .studentProfileResume__btnIcon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
+    display: block;
+}
+
+.studentProfileResume__btn--secondary .studentProfileResume__btnIcon {
+    display: none;
 }
 
 .studentProfileResume__sidebarFooter {
@@ -269,9 +273,9 @@
     display: flex;
     gap: 30px;
     background: linear-gradient(90deg, #202123 0%, #121315 100%);
-    border-radius: 24px;
+    border-radius: 48px;
     padding: 20px;
-    border: 1px solid var(--spr-border);
+    border: 1px solid #41464B;
 }
 
 .studentProfileResume__bio {
