@@ -191,7 +191,6 @@ const SettingsPage = () => {
                                 }}
                                 skills={Array.isArray(profile.skills) ? profile.skills : []}
                                 portfolio={portfolio}
-                                experiences={experiences}
                                 educations={educations}
                                 avatarSrc={avatarUrl}
                                 verified={Boolean(profile.publicProfileConsent)}

@@ -505,6 +505,20 @@
     background: linear-gradient(135deg, #f8d7da 0%, #fbcfe8 100%);
 }
 
+.studentProfileResume__experienceFolders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.studentProfileResume__experienceFolder {
+    width: 210px;
+    height: 135px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+}
+
 .studentProfileResume__experienceGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, 442px);
@@ -651,6 +665,8 @@
 }
 
 .studentProfileResume__educationCard--green .studentProfileResume__educationTag {
+    width: 107px;
+    height: 30px;
     border: 1px solid #C5FF74;
     background: rgba(197, 255, 116, 0.1);
     color: #C5FF74;
