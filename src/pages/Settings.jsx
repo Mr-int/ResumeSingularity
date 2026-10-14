@@ -205,10 +205,7 @@ const SettingsPage = () => {
                                 verified={Boolean(profile.publicProfileConsent)}
                                 onEdit={() => navigate('/plug')}
                                 onEditAvatar={() => navigate('/plug')}
-                                onEmployerView={() => navigate(`/studentsResume/${profile.id}`)}
-                                onSettings={() => {
-                                    accountRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                }}
+                                onAddOccupation={() => navigate('/plug')}
                             />
 
                             <div ref={accountRef} id="account-settings" className="accountPage__accountBlock">

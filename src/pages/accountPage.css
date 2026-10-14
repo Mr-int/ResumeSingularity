@@ -16,10 +16,10 @@
     font-family: 'StratosSemiLight', sans-serif;
 }
 
-.accountPage--profile button,
-.accountPage--profile input,
-.accountPage--profile textarea,
-.accountPage--profile a {
+.accountPage__accountBlock button,
+.accountPage__accountBlock input,
+.accountPage__accountBlock textarea,
+.accountPage__accountBlock a {
     font-family: inherit;
 }
 

@@ -76,8 +76,7 @@ const StudentProfileResume = ({
     verified = true,
     onEdit,
     onEditAvatar,
-    onEmployerView,
-    onSettings,
+    onAddOccupation,
 }) => {
     const firstName = student.firstName || '';
     const lastName = student.lastName || '';
@@ -199,15 +198,19 @@ const StudentProfileResume = ({
                     </header>
 
                     <nav className="studentProfileResume__nav" aria-label="Навигация по профилю">
+                        <button
+                            type="button"
+                            className="studentProfileResume__btn studentProfileResume__btn--addOccupation"
+                            onClick={onAddOccupation}
+                        >
+                            Добавить занятость
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                            </svg>
+                        </button>
                         <button type="button" className="studentProfileResume__btn studentProfileResume__btn--primary" onClick={onEdit}>
                             Редактировать
                             <IconEdit />
-                        </button>
-                        <button type="button" className="studentProfileResume__btn studentProfileResume__btn--secondary" onClick={onEmployerView}>
-                            Вид от работодателя
-                        </button>
-                        <button type="button" className="studentProfileResume__btn studentProfileResume__btn--secondary" onClick={onSettings}>
-                            Настройки аккаунта
                         </button>
                     </nav>
 
