@@ -291,7 +291,7 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
             <div className="photoCropModal__layout">
             <div className="photoCropModal__card">
                 <h2 id="photo-crop-title" className="photoCropModal__title">
-                    Выровняйте фото по трафарету
+                    Выровняйте лицо по трафарету
                 </h2>
 
                 <div className="photoCropModal__body">
