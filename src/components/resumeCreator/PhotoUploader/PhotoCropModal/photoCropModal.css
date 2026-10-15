@@ -11,7 +11,7 @@
 }
 
 .photoCropModal__card {
-    width: min(420px, 100%);
+    width: min(460px, 100%);
     box-sizing: border-box;
     background: #1e1f21;
     border: 1px solid #41464B;
@@ -37,133 +37,120 @@
     font-size: 13px;
     color: #8e8e93;
     text-align: center;
+    max-width: 360px;
 }
 
 .photoCropModal__stage {
     position: relative;
     overflow: hidden;
-    cursor: grab;
     touch-action: none;
-    background: #131313;
+    background: #0d0d0d;
     user-select: none;
+    border-radius: 12px;
 }
 
-.photoCropModal__stage:active {
+.photoCropModal__world {
+    position: absolute;
+    inset: 0;
+    transform-origin: center center;
+    will-change: transform;
+}
+
+.photoCropModal__photo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    cursor: grab;
+    touch-action: none;
+}
+
+.photoCropModal__photo:active {
     cursor: grabbing;
 }
 
 .photoCropModal__image {
-    position: absolute;
-    left: 0;
-    top: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
     max-width: none;
-    transform-origin: 0 0;
     pointer-events: none;
+    user-select: none;
 }
 
-.photoCropModal__frame {
+.photoCropModal__photoBounds {
     position: absolute;
     inset: 0;
-    pointer-events: none;
-    z-index: 2;
-}
-
-.photoCropModal__corners,
-.photoCropModal__sideLines,
-.photoCropModal__edgeLines {
-    position: absolute;
-    inset: 0;
-}
-
-/* углы */
-.photoCropModal__frame::before,
-.photoCropModal__frame::after,
-.photoCropModal__corners::before,
-.photoCropModal__corners::after {
-    content: '';
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    border: 4px solid #3b82f6;
+    border: 1.5px solid #3E8EFF;
     box-sizing: border-box;
     pointer-events: none;
 }
 
-.photoCropModal__frame::before {
-    top: 0;
-    left: 0;
-    border-right: none;
-    border-bottom: none;
-}
-
-.photoCropModal__frame::after {
-    top: 0;
-    right: 0;
-    border-left: none;
-    border-bottom: none;
-}
-
-.photoCropModal__corners::before {
-    bottom: 0;
-    left: 0;
-    border-right: none;
-    border-top: none;
-}
-
-.photoCropModal__corners::after {
-    bottom: 0;
-    right: 0;
-    border-left: none;
-    border-top: none;
-}
-
-/* боковые и осевые штрихи */
-.photoCropModal__sideLines::before,
-.photoCropModal__sideLines::after,
-.photoCropModal__edgeLines::before,
-.photoCropModal__edgeLines::after {
-    content: '';
+.photoCropModal__handle {
     position: absolute;
-    background-color: #3b82f6;
+    z-index: 3;
+    padding: 0;
+    border: none;
+    background: #3E8EFF;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
 }
 
-.photoCropModal__sideLines::before {
-    left: 0;
-    top: calc(50% - 20px);
-    width: 4px;
-    height: 40px;
-}
-
-.photoCropModal__sideLines::after {
-    right: 0;
-    top: calc(50% - 20px);
-    width: 4px;
-    height: 40px;
-}
-
-.photoCropModal__edgeLines::before {
-    top: 0;
-    left: calc(50% - 25px);
+.photoCropModal__handle--n,
+.photoCropModal__handle--s {
+    left: 50%;
+    width: 28px;
     height: 4px;
-    width: 50px;
+    margin-left: -14px;
+    border-radius: 2px;
 }
 
-.photoCropModal__edgeLines::after {
-    bottom: 0;
-    left: calc(50% - 25px);
-    height: 4px;
-    width: 50px;
+.photoCropModal__handle--n { top: -2px; }
+.photoCropModal__handle--s { bottom: -2px; }
+
+.photoCropModal__handle--e,
+.photoCropModal__handle--w {
+    top: 50%;
+    width: 4px;
+    height: 28px;
+    margin-top: -14px;
+    border-radius: 2px;
 }
 
-/* силуэт: чёрный фон уходит, остаётся белая обводка */
+.photoCropModal__handle--e { right: -2px; }
+.photoCropModal__handle--w { left: -2px; }
+
+.photoCropModal__handle--ne,
+.photoCropModal__handle--nw,
+.photoCropModal__handle--se,
+.photoCropModal__handle--sw {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: #3E8EFF;
+}
+
+.photoCropModal__handle--nw { top: -5px; left: -5px; }
+.photoCropModal__handle--ne { top: -5px; right: -5px; }
+.photoCropModal__handle--sw { bottom: -5px; left: -5px; }
+.photoCropModal__handle--se { bottom: -5px; right: -5px; }
+
+.photoCropModal__crop {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.photoCropModal__cropHole {
+    position: absolute;
+    border-radius: 18px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.58);
+    outline: 1px solid rgba(255, 255, 255, 0.22);
+    box-sizing: border-box;
+}
+
 .photoCropModal__silhouette {
     position: absolute;
-    left: 50%;
-    top: 46%;
-    width: 78%;
     height: auto;
-    max-height: 86%;
-    transform: translate(-50%, -50%);
     object-fit: contain;
     mix-blend-mode: screen;
     opacity: 0.92;
@@ -245,13 +232,13 @@
     .photoCropModal__card {
         padding: 20px 16px 16px;
         max-height: none;
-        width: min(420px, 100%);
+        width: min(460px, 100%);
     }
 
     .photoCropModal__stage {
         transform: scale(0.78);
         transform-origin: top center;
-        margin-bottom: -70px;
+        margin-bottom: -80px;
     }
 
     .photoCropModal__title {
@@ -267,6 +254,6 @@
 @media (max-height: 680px) {
     .photoCropModal__stage {
         transform: scale(0.62);
-        margin-bottom: -130px;
+        margin-bottom: -140px;
     }
 }

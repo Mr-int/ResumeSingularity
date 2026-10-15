@@ -1,6 +1,6 @@
 .accountPage {
     min-height: calc(100vh - 120px);
-    background: #050508;
+    background: #131313;
     color: #e4e4e7;
     padding: 40px 20px 80px;
     box-sizing: border-box;
@@ -12,7 +12,6 @@
 }
 
 .accountPage--profile {
-    background: #0a0a0a;
     font-family: 'StratosSemiLight', sans-serif;
 }
 
