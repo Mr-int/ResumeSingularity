@@ -62,23 +62,26 @@
 .photoCropModal__body {
     width: 100%;
     box-sizing: border-box;
-    padding: 12px 24px 16px;
+    padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     flex: 1;
     min-height: 0;
+    overflow: visible;
 }
 
 .photoCropModal__stage {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     touch-action: none;
     background: transparent;
     user-select: none;
     border: none;
     border-radius: 0;
     box-shadow: none;
+    flex-shrink: 0;
 }
 
 .photoCropModal__world {
@@ -126,6 +129,14 @@
     max-width: none;
     pointer-events: none;
     user-select: none;
+}
+
+.photoCropModal__photoShade {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .photoCropModal__photoBounds {
@@ -196,10 +207,10 @@
     width: 210px;
     height: 230px;
     border-radius: 18px;
-    /* цвет карточки — без отдельного тёмного квадрата stage */
-    box-shadow: 0 0 0 9999px #1e1f21;
     outline: 1.5px solid rgba(255, 255, 255, 0.35);
     box-sizing: border-box;
+    background: transparent;
+    box-shadow: none;
 }
 
 .photoCropModal__silhouette {

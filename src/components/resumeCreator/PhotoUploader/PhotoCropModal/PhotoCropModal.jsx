@@ -7,8 +7,8 @@ const CROP_W = 210;
 const CROP_H = 230;
 const OUT_W = 420;
 const OUT_H = 460;
-const STAGE_W = 480;
-const STAGE_H = 320;
+const STAGE_W = 512;
+const STAGE_H = 360;
 const CROP_LEFT = (STAGE_W - CROP_W) / 2;
 const CROP_TOP = (STAGE_H - CROP_H) / 2;
 const CROP_RADIUS = 18;
@@ -286,6 +286,19 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
     const displayW = natural.w * photoScale;
     const displayH = natural.h * photoScale;
 
+    // Затемнение только по площади фото вне окна обрезки
+    const photoShadeClipPath = (() => {
+        if (!ready || !displayW || !displayH) return undefined;
+        const z = viewZoom || 1;
+        const worldCropLeft = STAGE_W / 2 + (CROP_LEFT - STAGE_W / 2) / z;
+        const worldCropTop = STAGE_H / 2 + (CROP_TOP - STAGE_H / 2) / z;
+        const holeW = CROP_W / z;
+        const holeH = CROP_H / z;
+        const x = worldCropLeft - photoX;
+        const y = worldCropTop - photoY;
+        return `polygon(evenodd, 0 0, ${displayW}px 0, ${displayW}px ${displayH}px, 0 ${displayH}px, 0 0, ${x}px ${y}px, ${x}px ${y + holeH}px, ${x + holeW}px ${y + holeH}px, ${x + holeW}px ${y}px, ${x}px ${y}px)`;
+    })();
+
     return (
         <div className="photoCropModal" role="dialog" aria-modal="true" aria-labelledby="photo-crop-title">
             <div className="photoCropModal__layout">
@@ -322,6 +335,13 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                                 draggable={false}
                                 onLoad={(event) => fitImage(event.currentTarget)}
                             />
+                            {photoShadeClipPath ? (
+                                <div
+                                    className="photoCropModal__photoShade"
+                                    style={{ clipPath: photoShadeClipPath }}
+                                    aria-hidden="true"
+                                />
+                            ) : null}
                         </div>
                     </div>
 
