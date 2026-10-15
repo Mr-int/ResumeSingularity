@@ -42,17 +42,21 @@ const Header = ({
     const routeActiveId = navIdFromLocation(location.pathname, location.hash);
     const [activeNavId, setActiveNavId] = useState(activeNavIdProp || routeActiveId || 'career');
     const [loadedAvatarSrc, setLoadedAvatarSrc] = useState(null);
+    const [avatarExpanded, setAvatarExpanded] = useState(false);
+    const [profileUser, setProfileUser] = useState({
+        firstName: '',
+        lastName: '',
+        roleLabel: '',
+    });
 
     const currentActive = activeNavIdProp ?? routeActiveId ?? activeNavId;
     const displayAvatarSrc = avatarSrc || loadedAvatarSrc;
 
     useEffect(() => {
-        if (avatarSrc) {
-            setLoadedAvatarSrc(null);
-            return undefined;
-        }
+        setAvatarExpanded(false);
         if (!isAuthenticated()) {
             setLoadedAvatarSrc(null);
+            setProfileUser({ firstName: '', lastName: '', roleLabel: '' });
             return undefined;
         }
 
@@ -61,20 +65,37 @@ const Header = ({
             try {
                 const me = await getStudentMe();
                 if (cancelled) return;
-                if (hasStudentProfilePhoto(me)) {
+                setProfileUser({
+                    firstName: me.firstName || '',
+                    lastName: me.lastName || '',
+                    roleLabel: 'Студент',
+                });
+                if (!avatarSrc && hasStudentProfilePhoto(me)) {
                     setLoadedAvatarSrc(getImageUrl(me.imagePath || me.image || me.photo || me.avatar));
-                    return;
+                } else if (!avatarSrc) {
+                    setLoadedAvatarSrc(null);
                 }
+                return;
             } catch {
                 /* не студент — пробуем рекрутера */
             }
             try {
                 const me = await getRecruiterMe();
                 if (cancelled) return;
-                const path = me?.imagePath || me?.image || me?.photo || me?.avatar;
-                setLoadedAvatarSrc(path ? getImageUrl(path) : null);
+                setProfileUser({
+                    firstName: me.firstName || '',
+                    lastName: me.lastName || '',
+                    roleLabel: 'Рекрутер',
+                });
+                if (!avatarSrc) {
+                    const path = me?.imagePath || me?.image || me?.photo || me?.avatar;
+                    setLoadedAvatarSrc(path ? getImageUrl(path) : null);
+                }
             } catch {
-                if (!cancelled) setLoadedAvatarSrc(null);
+                if (!cancelled) {
+                    setLoadedAvatarSrc(null);
+                    setProfileUser({ firstName: '', lastName: '', roleLabel: '' });
+                }
             }
         };
 
@@ -152,7 +173,17 @@ const Header = ({
         goAuthed('/chats');
     };
 
-    const handleAvatar = () => {
+    const handleAvatar = (action) => {
+        if (action?.type === 'collapse') {
+            setAvatarExpanded(false);
+            return;
+        }
+        if (action?.type === 'expand') {
+            setAvatarExpanded(true);
+            return;
+        }
+        // Повторный клик в раскрытом состоянии — переход в профиль
+        setAvatarExpanded(false);
         if (onAvatarClick) {
             onAvatarClick();
             return;
@@ -188,7 +219,15 @@ const Header = ({
                             height={18}
                         />
                     </IconButton>
-                    <Avatar src={displayAvatarSrc} onClick={handleAvatar} alt="Профиль" />
+                    <Avatar
+                        src={displayAvatarSrc}
+                        onClick={handleAvatar}
+                        alt="Профиль"
+                        expanded={avatarExpanded}
+                        firstName={profileUser.firstName}
+                        lastName={profileUser.lastName}
+                        roleLabel={profileUser.roleLabel}
+                    />
                 </div>
             </div>
         </header>

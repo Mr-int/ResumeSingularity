@@ -357,7 +357,7 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                             draggable={false}
                             style={{
                                 left: CROP_LEFT + CROP_W * 0.11,
-                                top: CROP_TOP + CROP_H * 0.08,
+                                top: CROP_TOP + CROP_H * 0.08 + 20,
                                 width: CROP_W * 0.78,
                             }}
                         />
