@@ -73,6 +73,9 @@
     touch-action: none;
     background: transparent;
     user-select: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .photoCropModal__world {
@@ -190,7 +193,8 @@
     width: 210px;
     height: 230px;
     border-radius: 18px;
-    box-shadow: 0 0 0 9999px rgba(19, 19, 19, 0.72);
+    /* цвет карточки — без отдельного тёмного квадрата stage */
+    box-shadow: 0 0 0 9999px #1e1f21;
     outline: 1.5px solid rgba(255, 255, 255, 0.35);
     box-sizing: border-box;
 }
