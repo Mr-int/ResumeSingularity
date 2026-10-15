@@ -229,25 +229,37 @@ const Header = ({
                 </nav>
 
                 <div className="studentCreatorHeader__actions">
-                    <IconButton ariaLabel="Чаты" onClick={handleMessages}>
-                        <img
-                            src={chatsIco}
-                            alt=""
-                            className="studentCreatorHeader__chatsIco"
-                            width={20}
-                            height={18}
-                        />
-                    </IconButton>
-                    <Avatar
-                        src={displayAvatarSrc}
-                        onClick={handleAvatar}
-                        onMenuAction={handleAvatarMenu}
-                        alt="Профиль"
-                        expanded={avatarExpanded}
-                        firstName={profileUser.firstName}
-                        lastName={profileUser.lastName}
-                        roleLabel={profileUser.roleLabel}
-                    />
+                    {isAuthenticated() ? (
+                        <>
+                            <IconButton ariaLabel="Чаты" onClick={handleMessages}>
+                                <img
+                                    src={chatsIco}
+                                    alt=""
+                                    className="studentCreatorHeader__chatsIco"
+                                    width={20}
+                                    height={18}
+                                />
+                            </IconButton>
+                            <Avatar
+                                src={displayAvatarSrc}
+                                onClick={handleAvatar}
+                                onMenuAction={handleAvatarMenu}
+                                alt="Профиль"
+                                expanded={avatarExpanded}
+                                firstName={profileUser.firstName}
+                                lastName={profileUser.lastName}
+                                roleLabel={profileUser.roleLabel}
+                            />
+                        </>
+                    ) : (
+                        <button
+                            type="button"
+                            className="studentCreatorHeader__loginBtn"
+                            onClick={() => navigate('/login', { state: { from: location.pathname } })}
+                        >
+                            Войти
+                        </button>
+                    )}
                 </div>
             </div>
         </header>
