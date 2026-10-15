@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import trafaretSrc from '../../../../assets/photoExamples/trafaret.png';
 import './photoCropModal.css';
 
-const STAGE_W = 360;
-const STAGE_H = 450;
-const CROP_W = 300;
-const CROP_H = 380;
+const STAGE_W = 400;
+const STAGE_H = 280;
+const CROP_W = 260;
+const CROP_H = 230;
 const OUT_W = 300;
-const OUT_H = 380;
+const OUT_H = 266;
 const CROP_LEFT = (STAGE_W - CROP_W) / 2;
 const CROP_TOP = (STAGE_H - CROP_H) / 2;
 const MIN_VIEW_ZOOM = 0.55;
@@ -286,13 +286,11 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
 
     return (
         <div className="photoCropModal" role="dialog" aria-modal="true" aria-labelledby="photo-crop-title">
+            <div className="photoCropModal__layout">
             <div className="photoCropModal__card">
                 <h2 id="photo-crop-title" className="photoCropModal__title">
                     Выровняйте фото по трафарету
                 </h2>
-                <p className="photoCropModal__hint">
-                    Синие края меняют размер фото, «+ / −» приближают сцену. Совместите лицо с силуэтом и нажмите «Обрезать».
-                </p>
 
                 <div
                     className="photoCropModal__stage"
@@ -376,20 +374,21 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                         +
                     </button>
                 </div>
+            </div>
 
-                <div className="photoCropModal__actions">
-                    <button type="button" className="photoCropModal__btn photoCropModal__btn--reset" onClick={onReset}>
-                        Сбросить
-                    </button>
-                    <button
-                        type="button"
-                        className="photoCropModal__btn photoCropModal__btn--crop"
-                        onClick={handleCrop}
-                        disabled={!ready}
-                    >
-                        Обрезать
-                    </button>
-                </div>
+            <div className="photoCropModal__actions">
+                <button
+                    type="button"
+                    className="photoCropModal__btn photoCropModal__btn--crop"
+                    onClick={handleCrop}
+                    disabled={!ready}
+                >
+                    Обрезать
+                </button>
+                <button type="button" className="photoCropModal__btn photoCropModal__btn--reset" onClick={onReset}>
+                    Сбросить
+                </button>
+            </div>
             </div>
         </div>
     );

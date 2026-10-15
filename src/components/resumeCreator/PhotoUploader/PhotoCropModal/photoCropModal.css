@@ -10,34 +10,42 @@
     box-sizing: border-box;
 }
 
+.photoCropModal__layout {
+    position: relative;
+    width: 560px;
+    max-width: 100%;
+    padding-bottom: 60px;
+    box-sizing: border-box;
+}
+
 .photoCropModal__card {
-    width: min(460px, 100%);
+    width: 560px;
+    height: 450px;
+    max-width: 100%;
     box-sizing: border-box;
     background: #1e1f21;
     border: 1px solid #41464B;
     border-radius: 24px;
-    padding: 28px 24px 24px;
+    padding: 0 0 16px;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: hidden;
 }
 
 .photoCropModal__title {
     margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 24px;
+    background: #41464B;
     font-family: 'StratosSemiLight', sans-serif;
     font-size: 18px;
     font-weight: 400;
     color: #ffffff;
     text-align: center;
-}
-
-.photoCropModal__hint {
-    margin: 8px 0 20px;
-    font-size: 13px;
-    color: #8e8e93;
-    text-align: center;
-    max-width: 360px;
+    flex-shrink: 0;
 }
 
 .photoCropModal__stage {
@@ -47,6 +55,7 @@
     background: #0d0d0d;
     user-select: none;
     border-radius: 12px;
+    margin-top: 12px;
 }
 
 .photoCropModal__world {
@@ -161,7 +170,9 @@
 .photoCropModal__zoom {
     display: flex;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: auto;
+    padding-top: 12px;
+    flex-shrink: 0;
 }
 
 .photoCropModal__zoomBtn {
@@ -182,20 +193,27 @@
 }
 
 .photoCropModal__actions {
-    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
     display: flex;
     gap: 12px;
-    margin-top: 20px;
+    width: auto;
+    margin: 0;
 }
 
 .photoCropModal__btn {
-    flex: 1;
-    height: 44px;
-    border-radius: 10px;
+    flex: 0 0 auto;
+    width: 160px;
+    height: 46px;
+    padding: 0;
+    border-radius: 46px;
     border: none;
     font-size: 14px;
-    font-family: inherit;
+    font-family: "Sansation", sans-serif;
+    font-weight: 400;
     cursor: pointer;
+    box-sizing: border-box;
 }
 
 .photoCropModal__btn:disabled {
@@ -203,23 +221,22 @@
     cursor: default;
 }
 
+.photoCropModal__btn--crop {
+    background: #fff;
+    color: #000;
+}
+
+.photoCropModal__btn--crop:hover:not(:disabled) {
+    filter: brightness(0.96);
+}
+
 .photoCropModal__btn--reset {
-    background: transparent;
-    border: 1px solid #737D85;
+    background: #41464B;
     color: #ffffff;
 }
 
 .photoCropModal__btn--reset:hover {
-    border-color: #ffffff;
-}
-
-.photoCropModal__btn--crop {
-    background: #3E8EFF;
-    color: #ffffff;
-}
-
-.photoCropModal__btn--crop:hover:not(:disabled) {
-    filter: brightness(1.06);
+    filter: brightness(1.08);
 }
 
 @media (max-height: 820px), (max-width: 480px) {
@@ -229,10 +246,17 @@
         overflow-y: auto;
     }
 
+    .photoCropModal__layout {
+        width: min(560px, 100%);
+        padding-bottom: 56px;
+    }
+
     .photoCropModal__card {
-        padding: 20px 16px 16px;
+        padding: 0 0 16px;
+        width: 100%;
+        height: auto;
+        min-height: 0;
         max-height: none;
-        width: min(460px, 100%);
     }
 
     .photoCropModal__stage {
@@ -243,11 +267,6 @@
 
     .photoCropModal__title {
         font-size: 16px;
-    }
-
-    .photoCropModal__hint {
-        margin-bottom: 12px;
-        font-size: 12px;
     }
 }
 
