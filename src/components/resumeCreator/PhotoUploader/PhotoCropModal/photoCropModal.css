@@ -16,17 +16,21 @@
     max-width: 100%;
     padding-bottom: 60px;
     box-sizing: border-box;
+    margin: 0 auto;
 }
 
 .photoCropModal__card {
     width: 560px;
     height: 450px;
-    max-width: 100%;
+    min-width: 560px;
+    min-height: 450px;
+    max-width: 560px;
+    max-height: 450px;
     box-sizing: border-box;
     background: #1e1f21;
     border: 1px solid #41464B;
     border-radius: 24px;
-    padding: 0 0 16px;
+    padding: 0;
     box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
     display: flex;
     flex-direction: column;
@@ -37,25 +41,38 @@
 .photoCropModal__title {
     margin: 0;
     width: 100%;
+    height: 60px;
     box-sizing: border-box;
-    padding: 14px 24px;
+    padding: 0 32px 0 32px;
     background: #41464B;
     font-family: 'StratosSemiLight', sans-serif;
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 400;
     color: #ffffff;
-    text-align: center;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
     flex-shrink: 0;
+}
+
+.photoCropModal__body {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-height: 0;
 }
 
 .photoCropModal__stage {
     position: relative;
     overflow: hidden;
     touch-action: none;
-    background: #0d0d0d;
+    background: transparent;
     user-select: none;
-    border-radius: 12px;
-    margin-top: 12px;
 }
 
 .photoCropModal__world {
@@ -63,6 +80,12 @@
     inset: 0;
     transform-origin: center center;
     will-change: transform;
+    z-index: 1;
+}
+
+.photoCropModal__world--chrome {
+    z-index: 5;
+    pointer-events: none;
 }
 
 .photoCropModal__photo {
@@ -74,6 +97,19 @@
 }
 
 .photoCropModal__photo:active {
+    cursor: grabbing;
+}
+
+.photoCropModal__photoFrame {
+    position: absolute;
+    left: 0;
+    top: 0;
+    cursor: grab;
+    touch-action: none;
+    pointer-events: auto;
+}
+
+.photoCropModal__photoFrame:active {
     cursor: grabbing;
 }
 
@@ -89,7 +125,7 @@
 .photoCropModal__photoBounds {
     position: absolute;
     inset: 0;
-    border: 1.5px solid #3E8EFF;
+    border: 2px solid #3E8EFF;
     box-sizing: border-box;
     pointer-events: none;
 }
@@ -151,9 +187,11 @@
 
 .photoCropModal__cropHole {
     position: absolute;
+    width: 210px;
+    height: 230px;
     border-radius: 18px;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.58);
-    outline: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 0 0 9999px rgba(19, 19, 19, 0.72);
+    outline: 1.5px solid rgba(255, 255, 255, 0.35);
     box-sizing: border-box;
 }
 
@@ -165,31 +203,6 @@
     opacity: 0.92;
     pointer-events: none;
     user-select: none;
-}
-
-.photoCropModal__zoom {
-    display: flex;
-    gap: 8px;
-    margin-top: auto;
-    padding-top: 12px;
-    flex-shrink: 0;
-}
-
-.photoCropModal__zoomBtn {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    border: 1px solid #41464B;
-    background: transparent;
-    color: #ffffff;
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-    font-family: inherit;
-}
-
-.photoCropModal__zoomBtn:hover {
-    border-color: #3E8EFF;
 }
 
 .photoCropModal__actions {
@@ -252,27 +265,32 @@
     }
 
     .photoCropModal__card {
-        padding: 0 0 16px;
-        width: 100%;
-        height: auto;
-        min-height: 0;
-        max-height: none;
+        padding: 0;
+        width: 560px;
+        height: 450px;
+        min-width: 560px;
+        min-height: 450px;
+        max-width: 560px;
+        max-height: 450px;
     }
 
     .photoCropModal__stage {
         transform: scale(0.78);
         transform-origin: top center;
-        margin-bottom: -80px;
+    }
+
+    .photoCropModal__body {
+        padding-bottom: 0;
     }
 
     .photoCropModal__title {
-        font-size: 16px;
+        font-size: 14px;
     }
 }
 
 @media (max-height: 680px) {
     .photoCropModal__stage {
         transform: scale(0.62);
-        margin-bottom: -140px;
+        transform-origin: top center;
     }
 }

@@ -2,14 +2,16 @@ import { useEffect, useRef, useState } from 'react';
 import trafaretSrc from '../../../../assets/photoExamples/trafaret.png';
 import './photoCropModal.css';
 
-const STAGE_W = 400;
-const STAGE_H = 280;
-const CROP_W = 260;
+/* Окно обрезки = реальный аватар 210×230 (как studentProfileResume__avatar) */
+const CROP_W = 210;
 const CROP_H = 230;
-const OUT_W = 300;
-const OUT_H = 266;
+const OUT_W = 420;
+const OUT_H = 460;
+const STAGE_W = 480;
+const STAGE_H = 320;
 const CROP_LEFT = (STAGE_W - CROP_W) / 2;
 const CROP_TOP = (STAGE_H - CROP_H) / 2;
+const CROP_RADIUS = 18;
 const MIN_VIEW_ZOOM = 0.55;
 const MAX_VIEW_ZOOM = 2.4;
 const MIN_PHOTO_SCALE = 0.15;
@@ -262,9 +264,9 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // Rounded clip to match preview
+        // Rounded clip to match preview window
         ctx.beginPath();
-        const r = (18 / CROP_W) * OUT_W;
+        const r = (CROP_RADIUS / CROP_W) * OUT_W;
         const w = OUT_W;
         const h = OUT_H;
         ctx.moveTo(r, 0);
@@ -292,6 +294,7 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                     Выровняйте фото по трафарету
                 </h2>
 
+                <div className="photoCropModal__body">
                 <div
                     className="photoCropModal__stage"
                     ref={stageRef}
@@ -319,21 +322,6 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                                 draggable={false}
                                 onLoad={(event) => fitImage(event.currentTarget)}
                             />
-                            <div className="photoCropModal__photoBounds" aria-hidden="true" />
-                            {ready ? (
-                                <>
-                                    {['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'].map((handle) => (
-                                        <button
-                                            key={handle}
-                                            type="button"
-                                            className={`photoCropModal__handle photoCropModal__handle--${handle}`}
-                                            style={{ cursor: HANDLE_CURSORS[handle] }}
-                                            aria-label={`Изменить размер фото (${handle})`}
-                                            onPointerDown={onHandlePointerDown(handle)}
-                                        />
-                                    ))}
-                                </>
-                            ) : null}
                         </div>
                     </div>
 
@@ -354,25 +342,41 @@ const PhotoCropModal = ({ src, onCrop, onReset }) => {
                             }}
                         />
                     </div>
+
+                    {/* Синяя рамка фото поверх затемнения — её двигаем под окно обрезки */}
+                    <div
+                        className="photoCropModal__world photoCropModal__world--chrome"
+                        style={{ transform: `scale(${viewZoom})` }}
+                    >
+                        <div
+                            className="photoCropModal__photoFrame"
+                            style={{
+                                width: displayW || undefined,
+                                height: displayH || undefined,
+                                transform: `translate(${photoX}px, ${photoY}px)`,
+                                opacity: ready ? 1 : 0,
+                            }}
+                            onPointerDown={onPhotoPointerDown}
+                        >
+                            <div className="photoCropModal__photoBounds" aria-hidden="true" />
+                            {ready ? (
+                                <>
+                                    {['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'].map((handle) => (
+                                        <button
+                                            key={handle}
+                                            type="button"
+                                            className={`photoCropModal__handle photoCropModal__handle--${handle}`}
+                                            style={{ cursor: HANDLE_CURSORS[handle] }}
+                                            aria-label={`Изменить размер фото (${handle})`}
+                                            onPointerDown={onHandlePointerDown(handle)}
+                                        />
+                                    ))}
+                                </>
+                            ) : null}
+                        </div>
+                    </div>
                 </div>
 
-                <div className="photoCropModal__zoom">
-                    <button
-                        type="button"
-                        className="photoCropModal__zoomBtn"
-                        onClick={() => applyViewZoom(0.9)}
-                        aria-label="Отдалить сцену"
-                    >
-                        −
-                    </button>
-                    <button
-                        type="button"
-                        className="photoCropModal__zoomBtn"
-                        onClick={() => applyViewZoom(1.1)}
-                        aria-label="Приблизить сцену"
-                    >
-                        +
-                    </button>
                 </div>
             </div>
 
