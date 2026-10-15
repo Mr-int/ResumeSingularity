@@ -1,10 +1,9 @@
 import { API_BASE_URL } from '../config/api.js';
-import { refreshSession } from '../services/authApi.js';
+import { clearLocalAuth, refreshSession } from '../services/authApi.js';
 import { appPath } from './appBase.js';
 
 const clearAuthAndRedirect = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('isAuthenticated_time');
+    clearLocalAuth();
     sessionStorage.setItem('showLoginAfter403', 'true');
     window.dispatchEvent(new CustomEvent('resume:auth-required'));
     const path = window.location.pathname;

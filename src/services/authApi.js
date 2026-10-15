@@ -10,6 +10,96 @@ export const REGISTRATION_TEMP_PASSWORD_KEY = 'resume:registration-temp-password
 export const REGISTRATION_PENDING_ROLE_KEY = 'resume:registration-pending-role';
 /** Логин с последнего входа — для UI чатов (сравнение с authorUsername). */
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
+/** Роль из GET /auth/me — ADMIN | STUDENT | RECRUITER | … */
+export const AUTH_ROLE_KEY = 'resumeAuthRole';
+
+let refreshInFlight = null;
+
+const normalizeRole = (raw) => {
+    const value = String(raw || '').trim().toUpperCase().replace(/^ROLE_/, '');
+    return value || null;
+};
+
+const isAdminRole = (role) => normalizeRole(role) === 'ADMIN';
+
+export const isAdminSession = () => isAdminRole(localStorage.getItem(AUTH_ROLE_KEY));
+
+const extractRoleFromMe = (me) => {
+    if (!me || typeof me !== 'object') return null;
+    if (me.role != null) return normalizeRole(me.role);
+    if (Array.isArray(me.roles) && me.roles.length) {
+        const roles = me.roles.map((r) => normalizeRole(typeof r === 'string' ? r : r?.name || r?.role));
+        if (roles.some(isAdminRole)) return 'ADMIN';
+        return roles.find(Boolean) || null;
+    }
+    if (Array.isArray(me.authorities) && me.authorities.length) {
+        const list = me.authorities.map((a) =>
+            normalizeRole(typeof a === 'string' ? a : a?.authority || a?.role),
+        );
+        if (list.some(isAdminRole)) return 'ADMIN';
+        return list.find(Boolean) || null;
+    }
+    return null;
+};
+
+const setStoredRole = (role) => {
+    const normalized = normalizeRole(role);
+    if (normalized) {
+        localStorage.setItem(AUTH_ROLE_KEY, normalized);
+    }
+};
+
+/**
+ * GET /auth/me — кэширует роль в localStorage.
+ */
+export const fetchAuthMe = async () => {
+    const response = await fetch(`${API_BASE_URL}auth/me`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const err = new Error(`auth/me failed: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    let data = {};
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+    }
+    const role = extractRoleFromMe(data);
+    if (role) setStoredRole(role);
+    return data;
+};
+
+const shouldSkipServerLogout = async () => {
+    if (isAdminSession()) return true;
+    try {
+        const response = await fetch(`${API_BASE_URL}auth/me`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        if (!response.ok) return false;
+        let data = {};
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+            try {
+                data = await response.json();
+            } catch {
+                data = {};
+            }
+        }
+        const role = extractRoleFromMe(data);
+        if (role) setStoredRole(role);
+        return isAdminRole(role);
+    } catch {
+        return false;
+    }
+};
 
 /** Черновик регистрации в sessionStorage (почта/логин/ожидание кода). */
 export const clearRegistrationDraft = () => {
@@ -62,13 +152,16 @@ const parseLoginErrorMessage = (status, errorText) => {
  * "Authentication is required", не доходя до проверки пароля.
  */
 const clearServerSessionQuietly = async () => {
-    try {
-        await fetch(`${API_BASE_URL}auth/logout`, {
-            method: 'POST',
-            credentials: 'include',
-        });
-    } catch (e) {
-        console.warn('[AUTH] pre-login logout failed', e);
+    const skipLogout = await shouldSkipServerLogout();
+    if (!skipLogout) {
+        try {
+            await fetch(`${API_BASE_URL}auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+        } catch (e) {
+            console.warn('[AUTH] pre-login logout failed', e);
+        }
     }
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
@@ -147,7 +240,18 @@ export const login = async (username, password) => {
         if (username != null && String(username).trim()) {
             localStorage.setItem(AUTH_USERNAME_KEY, String(username).trim());
         }
-        
+
+        const roleFromLogin = extractRoleFromMe(data);
+        if (roleFromLogin) {
+            setStoredRole(roleFromLogin);
+        } else {
+            try {
+                await fetchAuthMe();
+            } catch (e) {
+                console.warn('[AUTH] post-login auth/me failed', e);
+            }
+        }
+
         return data || { success: true };
     } catch (error) {
         console.error('[AUTH] Error during login:', error);
@@ -206,10 +310,11 @@ export const isAuthenticated = () => {
     return false;
 };
 
-const clearLocalAuth = () => {
+export const clearLocalAuth = () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
+    localStorage.removeItem(AUTH_ROLE_KEY);
     // Черновик подтверждения почты НЕ трогаем — иначе после ухода на /login
     // сессия confirm-email теряется, а почта на сервере уже занята.
     document.cookie.split(';').forEach((c) => {
@@ -417,9 +522,8 @@ export const verifyResetPasswordCode = async (email, code) => {
     }
 };
 
-export const refreshSession = async () => {
-    const url = `${API_BASE_URL}auth/refresh`;
-    const response = await fetch(url, {
+const postRefresh = async (path) => {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
         method: 'POST',
         credentials: 'include',
     });
@@ -437,12 +541,80 @@ export const refreshSession = async () => {
     return {};
 };
 
-export const logoutServer = async () => {
+/**
+ * Выбор refresh по роли:
+ * 1) GET /auth/me → ADMIN: только auth/admin/refresh, иначе auth/refresh
+ * 2) me=401 → auth/refresh, при 403 → auth/admin/refresh
+ * Параллельные вызовы ждут один in-flight refresh.
+ */
+const refreshSessionInternal = async () => {
+    let meResponse;
     try {
-        await fetch(`${API_BASE_URL}auth/logout`, {
-            method: 'POST',
+        meResponse = await fetch(`${API_BASE_URL}auth/me`, {
+            method: 'GET',
             credentials: 'include',
         });
+    } catch (e) {
+        console.error('[AUTH] auth/me network error', e);
+        throw e;
+    }
+
+    if (meResponse.ok) {
+        let me = {};
+        const contentType = meResponse.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+            try {
+                me = await meResponse.json();
+            } catch {
+                me = {};
+            }
+        }
+        const role = extractRoleFromMe(me);
+        if (role) setStoredRole(role);
+
+        if (isAdminRole(role)) {
+            return postRefresh('auth/admin/refresh');
+        }
+        return postRefresh('auth/refresh');
+    }
+
+    if (meResponse.status === 401) {
+        try {
+            return await postRefresh('auth/refresh');
+        } catch (err) {
+            if (err?.status === 403) {
+                const data = await postRefresh('auth/admin/refresh');
+                setStoredRole('ADMIN');
+                return data;
+            }
+            throw err;
+        }
+    }
+
+    const err = new Error(`auth/me failed: ${meResponse.status}`);
+    err.status = meResponse.status;
+    throw err;
+};
+
+export const refreshSession = async () => {
+    if (refreshInFlight) {
+        return refreshInFlight;
+    }
+    refreshInFlight = refreshSessionInternal().finally(() => {
+        refreshInFlight = null;
+    });
+    return refreshInFlight;
+};
+
+export const logoutServer = async () => {
+    const skipLogout = await shouldSkipServerLogout();
+    try {
+        if (!skipLogout) {
+            await fetch(`${API_BASE_URL}auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+            });
+        }
     } catch (e) {
         console.warn('[AUTH] logout request failed', e);
     } finally {
