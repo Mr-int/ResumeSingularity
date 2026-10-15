@@ -8,7 +8,7 @@ import Avatar from './Avatar/Avatar.jsx';
 import chatsIco from '../../../assets/icons/chatsIco.svg';
 import { getImageUrl } from '../../../config/api.js';
 import { getRecruiterMe, getStudentMe } from '../../../services/getApi.js';
-import { isAuthenticated } from '../../../services/authApi.js';
+import { isAuthenticated, logoutServer } from '../../../services/authApi.js';
 import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js';
 
 const NAV_DEFS = [
@@ -180,15 +180,34 @@ const Header = ({
         }
         if (action?.type === 'expand') {
             setAvatarExpanded(true);
-            return;
         }
-        // Повторный клик в раскрытом состоянии — переход в профиль
+    };
+
+    const handleAvatarMenu = async (actionId) => {
         setAvatarExpanded(false);
-        if (onAvatarClick) {
-            onAvatarClick();
+        if (actionId === 'account') {
+            if (onAvatarClick) {
+                onAvatarClick();
+                return;
+            }
+            goAuthed('/settings');
             return;
         }
-        goAuthed('/settings');
+        if (actionId === 'students') {
+            navigate('/students');
+            return;
+        }
+        if (actionId === 'bug') {
+            window.location.href = 'mailto:support@resumesingularity.ru?subject=Нашли%20ошибку';
+            return;
+        }
+        if (actionId === 'logout') {
+            try {
+                await logoutServer();
+            } finally {
+                navigate('/', { replace: true });
+            }
+        }
     };
 
     return (
@@ -222,6 +241,7 @@ const Header = ({
                     <Avatar
                         src={displayAvatarSrc}
                         onClick={handleAvatar}
+                        onMenuAction={handleAvatarMenu}
                         alt="Профиль"
                         expanded={avatarExpanded}
                         firstName={profileUser.firstName}

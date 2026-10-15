@@ -158,6 +158,12 @@
     object-fit: contain;
 }
 
+.studentCreatorHeader__avatarWrap {
+    position: relative;
+    flex-shrink: 0;
+    z-index: 20;
+}
+
 .studentCreatorHeader__avatar {
     width: 56px;
     height: 56px;
@@ -251,6 +257,64 @@
     width: 42px;
     height: 42px;
     object-fit: cover;
+}
+
+.studentCreatorHeader__avatarMenu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #41464B;
+    border-radius: 38px;
+    overflow: hidden;
+    background: #262626;
+    box-sizing: border-box;
+    opacity: 0;
+    transform: translateY(-6px);
+    animation: studentCreatorHeaderAvatarMenuIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    z-index: 30;
+}
+
+@keyframes studentCreatorHeaderAvatarMenuIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.studentCreatorHeader__avatarMenuBtn {
+    width: 100%;
+    margin: 0;
+    padding: 14px 18px;
+    border: none;
+    border-bottom: 1px solid #41464B;
+    background: #262626;
+    color: #fff;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: filter 0.2s ease;
+}
+
+.studentCreatorHeader__avatarMenuBtn:last-child {
+    border-bottom: none;
+}
+
+.studentCreatorHeader__avatarMenuBtn:hover {
+    filter: brightness(1.12);
+}
+
+.studentCreatorHeader__avatarMenuBtn--logout {
+    background: #1E1D1D;
 }
 
 @media (max-width: 900px) {
