@@ -459,7 +459,7 @@ const ChatsView = () => {
                     </div>
                     {showResumeBtn ? (
                         <Link
-                            to={`/resume/${selectedChat.studentId}`}
+                            to={`/profile/${selectedChat.studentId}`}
                             className="chatsView__resumeBtn"
                         >
                             Смотреть резюме

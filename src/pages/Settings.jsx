@@ -198,7 +198,7 @@ const SettingsPage = () => {
                                 onEdit={() => navigate('/plug')}
                                 onEditAvatar={() => navigate('/plug')}
                                 onAddOccupation={() => navigate('/plug')}
-                                onEmployerView={() => navigate(`/resume/${profile.id}`)}
+                                onEmployerView={() => navigate(`/profile/${profile.id}`)}
                             />
                         </>
                     ) : null}

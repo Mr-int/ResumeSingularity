@@ -26,6 +26,7 @@ const navIdFromLocation = (pathname, hash) => {
         || pathname.startsWith('/students')
         || pathname.startsWith('/studentsResume')
         || pathname.startsWith('/resume')
+        || /^\/profile\/[^/]+/.test(pathname)
     ) {
         return 'career';
     }

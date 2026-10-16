@@ -12,10 +12,10 @@ import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
 import { routerBasename } from './utils/appBase.js';
 
-/** Старый URL каталога → новая уникальная ссылка /resume/:id */
-const StudentsResumeRedirect = () => {
+/** Старые URL → уникальная ссылка /profile/:id */
+const ProfileIdRedirect = () => {
   const { id } = useParams();
-  return <Navigate to={`/resume/${id || ''}`} replace />;
+  return <Navigate to={`/profile/${id || ''}`} replace />;
 };
 
 const AppRoutes = () => {
@@ -51,18 +51,20 @@ const AppRoutes = () => {
               <Students />
             </ProtectedRoute>
           } />
-          {/* Публичная уникальная ссылка на резюме студента (UUID карточки). */}
-          <Route path='/resume/:id' element={
-            <ProtectedRoute>
-              <Resume />
-            </ProtectedRoute>
-          } />
-          <Route path='/studentsResume/:id' element={<StudentsResumeRedirect />} />
+          {/* Свой профиль / настройки */}
           <Route path='/profile' element={
             <ProtectedRoute>
               <Settings />
             </ProtectedRoute>
           } />
+          {/* Уникальная ссылка на студента: /profile/{uuid} */}
+          <Route path='/profile/:id' element={
+            <ProtectedRoute>
+              <Resume />
+            </ProtectedRoute>
+          } />
+          <Route path='/resume/:id' element={<ProfileIdRedirect />} />
+          <Route path='/studentsResume/:id' element={<ProfileIdRedirect />} />
           <Route path='/settings' element={<Navigate to="/profile" replace />} />
           <Route path='/account' element={<Navigate to="/profile" replace />} />
           <Route path='/chats' element={

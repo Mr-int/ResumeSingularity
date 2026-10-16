@@ -101,7 +101,7 @@ const StudentProfileResume = ({
     const lastName = student.lastName || '';
     const studentId = student.id || '';
     /** Уникальная ссылка = UUID карточки на бэке (отдельного slug в API нет). */
-    const resumePath = studentId ? appPath(`resume/${studentId}`) : '';
+    const resumePath = studentId ? appPath(`profile/${studentId}`) : '';
     const resumeUrl = resumePath
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}${resumePath}`
         : '';
