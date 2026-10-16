@@ -335,6 +335,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     middleName: formData.noMiddleName ? '' : formData.middleName.trim(),
                     email,
                     phoneNumber,
+                    birthDate: formData.birthDate,
                 }));
                 markEmailConfirmationPending(email, username, role);
                 setAssignedUsername(username);
