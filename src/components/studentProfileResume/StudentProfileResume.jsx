@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import './studentProfileResume.css';
 import editIcon from '../../assets/icons/edit.svg';
 import folderIcon from '../../assets/icons/folder.svg';
@@ -10,6 +11,7 @@ import pinkFolder from '../../assets/folders/pink_folder.png';
 import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
 import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
+import { appPath } from '../../utils/appBase.js';
 
 const PORTFOLIO_FOLDERS = [
     { id: 'white', src: whiteFolder, alt: 'Папка портфолио' },
@@ -77,7 +79,8 @@ const formatEduPeriod = (start, end) => {
 };
 
 /**
- * Профиль студента с готовым резюме (владелец).
+ * Профиль студента.
+ * @param {'owner'|'public'} variant — owner: кнопки редактирования; public: вид для каталога/работодателя
  */
 const StudentProfileResume = ({
     student = {},
@@ -86,13 +89,22 @@ const StudentProfileResume = ({
     educations = [],
     avatarSrc,
     verified = true,
+    variant = 'owner',
     onEdit,
     onEditAvatar,
     onAddOccupation,
     onEmployerView,
 }) => {
+    const isOwner = variant === 'owner';
+    const [linkCopied, setLinkCopied] = useState(false);
     const firstName = student.firstName || '';
     const lastName = student.lastName || '';
+    const studentId = student.id || '';
+    /** Уникальная ссылка = UUID карточки на бэке (отдельного slug в API нет). */
+    const resumePath = studentId ? appPath(`resume/${studentId}`) : '';
+    const resumeUrl = resumePath
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}${resumePath}`
+        : '';
     const specialty = typeof student.speciality === 'string'
         ? student.speciality
         : (student.speciality?.name || student.profession || student.specialityName || 'Специальность не указана');
@@ -146,6 +158,22 @@ const StudentProfileResume = ({
         tag: item.tag || item.educationType || (index === 0 ? 'Среднее профессиональное' : 'Онлайн-курс'),
         tone: index % 2 === 0 ? 'blue' : 'green',
     }));
+
+    useEffect(() => {
+        if (!linkCopied) return undefined;
+        const timer = window.setTimeout(() => setLinkCopied(false), 2000);
+        return () => window.clearTimeout(timer);
+    }, [linkCopied]);
+
+    const handleCopyResumeLink = async () => {
+        if (!resumeUrl) return;
+        try {
+            await navigator.clipboard.writeText(resumeUrl);
+            setLinkCopied(true);
+        } catch {
+            window.prompt('Скопируйте ссылку на резюме:', resumeUrl);
+        }
+    };
 
     return (
         <div className="studentProfileResume">
@@ -206,29 +234,43 @@ const StudentProfileResume = ({
                         <p className="studentProfileResume__specialty">{specialty}</p>
                     </header>
 
-                    <nav className="studentProfileResume__nav" aria-label="Навигация по профилю">
-                        <button
-                            type="button"
-                            className="studentProfileResume__btn studentProfileResume__btn--addOccupation"
-                            onClick={onAddOccupation}
-                        >
-                            Добавить занятость
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                            </svg>
-                        </button>
-                        <button type="button" className="studentProfileResume__btn studentProfileResume__btn--primary" onClick={onEdit}>
-                            Редактировать
-                            <IconEdit />
-                        </button>
-                        <button type="button" className="studentProfileResume__btn studentProfileResume__btn--secondary" onClick={onEmployerView}>
-                            Вид от работодателя
-                        </button>
-                    </nav>
+                    {isOwner ? (
+                        <nav className="studentProfileResume__nav" aria-label="Навигация по профилю">
+                            <button
+                                type="button"
+                                className="studentProfileResume__btn studentProfileResume__btn--addOccupation"
+                                onClick={onAddOccupation}
+                            >
+                                Добавить занятость
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                            </button>
+                            <button type="button" className="studentProfileResume__btn studentProfileResume__btn--primary" onClick={onEdit}>
+                                Редактировать
+                                <IconEdit />
+                            </button>
+                            <button type="button" className="studentProfileResume__btn studentProfileResume__btn--secondary" onClick={onEmployerView}>
+                                Вид от работодателя
+                            </button>
+                            {resumeUrl ? (
+                                <button
+                                    type="button"
+                                    className="studentProfileResume__btn studentProfileResume__btn--secondary studentProfileResume__btn--copyLink"
+                                    onClick={handleCopyResumeLink}
+                                    title={resumeUrl}
+                                >
+                                    {linkCopied ? 'Скопировано' : 'Скопировать ссылку'}
+                                </button>
+                            ) : null}
+                        </nav>
+                    ) : null}
 
-                    <footer className="studentProfileResume__sidebarFooter">
-                        Достижения аккаунта
-                    </footer>
+                    {isOwner ? (
+                        <footer className="studentProfileResume__sidebarFooter">
+                            Достижения аккаунта
+                        </footer>
+                    ) : null}
                 </aside>
 
                 <main className="studentProfileResume__main">
@@ -389,19 +431,21 @@ const StudentProfileResume = ({
                         )}
                     </section>
 
-                    <footer className="studentProfileResume__banner">
-                        <p>
-                            Вы можете отредактировать ваше резюме, изменив его, вы снова отправляете ваше резюме на ревью.
-                        </p>
-                        <button
-                            type="button"
-                            className="studentProfileResume__btn studentProfileResume__btn--primary"
-                            onClick={onEdit}
-                        >
-                            Редактировать
-                            <IconEdit />
-                        </button>
-                    </footer>
+                    {isOwner ? (
+                        <footer className="studentProfileResume__banner">
+                            <p>
+                                Вы можете отредактировать ваше резюме, изменив его, вы снова отправляете ваше резюме на ревью.
+                            </p>
+                            <button
+                                type="button"
+                                className="studentProfileResume__btn studentProfileResume__btn--primary"
+                                onClick={onEdit}
+                            >
+                                Редактировать
+                                <IconEdit />
+                            </button>
+                        </footer>
+                    ) : null}
                 </main>
             </div>
         </div>

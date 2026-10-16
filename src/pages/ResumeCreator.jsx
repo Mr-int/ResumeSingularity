@@ -20,7 +20,7 @@ import correctPhoto from '../assets/photoExamples/CorrectPhoto.png';
 import correctPhoto2 from '../assets/photoExamples/CorrectPhoto2.png';
 import wrongPhoto from '../assets/photoExamples/wrongPhoto.png';
 import { getImageUrl } from '../config/api.js';
-import { isCampusCity } from '../constants/campusCities.js';
+import { isAllowedProfileCity } from '../constants/campusCities.js';
 import { getStudentMe } from '../services/getApi.js';
 import { patchStudentMe, uploadStudentPhoto } from '../services/accountApi.js';
 import {
@@ -216,6 +216,8 @@ const ResumeCreator = () => {
     const [step, setStep] = useState(1);
     const [resumeComplete, setResumeComplete] = useState(false);
     const [studentId, setStudentId] = useState(null);
+    /** Город с сервера при boot — старые профили вне кампусного списка не блокируем. */
+    const [legacyCity, setLegacyCity] = useState('');
     const [specialties, setSpecialties] = useState([]);
     const [skillsCatalog, setSkillsCatalog] = useState([]);
     const [educationsCatalog, setEducationsCatalog] = useState([]);
@@ -259,13 +261,9 @@ const ResumeCreator = () => {
             photoPreview,
             educationsAdded,
             savedInstitutionCount,
+            legacyCity,
         }),
-        [profile, bio, selectedSkills, photoPreview, educationsAdded, savedInstitutionCount],
-    );
-
-    const currentStepValid = useMemo(
-        () => validateResumeStep(step, validationCtx).valid,
-        [step, validationCtx],
+        [profile, bio, selectedSkills, photoPreview, educationsAdded, savedInstitutionCount, legacyCity],
     );
 
     const updateProfile = (field, value) => {
@@ -344,6 +342,10 @@ const ResumeCreator = () => {
                         setEditingExperienceId(draftEditId);
                     }
                 }
+                const resolvedSpecialityId = me.specialityId
+                    ?? me.speciality?.id
+                    ?? null;
+                setLegacyCity((me.city || '').trim());
                 setProfile({
                     firstName: me.firstName || '',
                     lastName: me.lastName || '',
@@ -351,7 +353,7 @@ const ResumeCreator = () => {
                     birthDate: me.birthDate || '',
                     course: me.course === 'NEW' ? 'FIFTH' : (me.course || ''),
                     gender: me.gender || '',
-                    specialityId: me.specialityId ?? null,
+                    specialityId: resolvedSpecialityId,
                     busyness: me.busyness || 'FREE',
                 });
                 setBio(me.bio || '');
@@ -388,7 +390,9 @@ const ResumeCreator = () => {
         const body = {};
         if (profile.firstName?.trim()) body.firstName = profile.firstName.trim();
         if (profile.lastName?.trim()) body.lastName = profile.lastName.trim();
-        if (isCampusCity(profile.city)) body.city = profile.city.trim();
+        if (isAllowedProfileCity(profile.city, legacyCity)) {
+            body.city = profile.city.trim();
+        }
         if (profile.birthDate) body.birthDate = profile.birthDate;
         if (profile.course) body.course = toApiCourse(profile.course);
         if (profile.gender) body.gender = profile.gender;
@@ -402,6 +406,7 @@ const ResumeCreator = () => {
 
     const applyMeToProfile = (me, { keepLocalSkills = false } = {}) => {
         if (!me) return;
+        if (me.city?.trim()) setLegacyCity(me.city.trim());
         setProfile((prev) => ({
             ...prev,
             firstName: me.firstName ?? prev.firstName,
@@ -410,7 +415,7 @@ const ResumeCreator = () => {
             birthDate: me.birthDate ?? prev.birthDate,
             course: me.course === 'NEW' ? 'FIFTH' : (me.course ?? prev.course),
             gender: me.gender ?? prev.gender,
-            specialityId: me.specialityId ?? prev.specialityId,
+            specialityId: me.specialityId ?? me.speciality?.id ?? prev.specialityId,
             busyness: me.busyness ?? prev.busyness,
         }));
         if (me.bio != null) setBio(me.bio);
@@ -535,7 +540,7 @@ const ResumeCreator = () => {
                 clearExperienceDraft(studentId);
                 setResumeComplete(true);
                 showToast('Резюме сохранено');
-                navigate('/settings');
+                navigate('/profile');
                 return;
             }
             const nextStep = step + 1;
@@ -622,6 +627,7 @@ const ResumeCreator = () => {
         const additionalInfo = (entry.additionalInfo || '').trim();
 
         const body = {
+            studentId,
             companyId,
             position: entry.position.trim(),
             startDate: entry.startDate,
@@ -839,6 +845,7 @@ const ResumeCreator = () => {
                 educationsCatalog,
             );
             const created = await createInstitution({
+                studentId,
                 educationId,
                 startYear: entry.startYear,
                 endYear: entry.endYear,
@@ -865,7 +872,7 @@ const ResumeCreator = () => {
     if (bootLoading) {
         return (
             <Layout>
-                <Header resumeComplete={false} onMessagesClick={() => navigate('/chats')} onAvatarClick={() => navigate('/settings')} />
+                <Header resumeComplete={false} onMessagesClick={() => navigate('/chats')} onAvatarClick={() => navigate('/profile')} />
                 <div className="studentCreatorLayout__content">
                     <p style={{ color: '#8e8e93' }}>Загружаем резюме…</p>
                 </div>
@@ -876,7 +883,7 @@ const ResumeCreator = () => {
     if (bootError) {
         return (
             <Layout>
-                <Header resumeComplete={false} onMessagesClick={() => navigate('/chats')} onAvatarClick={() => navigate('/settings')} />
+                <Header resumeComplete={false} onMessagesClick={() => navigate('/chats')} onAvatarClick={() => navigate('/profile')} />
                 <div className="studentCreatorLayout__content">
                     <p style={{ color: '#e74c3c', maxWidth: 520, textAlign: 'center' }}>{bootError}</p>
                 </div>
@@ -1015,7 +1022,7 @@ const ResumeCreator = () => {
                 resumeComplete={resumeComplete}
                 avatarSrc={photoPreview || undefined}
                 onMessagesClick={() => navigate('/chats')}
-                onAvatarClick={() => navigate('/settings')}
+                onAvatarClick={() => navigate('/profile')}
             />
             <div className="studentCreatorLayout__content">
                 <div className="studentCreatorLayout__stage">
@@ -1025,7 +1032,7 @@ const ResumeCreator = () => {
                         totalSteps={TOTAL_STEPS}
                         showSkip={step === 6}
                         nextHidden={false}
-                        nextDisabled={saving || !currentStepValid}
+                        nextDisabled={saving}
                         onBack={handleBack}
                         onNext={handleNext}
                         onSkip={handleNext}

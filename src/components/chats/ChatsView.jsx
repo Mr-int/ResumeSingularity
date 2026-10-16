@@ -392,7 +392,7 @@ const ChatsView = () => {
                             ← Каталог
                         </Link>
                         <span className="chatsView__pageNavTitle">Чаты</span>
-                        <Link to="/settings" className="chatsView__pageNavLink">
+                        <Link to="/profile" className="chatsView__pageNavLink">
                             Настройки
                         </Link>
                     </nav>
@@ -459,7 +459,7 @@ const ChatsView = () => {
                     </div>
                     {showResumeBtn ? (
                         <Link
-                            to={`/studentsResume/${selectedChat.studentId}`}
+                            to={`/resume/${selectedChat.studentId}`}
                             className="chatsView__resumeBtn"
                         >
                             Смотреть резюме

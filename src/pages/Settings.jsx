@@ -185,6 +185,7 @@ const SettingsPage = () => {
                             )}
 
                             <StudentProfileResume
+                                variant="owner"
                                 student={{
                                     ...profile,
                                     speciality: specialtyLabel(profile),
@@ -197,7 +198,7 @@ const SettingsPage = () => {
                                 onEdit={() => navigate('/plug')}
                                 onEditAvatar={() => navigate('/plug')}
                                 onAddOccupation={() => navigate('/plug')}
-                                onEmployerView={() => navigate(`/studentsResume/${profile.id}`)}
+                                onEmployerView={() => navigate(`/resume/${profile.id}`)}
                             />
                         </>
                     ) : null}

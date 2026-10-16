@@ -285,6 +285,16 @@
     display: block;
 }
 
+.studentProfileResume__btn--copyLink {
+    background-color: #35393E;
+    color: #C4C6C8;
+}
+
+.studentProfileResume__btn--copyLink:hover {
+    opacity: 1;
+    background-color: #3C4147;
+}
+
 .studentProfileResume__sidebarFooter {
     margin-top: auto;
     padding: 20px;

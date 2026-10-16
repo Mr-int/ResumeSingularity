@@ -129,13 +129,13 @@ const StudentsListCard = ({ student }) => {
                             {isBioTruncated && !showFullBio && (
                                 <span className="studentsCard__read-more">
                                     {' ... '}
-                                    <Link to={`/studentsResume/${student.id}`} className="read-more-link">Читать дальше</Link>
+                                    <Link to={`/resume/${student.id}`} className="read-more-link">Читать дальше</Link>
                                 </span>
                             )}
                         </p>
                     </div>
 
-                    <Link to={`/studentsResume/${student.id}`} className="studentsCard__button">
+                    <Link to={`/resume/${student.id}`} className="studentsCard__button">
                         <span className="studentsCard__buttonText">Смотреть резюме</span>
                     </Link>
                 </div>

@@ -1,4 +1,4 @@
-import { isCampusCity } from '../constants/campusCities.js';
+import { isAllowedProfileCity } from '../constants/campusCities.js';
 
 const ok = () => ({ valid: true, message: '' });
 
@@ -16,6 +16,7 @@ export const validateResumeStep = (step, ctx) => {
         photoPreview,
         educationsAdded = [],
         savedInstitutionCount = 0,
+        legacyCity = '',
     } = ctx;
 
     switch (step) {
@@ -23,7 +24,9 @@ export const validateResumeStep = (step, ctx) => {
             if (!profile.firstName?.trim()) return fail('Укажите имя');
             if (!profile.lastName?.trim()) return fail('Укажите фамилию');
             if (!profile.birthDate) return fail('Укажите дату рождения');
-            if (!isCampusCity(profile.city)) return fail('Выберите город из списка');
+            if (!isAllowedProfileCity(profile.city, legacyCity)) {
+                return fail('Выберите город из списка');
+            }
             if (!profile.course) return fail('Выберите курс');
             if (!profile.gender) return fail('Укажите пол');
             return ok();
@@ -61,12 +64,12 @@ export const validateResumeStep = (step, ctx) => {
 
 /** Частичное сохранение: только то, что может сломать PATCH или ввести в заблуждение. */
 export const validatePartialSave = (ctx) => {
-    const { profile = {}, bio = '' } = ctx;
+    const { profile = {}, bio = '', legacyCity = '' } = ctx;
     if (bio.length > 2000) {
         return fail('Описание не должно превышать 2000 символов');
     }
     const city = profile.city?.trim();
-    if (city && !isCampusCity(city)) {
+    if (city && !isAllowedProfileCity(city, legacyCity)) {
         return fail('Выберите город из списка или сбросьте поле');
     }
     return ok();
@@ -90,6 +93,7 @@ export const resumeValidationContext = ({
     photoPreview,
     educationsAdded,
     savedInstitutionCount,
+    legacyCity = '',
 }) => ({
     profile,
     bio,
@@ -97,4 +101,5 @@ export const resumeValidationContext = ({
     photoPreview,
     educationsAdded,
     savedInstitutionCount,
+    legacyCity,
 });

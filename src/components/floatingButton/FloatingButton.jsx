@@ -16,8 +16,10 @@ const FloatingButton = () => {
     const wrapperRef = useRef(null);
     const location = useLocation();
 
-    const isStudentPage = location.pathname.includes('/studentsResume/');
-    const currentStudentId = isStudentPage ? location.pathname.split('/studentsResume/')[1]?.split('/')[0] : null;
+    const isStudentPage = /\/(resume|studentsResume)\//.test(location.pathname);
+    const currentStudentId = isStudentPage
+        ? location.pathname.split(/\/(?:resume|studentsResume)\//)[1]?.split('/')[0]
+        : null;
 
     useEffect(() => {
         if (isStudentPage && currentStudentId) {
@@ -93,6 +95,7 @@ const FloatingButton = () => {
         isHidden
         || location.pathname === '/chats'
         || location.pathname === '/settings'
+        || location.pathname === '/profile'
         || location.pathname === '/plug'
     ) {
         return null;

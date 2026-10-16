@@ -21,7 +21,12 @@ const NAV_DEFS = [
 const navIdFromLocation = (pathname, hash) => {
     if (pathname.startsWith('/plug')) return 'resume';
     if (pathname === '/' && hash === '#projects') return 'projects';
-    if (pathname === '/' || pathname.startsWith('/students') || pathname.startsWith('/studentsResume')) {
+    if (
+        pathname === '/'
+        || pathname.startsWith('/students')
+        || pathname.startsWith('/studentsResume')
+        || pathname.startsWith('/resume')
+    ) {
         return 'career';
     }
     return null;
@@ -190,7 +195,7 @@ const Header = ({
                 onAvatarClick();
                 return;
             }
-            goAuthed('/settings');
+            goAuthed('/profile');
             return;
         }
         if (actionId === 'students') {

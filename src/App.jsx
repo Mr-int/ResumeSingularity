@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import Home from './pages/Home.jsx';
 import Students from "./pages/Students.jsx";
@@ -11,6 +11,12 @@ import Auth from './pages/Auth.jsx';
 import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
 import { routerBasename } from './utils/appBase.js';
+
+/** Старый URL каталога → новая уникальная ссылка /resume/:id */
+const StudentsResumeRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/resume/${id || ''}`} replace />;
+};
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -45,22 +51,25 @@ const AppRoutes = () => {
               <Students />
             </ProtectedRoute>
           } />
-          <Route path='/studentsResume/:id' element={
+          {/* Публичная уникальная ссылка на резюме студента (UUID карточки). */}
+          <Route path='/resume/:id' element={
             <ProtectedRoute>
               <Resume />
             </ProtectedRoute>
           } />
-          <Route path='/settings' element={
+          <Route path='/studentsResume/:id' element={<StudentsResumeRedirect />} />
+          <Route path='/profile' element={
             <ProtectedRoute>
               <Settings />
             </ProtectedRoute>
           } />
+          <Route path='/settings' element={<Navigate to="/profile" replace />} />
+          <Route path='/account' element={<Navigate to="/profile" replace />} />
           <Route path='/chats' element={
             <ProtectedRoute>
               <Chats />
             </ProtectedRoute>
           } />
-          <Route path='/account' element={<Navigate to="/settings" replace />} />
           <Route path='/plug' element={
             <ProtectedRoute>
               <ResumeCreator />
