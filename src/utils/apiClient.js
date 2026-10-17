@@ -20,6 +20,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
     };
 
     const skipSessionClearOn403 = options.skipSessionClearOn403 === true;
+    const skipAuthRedirect = options.skipAuthRedirect === true;
     const method = options.method || 'GET';
     const headers = { ...defaultHeaders, ...options.headers };
     const body = options.body;
@@ -49,9 +50,14 @@ export const apiClientJson = async (endpoint, options = {}) => {
                     /* fall through */
                 }
             }
-            console.log('[API] 401 Unauthorized - redirecting to login');
-            clearAuthAndRedirect();
-            throw new Error('HTTP error! status: 401 - Unauthorized');
+            if (!skipAuthRedirect) {
+                console.log('[API] 401 Unauthorized - redirecting to login');
+                clearAuthAndRedirect();
+            }
+            const unauthorized = new Error('HTTP error! status: 401 - Unauthorized');
+            unauthorized.status = 401;
+            unauthorized.requiresAuth = true;
+            throw unauthorized;
         }
 
         if (response.status === 403) {

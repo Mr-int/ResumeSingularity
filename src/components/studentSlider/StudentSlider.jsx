@@ -26,19 +26,32 @@ const StudentSlider = () => {
             try {
                 setLoading(true);
                 let list = [];
+
                 try {
-                    // Витрина: только одобренные / catalogVisible + publicProfileConsent
                     const vitrina = await getPublicHomeVitrina();
-                    list = vitrina.students;
+                    list = Array.isArray(vitrina.students) ? vitrina.students : [];
                 } catch (vitrinaErr) {
-                    console.warn('[StudentSlider] vitrina failed, fallback cardsFilter', vitrinaErr);
-                    list = await getAllStudents();
+                    console.warn('[StudentSlider] vitrina failed', vitrinaErr);
                 }
-                const visible = (Array.isArray(list) ? list : []).filter(hasStudentProfilePhoto);
+
+                // Пустая витрина или ошибка → каталог с catalogVisible=true (без неодобренных)
+                if (list.length === 0) {
+                    try {
+                        list = await getAllStudents();
+                    } catch (catalogErr) {
+                        console.warn('[StudentSlider] cardsFilter fallback failed', catalogErr);
+                        list = [];
+                    }
+                }
+
+                const withPhoto = list.filter(hasStudentProfilePhoto);
+                // Не обнуляем витрину, если у карточек нет imagePath в DTO
+                const visible = withPhoto.length > 0 ? withPhoto : list;
                 setStudents(visible);
                 if (visible.length > 0) {
-                    const middleIndex = Math.floor(visible.length / 2);
-                    setActiveCardIndex(middleIndex);
+                    setActiveCardIndex(Math.floor(visible.length / 2));
+                } else {
+                    setActiveCardIndex(0);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);

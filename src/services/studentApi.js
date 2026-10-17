@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config/api.js';
 import { apiClientJson } from '../utils/apiClient.js';
 import { getCompanyById } from './getApi.js';
 
@@ -16,20 +17,41 @@ const pageItems = (resp) => {
 
 /**
  * GET /public/vitrina/home — лендинг без авторизации.
- * Только карточки с publicProfileConsent и catalogVisible (неодобренные не попадают).
+ * Не через apiClient: 401 не должен выкидывать с главной.
+ * Бэкенд отдаёт только catalogVisible + publicProfileConsent.
  */
 export const getPublicHomeVitrina = async () => {
-    const data = await apiClientJson('public/vitrina/home', { method: 'GET' });
+    const response = await fetch(`${API_BASE_URL}public/vitrina/home`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const err = new Error(`vitrina/home failed: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    let data = {};
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+    }
     return {
         students: Array.isArray(data?.students) ? data.students : [],
         projects: Array.isArray(data?.projects) ? data.projects : [],
     };
 };
 
-/** Каталог карточек только для витрины (скрытые/неодобренные не запрашиваем). */
+/**
+ * Для главной / каталога: только видимые в каталоге.
+ * Не требуем publicProfileConsent — иначе список часто пустой;
+ * неодобренные обычно с catalogVisible=false и сюда не попадут.
+ */
 const CATALOG_CARD_FILTER = {
     catalogVisible: true,
-    publicProfileConsent: true,
 };
 
 export const getAllStudents = async () => {
@@ -38,7 +60,12 @@ export const getAllStudents = async () => {
         const maxPages = 200;
         const byId = new Map();
 
-        const first = await filterStudentCardsPage(CATALOG_CARD_FILTER, { page: 0, size: pageSize });
+        const cardOpts = { skipAuthRedirect: true };
+        const first = await filterStudentCardsPage(
+            CATALOG_CARD_FILTER,
+            { page: 0, size: pageSize },
+            cardOpts,
+        );
         const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
         const pagesToFetch = Math.min(totalPages, maxPages);
 
@@ -48,7 +75,11 @@ export const getAllStudents = async () => {
         }
 
         for (let page = 1; page < pagesToFetch; page += 1) {
-            const res = await filterStudentCardsPage(CATALOG_CARD_FILTER, { page, size: pageSize });
+            const res = await filterStudentCardsPage(
+                CATALOG_CARD_FILTER,
+                { page, size: pageSize },
+                cardOpts,
+            );
             for (const s of res.data) {
                 const key = s?.id != null ? String(s.id) : JSON.stringify(s);
                 if (!byId.has(key)) byId.set(key, s);
@@ -487,12 +518,17 @@ export const filterStudents = async (filterReq = {}) => {
  * POST /student/cardsFilter
  * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
  */
-export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
+export const filterStudentCardsPage = async (
+    filterReq = {},
+    pageable = { page: 0, size: 100 },
+    options = {},
+) => {
     const page = typeof pageable.page === 'number' ? pageable.page : 0;
     const size = typeof pageable.size === 'number' ? pageable.size : 100;
     const resp = await apiClientJson(`student/cardsFilter?page=${page}&size=${size}`, {
         method: 'POST',
         body: JSON.stringify(filterReq),
+        skipAuthRedirect: options.skipAuthRedirect === true,
     });
 
     return {
