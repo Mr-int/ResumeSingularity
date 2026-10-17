@@ -4,7 +4,7 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import { getAllStudents } from "../../services/studentApi.js";
+import { getAllStudents, getPublicHomeVitrina } from "../../services/studentApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
 
@@ -25,8 +25,16 @@ const StudentSlider = () => {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
-                const data = await getAllStudents();
-                const visible = (Array.isArray(data) ? data : []).filter(hasStudentProfilePhoto);
+                let list = [];
+                try {
+                    // Витрина: только одобренные / catalogVisible + publicProfileConsent
+                    const vitrina = await getPublicHomeVitrina();
+                    list = vitrina.students;
+                } catch (vitrinaErr) {
+                    console.warn('[StudentSlider] vitrina failed, fallback cardsFilter', vitrinaErr);
+                    list = await getAllStudents();
+                }
+                const visible = (Array.isArray(list) ? list : []).filter(hasStudentProfilePhoto);
                 setStudents(visible);
                 if (visible.length > 0) {
                     const middleIndex = Math.floor(visible.length / 2);
@@ -34,6 +42,7 @@ const StudentSlider = () => {
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
+                setStudents([]);
             } finally {
                 setLoading(false);
             }
@@ -202,7 +211,7 @@ const StudentSlider = () => {
                         </GradientButton>
                     </>
                 ) : (
-                    <p style={{ color: '#fff' }}>Для показа студентов ты должен быть авторизован :(</p>
+                    <p style={{ color: '#fff' }}>Пока нет студентов для показа</p>
                 )}
             </div>
         </section>

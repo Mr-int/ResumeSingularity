@@ -14,13 +14,31 @@ const pageItems = (resp) => {
     return [];
 };
 
+/**
+ * GET /public/vitrina/home — лендинг без авторизации.
+ * Только карточки с publicProfileConsent и catalogVisible (неодобренные не попадают).
+ */
+export const getPublicHomeVitrina = async () => {
+    const data = await apiClientJson('public/vitrina/home', { method: 'GET' });
+    return {
+        students: Array.isArray(data?.students) ? data.students : [],
+        projects: Array.isArray(data?.projects) ? data.projects : [],
+    };
+};
+
+/** Каталог карточек только для витрины (скрытые/неодобренные не запрашиваем). */
+const CATALOG_CARD_FILTER = {
+    catalogVisible: true,
+    publicProfileConsent: true,
+};
+
 export const getAllStudents = async () => {
     try {
         const pageSize = 200;
         const maxPages = 200;
         const byId = new Map();
 
-        const first = await filterStudentCardsPage({}, { page: 0, size: pageSize });
+        const first = await filterStudentCardsPage(CATALOG_CARD_FILTER, { page: 0, size: pageSize });
         const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
         const pagesToFetch = Math.min(totalPages, maxPages);
 
@@ -30,7 +48,7 @@ export const getAllStudents = async () => {
         }
 
         for (let page = 1; page < pagesToFetch; page += 1) {
-            const res = await filterStudentCardsPage({}, { page, size: pageSize });
+            const res = await filterStudentCardsPage(CATALOG_CARD_FILTER, { page, size: pageSize });
             for (const s of res.data) {
                 const key = s?.id != null ? String(s.id) : JSON.stringify(s);
                 if (!byId.has(key)) byId.set(key, s);
