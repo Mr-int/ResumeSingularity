@@ -13,6 +13,7 @@ import {
     SkillsSelection,
     SkillsAside,
     ExperienceForm,
+    ExperienceAside,
     EducationForm,
 } from '../components/resumeCreator/index.js';
 import PhotoCropModal from '../components/resumeCreator/PhotoUploader/PhotoCropModal/PhotoCropModal.jsx';
@@ -988,7 +989,6 @@ const ResumeCreator = () => {
                 return (
                     <ExperienceForm
                         values={experienceDraft}
-                        items={experiences}
                         companies={companiesCatalog}
                         editingId={editingExperienceId}
                         onChange={(patch) => {
@@ -1004,9 +1004,7 @@ const ResumeCreator = () => {
                         }}
                         onAdd={handleAddExperience}
                         onUpdate={handleUpdateExperience}
-                        onSelectItem={handleSelectExperience}
                         onCancelEdit={clearExperienceEditor}
-                        onDelete={handleDeleteExperience}
                     />
                 );
             case 7:
@@ -1048,6 +1046,17 @@ const ResumeCreator = () => {
                             prev.filter((item) => String(item) !== String(id))
                         );
                     }}
+                />
+            );
+        }
+        if (step === 6) {
+            return (
+                <ExperienceAside
+                    items={experiences}
+                    editingId={editingExperienceId}
+                    memoItems={MEMO_BY_STEP[6] || []}
+                    onEdit={handleSelectExperience}
+                    onDelete={handleDeleteExperience}
                 />
             );
         }

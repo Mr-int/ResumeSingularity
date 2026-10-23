@@ -4,24 +4,14 @@ import './experienceForm.css';
 const EXPERIENCE_MIN_YEAR = new Date().getFullYear() - 60;
 const EXPERIENCE_MAX_YEAR = new Date().getFullYear();
 
-const formatDateLabel = (value) => {
-    if (!value) return 'н.в.';
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-    const [y, m, d] = value.split('-');
-    return `${d}.${m}.${y}`;
-};
-
 const ExperienceForm = ({
     values = {},
-    items = [],
     companies = [],
     editingId = null,
     onChange,
     onAdd,
     onUpdate,
-    onSelectItem,
     onCancelEdit,
-    onDelete,
 }) => {
     const {
         companyId = '',
@@ -102,62 +92,6 @@ const ExperienceForm = ({
                     Проектная деятельность
                 </button>
             </div>
-
-            {items.length > 0 ? (
-                <ul className="experienceForm__list">
-                    {items.map((item) => {
-                        const itemKey = item.id || `${item.position}-${item.startDate}`;
-                        const isActive = isEditing && String(item.id) === String(editingId);
-                        return (
-                            <li key={itemKey} className="experienceForm__listRow">
-                                <button
-                                    type="button"
-                                    className={
-                                        'experienceForm__listItem'
-                                        + (isActive ? ' experienceForm__listItem--active' : '')
-                                    }
-                                    onClick={() => onSelectItem?.(item)}
-                                >
-                                    <div className="experienceForm__listItemTop">
-                                        <span className="experienceForm__listTitle">
-                                            {item.position || 'Должность'}
-                                        </span>
-                                        <span className="experienceForm__listEditHint">
-                                            {isActive ? 'Редактируется' : 'Изменить'}
-                                        </span>
-                                    </div>
-                                    {item.companyName ? (
-                                        <div className="experienceForm__listCompany">
-                                            {item.companyName}
-                                        </div>
-                                    ) : null}
-                                    <div className="experienceForm__listDates">
-                                        {formatDateLabel(item.startDate)}
-                                        {' — '}
-                                        {formatDateLabel(item.endDate)}
-                                    </div>
-                                    {item.additionalInfo ? (
-                                        <p className="experienceForm__listDesc">
-                                            {item.additionalInfo}
-                                        </p>
-                                    ) : null}
-                                </button>
-                                <button
-                                    type="button"
-                                    className="experienceForm__listDelete"
-                                    aria-label={`Удалить опыт: ${item.position || 'запись'}`}
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                        onDelete?.(item);
-                                    }}
-                                >
-                                    Удалить
-                                </button>
-                            </li>
-                        );
-                    })}
-                </ul>
-            ) : null}
 
             <div className="experienceForm__field">
                 <input

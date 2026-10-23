@@ -1,0 +1,165 @@
+.experienceAside {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 520px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
+}
+
+.experienceAside::-webkit-scrollbar {
+    width: 6px;
+}
+
+.experienceAside::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: rgba(65, 70, 75, 0.55);
+}
+
+.experienceAside__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.experienceAside__card {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 160px;
+    padding: 24px;
+    background-color: #2F2F2F;
+    border: 1px solid #41464B;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.2s ease;
+}
+
+.experienceAside__card.is-active {
+    border-color: #3E8EFF;
+}
+
+.experienceAside__delete {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 1;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #8B4545;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition:
+        color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.experienceAside__delete:hover {
+    color: #A85A5A;
+    background-color: rgba(139, 69, 69, 0.16);
+}
+
+.experienceAside__trashIcon {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+.experienceAside__company {
+    margin: 0;
+    padding-right: 36px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #B3B5B7;
+}
+
+.experienceAside__period {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #B3B5B7;
+    line-height: 1.4;
+}
+
+.experienceAside__position {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #ffffff;
+}
+
+.experienceAside__description {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #B3B5B7;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.experienceAside__link {
+    color: #3E8EFF;
+    font-size: 13px;
+    font-weight: 400;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.experienceAside__link:hover {
+    color: #60a5fa;
+}
+
+.experienceAside__edit {
+    align-self: flex-end;
+    margin-top: auto;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.75;
+    transition:
+        opacity 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.experienceAside__edit:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.experienceAside__editIcon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    display: block;
+}
+
+.experienceAside .memoBlock {
+    flex: 1 1 auto;
+    min-height: 0;
+}
