@@ -422,7 +422,7 @@ export const confirmEmail = async (code) => {
     }
     return {};
 };
-у
+
 export const resendEmailConfirmation = async () => {
     const url = `${API_BASE_URL}auth/resend-email-confirmation`;
     const response = await fetch(url, {
