@@ -38,7 +38,8 @@
 }
 
 .studentCreatorGrid__left {
-    height: 100%;
+    height: auto;
+    max-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-width: thin;
