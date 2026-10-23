@@ -26,6 +26,11 @@ const ExperienceForm = ({
 
     const isEditing = editingId != null && editingId !== '';
     const selectedKind = activityKind === 'project' ? 'project' : 'work';
+    const isProject = selectedKind === 'project';
+    const companyPlaceholder = isProject ? 'Название проекта' : 'Название организации';
+    const companyUrlPlaceholder = isProject
+        ? 'Ссылка на проект (необязательно)'
+        : 'Ссылка на организацию (необязательно)';
 
     const handleCompanyChange = (raw) => {
         const nextName = raw;
@@ -97,18 +102,20 @@ const ExperienceForm = ({
                 <input
                     id="experience-company"
                     type="text"
-                    list="experience-company-list"
+                    list={isProject ? undefined : 'experience-company-list'}
                     value={companyName}
-                    placeholder="Название организации"
+                    placeholder={companyPlaceholder}
                     autoComplete="off"
-                    aria-label="Название организации"
+                    aria-label={companyPlaceholder}
                     onChange={(event) => handleCompanyChange(event.target.value)}
                 />
-                <datalist id="experience-company-list">
-                    {companies.map((item) => (
-                        <option key={item.id} value={item.name} />
-                    ))}
-                </datalist>
+                {!isProject ? (
+                    <datalist id="experience-company-list">
+                        {companies.map((item) => (
+                            <option key={item.id} value={item.name} />
+                        ))}
+                    </datalist>
+                ) : null}
             </div>
 
             <div className="experienceForm__field">
@@ -116,9 +123,9 @@ const ExperienceForm = ({
                     id="experience-company-url"
                     type="url"
                     value={companyUrl}
-                    placeholder="Ссылка на организацию (необязательно)"
+                    placeholder={companyUrlPlaceholder}
                     autoComplete="off"
-                    aria-label="Ссылка на организацию"
+                    aria-label={companyUrlPlaceholder}
                     onChange={(event) => onChange?.({ companyUrl: event.target.value })}
                 />
             </div>

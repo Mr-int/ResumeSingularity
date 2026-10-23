@@ -16,10 +16,11 @@
 
 .careerCenter__stage {
     display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
     align-items: flex-start;
     justify-content: center;
     gap: 40px;
-    flex-wrap: wrap;
     width: 100%;
     max-width: 1200px;
 }
@@ -29,8 +30,9 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
-    flex-shrink: 0;
-    max-width: 100%;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 683px;
 }
 
 .careerCenter__letterTitle {
@@ -48,9 +50,9 @@
     align-items: center;
     justify-content: center;
     gap: 20px;
-    width: 683px;
-    height: 384px;
-    max-width: 100%;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 683 / 384;
     border: 1px solid #A3C9FF;
     border-radius: 48px;
     box-sizing: border-box;
@@ -91,8 +93,9 @@
 
 .careerCenter__messages {
     width: 473px;
-    max-width: 100%;
-    flex-shrink: 0;
+    max-width: 42%;
+    flex: 0 1 473px;
+    min-width: 0;
 }
 
 .careerCenter__messagesHead {
@@ -121,9 +124,9 @@
 
 .careerCenter__messagesCard {
     box-sizing: border-box;
-    width: 473px;
-    max-width: 100%;
+    width: 100%;
     height: 447px;
+    max-height: min(447px, 70vh);
     padding: 24px;
     display: flex;
     flex-direction: column;
@@ -280,18 +283,73 @@
 }
 
 @media (max-width: 1200px) {
-    .careerCenter__stage {
-        flex-direction: column;
+    .careerCenter__main {
+        padding: 24px 16px 40px;
     }
 
-    .careerCenter__letter {
-        width: 100%;
-        align-items: center;
+    .careerCenter__stage {
+        gap: 24px;
     }
 
     .careerCenter__image {
-        width: min(683px, 100%);
+        border-radius: 32px;
+    }
+
+    .careerCenter__messagesCard {
+        border-radius: 32px;
+        padding: 16px;
         height: auto;
-        aspect-ratio: 683 / 384;
+        min-height: 320px;
+    }
+
+    .careerCenter__messageItem {
+        width: 100%;
+    }
+}
+
+@media (max-width: 720px) {
+    .careerCenter__stage {
+        gap: 16px;
+    }
+
+    .careerCenter__letterTitle,
+    .careerCenter__messagesTitle {
+        font-size: 16px;
+    }
+
+    .careerCenter__imageText {
+        font-size: 14px;
+        max-width: 90%;
+    }
+
+    .careerCenter__imageBtn {
+        width: 120px;
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .careerCenter__messages {
+        max-width: 46%;
+    }
+
+    .careerCenter__messagesCard {
+        border-radius: 24px;
+        padding: 12px;
+        min-height: 260px;
+    }
+
+    .careerCenter__messageItem {
+        height: 72px;
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .careerCenter__messageBody {
+        padding-right: 36px;
+    }
+
+    .careerCenter__messagesOpen {
+        width: 100%;
+        margin-left: 0;
     }
 }

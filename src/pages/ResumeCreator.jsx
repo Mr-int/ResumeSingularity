@@ -346,6 +346,7 @@ const ResumeCreator = () => {
                                 id: pickExperienceId(item),
                                 companyId: item.companyId,
                                 companyName: item.company || '',
+                                companyUrl: item.webUrl || item.companyUrl || '',
                                 position: item.position || '',
                                 startDate: item.startDate || '',
                                 endDate: item.current || item.endDate === 'по настоящее время'
@@ -665,6 +666,8 @@ const ResumeCreator = () => {
         const companyId = await resolveCompanyId(companyName, entry.companyId);
         const additionalInfo = (entry.additionalInfo || '').trim();
 
+        const webUrl = (entry.companyUrl || entry.webUrl || '').trim();
+
         const body = {
             studentId,
             companyId,
@@ -673,6 +676,7 @@ const ResumeCreator = () => {
         };
         if (additionalInfo) body.additionalInfo = additionalInfo;
         if (entry.endDate) body.endDate = entry.endDate;
+        if (webUrl) body.webUrl = webUrl;
         return { body, companyName, companyId };
     };
 

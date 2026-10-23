@@ -167,7 +167,7 @@ export const getExperienceByStudentId = async (studentId) => {
     }
 };
 
-const resolveCompanyNames = async (experienceList) => {
+const resolveCompanyMeta = async (experienceList) => {
     const companyIds = [
         ...new Set(
             experienceList
@@ -176,20 +176,23 @@ const resolveCompanyNames = async (experienceList) => {
         ),
     ];
 
-    const companyNameById = new Map();
+    const companyMetaById = new Map();
 
     await Promise.all(
         companyIds.map(async (companyId) => {
             try {
                 const company = await getCompanyById(companyId);
-                companyNameById.set(companyId, (company?.name || '').toString().trim());
+                companyMetaById.set(companyId, {
+                    name: (company?.name || '').toString().trim(),
+                    webUrl: (company?.webUrl || company?.link || company?.url || '').toString().trim(),
+                });
             } catch {
-                companyNameById.set(companyId, '');
+                companyMetaById.set(companyId, { name: '', webUrl: '' });
             }
         })
     );
 
-    return companyNameById;
+    return companyMetaById;
 };
 
 export const getExperienceDetailsByStudentId = async (studentId) => {
@@ -199,10 +202,10 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
             return [];
         }
 
-        const companyNameById = await resolveCompanyNames(experienceList);
+        const companyMetaById = await resolveCompanyMeta(experienceList);
 
         return experienceList
-            .map((item, index) => {
+            .map((item) => {
                 if (!item || typeof item !== 'object') {
                     return null;
                 }
@@ -213,9 +216,9 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                 const endDate = endDateRaw
                     ? String(endDateRaw)
                     : (experience.current || item.current ? 'по настоящее время' : '');
-                const companyFromMap = companyId != null && companyId !== 0
-                    ? (companyNameById.get(companyId) || '')
-                    : '';
+                const companyMeta = companyId != null && companyId !== 0
+                    ? (companyMetaById.get(companyId) || { name: '', webUrl: '' })
+                    : { name: '', webUrl: '' };
 
                 const rawId = item.id ?? experience.id ?? item.experienceId ?? null;
                 const numericId = Number(rawId);
@@ -225,12 +228,24 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                         ? rawId
                         : null);
 
+                const webUrl = (
+                    experience.webUrl
+                    || item.webUrl
+                    || experience.companyUrl
+                    || item.companyUrl
+                    || experience.link
+                    || item.link
+                    || companyMeta.webUrl
+                    || ''
+                ).toString().trim();
+
                 return {
                     id,
                     companyId,
                     position: (experience.position || item.position || '').toString().trim(),
-                    company: companyFromMap,
+                    company: companyMeta.name,
                     description: (experience.additionalInfo || item.additionalInfo || '').toString().trim(),
+                    webUrl,
                     startDate: experience.startDate || item.startDate || '',
                     endDate,
                     current: Boolean(experience.current || item.current || !endDateRaw),
