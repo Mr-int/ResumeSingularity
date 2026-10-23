@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     clearRegistrationDraft,
+    clearServerSessionBeforeLogin,
     confirmEmail,
     EMAIL_CONFIRMATION_EMAIL_KEY,
     EMAIL_CONFIRMATION_PENDING_KEY,
     isRegistrationPendingForRole,
-    logoutServer,
     REGISTRATION_PENDING_ROLE_KEY,
     REGISTRATION_USERNAME_KEY,
     registerRecruiter,
@@ -187,7 +187,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
 
     const startFresh = async () => {
         clearRegistrationDraft();
-        await logoutServer().catch(() => {});
+        await clearServerSessionBeforeLogin().catch(() => {});
         setStudentAccountCreated(false);
         setEmailConfirmed(false);
         setAssignedUsername('');

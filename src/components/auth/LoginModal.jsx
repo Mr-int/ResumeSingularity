@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
+    clearServerSessionBeforeLogin,
     isEmailConfirmationPending,
     login,
-    logoutServer,
 } from '../../services/authApi.js';
 import './loginModal.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
@@ -33,7 +33,7 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
     // register-student уже создал аккаунт, confirm-email нужен тот же cookie.
     useEffect(() => {
         if (isEmailConfirmationPending()) return;
-        logoutServer().catch(() => {});
+        clearServerSessionBeforeLogin().catch(() => {});
     }, []);
 
     const handleLogin = async (e) => {

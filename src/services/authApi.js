@@ -147,24 +147,32 @@ const parseLoginErrorMessage = (status, errorText) => {
 };
 
 /**
- * Сброс HttpOnly-сессии на сервере. Нужен перед login: иначе старый ACCESS_TOKEN
- * из регистрации уходит с credentials:include и /auth/login отвечает 401
+ * Принудительный сброс cookie перед login/регистрацией.
+ * Всегда зовём logout (и admin/logout) — иначе старый HttpOnly ACCESS_TOKEN
+ * уходит с credentials:include и /auth/login отвечает 401
  * "Authentication is required", не доходя до проверки пароля.
+ * Нельзя пропускать logout из‑за кэша роли ADMIN в localStorage.
  */
-const clearServerSessionQuietly = async () => {
-    const skipLogout = await shouldSkipServerLogout();
-    if (!skipLogout) {
-        try {
-            await fetch(`${API_BASE_URL}auth/logout`, {
-                method: 'POST',
-                credentials: 'include',
-            });
-        } catch (e) {
-            console.warn('[AUTH] pre-login logout failed', e);
-        }
+export const clearServerSessionBeforeLogin = async () => {
+    try {
+        await fetch(`${API_BASE_URL}auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (e) {
+        console.warn('[AUTH] pre-login logout failed', e);
+    }
+    try {
+        await fetch(`${API_BASE_URL}auth/admin/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    } catch (e) {
+        console.warn('[AUTH] pre-login admin logout failed', e);
     }
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+    localStorage.removeItem(AUTH_ROLE_KEY);
 };
 
 /**
@@ -175,7 +183,7 @@ const clearServerSessionQuietly = async () => {
  */
 export const login = async (username, password) => {
     try {
-        await clearServerSessionQuietly();
+        await clearServerSessionBeforeLogin();
 
         const url = `${API_BASE_URL}auth/login`;
         console.log('[AUTH] Attempting login to:', url);

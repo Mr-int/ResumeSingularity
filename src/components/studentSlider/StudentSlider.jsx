@@ -5,8 +5,21 @@ import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
 import { getAllStudents, getPublicHomeVitrina } from "../../services/studentApi.js";
+import { isAuthenticated } from "../../services/authApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+
+/** На главной показываем только одобренные / витринные карточки. */
+const isCatalogApprovedStudent = (student) => {
+    if (!student || typeof student !== 'object') return false;
+    const status = student.accountStatus ?? student.userAccountStatus ?? null;
+    if (status != null && String(status).toUpperCase() !== 'APPROVED') {
+        return false;
+    }
+    // Если бэкенд явно отдал скрытую карточку — не показываем
+    if (student.catalogVisible === false) return false;
+    return true;
+};
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
@@ -34,8 +47,9 @@ const StudentSlider = () => {
                     console.warn('[StudentSlider] vitrina failed', vitrinaErr);
                 }
 
-                // Пустая витрина или ошибка → каталог с catalogVisible=true (без неодобренных)
-                if (list.length === 0) {
+                // cardsFilter только для вошедших: без сессии даёт 401 и шумел в консоли.
+                // Гостям достаточно public/vitrina/home (бэкенд уже режет неодобренных).
+                if (list.length === 0 && isAuthenticated()) {
                     try {
                         list = await getAllStudents();
                     } catch (catalogErr) {
@@ -44,9 +58,10 @@ const StudentSlider = () => {
                     }
                 }
 
-                const withPhoto = list.filter(hasStudentProfilePhoto);
+                const approved = list.filter(isCatalogApprovedStudent);
+                const withPhoto = approved.filter(hasStudentProfilePhoto);
                 // Не обнуляем витрину, если у карточек нет imagePath в DTO
-                const visible = withPhoto.length > 0 ? withPhoto : list;
+                const visible = withPhoto.length > 0 ? withPhoto : approved;
                 setStudents(visible);
                 if (visible.length > 0) {
                     setActiveCardIndex(Math.floor(visible.length / 2));

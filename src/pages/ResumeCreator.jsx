@@ -41,6 +41,7 @@ import {
     resumeValidationContext,
     validatePartialSave,
     validateResumeStep,
+    validateResumeThroughStep,
 } from './resumeCreatorValidation.js';
 import {
     clearExperienceDraft,
@@ -214,6 +215,8 @@ const ResumeCreator = () => {
     const toastTimerRef = useRef(null);
 
     const [step, setStep] = useState(1);
+    /** Дальше этого шага по клику на прогресс нельзя — пока не пройдены обязательные шаги. */
+    const [maxReachedStep, setMaxReachedStep] = useState(1);
     const [resumeComplete, setResumeComplete] = useState(false);
     const [studentId, setStudentId] = useState(null);
     /** Город с сервера при boot — старые профили вне кампусного списка не блокируем. */
@@ -265,6 +268,24 @@ const ResumeCreator = () => {
         }),
         [profile, bio, selectedSkills, photoPreview, educationsAdded, savedInstitutionCount, legacyCity],
     );
+
+    /**
+     * Уже посещённые шаги + следующий, если все обязательные до него заполнены.
+     * Нельзя перепрыгнуть незаполненные обязательные шаги.
+     */
+    const maxReachableStep = useMemo(() => {
+        let max = Math.max(1, maxReachedStep, step);
+        for (let candidate = max + 1; candidate <= TOTAL_STEPS; candidate += 1) {
+            if (candidate <= 1) {
+                max = candidate;
+                continue;
+            }
+            const prevOk = validateResumeThroughStep(candidate - 1, validationCtx).valid;
+            if (!prevOk) break;
+            max = candidate;
+        }
+        return Math.min(TOTAL_STEPS, max);
+    }, [maxReachedStep, step, validationCtx]);
 
     const updateProfile = (field, value) => {
         setProfile((prev) => ({ ...prev, [field]: value }));
@@ -366,7 +387,10 @@ const ResumeCreator = () => {
                 }
 
                 const savedStep = loadResumeCreatorStep(me.id);
-                if (savedStep) setStep(savedStep);
+                if (savedStep) {
+                    setStep(savedStep);
+                    setMaxReachedStep(savedStep);
+                }
             } catch (err) {
                 if (cancelled) return;
                 const status = err?.status;
@@ -545,6 +569,7 @@ const ResumeCreator = () => {
             }
             const nextStep = step + 1;
             saveResumeCreatorStep(studentId, nextStep);
+            setMaxReachedStep((prev) => Math.max(prev, nextStep));
             setStep(nextStep);
         } catch (err) {
             showToast(err?.message || 'Не удалось сохранить шаг', { error: true });
@@ -561,6 +586,19 @@ const ResumeCreator = () => {
         const prevStep = step - 1;
         saveResumeCreatorStep(studentId, prevStep);
         setStep(prevStep);
+    };
+
+    const handleStepSelect = (targetStep) => {
+        if (saving) return;
+        if (targetStep < 1 || targetStep > TOTAL_STEPS) return;
+        if (targetStep > maxReachableStep) {
+            showToast('Сначала заполните предыдущие шаги', { error: true });
+            return;
+        }
+        if (targetStep === step) return;
+        saveResumeCreatorStep(studentId, targetStep);
+        setMaxReachedStep((prev) => Math.max(prev, targetStep));
+        setStep(targetStep);
     };
 
     const clearCropDraft = () => {
@@ -1030,6 +1068,7 @@ const ResumeCreator = () => {
                     <StepperFooter
                         currentStep={step}
                         totalSteps={TOTAL_STEPS}
+                        maxReachableStep={maxReachableStep}
                         showSkip={step === 6}
                         nextHidden={false}
                         nextDisabled={saving}
@@ -1037,6 +1076,7 @@ const ResumeCreator = () => {
                         onNext={handleNext}
                         onSkip={handleNext}
                         onSave={handleSaveProgress}
+                        onStepSelect={handleStepSelect}
                     />
                 </div>
             </div>
