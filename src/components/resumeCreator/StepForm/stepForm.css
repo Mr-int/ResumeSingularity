@@ -7,6 +7,7 @@
 }
 
 .stepForm h2 {
+    font-family: 'StratosSemiLight', sans-serif;
     font-size: 16px;
     font-weight: 500;
     color: #ffffff;
@@ -36,8 +37,9 @@
 
 .stepForm__field label,
 .stepForm__groupLabel {
+    font-family: 'StratosSemiLight', sans-serif;
     font-size: 12px;
-    color: #8e8e93;
+    color: #B3B5B7;
 }
 
 .stepForm__field input,

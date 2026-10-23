@@ -68,13 +68,15 @@ const StepForm = ({
                     />
                 </div>
                 <div className="stepForm__field">
-                    <label htmlFor="student-city">Город / кампус</label>
+                    <label htmlFor="student-city">Город</label>
                     <select
                         id="student-city"
                         value={city}
                         onChange={(event) => onChange?.('city', event.target.value)}
                     >
-                        <option value="">Выберите город</option>
+                        <option value="" disabled hidden>
+                            Выберите город
+                        </option>
                         {CAMPUS_OPTIONS.map((name) => (
                             <option key={name} value={name}>
                                 {name}
