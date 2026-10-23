@@ -438,9 +438,6 @@ export const resendEmailConfirmation = async () => {
     return {};
 };
 
-/**
- * POST /auth/forgot-password
- */
 export const forgotPassword = async (email) => {
     const url = `${API_BASE_URL}auth/forgot-password`;
     const response = await fetch(url, {
