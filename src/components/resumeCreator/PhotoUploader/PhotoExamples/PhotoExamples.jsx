@@ -34,8 +34,8 @@ const PhotoExamples = ({ examples = [], onSelect }) => {
                                 src={isWrong ? cancelIcon : agreeIcon}
                                 alt=""
                                 className="photoExamples__badge"
-                                width={22}
-                                height={22}
+                                width={18}
+                                height={18}
                                 aria-hidden="true"
                             />
                         </button>
