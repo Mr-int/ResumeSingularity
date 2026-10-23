@@ -26,6 +26,7 @@ const ExperienceForm = ({
     const {
         companyId = '',
         companyName = '',
+        companyUrl = '',
         position = '',
         startDate = '',
         endDate = '',
@@ -51,6 +52,7 @@ const ExperienceForm = ({
         id: editingId || undefined,
         companyId: companyId || undefined,
         companyName: companyName.trim(),
+        companyUrl: companyUrl.trim(),
         position: position.trim(),
         additionalInfo,
         startDate,
@@ -71,7 +73,12 @@ const ExperienceForm = ({
         <section className="experienceForm">
             <h2>Добавьте опыт работы или проект</h2>
 
-            <div className="experienceForm__kind" role="group" aria-label="Тип записи">
+            <div
+                className={`experienceForm__kind experienceForm__kind--${selectedKind}`}
+                role="group"
+                aria-label="Тип записи"
+            >
+                <span className="experienceForm__kindThumb" aria-hidden="true" />
                 <button
                     type="button"
                     className={
@@ -158,9 +165,9 @@ const ExperienceForm = ({
                     type="text"
                     list="experience-company-list"
                     value={companyName}
-                    placeholder="Выберите из списка или введите название"
+                    placeholder="Название организации"
                     autoComplete="off"
-                    aria-label="Компания"
+                    aria-label="Название организации"
                     onChange={(event) => handleCompanyChange(event.target.value)}
                 />
                 <datalist id="experience-company-list">
@@ -172,11 +179,23 @@ const ExperienceForm = ({
 
             <div className="experienceForm__field">
                 <input
+                    id="experience-company-url"
+                    type="url"
+                    value={companyUrl}
+                    placeholder="Ссылка на организацию (необязательно)"
+                    autoComplete="off"
+                    aria-label="Ссылка на организацию"
+                    onChange={(event) => onChange?.({ companyUrl: event.target.value })}
+                />
+            </div>
+
+            <div className="experienceForm__field">
+                <input
                     id="experience-position"
                     type="text"
                     value={position}
-                    placeholder="Ваша роль"
-                    aria-label="Должность"
+                    placeholder="Роль"
+                    aria-label="Роль"
                     onChange={(event) => onChange?.({ position: event.target.value })}
                 />
             </div>
@@ -186,7 +205,7 @@ const ExperienceForm = ({
                     <BirthDatePicker
                         id="experience-start"
                         value={startDate}
-                        placeholder="ДД.ММ.ГГГГ"
+                        placeholder="Начало работы"
                         minYear={EXPERIENCE_MIN_YEAR}
                         maxYear={EXPERIENCE_MAX_YEAR}
                         maxDate={endDate || undefined}
@@ -203,7 +222,7 @@ const ExperienceForm = ({
                     <BirthDatePicker
                         id="experience-end"
                         value={endDate}
-                        placeholder="ДД.ММ.ГГГГ"
+                        placeholder="Окончание"
                         minYear={EXPERIENCE_MIN_YEAR}
                         maxYear={EXPERIENCE_MAX_YEAR}
                         minDate={startDate || undefined}

@@ -753,14 +753,17 @@ const ResumeCreator = () => {
         const entry = {
             companyId: experienceDraft.companyId || undefined,
             companyName: (experienceDraft.companyName || '').trim(),
+            companyUrl: (experienceDraft.companyUrl || '').trim(),
             position: (experienceDraft.position || '').trim(),
             additionalInfo: experienceDraft.additionalInfo || '',
             startDate: experienceDraft.startDate || '',
             endDate: experienceDraft.endDate || undefined,
+            activityKind: experienceDraft.activityKind === 'project' ? 'project' : 'work',
             id: experienceDraft.id,
         };
         const isEmpty = !entry.position && !entry.startDate && !entry.companyName
-            && !(Number(entry.companyId) > 0) && !String(entry.additionalInfo || '').trim();
+            && !(Number(entry.companyId) > 0) && !String(entry.additionalInfo || '').trim()
+            && !entry.companyUrl;
         if (isEmpty) {
             clearExperienceDraft(studentId);
             return false;
@@ -795,10 +798,12 @@ const ResumeCreator = () => {
             id,
             companyId: item.companyId != null ? String(item.companyId) : '',
             companyName: item.companyName || '',
+            companyUrl: item.companyUrl || '',
             position: item.position || '',
             startDate: item.startDate || '',
             endDate: item.endDate || '',
             additionalInfo: item.additionalInfo || '',
+            activityKind: item.activityKind === 'project' ? 'project' : 'work',
         };
         setExperienceDraft(next);
         saveExperienceDraft(studentId, next);

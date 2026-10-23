@@ -23,11 +23,12 @@
 }
 
 .experienceForm__kind {
+    --experience-kind-gap: 6px;
     box-sizing: border-box;
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 6px;
+    gap: var(--experience-kind-gap);
     width: 100%;
     height: 40px;
     padding: 4px;
@@ -36,10 +37,30 @@
     border-radius: 15px;
 }
 
+.experienceForm__kindThumb {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    z-index: 0;
+    box-sizing: border-box;
+    width: calc((100% - 8px - var(--experience-kind-gap)) / 2);
+    height: 32px;
+    border-radius: 12px;
+    background-color: #3E8EFF;
+    pointer-events: none;
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateX(0);
+}
+
+.experienceForm__kind--project .experienceForm__kindThumb {
+    transform: translateX(calc(100% + var(--experience-kind-gap)));
+}
+
 .experienceForm__kindBtn {
+    position: relative;
+    z-index: 1;
     box-sizing: border-box;
     flex: 1 1 0;
-    max-width: calc(50% - 3px);
     height: 32px;
     padding: 0 10px;
     border: none;
@@ -52,14 +73,10 @@
     line-height: 1;
     cursor: pointer;
     white-space: nowrap;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    transition: color 0.25s ease;
 }
 
 .experienceForm__kindBtn.is-active {
-    border-radius: 12px;
-    background-color: #3E8EFF;
     color: #ffffff;
 }
 
@@ -187,13 +204,22 @@
 .experienceForm__row .birthDatePicker__trigger {
     background: transparent;
     border: 1px solid #737D85;
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 12px 16px;
     color: #ffffff;
     font-size: 14px;
     font-family: inherit;
     outline: none;
     width: 100%;
+}
+
+.experienceForm__field input::placeholder {
+    color: #737D85;
+}
+
+.experienceForm__field .birthDatePicker__trigger:not(.has-value),
+.experienceForm__row .birthDatePicker__trigger:not(.has-value) {
+    color: #737D85;
 }
 
 .experienceForm__field textarea {
