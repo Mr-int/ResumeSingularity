@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import convertImg from '../assets/other/convert.jpg';
+import resumatorImg from '../assets/other/resumator.jpg';
 import './careerCenter.css';
 
 /**
@@ -15,13 +16,16 @@ const CareerCenter = () => {
             <Header />
             <main className="careerCenter__main">
                 <div className="careerCenter__stage">
-                    <img
-                        src={convertImg}
-                        alt=""
-                        className="careerCenter__image"
-                        width={683}
-                        height={384}
-                    />
+                    <div className="careerCenter__letter">
+                        <h2 className="careerCenter__letterTitle">Моё резюме</h2>
+                        <img
+                            src={convertImg}
+                            alt=""
+                            className="careerCenter__image"
+                            width={683}
+                            height={384}
+                        />
+                    </div>
 
                     <div className="careerCenter__messages">
                         <div className="careerCenter__messagesHead">
@@ -44,18 +48,13 @@ const CareerCenter = () => {
                                 onClick={() => navigate('/chats')}
                             >
                                 <div className="careerCenter__messageAvatar" aria-hidden="true">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff">
-                                        <circle cx="12" cy="12" r="10" fill="none" stroke="#fff" strokeWidth="2" />
-                                        <circle cx="9" cy="10" r="2" />
-                                        <circle cx="15" cy="10" r="2" />
-                                        <path
-                                            d="M8 16s1.5 2 4 2 4-2 4-2"
-                                            stroke="#fff"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            fill="none"
-                                        />
-                                    </svg>
+                                    <img
+                                        src={resumatorImg}
+                                        alt=""
+                                        className="careerCenter__messageAvatarImg"
+                                        width={40}
+                                        height={40}
+                                    />
                                 </div>
                                 <div className="careerCenter__messageBody">
                                     <h3 className="careerCenter__messageAuthor">Резюматор</h3>
