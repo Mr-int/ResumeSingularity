@@ -168,9 +168,6 @@ const ExperienceForm = ({
                         <option key={item.id} value={item.name} />
                     ))}
                 </datalist>
-                <p className="experienceForm__hint">
-                    Компания должна быть в справочнике (иначе опыт не сохранится)
-                </p>
             </div>
 
             <div className="experienceForm__field">
@@ -219,9 +216,8 @@ const ExperienceForm = ({
             <div className="experienceForm__field">
                 <textarea
                     id="experience-description"
-                    rows="4"
                     value={additionalInfo}
-                    placeholder="Что вы делали и какого результата достигли"
+                    placeholder="Описание результата работы и выших задач"
                     aria-label="Описание"
                     onChange={(event) => onChange?.({ additionalInfo: event.target.value })}
                 />
