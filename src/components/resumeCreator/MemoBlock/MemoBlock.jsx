@@ -37,7 +37,7 @@ const ArrowIcon = () => (
         src={arrowSmallIcon}
         alt=""
         className="memoBlock__arrow"
-        width={17}
+        width={19}
         height={6}
         aria-hidden="true"
     />
@@ -83,13 +83,20 @@ const MemoBlock = ({ title = 'Памятка', items = [] }) => {
                             <ArrowIcon />
                         </button>
 
-                        {isOpen && bullets.length > 0 ? (
-                            <div className="memoBlock__content">
-                                <ul className="memoBlock__list">
-                                    {bullets.map((line) => (
-                                        <li key={line} className="memoBlock__listItem">{line}</li>
-                                    ))}
-                                </ul>
+                        {bullets.length > 0 ? (
+                            <div
+                                className="memoBlock__panel"
+                                aria-hidden={!isOpen}
+                            >
+                                <div className="memoBlock__panelInner">
+                                    <div className="memoBlock__content">
+                                        <ul className="memoBlock__list">
+                                            {bullets.map((line) => (
+                                                <li key={line} className="memoBlock__listItem">{line}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         ) : null}
                     </div>
