@@ -18,13 +18,23 @@ const CareerCenter = () => {
                 <div className="careerCenter__stage">
                     <div className="careerCenter__letter">
                         <h2 className="careerCenter__letterTitle">Моё резюме</h2>
-                        <img
-                            src={convertImg}
-                            alt=""
+                        <div
                             className="careerCenter__image"
-                            width={683}
-                            height={384}
-                        />
+                            style={{ backgroundImage: `url(${convertImg})` }}
+                        >
+                            <p className="careerCenter__imageText">
+                                Создай своё резюме
+                                <br />
+                                что бы начать поиск вакансий
+                            </p>
+                            <button
+                                type="button"
+                                className="careerCenter__imageBtn"
+                                onClick={() => navigate('/plug')}
+                            >
+                                Создать
+                            </button>
+                        </div>
                     </div>
 
                     <div className="careerCenter__messages">

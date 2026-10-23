@@ -107,26 +107,26 @@
 }
 
 .studentCreatorHeader__navButton.is-active {
-    background: linear-gradient(to right, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
-    color: #ffffff;
+    background: #ffffff;
+    color: #000000;
 }
 
 .studentCreatorHeader__navButton.is-active .studentCreatorHeader__navButtonLabel {
     background-image: none;
     -webkit-background-clip: unset;
     background-clip: unset;
-    -webkit-text-fill-color: #ffffff;
+    -webkit-text-fill-color: #000000;
+    color: #000000;
+}
+
+.studentCreatorHeader__navButton--career.is-active {
+    background: linear-gradient(to right, #E95A57 0%, #E53BCF 50%, #3E8EFF 100%);
     color: #ffffff;
 }
 
-.studentCreatorHeader__navButton--resume.is-active {
-    background: #ffffff;
-    color: #000000;
-}
-
-.studentCreatorHeader__navButton--resume.is-active .studentCreatorHeader__navButtonLabel {
-    -webkit-text-fill-color: #000000;
-    color: #000000;
+.studentCreatorHeader__navButton--career.is-active .studentCreatorHeader__navButtonLabel {
+    -webkit-text-fill-color: #ffffff;
+    color: #ffffff;
 }
 
 .studentCreatorHeader__navButton.is-disabled {

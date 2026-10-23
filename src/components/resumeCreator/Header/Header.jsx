@@ -219,7 +219,7 @@ const Header = ({
                             key={item.id}
                             active={item.active}
                             disabled={item.disabled}
-                            variant={item.id === 'resume' ? 'resume' : ''}
+                            variant={item.id === 'career' ? 'career' : ''}
                             onClick={(event) => handleNavClick(event, item)}
                         >
                             {item.label}
