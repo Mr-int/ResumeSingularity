@@ -66,33 +66,6 @@
     color: #ffffff;
 }
 
-#student-city {
-    appearance: none;
-    -webkit-appearance: none;
-    background-color: transparent;
-    background-image: url('../../../assets/icons/arrow_select.svg');
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    background-size: 12px 5px;
-    border: 1px solid #737D85;
-    border-radius: 10px;
-    color: #737D85;
-    font-size: 14px;
-    font-family: inherit;
-    padding-right: 36px;
-    cursor: pointer;
-}
-
-#student-city:invalid,
-#student-city option[value=""] {
-    color: #737D85;
-}
-
-#student-city option {
-    color: #737D85;
-    background-color: #1e1f21;
-}
-
 #student-first-name::placeholder,
 #student-last-name::placeholder {
     color: #737D85;

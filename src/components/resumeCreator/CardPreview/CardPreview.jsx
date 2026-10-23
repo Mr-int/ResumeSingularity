@@ -1,7 +1,7 @@
 import './cardPreview.css';
 import { getImageUrl } from '../../../config/api.js';
 import { getSpecialtyIcon } from '../../../utils/specialtyIcon.js';
-import profileStockIco from '../../../assets/icons/profileStockIco.png';
+import stockPhoto from '../../../assets/photoExamples/stock.jpg';
 import { courseUiLabel } from '../StepForm/StepForm.jsx';
 
 const courseTone = (course) => {
@@ -62,11 +62,10 @@ const CardPreview = ({
             </div>
 
             <div className="cardPreview__card">
-                <div className={`cardPreview__photo${hasPhoto ? '' : ' cardPreview__photo--placeholder'}`}>
+                <div className="cardPreview__photo">
                     <img
-                        src={hasPhoto ? photoUrl : profileStockIco}
+                        src={hasPhoto ? photoUrl : stockPhoto}
                         alt={hasPhoto ? fullName : ''}
-                        className={hasPhoto ? undefined : 'cardPreview__photoImg--stock'}
                     />
                     <div className="cardPreview__badges">
                         <div
