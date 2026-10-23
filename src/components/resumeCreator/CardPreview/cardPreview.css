@@ -21,23 +21,24 @@
     top: 20px;
     left: 20px;
     font-size: 12px;
-    color: #555558;
+    color: #5F5F5F;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
 .cardPreview__info {
-    width: 14px;
-    height: 14px;
-    background-color: #3a3a3c;
-    color: #8e8e93;
+    width: 20px;
+    height: 20px;
+    background-color: #41464B;
+    color: #B3B5B7;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
+    font-size: 11px;
     cursor: help;
+    flex-shrink: 0;
 }
 
 .cardPreview__card {
@@ -75,6 +76,19 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.cardPreview__photo--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cardPreview__photoImg--stock {
+    width: 72%;
+    height: auto;
+    max-height: 78%;
+    object-fit: contain;
 }
 
 .cardPreview__badges {
@@ -184,6 +198,10 @@
     gap: 8px;
     font-size: 12px;
     color: #8e8e93;
+}
+
+.cardPreview__legend--muted {
+    opacity: 0.4;
 }
 
 .cardPreview__legendBadge {

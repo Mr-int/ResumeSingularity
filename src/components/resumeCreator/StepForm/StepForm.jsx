@@ -42,7 +42,7 @@ const StepForm = ({
     if (step === 2) {
         return (
             <section className="stepForm stepForm--specialties">
-                <h2>Выбор специальности</h2>
+                <h2>Выберете специальность на которую учитесь</h2>
                 <SpecialtyList
                     specialties={specialties}
                     specialityId={specialityId}
