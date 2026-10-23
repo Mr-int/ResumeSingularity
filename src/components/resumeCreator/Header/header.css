@@ -1,7 +1,7 @@
 .studentCreatorHeader {
     width: 100%;
     background-color: #131313;
-    border-bottom: none;
+    border-bottom: 1px solid #202020;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -117,6 +117,16 @@
     background-clip: unset;
     -webkit-text-fill-color: #ffffff;
     color: #ffffff;
+}
+
+.studentCreatorHeader__navButton--resume.is-active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.studentCreatorHeader__navButton--resume.is-active .studentCreatorHeader__navButtonLabel {
+    -webkit-text-fill-color: #000000;
+    color: #000000;
 }
 
 .studentCreatorHeader__navButton.is-disabled {
