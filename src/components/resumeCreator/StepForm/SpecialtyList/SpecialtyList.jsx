@@ -14,15 +14,35 @@ const SpecialtyList = ({ specialties = [], specialityId = null, onSpecialtyChang
         const rail = railRef.current;
         if (!el) return;
 
+        const wasScrollable = el.classList.contains('is-scrollable');
+        const paddingBottom = wasScrollable
+            ? (parseFloat(getComputedStyle(el).paddingBottom) || 0)
+            : 0;
+
         const { scrollTop, scrollHeight, clientHeight } = el;
-        const overflow = scrollHeight - clientHeight;
-        if (overflow <= 1) {
-            setThumb((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+        // Не считаем нижний запас — иначе скролл виден даже когда пункты влезают.
+        const contentOverflow = scrollHeight - paddingBottom - clientHeight;
+
+        if (contentOverflow <= 1) {
+            if (wasScrollable) el.classList.remove('is-scrollable');
+            if (el.scrollTop) el.scrollTop = 0;
+            setThumb((prev) => (prev.visible ? { top: 0, height: MIN_THUMB, visible: false } : prev));
             return;
         }
 
-        const trackHeight = rail?.clientHeight || clientHeight;
-        const height = Math.max(MIN_THUMB, (clientHeight / scrollHeight) * trackHeight);
+        if (!wasScrollable) el.classList.add('is-scrollable');
+
+        const nextScrollHeight = el.scrollHeight;
+        const nextClientHeight = el.clientHeight;
+        const overflow = nextScrollHeight - nextClientHeight;
+        if (overflow <= 1) {
+            el.classList.remove('is-scrollable');
+            setThumb((prev) => (prev.visible ? { top: 0, height: MIN_THUMB, visible: false } : prev));
+            return;
+        }
+
+        const trackHeight = rail?.clientHeight || nextClientHeight;
+        const height = Math.max(MIN_THUMB, (nextClientHeight / nextScrollHeight) * trackHeight);
         const maxTop = Math.max(0, trackHeight - height);
         const top = maxTop * (scrollTop / overflow);
         setThumb({ top, height, visible: true });

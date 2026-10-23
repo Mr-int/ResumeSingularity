@@ -63,12 +63,17 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    overflow-y: auto;
     overflow-x: hidden;
+    overflow-y: hidden;
     scrollbar-width: none;
-    /* запас снизу, чтобы последний пункт можно было поднять из-под скругления грида */
-    padding-bottom: calc(var(--studentCreatorGrid-pad-y, 40px) + 8px);
+    padding-bottom: 0;
     box-sizing: border-box;
+}
+
+/* padding/скролл только когда пункты реально не влезают */
+.specialtyScroll__list.is-scrollable {
+    overflow-y: auto;
+    padding-bottom: calc(var(--studentCreatorGrid-pad-y, 40px) + 8px);
 }
 
 .specialtyScroll__list::-webkit-scrollbar {

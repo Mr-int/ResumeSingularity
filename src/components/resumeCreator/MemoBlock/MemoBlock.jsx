@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import agreeIcon from '../../../assets/icons/agree.png';
 import cancelIcon from '../../../assets/icons/cancel.png';
+import arrowSmallIcon from '../../../assets/icons/arrow_small.svg';
 import './memoBlock.css';
 
 const HeaderIcon = () => (
@@ -14,8 +15,8 @@ const SuccessIcon = () => (
         src={agreeIcon}
         alt=""
         className="memoBlock__statusIcon memoBlock__statusIcon--success"
-        width={22}
-        height={22}
+        width={16}
+        height={16}
         aria-hidden="true"
     />
 );
@@ -25,16 +26,21 @@ const ErrorIcon = () => (
         src={cancelIcon}
         alt=""
         className="memoBlock__statusIcon memoBlock__statusIcon--error"
-        width={22}
-        height={22}
+        width={16}
+        height={16}
         aria-hidden="true"
     />
 );
 
 const ArrowIcon = () => (
-    <svg className="memoBlock__arrow" viewBox="0 0 24 24" aria-hidden="true">
-        <polyline points="6 9 12 15 18 9" />
-    </svg>
+    <img
+        src={arrowSmallIcon}
+        alt=""
+        className="memoBlock__arrow"
+        width={17}
+        height={6}
+        aria-hidden="true"
+    />
 );
 
 const toBullets = (item) => {
