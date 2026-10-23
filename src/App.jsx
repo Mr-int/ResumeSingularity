@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import Home from './pages/Home.jsx';
+import CareerCenter from './pages/CareerCenter.jsx';
 import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
 import Settings from "./pages/Settings.jsx";
@@ -16,6 +17,18 @@ import { routerBasename } from './utils/appBase.js';
 const ProfileIdRedirect = () => {
   const { id } = useParams();
   return <Navigate to={`/profile/${id || ''}`} replace />;
+};
+
+/**
+ * `/` — новая заглушка CareerCenter.
+ * Старый Home.jsx сохранён: /#projects открывает его секцию проектов.
+ */
+const CareerOrLegacyHome = () => {
+  const { hash } = useLocation();
+  if (hash === '#projects') {
+    return <Home />;
+  }
+  return <CareerCenter />;
 };
 
 const AppRoutes = () => {
@@ -42,7 +55,7 @@ const AppRoutes = () => {
   return (
       <>
         <Routes>
-          <Route path='/' element={<Home />} />
+          <Route path='/' element={<CareerOrLegacyHome />} />
           <Route path='/login' element={<Auth />} />
           <Route path='/registration' element={<Auth />} />
           <Route path='/forgot-password' element={<Auth />} />

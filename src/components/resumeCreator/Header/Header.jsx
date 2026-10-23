@@ -21,15 +21,7 @@ const NAV_DEFS = [
 const navIdFromLocation = (pathname, hash) => {
     if (pathname.startsWith('/plug')) return 'resume';
     if (pathname === '/' && hash === '#projects') return 'projects';
-    if (
-        pathname === '/'
-        || pathname.startsWith('/students')
-        || pathname.startsWith('/studentsResume')
-        || pathname.startsWith('/resume')
-        || /^\/profile\/[^/]+/.test(pathname)
-    ) {
-        return 'career';
-    }
+    if (pathname === '/') return 'career';
     return null;
 };
 

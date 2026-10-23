@@ -45,7 +45,13 @@ const StatusError = ({ code: codeProp }) => {
     const slashRef = useRef(null);
 
     useEffect(() => {
+        const previousTitle = document.title;
         document.title = `Status: ${code}`;
+        return () => {
+            document.title = previousTitle && !previousTitle.startsWith('Status:')
+                ? previousTitle
+                : 'Singularity Resume';
+        };
     }, [code]);
 
     useEffect(() => {

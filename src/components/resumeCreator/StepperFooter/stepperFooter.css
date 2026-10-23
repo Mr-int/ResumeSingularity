@@ -12,7 +12,7 @@
 
 .stepperFooter__step {
     position: relative;
-    height: 4px;
+    height: 8px;
     flex: 1;
     padding: 0;
     margin: 0;
@@ -48,17 +48,23 @@
     position: absolute;
     left: 0;
     bottom: calc(100% + 8px);
-    display: none;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     pointer-events: none;
     white-space: nowrap;
     z-index: 2;
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s ease;
 }
 
 .stepperFooter__step.is-reachable:hover .stepperFooter__stepHint,
 .stepperFooter__step.is-reachable:focus-visible .stepperFooter__stepHint {
-    display: inline-flex;
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .stepperFooter__stepHintText {
@@ -74,6 +80,7 @@
     width: 12px;
     height: 8px;
     flex-shrink: 0;
+    margin-left: 2px;
 }
 
 .stepperFooter__bar {
