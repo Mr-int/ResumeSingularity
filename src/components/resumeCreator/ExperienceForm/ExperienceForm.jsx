@@ -30,9 +30,11 @@ const ExperienceForm = ({
         startDate = '',
         endDate = '',
         additionalInfo = '',
+        activityKind = 'work',
     } = values;
 
     const isEditing = editingId != null && editingId !== '';
+    const selectedKind = activityKind === 'project' ? 'project' : 'work';
 
     const handleCompanyChange = (raw) => {
         const nextName = raw;
@@ -53,6 +55,7 @@ const ExperienceForm = ({
         additionalInfo,
         startDate,
         endDate: endDate || undefined,
+        activityKind: selectedKind,
     });
 
     const handleSubmit = () => {
@@ -66,7 +69,32 @@ const ExperienceForm = ({
 
     return (
         <section className="experienceForm">
-            <h2>Опыт работы</h2>
+            <h2>Добавьте опыт работы или проект</h2>
+
+            <div className="experienceForm__kind" role="group" aria-label="Тип записи">
+                <button
+                    type="button"
+                    className={
+                        'experienceForm__kindBtn'
+                        + (selectedKind === 'work' ? ' is-active' : '')
+                    }
+                    aria-pressed={selectedKind === 'work'}
+                    onClick={() => onChange?.({ activityKind: 'work' })}
+                >
+                    Опыт работы
+                </button>
+                <button
+                    type="button"
+                    className={
+                        'experienceForm__kindBtn'
+                        + (selectedKind === 'project' ? ' is-active' : '')
+                    }
+                    aria-pressed={selectedKind === 'project'}
+                    onClick={() => onChange?.({ activityKind: 'project' })}
+                >
+                    Проектная деятельность
+                </button>
+            </div>
 
             {items.length > 0 ? (
                 <ul className="experienceForm__list">
