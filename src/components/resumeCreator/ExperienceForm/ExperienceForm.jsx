@@ -153,7 +153,6 @@ const ExperienceForm = ({
             ) : null}
 
             <div className="experienceForm__field">
-                <label htmlFor="experience-company">Компания</label>
                 <input
                     id="experience-company"
                     type="text"
@@ -161,6 +160,7 @@ const ExperienceForm = ({
                     value={companyName}
                     placeholder="Выберите из списка или введите название"
                     autoComplete="off"
+                    aria-label="Компания"
                     onChange={(event) => handleCompanyChange(event.target.value)}
                 />
                 <datalist id="experience-company-list">
@@ -174,19 +174,18 @@ const ExperienceForm = ({
             </div>
 
             <div className="experienceForm__field">
-                <label htmlFor="experience-position">Должность</label>
                 <input
                     id="experience-position"
                     type="text"
                     value={position}
                     placeholder="Ваша роль"
+                    aria-label="Должность"
                     onChange={(event) => onChange?.({ position: event.target.value })}
                 />
             </div>
 
             <div className="experienceForm__row">
                 <div className="experienceForm__field">
-                    <label htmlFor="experience-start">Начало</label>
                     <BirthDatePicker
                         id="experience-start"
                         value={startDate}
@@ -204,7 +203,6 @@ const ExperienceForm = ({
                     />
                 </div>
                 <div className="experienceForm__field">
-                    <label htmlFor="experience-end">Окончание</label>
                     <BirthDatePicker
                         id="experience-end"
                         value={endDate}
@@ -219,12 +217,12 @@ const ExperienceForm = ({
             </div>
 
             <div className="experienceForm__field">
-                <label htmlFor="experience-description">Описание</label>
                 <textarea
                     id="experience-description"
                     rows="4"
                     value={additionalInfo}
                     placeholder="Что вы делали и какого результата достигли"
+                    aria-label="Описание"
                     onChange={(event) => onChange?.({ additionalInfo: event.target.value })}
                 />
             </div>

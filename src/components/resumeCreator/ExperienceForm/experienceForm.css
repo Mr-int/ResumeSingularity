@@ -31,9 +31,9 @@
     width: 100%;
     height: 40px;
     padding: 4px;
-    margin-bottom: 20px;
+    margin: 0;
     background-color: #131313;
-    border-radius: 10px;
+    border-radius: 15px;
 }
 
 .experienceForm__kindBtn {
@@ -43,7 +43,7 @@
     height: 32px;
     padding: 0 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     background: transparent;
     color: #737D85;
     font-family: 'StratosSemiLight', sans-serif;
@@ -58,6 +58,7 @@
 }
 
 .experienceForm__kindBtn.is-active {
+    border-radius: 12px;
     background-color: #3E8EFF;
     color: #ffffff;
 }
