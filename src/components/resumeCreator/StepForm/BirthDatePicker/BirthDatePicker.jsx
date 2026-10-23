@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import calendarIcon from '../../../../assets/icons/calendar.svg';
 import './birthDatePicker.css';
 
 const WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -319,10 +320,14 @@ const BirthDatePicker = ({
                 }}
             >
                 <span>{formatDisplay(value) || placeholder}</span>
-                <svg className="birthDatePicker__icon" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                    <rect x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="currentColor" strokeWidth="1.6" />
-                    <path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                </svg>
+                <img
+                    src={calendarIcon}
+                    alt=""
+                    className="birthDatePicker__icon"
+                    width={13}
+                    height={13}
+                    aria-hidden="true"
+                />
             </button>
             {popover}
         </div>

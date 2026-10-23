@@ -72,6 +72,7 @@ const StepForm = ({
                     <select
                         id="student-city"
                         value={city}
+                        required
                         onChange={(event) => onChange?.('city', event.target.value)}
                     >
                         <option value="" disabled hidden>
@@ -122,17 +123,22 @@ const StepForm = ({
                                     + (isActive ? ' is-active' : '')
                                 }
                                 aria-pressed={isActive}
-                                aria-label={item.kind === 'star' ? 'Новый курс' : `Курс ${item.ui}`}
+                                aria-label={item.kind === 'star' ? 'Выпускник' : `Курс ${item.ui}`}
                                 onClick={() => onCourseChange?.(item.value)}
                             >
                                 {item.kind === 'star' ? (
-                                    <img
-                                        src={starIco}
-                                        alt=""
-                                        className="stepForm__courseStar"
-                                        width={18}
-                                        height={17}
-                                    />
+                                    <>
+                                        <span className="stepForm__courseTip" aria-hidden="true">
+                                            Выпускник
+                                        </span>
+                                        <img
+                                            src={starIco}
+                                            alt=""
+                                            className="stepForm__courseStar"
+                                            width={18}
+                                            height={17}
+                                        />
+                                    </>
                                 ) : (
                                     item.ui
                                 )}
