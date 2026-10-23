@@ -1,3 +1,5 @@
+import agreeIcon from '../../../../assets/icons/agree.png';
+import cancelIcon from '../../../../assets/icons/cancel.png';
 import './photoExamples.css';
 
 const PhotoExamples = ({ examples = [], onSelect }) => {
@@ -28,29 +30,14 @@ const PhotoExamples = ({ examples = [], onSelect }) => {
                             {example.src ? (
                                 <img src={example.src} alt={example.alt || 'Пример'} />
                             ) : null}
-                            <span className="photoExamples__badge" aria-hidden="true">
-                                {isWrong ? (
-                                    <svg viewBox="0 0 12 12" width="10" height="10">
-                                        <path
-                                            d="M3 3l6 6M9 3L3 9"
-                                            stroke="#fff"
-                                            strokeWidth="1.8"
-                                            strokeLinecap="round"
-                                        />
-                                    </svg>
-                                ) : (
-                                    <svg viewBox="0 0 12 12" width="10" height="10">
-                                        <path
-                                            d="M2.5 6.2l2.4 2.4L9.5 3.8"
-                                            fill="none"
-                                            stroke="#fff"
-                                            strokeWidth="1.8"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                )}
-                            </span>
+                            <img
+                                src={isWrong ? cancelIcon : agreeIcon}
+                                alt=""
+                                className="photoExamples__badge"
+                                width={22}
+                                height={22}
+                                aria-hidden="true"
+                            />
                         </button>
                     );
                 })}

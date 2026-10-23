@@ -48,20 +48,10 @@
     right: 8px;
     width: 22px;
     height: 22px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    display: block;
+    object-fit: contain;
     z-index: 1;
-}
-
-.photoExamples__item--correct .photoExamples__badge {
-    background: #22C55E;
-}
-
-.photoExamples__item--wrong .photoExamples__badge {
-    background: #EF4444;
+    pointer-events: none;
 }
 
 @media (max-width: 700px) {

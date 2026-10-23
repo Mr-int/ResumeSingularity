@@ -62,17 +62,11 @@
 }
 
 .memoBlock__statusIcon {
+    display: block;
     width: 22px;
     height: 22px;
     flex-shrink: 0;
-}
-
-.memoBlock__statusIcon--success {
-    fill: #2ecc71;
-}
-
-.memoBlock__statusIcon--error {
-    fill: #e74c3c;
+    object-fit: contain;
 }
 
 .memoBlock__summaryText {
