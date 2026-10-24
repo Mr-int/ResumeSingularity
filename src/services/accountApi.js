@@ -10,6 +10,33 @@ export const patchStudentMe = (body) =>
         body: JSON.stringify(body),
     });
 
+/**
+ * POST /student/me/complete-registration
+ * Письмо «Регистрация завершена». Статус остаётся PENDING_APPROVAL.
+ * Тело: birthDate (yyyy-MM-dd), course (FIRST…FIFTH), city.
+ */
+export const completeStudentRegistration = (body) =>
+    apiClientJson('student/me/complete-registration', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
+/**
+ * POST /student/me/submit-for-review — без тела.
+ * Письмо «Анкета отправлена». Статус не меняется.
+ */
+export const submitStudentForReview = () =>
+    apiClientJson('student/me/submit-for-review', {
+        method: 'POST',
+    });
+
+/** GET /profile/communication-readiness */
+export const getCommunicationReadiness = (opts = {}) =>
+    apiClientJson('profile/communication-readiness', {
+        method: 'GET',
+        ...opts,
+    });
+
 /** PATCH /student/{id} — частичное обновление профиля студента (ADMIN). */
 export const patchStudent = (studentId, body) =>
     apiClientJson(`student/${studentId}`, {

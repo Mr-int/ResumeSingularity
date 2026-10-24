@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '../config/api.js';
 import { apiClientJson } from '../utils/apiClient.js';
+import { unpackExperienceAdditionalInfo } from '../utils/experienceWebUrl.js';
 import { getCompanyById } from './getApi.js';
 
 const withPageQuery = (endpoint, pageable = { page: 0, size: 100 }) => {
@@ -228,6 +229,9 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                         ? rawId
                         : null);
 
+                const packedInfo = unpackExperienceAdditionalInfo(
+                    experience.additionalInfo || item.additionalInfo || '',
+                );
                 const webUrl = (
                     experience.webUrl
                     || item.webUrl
@@ -235,6 +239,7 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                     || item.companyUrl
                     || experience.link
                     || item.link
+                    || packedInfo.webUrl
                     || companyMeta.webUrl
                     || ''
                 ).toString().trim();
@@ -244,7 +249,7 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                     companyId,
                     position: (experience.position || item.position || '').toString().trim(),
                     company: companyMeta.name,
-                    description: (experience.additionalInfo || item.additionalInfo || '').toString().trim(),
+                    description: packedInfo.description,
                     webUrl,
                     startDate: experience.startDate || item.startDate || '',
                     endDate,

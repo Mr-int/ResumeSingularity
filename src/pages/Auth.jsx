@@ -4,7 +4,8 @@ import LoginModal from '../components/auth/LoginModal.jsx';
 import RegisterModal from '../components/auth/RegisterModal.jsx';
 import RegisterForm from '../components/auth/RegisterForm.jsx';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal.jsx';
-import { EMAIL_CONFIRMATION_PENDING_KEY, isAuthenticated } from '../services/authApi.js';
+import { EMAIL_CONFIRMATION_PENDING_KEY, fetchAuthMe, isAuthenticated } from '../services/authApi.js';
+import { resolveStudentOnboarding } from '../services/studentOnboardingApi.js';
 
 const Auth = () => {
     const location = useLocation();
@@ -24,6 +25,7 @@ const Auth = () => {
     };
 
     const [view, setView] = useState(getViewFromUrl);
+    const [authRedirect, setAuthRedirect] = useState(null);
 
     useEffect(() => {
         setView(getViewFromUrl());
@@ -32,15 +34,50 @@ const Auth = () => {
     const emailConfirmationPending = sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
     const stayForEmailConfirmation = location.pathname === '/registration' && emailConfirmationPending;
 
+    const resolvePostAuthPath = async (fallback = '/students') => {
+        try {
+            const me = await fetchAuthMe();
+            const role = String(me?.role || '').toUpperCase();
+            if (role === 'STUDENT') {
+                const { path } = await resolveStudentOnboarding();
+                return path || '/plug';
+            }
+        } catch {
+            /* fall through */
+        }
+        return fallback;
+    };
+
+    useEffect(() => {
+        if (!isAuthenticated() || stayForEmailConfirmation) {
+            setAuthRedirect(null);
+            return undefined;
+        }
+        let cancelled = false;
+        (async () => {
+            const from = location.state?.from;
+            const fallback = from && from !== '/login' && from !== '/registration' && from !== '/onboarding'
+                ? from
+                : '/students';
+            const dest = await resolvePostAuthPath(fallback);
+            if (!cancelled) setAuthRedirect(dest);
+        })();
+        return () => { cancelled = true; };
+    }, [location.pathname, location.state, stayForEmailConfirmation]);
+
     if (isAuthenticated() && !stayForEmailConfirmation) {
-        const from = location.state?.from;
-        const dest = from && from !== '/login' && from !== '/registration' ? from : '/students';
-        return <Navigate to={dest} replace />;
+        if (authRedirect) {
+            return <Navigate to={authRedirect} replace />;
+        }
+        return null;
     }
 
-    const handleLoginSuccess = () => {
+    const handleLoginSuccess = async () => {
         const from = location.state?.from;
-        const dest = from && from !== '/login' && from !== '/registration' ? from : '/students';
+        const fallback = from && from !== '/login' && from !== '/registration' && from !== '/onboarding'
+            ? from
+            : '/students';
+        const dest = await resolvePostAuthPath(fallback);
         navigate(dest, { replace: true });
     };
 
@@ -68,7 +105,11 @@ const Auth = () => {
         navigate('/forgot-password', { replace: true });
     };
 
-    const handleRegisterSuccess = (role, username) => {
+    const handleRegisterSuccess = (role, username, meta = {}) => {
+        if (role === 'student' && meta.next === 'questionnaire') {
+            navigate('/plug', { replace: true });
+            return;
+        }
         const loginLine = username ? ` Логин для входа: ${username}.` : '';
         if (role === 'student') {
             alert(`Аккаунт создан! Профиль появится у рекрутеров после модерации администратором.${loginLine}`);

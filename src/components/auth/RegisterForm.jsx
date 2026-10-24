@@ -21,7 +21,7 @@ import {
     usernameFromName,
     usernameWithSuffix,
 } from '../../utils/registrationIdentity.js';
-import { patchStudentMe } from '../../services/accountApi.js';
+import { completeStudentRegistration } from '../../services/accountApi.js';
 import './registerForm.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -29,12 +29,13 @@ import EmailIcon from '../../assets/icons/email.svg';
 
 import { CAMPUS_OPTIONS } from '../../constants/campusCities.js';
 
-const COURSE_OPTIONS = [1, 2, 3, 4];
+const COURSE_OPTIONS = [1, 2, 3, 4, 5];
 const COURSE_API = {
     1: 'FIRST',
     2: 'SECOND',
     3: 'THIRD',
     4: 'FOURTH',
+    5: 'FIFTH',
 };
 const CODE_LENGTH = 4;
 const MESSAGE_TIMEOUT = 3000;
@@ -111,6 +112,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     const [error, setError] = useState('');
     const [studentAccountCreated, setStudentAccountCreated] = useState(hadPendingOnOpen && isStudent);
     const [emailConfirmed, setEmailConfirmed] = useState(false);
+    /** После 204 complete-registration кнопку блокируем (повтор шлёт письмо снова). */
+    const [registrationCompleted, setRegistrationCompleted] = useState(false);
     const [emailTouched, setEmailTouched] = useState(false);
     const [assignedUsername, setAssignedUsername] = useState(
         hadPendingOnOpen ? (sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '') : '',
@@ -412,17 +415,19 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     };
 
     const saveStudentStepCourse = async () => {
+        if (registrationCompleted) return;
         setLoading(true);
         try {
-            await patchStudentMe({
+            await completeStudentRegistration({
                 birthDate: formData.birthDate,
                 course: COURSE_API[Number(formData.course)],
                 city: formData.campus,
             });
             clearRegistrationDraft();
-            onSuccess(role, assignedUsername);
+            setRegistrationCompleted(true);
+            onSuccess(role, assignedUsername, { next: 'questionnaire' });
         } catch (err) {
-            const message = err.message || 'Не удалось сохранить профиль';
+            const message = err.message || 'Не удалось завершить регистрацию';
             setError(message);
             showMessage(message);
         } finally {
@@ -621,6 +626,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
 
         if (step === 5) {
+            if (registrationCompleted) return;
+            if (!formData.birthDate) { setErrorAndShow('Укажите дату рождения'); return; }
             if (!formData.course) { setErrorAndShow('Выберите курс'); return; }
             if (!formData.campus) { setErrorAndShow('Выберите кампус'); return; }
             saveStudentStepCourse();
@@ -893,10 +900,18 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             case 5:
                 return (
                     <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 2</h2>
+                        <h2 className="registerForm__heading registerForm__heading--step">Завершение регистрации</h2>
+                        <p className="registerForm__subheading">
+                            Курс и кампус сохраняются вместе с датой рождения. На почту уйдёт письмо о завершении регистрации.
+                        </p>
                         <div className="registerForm__inputGroup">
                             <label>Курс</label>
-                            <select name="course" value={formData.course} onChange={handleChange} disabled={loading}>
+                            <select
+                                name="course"
+                                value={formData.course}
+                                onChange={handleChange}
+                                disabled={loading || registrationCompleted}
+                            >
                                 <option value="">Выберите курс</option>
                                 {COURSE_OPTIONS.map((c) => (
                                     <option key={c} value={c}>{c} курс</option>
@@ -905,7 +920,12 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
                         <div className="registerForm__inputGroup">
                             <label>Кампус</label>
-                            <select name="campus" value={formData.campus} onChange={handleChange} disabled={loading}>
+                            <select
+                                name="campus"
+                                value={formData.campus}
+                                onChange={handleChange}
+                                disabled={loading || registrationCompleted}
+                            >
                                 <option value="">Выберите кампус</option>
                                 {CAMPUS_OPTIONS.map((c) => (
                                     <option key={c} value={c}>{c}</option>
@@ -932,7 +952,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         if (isStudent) {
             if (step === 0) return null;
             if (step === 4) return 'Подтвердить';
-            if (step === 5) return 'Завершить';
+            if (step === 5) return registrationCompleted ? 'Готово' : 'Завершить';
             if (step === 3) return studentAccountCreated ? 'К коду' : 'Получить код';
             return 'Далее';
         }
@@ -989,7 +1009,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             type="button"
                             className="registerForm__primaryBtn"
                             onClick={handleNextStep}
-                            disabled={loading}
+                            disabled={loading || (isStudent && step === 5 && registrationCompleted)}
                         >
                             {primaryLabel()}
                         </button>

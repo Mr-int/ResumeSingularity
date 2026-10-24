@@ -23,7 +23,15 @@ import wrongPhoto from '../assets/photoExamples/wrongPhoto.png';
 import { getImageUrl } from '../config/api.js';
 import { isAllowedProfileCity } from '../constants/campusCities.js';
 import { getStudentMe } from '../services/getApi.js';
-import { patchStudentMe, uploadStudentPhoto } from '../services/accountApi.js';
+import {
+    getCommunicationReadiness,
+    patchStudentMe,
+    submitStudentForReview,
+    uploadStudentPhoto,
+} from '../services/accountApi.js';
+import { fetchAuthMe } from '../services/authApi.js';
+import { resolveStudentOnboarding, STUDENT_STAGE } from '../services/studentOnboardingApi.js';
+import { markStudentProfileSubmitted } from '../utils/studentOnboarding.js';
 import {
     getAllSpecialities,
     getAllEducation,
@@ -44,6 +52,7 @@ import {
     validateResumeStep,
     validateResumeThroughStep,
 } from './resumeCreatorValidation.js';
+import { packExperienceAdditionalInfo } from '../utils/experienceWebUrl.js';
 import {
     clearExperienceDraft,
     clearResumeCreatorStep,
@@ -311,6 +320,23 @@ const ResumeCreator = () => {
             setBootLoading(true);
             setBootError('');
             try {
+                try {
+                    const gate = await resolveStudentOnboarding();
+                    if (cancelled) return;
+                    const blockCreator = [
+                        STUDENT_STAGE.CONFIRM_EMAIL,
+                        STUDENT_STAGE.COMPLETE_REGISTRATION,
+                        STUDENT_STAGE.PENDING_REVIEW,
+                        STUDENT_STAGE.REJECTED,
+                    ].includes(gate.stage);
+                    if (blockCreator && gate.path) {
+                        navigate(gate.path, { replace: true });
+                        return;
+                    }
+                } catch {
+                    /* не-студент или сеть — продолжаем обычный boot */
+                }
+
                 const me = await getStudentMe();
                 const [specs, skillsPage, edus, institutions, experienceDetails, companies] = await Promise.all([
                     getAllSpecialities(),
@@ -562,6 +588,64 @@ const ResumeCreator = () => {
                     );
                     return;
                 }
+
+                let authMe = null;
+                try {
+                    authMe = await fetchAuthMe();
+                } catch {
+                    authMe = null;
+                }
+                const pending = String(authMe?.accountStatus || '').toUpperCase() === 'PENDING_APPROVAL';
+
+                if (pending) {
+                    try {
+                        const readiness = await getCommunicationReadiness({ skipAuthRedirect: true });
+                        if (readiness?.ready !== true) {
+                            const missing = Array.isArray(readiness?.missingFields)
+                                ? readiness.missingFields.join(', ')
+                                : '';
+                            showToast(
+                                missing
+                                    ? `Дозаполните профиль: ${missing}`
+                                    : (readiness?.message || 'Дозаполните профиль перед отправкой'),
+                                { error: true },
+                            );
+                            return;
+                        }
+                    } catch (readyErr) {
+                        showToast(readyErr?.message || 'Не удалось проверить готовность анкеты', { error: true });
+                        return;
+                    }
+
+                    try {
+                        await submitStudentForReview();
+                        markStudentProfileSubmitted(authMe?.id);
+                    } catch (submitErr) {
+                        const body = submitErr?.responseBody;
+                        if (submitErr?.status === 403 && body?.code === 'PROFILE_INCOMPLETE') {
+                            const missing = Array.isArray(body.missingFields)
+                                ? body.missingFields.join(', ')
+                                : '';
+                            showToast(
+                                missing
+                                    ? `Анкета неполная: ${missing}`
+                                    : (body.message || 'Дозаполните профиль'),
+                                { error: true },
+                            );
+                            return;
+                        }
+                        showToast(submitErr?.message || 'Не удалось отправить анкету', { error: true });
+                        return;
+                    }
+
+                    clearResumeCreatorStep(studentId);
+                    clearExperienceDraft(studentId);
+                    setResumeComplete(true);
+                    showToast('Анкета отправлена на проверку');
+                    navigate('/onboarding', { replace: true });
+                    return;
+                }
+
                 clearResumeCreatorStep(studentId);
                 clearExperienceDraft(studentId);
                 setResumeComplete(true);
@@ -664,9 +748,11 @@ const ResumeCreator = () => {
         const companyName = entry.companyName?.trim() || '';
         // Бэкенд требует companyId > 0 («должно быть больше 0»), без id уходит 0
         const companyId = await resolveCompanyId(companyName, entry.companyId);
-        const additionalInfo = (entry.additionalInfo || '').trim();
-
-        const webUrl = (entry.companyUrl || entry.webUrl || '').trim();
+        // ExperienceReq в API без webUrl — кладём ссылку в additionalInfo маркером
+        const additionalInfo = packExperienceAdditionalInfo(
+            entry.additionalInfo || '',
+            entry.companyUrl || entry.webUrl || '',
+        );
 
         const body = {
             studentId,
@@ -676,7 +762,6 @@ const ResumeCreator = () => {
         };
         if (additionalInfo) body.additionalInfo = additionalInfo;
         if (entry.endDate) body.endDate = entry.endDate;
-        if (webUrl) body.webUrl = webUrl;
         return { body, companyName, companyId };
     };
 
