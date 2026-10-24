@@ -277,29 +277,22 @@ const getCookie = (name) => {
 };
 
 const hasAuthCookies = () => {
+    // HttpOnly-cookie с JS не читаются — проверка только для редких non-HttpOnly случаев.
     const accessToken = getCookie('ACCESS_TOKEN');
     const refreshToken = getCookie('REFRESH_TOKEN');
-    const hasTokens = !!(accessToken || refreshToken);
-    
-    console.log('[AUTH] Cookie check - ACCESS_TOKEN:', !!accessToken, 'REFRESH_TOKEN:', !!refreshToken);
-    
-    return hasTokens;
+    return !!(accessToken || refreshToken);
 };
 
 export const isAuthenticated = () => {
     const authFlag = localStorage.getItem(AUTH_FLAG_KEY);
     const authTime = localStorage.getItem(`${AUTH_FLAG_KEY}_time`);
-
     const hasTokens = hasAuthCookies();
-    
-    console.log('[AUTH] isAuthenticated - hasTokens:', hasTokens, 'authFlag:', authFlag, 'authTime:', authTime);
 
     if (authFlag === 'true') {
         if (authTime) {
-            const timeDiff = Date.now() - parseInt(authTime);
+            const timeDiff = Date.now() - parseInt(authTime, 10);
             const hours24 = 24 * 60 * 60 * 1000;
             if (timeDiff > hours24) {
-                console.log('[AUTH] Session expired, clearing flag');
                 localStorage.removeItem(AUTH_FLAG_KEY);
                 localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
                 return false;
@@ -309,12 +302,11 @@ export const isAuthenticated = () => {
     }
 
     if (hasTokens) {
-        console.log('[AUTH] Tokens found, setting flag');
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
         return true;
     }
-    
+
     return false;
 };
 

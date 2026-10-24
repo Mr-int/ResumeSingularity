@@ -20,7 +20,8 @@ const ResumeBioForm = ({
         <section className="resumeBioForm">
             <h2 className="resumeBioForm__title">Заполните описание резюме</h2>
             <p className="resumeBioForm__subtitle">
-                «О себе» — не короче {minLength} символов. Нужна ссылка на HH или работа в портфолио.
+                «О себе» — не короче {minLength} символов. Ссылку на HH или портфолио можно добавить сейчас
+                или позже, перед отправкой анкеты на проверку.
             </p>
 
             <div className="resumeBioForm__box">

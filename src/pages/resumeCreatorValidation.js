@@ -48,16 +48,11 @@ export const validateResumeStep = (step, ctx) => {
                 return fail('В «О себе» нужно не меньше 30 символов');
             }
             if (bio.length > 2000) return fail('Описание не должно превышать 2000 символов');
-            const hh = String(ctx.hhLink || '').trim();
+            // HH / портфолио — необязательны на шаге; проверяются только при отправке на модерацию
             const portName = String(ctx.portfolioName || '').trim();
             const portLink = String(ctx.portfolioLink || '').trim();
-            const hasPortfolio = Boolean(portName && portLink);
-            const hasExistingPortfolio = Boolean(ctx.hasPortfolio);
-            if (!hh && !hasPortfolio && !hasExistingPortfolio) {
-                return fail('Укажите ссылку на HH или работу в портфолио (название и ссылка)');
-            }
             if ((portName && !portLink) || (!portName && portLink)) {
-                return fail('Для портфолио заполните и название, и ссылку');
+                return fail('Для портфолио заполните и название, и ссылку — или очистите оба поля');
             }
             return ok();
         }

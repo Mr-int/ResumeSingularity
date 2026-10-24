@@ -654,17 +654,36 @@ const ResumeCreator = () => {
                     try {
                         const readiness = await getCommunicationReadiness({ skipAuthRedirect: true });
                         if (readiness?.ready !== true) {
-                            const missing = formatMissingProfileFields(readiness?.missingFields);
+                            const fields = Array.isArray(readiness?.missingFields)
+                                ? readiness.missingFields
+                                : [];
+                            const missing = formatMissingProfileFields(fields);
                             showToast(
                                 missing
-                                    ? `Чтобы отправить на проверку, ещё нужно: ${missing}`
-                                    : (readiness?.message || 'Дозаполните профиль перед отправкой'),
+                                    ? `Резюме сохранено. Для отправки на проверку ещё нужно: ${missing}`
+                                    : (readiness?.message || 'Резюме сохранено. Дозаполните профиль перед отправкой'),
                                 { error: true },
                             );
+                            // Вернуть к шагу «О себе», если не хватает about / HH / портфолио
+                            if (
+                                fields.includes('about')
+                                || fields.includes('portfolio_or_hh')
+                            ) {
+                                setStep(4);
+                                saveResumeCreatorStep(studentId, 4);
+                            }
                             return;
                         }
                     } catch (readyErr) {
-                        showToast(readyErr?.message || 'Не удалось проверить готовность анкеты', { error: true });
+                        // Не блокируем сохранение из‑за сбоя readiness
+                        showToast(
+                            readyErr?.message || 'Резюме сохранено, но проверку готовности выполнить не удалось',
+                            { error: true },
+                        );
+                        clearResumeCreatorStep(studentId);
+                        clearExperienceDraft(studentId);
+                        setResumeComplete(true);
+                        navigate('/profile');
                         return;
                     }
 
