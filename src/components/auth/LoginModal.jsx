@@ -49,7 +49,7 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
             return;
         }
         if (!trimmedUsername) {
-            setError('Введите логин');
+            setError('Введите почту или логин');
             return;
         }
         if (!nextPassword) {
@@ -120,7 +120,7 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
                             htmlFor="loginModal-login"
                             className={error ? 'loginModal__label--error' : undefined}
                         >
-                            Логин
+                            Почта/логин
                         </label>
                         <div className="loginModal__inputWrap">
                             <input
