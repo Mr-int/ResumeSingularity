@@ -614,6 +614,13 @@ export const getPortfolioById = async (id) => {
     }
 };
 
+/** POST /portfolio — студент только на свою карточку. */
+export const createPortfolio = (body) =>
+    apiClientJson('portfolio', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
 /** POST /skill/filter — справочник навыков. FilterSkillReq: { name }. */
 export const filterSkills = async (filterReq = {}, pageable = { page: 0, size: 200 }) => {
     const resp = await apiClientJson(withPageQuery('skill/filter', pageable), {

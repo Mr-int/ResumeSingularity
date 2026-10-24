@@ -31,7 +31,10 @@ import {
 } from '../services/accountApi.js';
 import { fetchAuthMe } from '../services/authApi.js';
 import { resolveStudentOnboarding, STUDENT_STAGE } from '../services/studentOnboardingApi.js';
-import { markStudentProfileSubmitted } from '../utils/studentOnboarding.js';
+import {
+    formatMissingProfileFields,
+    markStudentProfileSubmitted,
+} from '../utils/studentOnboarding.js';
 import {
     getAllSpecialities,
     getAllEducation,
@@ -40,9 +43,11 @@ import {
     updateExperience,
     deleteExperience,
     createInstitution,
+    createPortfolio,
     getAllCompanies,
     getExperienceDetailsByStudentId,
     getInstitutionsByStudentId,
+    getPortfolioByStudentId,
     resolveCompanyId,
     resolveEducationId,
 } from '../services/studentApi.js';
@@ -242,6 +247,10 @@ const ResumeCreator = () => {
     const pendingPhotoNameRef = useRef('');
     const cropDraftUrlRef = useRef(null);
     const [bio, setBio] = useState('');
+    const [hhLink, setHhLink] = useState('');
+    const [portfolioName, setPortfolioName] = useState('');
+    const [portfolioLink, setPortfolioLink] = useState('');
+    const [hasPortfolio, setHasPortfolio] = useState(false);
     const [selectedSkills, setSelectedSkills] = useState([]);
     const [experienceDraft, setExperienceDraft] = useState({});
     const [educationDraft, setEducationDraft] = useState({});
@@ -270,13 +279,20 @@ const ResumeCreator = () => {
         () => resumeValidationContext({
             profile,
             bio,
+            hhLink,
+            portfolioName,
+            portfolioLink,
+            hasPortfolio,
             selectedSkills,
             photoPreview,
             educationsAdded,
             savedInstitutionCount,
             legacyCity,
         }),
-        [profile, bio, selectedSkills, photoPreview, educationsAdded, savedInstitutionCount, legacyCity],
+        [
+            profile, bio, hhLink, portfolioName, portfolioLink, hasPortfolio,
+            selectedSkills, photoPreview, educationsAdded, savedInstitutionCount, legacyCity,
+        ],
     );
 
     /**
@@ -338,17 +354,20 @@ const ResumeCreator = () => {
                 }
 
                 const me = await getStudentMe();
-                const [specs, skillsPage, edus, institutions, experienceDetails, companies] = await Promise.all([
+                const [specs, skillsPage, edus, institutions, experienceDetails, companies, portfolio] = await Promise.all([
                     getAllSpecialities(),
                     filterSkills({}, { page: 0, size: 500 }),
                     getAllEducation(),
                     getInstitutionsByStudentId(me.id),
                     getExperienceDetailsByStudentId(me.id),
                     getAllCompanies(),
+                    getPortfolioByStudentId(me.id),
                 ]);
                 if (cancelled) return;
 
                 setStudentId(me.id);
+                setHasPortfolio(Array.isArray(portfolio) && portfolio.length > 0);
+                setHhLink(me.hhLink || '');
                 setSpecialties(Array.isArray(specs) ? specs : []);
                 setCompaniesCatalog(Array.isArray(companies) ? companies : []);
                 const apiSkills = Array.isArray(skillsPage?.data)
@@ -453,6 +472,7 @@ const ResumeCreator = () => {
             body.specialityId = Number(profile.specialityId);
         }
         if (bio?.trim()) body.bio = bio.trim();
+        if (hhLink?.trim()) body.hhLink = hhLink.trim();
         return body;
     };
 
@@ -471,6 +491,7 @@ const ResumeCreator = () => {
             busyness: me.busyness ?? prev.busyness,
         }));
         if (me.bio != null) setBio(me.bio);
+        if (me.hhLink != null) setHhLink(me.hhLink);
         if (Array.isArray(me.skills)) {
             const fromServer = me.skills
                 .map((item) => skillEntityId(item))
@@ -576,6 +597,20 @@ const ResumeCreator = () => {
                     return;
                 }
             }
+            if (step === 4) {
+                const portName = portfolioName.trim();
+                const portLink = portfolioLink.trim();
+                if (portName && portLink && !hasPortfolio && studentId) {
+                    await createPortfolio({
+                        name: portName,
+                        link: portLink,
+                        studentId,
+                    });
+                    setHasPortfolio(true);
+                    setPortfolioName('');
+                    setPortfolioLink('');
+                }
+            }
             if (step === 6) {
                 await flushExperienceDraftIfReady();
             }
@@ -598,15 +633,31 @@ const ResumeCreator = () => {
                 const pending = String(authMe?.accountStatus || '').toUpperCase() === 'PENDING_APPROVAL';
 
                 if (pending) {
+                    const portName = portfolioName.trim();
+                    const portLink = portfolioLink.trim();
+                    if (portName && portLink && !hasPortfolio) {
+                        try {
+                            await createPortfolio({
+                                name: portName,
+                                link: portLink,
+                                studentId,
+                            });
+                            setHasPortfolio(true);
+                            setPortfolioName('');
+                            setPortfolioLink('');
+                        } catch (portErr) {
+                            showToast(portErr?.message || 'Не удалось сохранить портфолио', { error: true });
+                            return;
+                        }
+                    }
+
                     try {
                         const readiness = await getCommunicationReadiness({ skipAuthRedirect: true });
                         if (readiness?.ready !== true) {
-                            const missing = Array.isArray(readiness?.missingFields)
-                                ? readiness.missingFields.join(', ')
-                                : '';
+                            const missing = formatMissingProfileFields(readiness?.missingFields);
                             showToast(
                                 missing
-                                    ? `Дозаполните профиль: ${missing}`
+                                    ? `Чтобы отправить на проверку, ещё нужно: ${missing}`
                                     : (readiness?.message || 'Дозаполните профиль перед отправкой'),
                                 { error: true },
                             );
@@ -623,9 +674,7 @@ const ResumeCreator = () => {
                     } catch (submitErr) {
                         const body = submitErr?.responseBody;
                         if (submitErr?.status === 403 && body?.code === 'PROFILE_INCOMPLETE') {
-                            const missing = Array.isArray(body.missingFields)
-                                ? body.missingFields.join(', ')
-                                : '';
+                            const missing = formatMissingProfileFields(body.missingFields);
                             showToast(
                                 missing
                                     ? `Анкета неполная: ${missing}`
@@ -1058,7 +1107,16 @@ const ResumeCreator = () => {
                 );
             case 4:
                 return (
-                    <ResumeBioForm value={bio} onChange={setBio} />
+                    <ResumeBioForm
+                        value={bio}
+                        hhLink={hhLink}
+                        portfolioName={portfolioName}
+                        portfolioLink={portfolioLink}
+                        onChange={setBio}
+                        onHhLinkChange={setHhLink}
+                        onPortfolioNameChange={setPortfolioName}
+                        onPortfolioLinkChange={setPortfolioLink}
+                    />
                 );
             case 5:
                 return (

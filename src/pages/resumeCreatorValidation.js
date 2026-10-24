@@ -42,8 +42,23 @@ export const validateResumeStep = (step, ctx) => {
             return ok();
         }
         case 4: {
-            if (!bio?.trim()) return fail('Заполните описание резюме');
+            const text = bio?.trim() || '';
+            if (!text) return fail('Заполните блок «О себе»');
+            if (text.length < 30) {
+                return fail('В «О себе» нужно не меньше 30 символов');
+            }
             if (bio.length > 2000) return fail('Описание не должно превышать 2000 символов');
+            const hh = String(ctx.hhLink || '').trim();
+            const portName = String(ctx.portfolioName || '').trim();
+            const portLink = String(ctx.portfolioLink || '').trim();
+            const hasPortfolio = Boolean(portName && portLink);
+            const hasExistingPortfolio = Boolean(ctx.hasPortfolio);
+            if (!hh && !hasPortfolio && !hasExistingPortfolio) {
+                return fail('Укажите ссылку на HH или работу в портфолио (название и ссылка)');
+            }
+            if ((portName && !portLink) || (!portName && portLink)) {
+                return fail('Для портфолио заполните и название, и ссылку');
+            }
             return ok();
         }
         case 5: {
@@ -94,6 +109,10 @@ export const resumeValidationContext = ({
     educationsAdded,
     savedInstitutionCount,
     legacyCity = '',
+    hhLink = '',
+    portfolioName = '',
+    portfolioLink = '',
+    hasPortfolio = false,
 }) => ({
     profile,
     bio,
@@ -102,4 +121,8 @@ export const resumeValidationContext = ({
     educationsAdded,
     savedInstitutionCount,
     legacyCity,
+    hhLink,
+    portfolioName,
+    portfolioLink,
+    hasPortfolio,
 });

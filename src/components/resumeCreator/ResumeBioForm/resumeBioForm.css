@@ -98,6 +98,43 @@
     color: #e74c3c;
 }
 
+.resumeBioForm__extra {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex-shrink: 0;
+    max-width: 535px;
+    width: 100%;
+}
+
+.resumeBioForm__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.resumeBioForm__input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #2a2a2c;
+    background: #131313;
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+.resumeBioForm__input:focus {
+    border-color: #4f4f52;
+}
+
+.resumeBioForm__input::placeholder {
+    color: #52555a;
+}
+
 @media (max-width: 600px) {
     .resumeBioForm__title {
         font-size: 16px;

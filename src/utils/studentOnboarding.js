@@ -79,6 +79,25 @@ export const resolveStudentStage = (authMe, studentMe, readiness = null) => {
     return STUDENT_STAGE.QUESTIONNAIRE;
 };
 
+const MISSING_FIELD_LABELS = {
+    name: 'имя и фамилия',
+    photo: 'фото',
+    about: 'блок «О себе» (не короче 30 символов)',
+    city: 'город',
+    speciality: 'специальность',
+    skills: 'хотя бы один навык',
+    portfolio_or_hh: 'работу в портфолио или ссылку на HH',
+};
+
+/** Коды missingFields с бэка → текст для тоста. */
+export const formatMissingProfileFields = (fields) => {
+    if (!Array.isArray(fields) || fields.length === 0) return '';
+    return fields
+        .map((code) => MISSING_FIELD_LABELS[code] || code)
+        .filter(Boolean)
+        .join('; ');
+};
+
 /** Куда вести студента после логина / с публичных экранов. */
 export const pathForStudentStage = (stage) => {
     switch (stage) {
