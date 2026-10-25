@@ -296,6 +296,41 @@
     display: none;
 }
 
+.registerForm__inputWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.registerForm__inputPassword {
+    padding-right: 48px;
+}
+
+.registerForm__passwordToggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8f8f9d;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.registerForm__passwordToggle:hover:not(:disabled) {
+    color: #ffffff;
+}
+
+.registerForm__passwordToggle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .registerForm__codeRow {
     display: flex;
     gap: 12px;

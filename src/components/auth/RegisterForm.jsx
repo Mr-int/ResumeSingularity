@@ -47,6 +47,54 @@ const REGISTER_COOLDOWN_KEY = 'resume:register-cooldown-until';
 /** После 429 не долбим API — сервер режет по IP на несколько минут. */
 const REGISTER_COOLDOWN_MS = 15 * 60 * 1000;
 const USERNAME_RETRY_LIMIT = 2;
+const MIN_AGE_YEARS = 14;
+
+const EyeIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+);
+
+const EyeOffIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1 1l22 22" strokeLinecap="round" />
+    </svg>
+);
+
+/** Полных лет на сегодня по ISO-дате yyyy-MM-dd. */
+const ageFromBirthDate = (isoDate) => {
+    if (!isoDate) return null;
+    const birth = new Date(`${isoDate}T00:00:00`);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age -= 1;
+    }
+    return age;
+};
+
+/** Макс. дата рождения, при которой исполняется 15 лет (старше 14). */
+const maxBirthDateIso = () => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - (MIN_AGE_YEARS + 1));
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+};
+
+const birthDateErrorText = (isoDate) => {
+    if (!isoDate) return 'Укажите дату рождения';
+    const age = ageFromBirthDate(isoDate);
+    if (age == null) return 'Некорректная дата рождения';
+    if (age < 0) return 'Дата рождения не может быть в будущем';
+    if (age <= MIN_AGE_YEARS) return 'Регистрация доступна с 15 лет (старше 14)';
+    return '';
+};
 
 const readTakenEmails = () => {
     try {
@@ -117,6 +165,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     /** После 204 complete-registration кнопку блокируем (повтор шлёт письмо снова). */
     const [registrationCompleted, setRegistrationCompleted] = useState(false);
     const [emailTouched, setEmailTouched] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
     const [assignedUsername, setAssignedUsername] = useState(
         hadPendingOnOpen ? (sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '') : '',
     );
@@ -611,8 +661,9 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 setErrorAndShow('Заполните отчество или отметьте галочку "Нет отчества"');
                 return;
             }
-            if (!formData.birthDate) {
-                setErrorAndShow('Укажите дату рождения');
+            const birthErr = birthDateErrorText(formData.birthDate);
+            if (birthErr) {
+                setErrorAndShow(birthErr);
                 return;
             }
             setStep(3);
@@ -635,7 +686,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
 
         if (step === 5) {
             if (registrationCompleted) return;
-            if (!formData.birthDate) { setErrorAndShow('Укажите дату рождения'); return; }
+            const birthErr = birthDateErrorText(formData.birthDate);
+            if (birthErr) { setErrorAndShow(birthErr); return; }
             if (!formData.course) { setErrorAndShow('Выберите курс'); return; }
             if (!formData.campus) { setErrorAndShow('Выберите кампус'); return; }
             saveStudentStepCourse();
@@ -732,11 +784,51 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 3</h2>
                             <div className="registerForm__inputGroup">
                                 <label>Пароль</label>
-                                <input type="password" name="password" value={formData.password} onChange={handleChange} disabled={loading} />
+                                <div className="registerForm__inputWrap">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        className="registerForm__inputPassword"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="registerForm__passwordToggle"
+                                        onClick={() => setShowPassword((v) => !v)}
+                                        disabled={loading}
+                                        aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                                        aria-pressed={showPassword}
+                                    >
+                                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                    </button>
+                                </div>
                             </div>
                             <div className="registerForm__inputGroup">
                                 <label>Повтор пароля</label>
-                                <input type="password" name="passwordConfirm" value={formData.passwordConfirm} onChange={handleChange} disabled={loading} />
+                                <div className="registerForm__inputWrap">
+                                    <input
+                                        type={showPasswordConfirm ? 'text' : 'password'}
+                                        name="passwordConfirm"
+                                        className="registerForm__inputPassword"
+                                        value={formData.passwordConfirm}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="registerForm__passwordToggle"
+                                        onClick={() => setShowPasswordConfirm((v) => !v)}
+                                        disabled={loading}
+                                        aria-label={showPasswordConfirm ? 'Скрыть пароль' : 'Показать пароль'}
+                                        aria-pressed={showPasswordConfirm}
+                                    >
+                                        {showPasswordConfirm ? <EyeOffIcon /> : <EyeIcon />}
+                                    </button>
+                                </div>
                             </div>
                         </>
                     );
@@ -821,7 +913,14 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
                         <div className="registerForm__inputGroup">
                             <label>Дата рождения</label>
-                            <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange} disabled={loading} />
+                            <input
+                                type="date"
+                                name="birthDate"
+                                value={formData.birthDate}
+                                onChange={handleChange}
+                                disabled={loading}
+                                max={maxBirthDateIso()}
+                            />
                         </div>
                     </>
                 );
@@ -849,23 +948,51 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
                         <div className="registerForm__inputGroup">
                             <label>Пароль</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                disabled={loading || studentAccountCreated}
-                            />
+                            <div className="registerForm__inputWrap">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    className="registerForm__inputPassword"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    disabled={loading || studentAccountCreated}
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="registerForm__passwordToggle"
+                                    onClick={() => setShowPassword((v) => !v)}
+                                    disabled={loading || studentAccountCreated}
+                                    aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                                    aria-pressed={showPassword}
+                                >
+                                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                </button>
+                            </div>
                         </div>
                         <div className="registerForm__inputGroup">
                             <label>Повтор пароля</label>
-                            <input
-                                type="password"
-                                name="passwordConfirm"
-                                value={formData.passwordConfirm}
-                                onChange={handleChange}
-                                disabled={loading || studentAccountCreated}
-                            />
+                            <div className="registerForm__inputWrap">
+                                <input
+                                    type={showPasswordConfirm ? 'text' : 'password'}
+                                    name="passwordConfirm"
+                                    className="registerForm__inputPassword"
+                                    value={formData.passwordConfirm}
+                                    onChange={handleChange}
+                                    disabled={loading || studentAccountCreated}
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="registerForm__passwordToggle"
+                                    onClick={() => setShowPasswordConfirm((v) => !v)}
+                                    disabled={loading || studentAccountCreated}
+                                    aria-label={showPasswordConfirm ? 'Скрыть пароль' : 'Показать пароль'}
+                                    aria-pressed={showPasswordConfirm}
+                                >
+                                    {showPasswordConfirm ? <EyeOffIcon /> : <EyeIcon />}
+                                </button>
+                            </div>
                         </div>
                     </>
                 );
