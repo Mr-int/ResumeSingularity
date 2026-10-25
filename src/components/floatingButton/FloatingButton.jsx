@@ -96,6 +96,7 @@ const FloatingButton = () => {
         || location.pathname === '/settings'
         || location.pathname === '/profile'
         || location.pathname === '/plug'
+        || location.pathname === '/resume/create'
     ) {
         return null;
     }

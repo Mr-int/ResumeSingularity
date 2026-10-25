@@ -14,12 +14,12 @@ import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js
 const NAV_DEFS = [
     { id: 'career', label: 'Центр карьеры', path: '/' },
     { id: 'projects', label: 'Проекты', path: '/#projects' },
-    { id: 'resume', label: 'Резюме', path: '/plug' },
+    { id: 'resume', label: 'Резюме', path: '/resume/create' },
     { id: 'vacancies', label: 'Вакансии', path: null },
 ];
 
 const navIdFromLocation = (pathname, hash) => {
-    if (pathname.startsWith('/plug')) return 'resume';
+    if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return 'resume';
     if (pathname === '/' && hash === '#projects') return 'projects';
     if (pathname === '/') return 'career';
     return null;
@@ -143,7 +143,7 @@ const Header = ({
             return;
         }
         if (item.id === 'resume') {
-            goAuthed('/plug');
+            goAuthed('/resume/create');
         }
     };
 

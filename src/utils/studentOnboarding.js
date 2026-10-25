@@ -10,6 +10,7 @@ export const STUDENT_STAGE = {
 };
 
 const PROFILE_SUBMITTED_KEY = 'resume:student-profile-submitted';
+const REGISTRATION_COMPLETED_KEY = 'resume:student-registration-completed';
 
 export const markStudentProfileSubmitted = (userId) => {
     if (!userId) return;
@@ -35,6 +36,24 @@ export const clearStudentProfileSubmitted = (userId) => {
         localStorage.removeItem(`${PROFILE_SUBMITTED_KEY}:${userId}`);
     } catch {
         /* empty */
+    }
+};
+
+export const markStudentRegistrationCompleted = (userId) => {
+    if (!userId) return;
+    try {
+        localStorage.setItem(`${REGISTRATION_COMPLETED_KEY}:${userId}`, '1');
+    } catch {
+        /* empty */
+    }
+};
+
+export const isStudentRegistrationCompletedLocally = (userId) => {
+    if (!userId) return false;
+    try {
+        return localStorage.getItem(`${REGISTRATION_COMPLETED_KEY}:${userId}`) === '1';
+    } catch {
+        return false;
     }
 };
 
@@ -64,7 +83,7 @@ export const resolveStudentStage = (authMe, studentMe, readiness = null) => {
         return STUDENT_STAGE.COMPLETE_REGISTRATION;
     }
 
-    // ready + PENDING → экран ожидания (без повторного submit)
+    // ready + PENDING → анкета уже отправлена
     if (status === 'PENDING_APPROVAL' && readiness?.ready === true) {
         return STUDENT_STAGE.PENDING_REVIEW;
     }
@@ -104,13 +123,13 @@ export const pathForStudentStage = (stage) => {
         case STUDENT_STAGE.CONFIRM_EMAIL:
             return '/registration?role=student';
         case STUDENT_STAGE.COMPLETE_REGISTRATION:
-            return '/onboarding';
+            return '/resume/create';
         case STUDENT_STAGE.QUESTIONNAIRE:
-            return '/plug';
+            return '/resume/create';
         case STUDENT_STAGE.PENDING_REVIEW:
-            return '/onboarding';
+            return '/profile';
         case STUDENT_STAGE.REJECTED:
-            return '/onboarding';
+            return '/profile';
         case STUDENT_STAGE.APPROVED:
             return '/students';
         default:

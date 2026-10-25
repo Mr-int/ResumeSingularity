@@ -12,6 +12,12 @@ export const REGISTRATION_PENDING_ROLE_KEY = 'resume:registration-pending-role';
 export const AUTH_USERNAME_KEY = 'resumeAuthUsername';
 /** Роль из GET /auth/me — ADMIN | STUDENT | RECRUITER | … */
 export const AUTH_ROLE_KEY = 'resumeAuthRole';
+/** UUID пользователя из GET /auth/me */
+export const AUTH_USER_ID_KEY = 'resumeAuthUserId';
+/** accountStatus: PENDING_APPROVAL | APPROVED | REJECTED */
+export const AUTH_ACCOUNT_STATUS_KEY = 'resumeAuthAccountStatus';
+/** emailVerified из GET /auth/me */
+export const AUTH_EMAIL_VERIFIED_KEY = 'resumeAuthEmailVerified';
 
 let refreshInFlight = null;
 
@@ -49,8 +55,50 @@ const setStoredRole = (role) => {
     }
 };
 
+const clearStoredSessionProfile = () => {
+    localStorage.removeItem(AUTH_USER_ID_KEY);
+    localStorage.removeItem(AUTH_ACCOUNT_STATUS_KEY);
+    localStorage.removeItem(AUTH_EMAIL_VERIFIED_KEY);
+};
+
+/** Кэш полей AuthMeDTO после GET /auth/me. */
+export const applyAuthMeToStorage = (me) => {
+    if (!me || typeof me !== 'object') return;
+    const role = extractRoleFromMe(me);
+    if (role) setStoredRole(role);
+    if (me.id != null && String(me.id).trim()) {
+        localStorage.setItem(AUTH_USER_ID_KEY, String(me.id).trim());
+    }
+    if (me.username != null && String(me.username).trim()) {
+        localStorage.setItem(AUTH_USERNAME_KEY, String(me.username).trim());
+    }
+    if (me.accountStatus != null && String(me.accountStatus).trim()) {
+        localStorage.setItem(
+            AUTH_ACCOUNT_STATUS_KEY,
+            String(me.accountStatus).trim().toUpperCase(),
+        );
+    }
+    if (typeof me.emailVerified === 'boolean') {
+        localStorage.setItem(AUTH_EMAIL_VERIFIED_KEY, me.emailVerified ? '1' : '0');
+    }
+};
+
+export const getStoredAccountStatus = () =>
+    String(localStorage.getItem(AUTH_ACCOUNT_STATUS_KEY) || '').toUpperCase() || null;
+
+export const getStoredEmailVerified = () => {
+    const raw = localStorage.getItem(AUTH_EMAIL_VERIFIED_KEY);
+    if (raw === '1') return true;
+    if (raw === '0') return false;
+    return null;
+};
+
+export const getStoredUserId = () => localStorage.getItem(AUTH_USER_ID_KEY) || null;
+
+export const getStoredRole = () => normalizeRole(localStorage.getItem(AUTH_ROLE_KEY));
+
 /**
- * GET /auth/me — кэширует роль в localStorage.
+ * GET /auth/me — роль, accountStatus, emailVerified и id в localStorage.
  */
 export const fetchAuthMe = async () => {
     const response = await fetch(`${API_BASE_URL}auth/me`, {
@@ -71,8 +119,7 @@ export const fetchAuthMe = async () => {
             data = {};
         }
     }
-    const role = extractRoleFromMe(data);
-    if (role) setStoredRole(role);
+    applyAuthMeToStorage(data);
     return data;
 };
 
@@ -93,9 +140,8 @@ const shouldSkipServerLogout = async () => {
                 data = {};
             }
         }
-        const role = extractRoleFromMe(data);
-        if (role) setStoredRole(role);
-        return isAdminRole(role);
+        applyAuthMeToStorage(data);
+        return isAdminRole(extractRoleFromMe(data));
     } catch {
         return false;
     }
@@ -173,6 +219,7 @@ export const clearServerSessionBeforeLogin = async () => {
     localStorage.removeItem(AUTH_FLAG_KEY);
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_ROLE_KEY);
+    clearStoredSessionProfile();
 };
 
 /**
@@ -249,15 +296,12 @@ export const login = async (username, password) => {
             localStorage.setItem(AUTH_USERNAME_KEY, String(username).trim());
         }
 
-        const roleFromLogin = extractRoleFromMe(data);
-        if (roleFromLogin) {
-            setStoredRole(roleFromLogin);
-        } else {
-            try {
-                await fetchAuthMe();
-            } catch (e) {
-                console.warn('[AUTH] post-login auth/me failed', e);
-            }
+        // Login обычно 204 без тела — статус/роль берём из GET /auth/me
+        applyAuthMeToStorage(data);
+        try {
+            await fetchAuthMe();
+        } catch (e) {
+            console.warn('[AUTH] post-login auth/me failed', e);
         }
 
         return data || { success: true };
@@ -315,6 +359,7 @@ export const clearLocalAuth = () => {
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_USERNAME_KEY);
     localStorage.removeItem(AUTH_ROLE_KEY);
+    clearStoredSessionProfile();
     // Черновик подтверждения почты НЕ трогаем — иначе после ухода на /login
     // сессия confirm-email теряется, а почта на сервере уже занята.
     document.cookie.split(';').forEach((c) => {
@@ -346,6 +391,13 @@ export const registerStudent = async (body) => {
         const err = new Error(msg || `Ошибка ${response.status}`);
         err.status = response.status;
         throw err;
+    }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    try {
+        await fetchAuthMe();
+    } catch {
+        /* cookie уже есть — me подтянется на следующем шаге */
     }
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
@@ -411,6 +463,11 @@ export const confirmEmail = async (code) => {
     });
     if (!response.ok) {
         throw await parseAuthError(response);
+    }
+    try {
+        await fetchAuthMe();
+    } catch {
+        /* сессия могла ещё не отдавать me — не валим confirm */
     }
     return {};
 };

@@ -249,7 +249,7 @@ const ChatsView = () => {
                         title: 'Чаты пока недоступны',
                         message: msg,
                         ...(needsResume
-                            ? { ctaTo: '/plug', ctaLabel: 'Заполнить резюме' }
+                            ? { ctaTo: '/resume/create', ctaLabel: 'Заполнить резюме' }
                             : {}),
                     },
                 });

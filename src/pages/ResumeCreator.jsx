@@ -24,6 +24,7 @@ import { getImageUrl } from '../config/api.js';
 import { isAllowedProfileCity } from '../constants/campusCities.js';
 import { getStudentMe } from '../services/getApi.js';
 import {
+    completeStudentRegistration,
     getCommunicationReadiness,
     patchStudentMe,
     submitStudentForReview,
@@ -33,7 +34,10 @@ import { fetchAuthMe } from '../services/authApi.js';
 import { resolveStudentOnboarding, STUDENT_STAGE } from '../services/studentOnboardingApi.js';
 import {
     formatMissingProfileFields,
+    hasRegistrationBasics,
+    isStudentRegistrationCompletedLocally,
     markStudentProfileSubmitted,
+    markStudentRegistrationCompleted,
 } from '../utils/studentOnboarding.js';
 import {
     getAllSpecialities,
@@ -219,7 +223,7 @@ const toApiCourse = (course) => (course === 'NEW' ? 'FIFTH' : course);
 
 /**
  * Создание / дозаполнение резюме студента через API.
- * Маршрут: /plug (ProtectedRoute)
+ * Маршрут: /resume/create (ProtectedRoute)
  */
 const ResumeCreator = () => {
     const navigate = useNavigate();
@@ -228,6 +232,8 @@ const ResumeCreator = () => {
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState({ visible: false, text: '', error: false });
     const toastTimerRef = useRef(null);
+    /** Нужен POST complete-registration (письмо), если basics ещё не были на карточке. */
+    const needsCompleteRegistrationRef = useRef(false);
 
     const [step, setStep] = useState(1);
     /** Дальше этого шага по клику на прогресс нельзя — пока не пройдены обязательные шаги. */
@@ -339,16 +345,16 @@ const ResumeCreator = () => {
                 try {
                     const gate = await resolveStudentOnboarding();
                     if (cancelled) return;
-                    const blockCreator = [
-                        STUDENT_STAGE.CONFIRM_EMAIL,
-                        STUDENT_STAGE.COMPLETE_REGISTRATION,
-                        STUDENT_STAGE.PENDING_REVIEW,
-                        STUDENT_STAGE.REJECTED,
-                    ].includes(gate.stage);
-                    if (blockCreator && gate.path) {
+                    if (gate.stage === STUDENT_STAGE.CONFIRM_EMAIL && gate.path) {
                         navigate(gate.path, { replace: true });
                         return;
                     }
+                    needsCompleteRegistrationRef.current = gate.stage === STUDENT_STAGE.COMPLETE_REGISTRATION
+                        || (
+                            gate.authMe?.id
+                            && !isStudentRegistrationCompletedLocally(gate.authMe.id)
+                            && !hasRegistrationBasics(gate.studentMe)
+                        );
                 } catch {
                     /* не-студент или сеть — продолжаем обычный boot */
                 }
@@ -596,6 +602,27 @@ const ResumeCreator = () => {
                     showToast('Навыки не сохранились на сервере. Попробуйте ещё раз.', { error: true });
                     return;
                 }
+                if (
+                    step === 1
+                    && needsCompleteRegistrationRef.current
+                    && profile.birthDate
+                    && profile.course
+                    && isAllowedProfileCity(profile.city, legacyCity)
+                ) {
+                    try {
+                        await completeStudentRegistration({
+                            birthDate: profile.birthDate,
+                            course: toApiCourse(profile.course),
+                            city: profile.city.trim(),
+                        });
+                        const me = await fetchAuthMe();
+                        markStudentRegistrationCompleted(me?.id);
+                        needsCompleteRegistrationRef.current = false;
+                    } catch (regErr) {
+                        showToast(regErr?.message || 'Не удалось завершить регистрацию', { error: true });
+                        return;
+                    }
+                }
             }
             if (step === 4) {
                 const portName = portfolioName.trim();
@@ -710,7 +737,7 @@ const ResumeCreator = () => {
                     clearExperienceDraft(studentId);
                     setResumeComplete(true);
                     showToast('Анкета отправлена на проверку');
-                    navigate('/onboarding', { replace: true });
+                    navigate('/profile', { replace: true });
                     return;
                 }
 

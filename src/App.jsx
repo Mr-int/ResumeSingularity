@@ -11,7 +11,6 @@ import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 import Auth from './pages/Auth.jsx';
 import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
-import StudentOnboarding from './pages/StudentOnboarding.jsx';
 import { routerBasename } from './utils/appBase.js';
 
 /** Старые URL → уникальная ссылка /profile/:id */
@@ -86,16 +85,13 @@ const AppRoutes = () => {
               <Chats />
             </ProtectedRoute>
           } />
-          <Route path='/plug' element={
+          <Route path='/resume/create' element={
             <ProtectedRoute>
               <ResumeCreator />
             </ProtectedRoute>
           } />
-          <Route path='/onboarding' element={
-            <ProtectedRoute>
-              <StudentOnboarding />
-            </ProtectedRoute>
-          } />
+          <Route path='/plug' element={<Navigate to="/resume/create" replace />} />
+          <Route path='/onboarding' element={<Navigate to="/resume/create" replace />} />
           <Route path='/error/:code' element={<StatusError />} />
           <Route path='*' element={<StatusError code="404" />} />
         </Routes>

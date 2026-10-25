@@ -40,7 +40,7 @@ const Auth = () => {
             const role = String(me?.role || '').toUpperCase();
             if (role === 'STUDENT') {
                 const { path } = await resolveStudentOnboarding();
-                return path || '/plug';
+                return path || '/resume/create';
             }
         } catch {
             /* fall through */
@@ -56,7 +56,7 @@ const Auth = () => {
         let cancelled = false;
         (async () => {
             const from = location.state?.from;
-            const fallback = from && from !== '/login' && from !== '/registration' && from !== '/onboarding'
+            const fallback = from && from !== '/login' && from !== '/registration' && from !== '/onboarding' && from !== '/plug'
                 ? from
                 : '/students';
             const dest = await resolvePostAuthPath(fallback);
@@ -74,7 +74,7 @@ const Auth = () => {
 
     const handleLoginSuccess = async () => {
         const from = location.state?.from;
-        const fallback = from && from !== '/login' && from !== '/registration' && from !== '/onboarding'
+        const fallback = from && from !== '/login' && from !== '/registration' && from !== '/onboarding' && from !== '/plug'
             ? from
             : '/students';
         const dest = await resolvePostAuthPath(fallback);
@@ -107,7 +107,7 @@ const Auth = () => {
 
     const handleRegisterSuccess = (role, username, meta = {}) => {
         if (role === 'student' && meta.next === 'questionnaire') {
-            navigate('/plug', { replace: true });
+            navigate('/resume/create', { replace: true });
             return;
         }
         const loginLine = username ? ` Логин для входа: ${username}.` : '';

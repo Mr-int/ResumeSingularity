@@ -30,7 +30,7 @@ const CareerCenter = () => {
                             <button
                                 type="button"
                                 className="careerCenter__imageBtn"
-                                onClick={() => navigate('/plug')}
+                                onClick={() => navigate('/resume/create')}
                             >
                                 Создать
                             </button>

@@ -5,6 +5,7 @@ import {
     confirmEmail,
     EMAIL_CONFIRMATION_EMAIL_KEY,
     EMAIL_CONFIRMATION_PENDING_KEY,
+    fetchAuthMe,
     isRegistrationPendingForRole,
     REGISTRATION_PENDING_ROLE_KEY,
     REGISTRATION_USERNAME_KEY,
@@ -22,6 +23,7 @@ import {
     usernameWithSuffix,
 } from '../../utils/registrationIdentity.js';
 import { completeStudentRegistration } from '../../services/accountApi.js';
+import { markStudentRegistrationCompleted } from '../../utils/studentOnboarding.js';
 import './registerForm.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -423,6 +425,12 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 course: COURSE_API[Number(formData.course)],
                 city: formData.campus,
             });
+            try {
+                const me = await fetchAuthMe();
+                markStudentRegistrationCompleted(me?.id);
+            } catch {
+                /* флаг только против повторного письма */
+            }
             clearRegistrationDraft();
             setRegistrationCompleted(true);
             onSuccess(role, assignedUsername, { next: 'questionnaire' });
