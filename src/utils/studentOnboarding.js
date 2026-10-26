@@ -105,6 +105,8 @@ const MISSING_FIELD_LABELS = {
     city: 'город',
     speciality: 'специальность',
     skills: 'хотя бы один навык',
+    experience: 'хотя бы один опыт работы или проект',
+    portfolio: 'работу в портфолио или ссылку на HH',
     portfolio_or_hh: 'работу в портфолио или ссылку на HH',
 };
 
