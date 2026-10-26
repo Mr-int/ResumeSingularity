@@ -678,29 +678,36 @@ const ResumeCreator = () => {
                     }
 
                     // communication-readiness временно не блокируем — сразу submit-for-review
+                    let submitted = false;
                     try {
                         await submitStudentForReview();
-                        markStudentProfileSubmitted(authMe?.id);
+                        submitted = true;
                     } catch (submitErr) {
                         const body = submitErr?.responseBody;
                         if (submitErr?.status === 403 && body?.code === 'PROFILE_INCOMPLETE') {
                             const missing = formatMissingProfileFields(body.missingFields);
                             showToast(
                                 missing
-                                    ? `Анкета неполная: ${missing}`
-                                    : (body.message || 'Дозаполните профиль'),
+                                    ? `Резюме сохранено. Для модерации ещё нужно: ${missing}`
+                                    : (body.message || 'Резюме сохранено. Дозаполните профиль для модерации'),
                                 { error: true },
                             );
-                            return;
+                        } else {
+                            showToast(
+                                submitErr?.message || 'Резюме сохранено, но отправить на проверку не удалось',
+                                { error: true },
+                            );
                         }
-                        showToast(submitErr?.message || 'Не удалось отправить анкету', { error: true });
-                        return;
                     }
 
+                    // После полного прохождения мастера — в ЛК; локальная метка, чтобы логин не вернул в мастер
+                    markStudentProfileSubmitted(authMe?.id);
                     clearResumeCreatorStep(studentId);
                     clearExperienceDraft(studentId);
                     setResumeComplete(true);
-                    showToast('Анкета отправлена на проверку');
+                    if (submitted) {
+                        showToast('Анкета отправлена на проверку');
+                    }
                     navigate('/profile', { replace: true });
                     return;
                 }
@@ -709,7 +716,7 @@ const ResumeCreator = () => {
                 clearExperienceDraft(studentId);
                 setResumeComplete(true);
                 showToast('Резюме сохранено');
-                navigate('/profile');
+                navigate('/profile', { replace: true });
                 return;
             }
             const nextStep = step + 1;
