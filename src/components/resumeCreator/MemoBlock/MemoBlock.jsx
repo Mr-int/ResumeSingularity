@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import agreeIcon from '../../../assets/icons/agree.png';
+import cancelIcon from '../../../assets/icons/cancel.png';
+import arrowSmallIcon from '../../../assets/icons/arrow_small.svg';
 import './memoBlock.css';
 
 const HeaderIcon = () => (
@@ -8,21 +11,36 @@ const HeaderIcon = () => (
 );
 
 const SuccessIcon = () => (
-    <svg className="memoBlock__statusIcon memoBlock__statusIcon--success" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-    </svg>
+    <img
+        src={agreeIcon}
+        alt=""
+        className="memoBlock__statusIcon memoBlock__statusIcon--success"
+        width={16}
+        height={16}
+        aria-hidden="true"
+    />
 );
 
 const ErrorIcon = () => (
-    <svg className="memoBlock__statusIcon memoBlock__statusIcon--error" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z" />
-    </svg>
+    <img
+        src={cancelIcon}
+        alt=""
+        className="memoBlock__statusIcon memoBlock__statusIcon--error"
+        width={16}
+        height={16}
+        aria-hidden="true"
+    />
 );
 
 const ArrowIcon = () => (
-    <svg className="memoBlock__arrow" viewBox="0 0 24 24" aria-hidden="true">
-        <polyline points="6 9 12 15 18 9" />
-    </svg>
+    <img
+        src={arrowSmallIcon}
+        alt=""
+        className="memoBlock__arrow"
+        width={19}
+        height={6}
+        aria-hidden="true"
+    />
 );
 
 const toBullets = (item) => {
@@ -65,13 +83,20 @@ const MemoBlock = ({ title = 'Памятка', items = [] }) => {
                             <ArrowIcon />
                         </button>
 
-                        {isOpen && bullets.length > 0 ? (
-                            <div className="memoBlock__content">
-                                <ul className="memoBlock__list">
-                                    {bullets.map((line) => (
-                                        <li key={line} className="memoBlock__listItem">{line}</li>
-                                    ))}
-                                </ul>
+                        {bullets.length > 0 ? (
+                            <div
+                                className="memoBlock__panel"
+                                aria-hidden={!isOpen}
+                            >
+                                <div className="memoBlock__panelInner">
+                                    <div className="memoBlock__content">
+                                        <ul className="memoBlock__list">
+                                            {bullets.map((line) => (
+                                                <li key={line} className="memoBlock__listItem">{line}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         ) : null}
                     </div>

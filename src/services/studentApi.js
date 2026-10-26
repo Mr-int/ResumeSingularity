@@ -1,4 +1,6 @@
+import { API_BASE_URL } from '../config/api.js';
 import { apiClientJson } from '../utils/apiClient.js';
+import { unpackExperienceAdditionalInfo } from '../utils/experienceWebUrl.js';
 import { getCompanyById } from './getApi.js';
 
 const withPageQuery = (endpoint, pageable = { page: 0, size: 100 }) => {
@@ -14,13 +16,57 @@ const pageItems = (resp) => {
     return [];
 };
 
+/**
+ * GET /public/vitrina/home — лендинг без авторизации.
+ * Не через apiClient: 401 не должен выкидывать с главной.
+ * Бэкенд отдаёт только catalogVisible + publicProfileConsent.
+ */
+export const getPublicHomeVitrina = async () => {
+    const response = await fetch(`${API_BASE_URL}public/vitrina/home`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const err = new Error(`vitrina/home failed: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    let data = {};
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        try {
+            data = await response.json();
+        } catch {
+            data = {};
+        }
+    }
+    return {
+        students: Array.isArray(data?.students) ? data.students : [],
+        projects: Array.isArray(data?.projects) ? data.projects : [],
+    };
+};
+
+/**
+ * Для главной / каталога: только видимые в каталоге.
+ * Не требуем publicProfileConsent — иначе список часто пустой;
+ * неодобренные обычно с catalogVisible=false и сюда не попадут.
+ */
+const CATALOG_CARD_FILTER = {
+    catalogVisible: true,
+};
+
 export const getAllStudents = async () => {
     try {
         const pageSize = 200;
         const maxPages = 200;
         const byId = new Map();
 
-        const first = await filterStudentCardsPage({}, { page: 0, size: pageSize });
+        const cardOpts = { skipAuthRedirect: true };
+        const first = await filterStudentCardsPage(
+            CATALOG_CARD_FILTER,
+            { page: 0, size: pageSize },
+            cardOpts,
+        );
         const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
         const pagesToFetch = Math.min(totalPages, maxPages);
 
@@ -30,7 +76,11 @@ export const getAllStudents = async () => {
         }
 
         for (let page = 1; page < pagesToFetch; page += 1) {
-            const res = await filterStudentCardsPage({}, { page, size: pageSize });
+            const res = await filterStudentCardsPage(
+                CATALOG_CARD_FILTER,
+                { page, size: pageSize },
+                cardOpts,
+            );
             for (const s of res.data) {
                 const key = s?.id != null ? String(s.id) : JSON.stringify(s);
                 if (!byId.has(key)) byId.set(key, s);
@@ -118,7 +168,7 @@ export const getExperienceByStudentId = async (studentId) => {
     }
 };
 
-const resolveCompanyNames = async (experienceList) => {
+const resolveCompanyMeta = async (experienceList) => {
     const companyIds = [
         ...new Set(
             experienceList
@@ -127,20 +177,23 @@ const resolveCompanyNames = async (experienceList) => {
         ),
     ];
 
-    const companyNameById = new Map();
+    const companyMetaById = new Map();
 
     await Promise.all(
         companyIds.map(async (companyId) => {
             try {
                 const company = await getCompanyById(companyId);
-                companyNameById.set(companyId, (company?.name || '').toString().trim());
+                companyMetaById.set(companyId, {
+                    name: (company?.name || '').toString().trim(),
+                    webUrl: (company?.webUrl || company?.link || company?.url || '').toString().trim(),
+                });
             } catch {
-                companyNameById.set(companyId, '');
+                companyMetaById.set(companyId, { name: '', webUrl: '' });
             }
         })
     );
 
-    return companyNameById;
+    return companyMetaById;
 };
 
 export const getExperienceDetailsByStudentId = async (studentId) => {
@@ -150,10 +203,10 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
             return [];
         }
 
-        const companyNameById = await resolveCompanyNames(experienceList);
+        const companyMetaById = await resolveCompanyMeta(experienceList);
 
         return experienceList
-            .map((item, index) => {
+            .map((item) => {
                 if (!item || typeof item !== 'object') {
                     return null;
                 }
@@ -164,16 +217,40 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                 const endDate = endDateRaw
                     ? String(endDateRaw)
                     : (experience.current || item.current ? 'по настоящее время' : '');
-                const companyFromMap = companyId != null && companyId !== 0
-                    ? (companyNameById.get(companyId) || '')
-                    : '';
+                const companyMeta = companyId != null && companyId !== 0
+                    ? (companyMetaById.get(companyId) || { name: '', webUrl: '' })
+                    : { name: '', webUrl: '' };
+
+                const rawId = item.id ?? experience.id ?? item.experienceId ?? null;
+                const numericId = Number(rawId);
+                const id = Number.isFinite(numericId) && numericId > 0
+                    ? numericId
+                    : (rawId != null && String(rawId).trim() && !String(rawId).startsWith('exp-')
+                        ? rawId
+                        : null);
+
+                const packedInfo = unpackExperienceAdditionalInfo(
+                    experience.additionalInfo || item.additionalInfo || '',
+                );
+                const webUrl = (
+                    experience.webUrl
+                    || item.webUrl
+                    || experience.companyUrl
+                    || item.companyUrl
+                    || experience.link
+                    || item.link
+                    || packedInfo.webUrl
+                    || companyMeta.webUrl
+                    || ''
+                ).toString().trim();
 
                 return {
-                    id: experience.id || item.experienceId || `exp-${index}`,
+                    id,
                     companyId,
                     position: (experience.position || item.position || '').toString().trim(),
-                    company: companyFromMap,
-                    description: (experience.additionalInfo || item.additionalInfo || '').toString().trim(),
+                    company: companyMeta.name,
+                    description: packedInfo.description,
+                    webUrl,
                     startDate: experience.startDate || item.startDate || '',
                     endDate,
                     current: Boolean(experience.current || item.current || !endDateRaw),
@@ -461,12 +538,17 @@ export const filterStudents = async (filterReq = {}) => {
  * POST /student/cardsFilter
  * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
  */
-export const filterStudentCardsPage = async (filterReq = {}, pageable = { page: 0, size: 100 }) => {
+export const filterStudentCardsPage = async (
+    filterReq = {},
+    pageable = { page: 0, size: 100 },
+    options = {},
+) => {
     const page = typeof pageable.page === 'number' ? pageable.page : 0;
     const size = typeof pageable.size === 'number' ? pageable.size : 100;
     const resp = await apiClientJson(`student/cardsFilter?page=${page}&size=${size}`, {
         method: 'POST',
         body: JSON.stringify(filterReq),
+        skipAuthRedirect: options.skipAuthRedirect === true,
     });
 
     return {
@@ -531,6 +613,13 @@ export const getPortfolioById = async (id) => {
         throw error;
     }
 };
+
+/** POST /portfolio — студент только на свою карточку. */
+export const createPortfolio = (body) =>
+    apiClientJson('portfolio', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
 
 /** POST /skill/filter — справочник навыков. FilterSkillReq: { name }. */
 export const filterSkills = async (filterReq = {}, pageable = { page: 0, size: 200 }) => {

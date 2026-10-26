@@ -1,0 +1,113 @@
+.citySelect {
+    position: relative;
+    width: 100%;
+}
+
+.citySelect__trigger {
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    appearance: none;
+    background-color: transparent;
+    background-image: url('../../../../assets/icons/arrow_select.svg');
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 18px 6px;
+    border: 1px solid #737D85;
+    border-radius: 10px;
+    padding: 12px 36px 12px 16px;
+    color: #737D85;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+}
+
+.citySelect.has-value .citySelect__trigger {
+    color: #737D85;
+}
+
+.citySelect.is-open .citySelect__trigger {
+    border-color: #3E8EFF;
+}
+
+.citySelect__value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.citySelect__menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    max-height: 220px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
+    border: 1px solid #41464B;
+    border-radius: 18px;
+    background: #262626;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transform: translateY(-6px);
+    animation: citySelectMenuIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(65, 70, 75, 0.7) transparent;
+}
+
+.citySelect__menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.citySelect__menu::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: rgba(65, 70, 75, 0.7);
+}
+
+@keyframes citySelectMenuIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.citySelect__option {
+    width: 100%;
+    margin: 0;
+    padding: 10px 14px;
+    border: none;
+    border-bottom: 1px solid #41464B;
+    background: #262626;
+    color: #ffffff;
+    font-family: 'Sansation', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    text-align: left;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: filter 0.2s ease, background-color 0.2s ease;
+}
+
+.citySelect__option:last-child {
+    border-bottom: none;
+}
+
+.citySelect__option:hover {
+    filter: brightness(1.12);
+}
+
+.citySelect__option.is-selected {
+    background: #1E1D1D;
+    color: #3E8EFF;
+}

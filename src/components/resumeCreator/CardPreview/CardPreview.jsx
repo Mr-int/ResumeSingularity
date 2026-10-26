@@ -1,6 +1,7 @@
 import './cardPreview.css';
 import { getImageUrl } from '../../../config/api.js';
 import { getSpecialtyIcon } from '../../../utils/specialtyIcon.js';
+import stockPhoto from '../../../assets/photoExamples/stock.jpg';
 import { courseUiLabel } from '../StepForm/StepForm.jsx';
 
 const courseTone = (course) => {
@@ -39,6 +40,7 @@ const CardPreview = ({
         ? `cardPreview__badge--course cardPreview__badge--course-${tone}`
         : 'cardPreview__badge--course';
     const photoUrl = photoSrc || getImageUrl(imagePath);
+    const hasPhoto = Boolean(photoUrl);
     const specialtyIcon = getSpecialtyIcon(specialty);
     const hasSpecialty = Boolean(specialty && specialty !== 'Специализация');
 
@@ -55,13 +57,16 @@ const CardPreview = ({
     return (
         <section className="cardPreview">
             <div className="cardPreview__title">
-                Оформление карточки
+                Предпросмотр вашей карточки
                 <span className="cardPreview__info">?</span>
             </div>
 
             <div className="cardPreview__card">
                 <div className="cardPreview__photo">
-                    {photoUrl ? <img src={photoUrl} alt={fullName} /> : null}
+                    <img
+                        src={hasPhoto ? photoUrl : stockPhoto}
+                        alt={hasPhoto ? fullName : ''}
+                    />
                     <div className="cardPreview__badges">
                         <div
                             className="cardPreview__badge cardPreview__badge--skill"
@@ -84,7 +89,12 @@ const CardPreview = ({
                     <span className={`cardPreview__legendBadge ${courseClass}`}>{courseLabel}</span>
                     Ваш номер курса
                 </div>
-                <div className="cardPreview__legend">
+                <div
+                    className={
+                        'cardPreview__legend'
+                        + (specialtyIcon ? '' : ' cardPreview__legend--muted')
+                    }
+                >
                     <span className="cardPreview__legendBadge cardPreview__legendBadge--skill">
                         {skillBadge}
                     </span>

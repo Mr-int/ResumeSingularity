@@ -22,33 +22,37 @@
 }
 
 .birthDatePicker__trigger.has-value {
-    color: #ffffff;
+    color: #737D85;
 }
 
 .birthDatePicker.is-open .birthDatePicker__trigger {
     border-color: #3E8EFF;
+}
+
+.birthDatePicker.is-open .birthDatePicker__trigger:not(.has-value) {
     color: #ffffff;
 }
 
 .birthDatePicker__icon {
     flex-shrink: 0;
-    color: #737D85;
-}
-
-.birthDatePicker.is-open .birthDatePicker__icon,
-.birthDatePicker__trigger.has-value .birthDatePicker__icon {
-    color: #8e8e93;
+    display: block;
+    width: 13px;
+    height: 13px;
 }
 
 .birthDatePicker__popover {
     position: fixed;
     z-index: 1200;
     box-sizing: border-box;
-    padding: 14px;
-    background: #1e1f21;
+    min-width: 280px;
+    padding: 16px;
+    background: linear-gradient(180deg, #222426 0%, #1a1b1d 100%);
     border: 1px solid #41464B;
-    border-radius: 14px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    font-family: 'Sansation', sans-serif;
+    color: #ffffff;
+    -webkit-font-smoothing: antialiased;
 }
 
 .birthDatePicker__header {
@@ -56,7 +60,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .birthDatePicker__nav {
@@ -72,11 +76,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-family: inherit;
+    font-family: 'Sansation', sans-serif;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 .birthDatePicker__nav:hover {
     border-color: #3E8EFF;
+    background: rgba(62, 142, 255, 0.12);
+    color: #3E8EFF;
 }
 
 .birthDatePicker__nav--spacer {
@@ -88,21 +98,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     flex: 1;
-    font-family: 'StratosSemiLight', sans-serif;
+    min-width: 0;
+    font-family: 'Sansation', sans-serif;
 }
 
 .birthDatePicker__titleBtn {
     border: none;
     background: transparent;
     color: #ffffff;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Sansation', sans-serif;
+    letter-spacing: 0.02em;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 6px 8px;
     border-radius: 8px;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
 }
 
 .birthDatePicker__titleBtn:hover:not(.is-static) {
@@ -112,41 +127,52 @@
 
 .birthDatePicker__titleBtn.is-static {
     cursor: default;
+    font-weight: 400;
+    color: #B3B5B7;
 }
 
 .birthDatePicker__weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .birthDatePicker__weekdays span {
     text-align: center;
+    font-family: 'Sansation', sans-serif;
     font-size: 11px;
-    color: #8e8e93;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #B3B5B7;
     padding: 4px 0;
 }
 
 .birthDatePicker__grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 4px;
 }
 
 .birthDatePicker__day {
     aspect-ratio: 1;
-    min-height: 32px;
+    min-height: 34px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     background: transparent;
     color: #ffffff;
     font-size: 13px;
-    font-family: inherit;
+    font-weight: 400;
+    font-family: 'Sansation', sans-serif;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 .birthDatePicker__day.is-empty {
@@ -159,44 +185,72 @@
 
 .birthDatePicker__day.is-today:not(.is-selected) {
     box-shadow: inset 0 0 0 1px #3E8EFF;
+    color: #3E8EFF;
 }
 
 .birthDatePicker__day.is-selected {
     background: #3E8EFF;
     color: #ffffff;
+    font-weight: 700;
+}
+
+.birthDatePicker__day.is-selected:hover {
+    background: #3E8EFF;
 }
 
 .birthDatePicker__day:disabled {
     color: #555558;
     cursor: default;
+    opacity: 0.55;
 }
 
 .birthDatePicker__months,
 .birthDatePicker__years {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    max-height: 220px;
+    gap: 8px;
+    max-height: 240px;
     overflow-y: auto;
-    padding-right: 2px;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(65, 70, 75, 0.7) transparent;
+}
+
+.birthDatePicker__months::-webkit-scrollbar,
+.birthDatePicker__years::-webkit-scrollbar {
+    width: 6px;
+}
+
+.birthDatePicker__months::-webkit-scrollbar-thumb,
+.birthDatePicker__years::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: rgba(65, 70, 75, 0.7);
 }
 
 .birthDatePicker__chip {
     border: 1px solid #41464B;
-    border-radius: 8px;
+    border-radius: 10px;
     background: transparent;
     color: #ffffff;
     font-size: 13px;
-    font-family: inherit;
+    font-weight: 400;
+    font-family: 'Sansation', sans-serif;
     padding: 10px 6px;
     cursor: pointer;
+    transition:
+        border-color 0.15s ease,
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .birthDatePicker__chip:hover {
     border-color: #3E8EFF;
+    background: rgba(62, 142, 255, 0.1);
 }
 
 .birthDatePicker__chip.is-selected {
     background: #3E8EFF;
     border-color: #3E8EFF;
+    color: #ffffff;
+    font-weight: 700;
 }

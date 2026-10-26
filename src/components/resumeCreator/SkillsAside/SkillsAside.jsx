@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import metkaIcon from '../../../assets/icons/metka.svg';
 import './skillsAside.css';
 
 const PolygonIcon = () => (
@@ -8,9 +9,14 @@ const PolygonIcon = () => (
 );
 
 const MemoIcon = () => (
-    <svg className="skillsAside__iconMemo" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-    </svg>
+    <img
+        src={metkaIcon}
+        alt=""
+        className="skillsAside__iconMemo"
+        width={14}
+        height={16}
+        aria-hidden="true"
+    />
 );
 
 const ArrowIcon = () => (
@@ -35,7 +41,7 @@ const SkillsAside = ({
     skills = [],
     selectedSkills = [],
     memoItems = [],
-    onRemove,
+    onToggle,
 }) => {
     const [openId, setOpenId] = useState(null);
 
@@ -60,17 +66,18 @@ const SkillsAside = ({
                         <div className="skillsAside__selectedEmpty">Пока ничего не выбрано</div>
                     ) : (
                         selectedList.map((skill) => (
-                            <div key={skill.id} className="skillsAside__selectedBadge">
+                            <button
+                                key={skill.id}
+                                type="button"
+                                className="skillsAside__selectedBadge"
+                                aria-label={`Убрать ${skill.name}`}
+                                onClick={() => onToggle?.(skill.id)}
+                            >
                                 <span>{skill.name}</span>
-                                <button
-                                    type="button"
-                                    className="skillsAside__remove"
-                                    aria-label={`Убрать ${skill.name}`}
-                                    onClick={() => onRemove?.(skill.id)}
-                                >
+                                <span className="skillsAside__remove" aria-hidden="true">
                                     <RemoveIcon />
-                                </button>
-                            </div>
+                                </span>
+                            </button>
                         ))
                     )}
                 </div>
@@ -94,15 +101,27 @@ const SkillsAside = ({
                             >
                                 <button
                                     type="button"
-                                    className="skillsAside__accordionSummary"
+                                    className={
+                                        'skillsAside__accordionSummary'
+                                        + (isOpen ? ' is-open' : '')
+                                    }
                                     aria-expanded={isOpen}
                                     onClick={() => setOpenId(isOpen ? null : item.id)}
                                 >
                                     <span className="skillsAside__accordionText">{item.title}</span>
                                     <ArrowIcon />
                                 </button>
-                                {isOpen && content ? (
-                                    <div className="skillsAside__accordionContent">{content}</div>
+                                {content ? (
+                                    <div
+                                        className="skillsAside__accordionPanel"
+                                        aria-hidden={!isOpen}
+                                    >
+                                        <div className="skillsAside__accordionPanelInner">
+                                            <div className="skillsAside__accordionContent">
+                                                {content}
+                                            </div>
+                                        </div>
+                                    </div>
                                 ) : null}
                             </div>
                         );

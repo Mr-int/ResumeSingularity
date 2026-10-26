@@ -1,30 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import Footer from '../components/footer/Footer.jsx';
-import StudentRequestsSection from '../components/settings/StudentRequestsSection.jsx';
+import StudentProfileResume from '../components/studentProfileResume/StudentProfileResume.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
+import {
+    getEducationDetailsByStudentId,
+    getExperienceDetailsByStudentId,
+    getPortfolioByStudentId,
+} from '../services/studentApi.js';
+import { logoutServer } from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
-
-const studentToForm = (s) => ({
-    firstName: s.firstName || '',
-    lastName: s.lastName || '',
-    city: s.city || '',
-    bio: s.bio || '',
-    hhLink: s.hhLink || '',
-    birthDate: s.birthDate || '',
-    course: s.course || 'FIRST',
-    busyness: s.busyness || 'FREE',
-    email: s.email || '',
-    phoneNumber: s.phoneNumber || '',
-    telegramUsername: s.telegramUsername || '',
-    specialityId: s.specialityId != null ? String(s.specialityId) : '',
-    skillsLabel: Array.isArray(s.skills)
-        ? s.skills.map((sk) => sk.name || sk.title || sk.id).filter(Boolean).join(', ')
-        : '',
-});
 
 const recruiterToForm = (r) => ({
     companyName: r.companyName || '',
@@ -39,13 +27,35 @@ const ReadOnlyInput = ({ value, ...rest }) => (
     <input {...rest} value={value ?? ''} readOnly className="accountPage__inputReadonly" />
 );
 
+const specialtyLabel = (student) => {
+    if (!student) return '';
+    if (typeof student.speciality === 'string') return student.speciality;
+    if (student.speciality?.name) return student.speciality.name;
+    return student.profession || student.specialityName || '';
+};
+
 const SettingsPage = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [loggingOut, setLoggingOut] = useState(false);
     const [error, setError] = useState('');
     const [role, setRole] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [studentForm, setStudentForm] = useState(studentToForm({}));
     const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
+    const [portfolio, setPortfolio] = useState([]);
+    const [experiences, setExperiences] = useState([]);
+    const [educations, setEducations] = useState([]);
+
+    const handleLogout = async () => {
+        if (loggingOut) return;
+        setLoggingOut(true);
+        try {
+            await logoutServer();
+        } finally {
+            navigate('/', { replace: true });
+            setLoggingOut(false);
+        }
+    };
 
     const loadProfile = useCallback(async () => {
         setLoading(true);
@@ -55,7 +65,44 @@ const SettingsPage = () => {
                 const s = await getStudentMe();
                 setRole('student');
                 setProfile(s);
-                setStudentForm(studentToForm(s));
+
+                const [portfolioResult, educationResult, experienceResult] = await Promise.allSettled([
+                    getPortfolioByStudentId(s.id),
+                    getEducationDetailsByStudentId(s.id),
+                    getExperienceDetailsByStudentId(s.id),
+                ]);
+
+                setPortfolio(
+                    portfolioResult.status === 'fulfilled' && Array.isArray(portfolioResult.value)
+                        ? portfolioResult.value
+                        : [],
+                );
+
+                if (educationResult.status === 'fulfilled' && Array.isArray(educationResult.value)) {
+                    setEducations(
+                        educationResult.value
+                            .filter((edu) => edu && typeof edu === 'object')
+                            .map((edu, index) => ({
+                                id: edu.id || `edu-${index}`,
+                                name: edu.institution || 'Образовательное учреждение',
+                                speciality: edu.additionalInfo || '',
+                                startDate: edu.startYear ? String(edu.startYear) : '',
+                                endDate: edu.endYear
+                                    ? String(edu.endYear)
+                                    : (edu.current ? 'по настоящее время' : ''),
+                                webUrl: edu.webUrl || '',
+                                additionalInfo: edu.additionalInfo || '',
+                            })),
+                    );
+                } else {
+                    setEducations([]);
+                }
+
+                setExperiences(
+                    experienceResult.status === 'fulfilled' && Array.isArray(experienceResult.value)
+                        ? experienceResult.value
+                        : [],
+                );
                 return;
             } catch (e) {
                 if (e.status !== 404 && e.status !== 403) throw e;
@@ -88,23 +135,17 @@ const SettingsPage = () => {
     }, [loadProfile]);
 
     const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
+    const isStudentProfile = role === 'student' && profile;
+    const showStudentShell = loading || isStudentProfile;
 
     return (
         <>
             <Header />
-            <main className="accountPage">
-                <div className="accountPage__inner">
-                    <h1 className="accountPage__title">Настройки</h1>
-                    <p className="accountPage__lead">
-                        Просмотр профиля. Изменения в анкете вносит администратор после модерации.
-                    </p>
-                    <p className="accountPage__settingsNav">
-                        <Link to="/chats" className="accountPage__settingsNavLink">
-                            Перейти к чатам
-                        </Link>
-                    </p>
-
-                    {loading && <div className="accountPage__muted">Загрузка…</div>}
+            <main className={`accountPage${showStudentShell ? ' accountPage--profile' : ''}`}>
+                <div className={`accountPage__inner${showStudentShell ? ' accountPage__inner--wide' : ''}`}>
+                    {loading ? (
+                        <div className="accountPage__muted">Загрузка…</div>
+                    ) : null}
 
                     {!loading && role === 'recruiter_pending' && (
                         <section className="accountPage__card">
@@ -112,6 +153,19 @@ const SettingsPage = () => {
                             <p className="accountPage__text">
                                 Профиль ещё не привязан. Оставьте заявку на сайте — после одобрения администратором
                                 данные появятся здесь.
+                            </p>
+                            <p className="accountPage__settingsNav">
+                                <Link to="/chats" className="accountPage__settingsNavLink">
+                                    Перейти к чатам
+                                </Link>
+                                <button
+                                    type="button"
+                                    className="accountPage__settingsNavLink accountPage__settingsNavLink--btn"
+                                    onClick={handleLogout}
+                                    disabled={loggingOut}
+                                >
+                                    {loggingOut ? 'Выходим…' : 'Выйти'}
+                                </button>
                             </p>
                         </section>
                     )}
@@ -122,110 +176,52 @@ const SettingsPage = () => {
                         </div>
                     )}
 
-                    {!loading && role === 'student' && profile && (
+                    {!loading && isStudentProfile ? (
                         <>
-                            {studentForm.course === 'NEW' && (
+                            {profile.course === 'NEW' && (
                                 <div className="accountPage__banner" role="status">
                                     Профиль с курсом NEW не показывается рекрутерам до модерации и заполнения.
                                 </div>
                             )}
-                            <section className="accountPage__card">
-                                <h2 className="accountPage__cardTitle">Профиль студента</h2>
-                                <div className="accountPage__avatarRow">
-                                    {avatarUrl ? (
-                                        <img src={avatarUrl} alt="" className="accountPage__avatar" width={96} height={96} />
-                                    ) : (
-                                        <div className="accountPage__avatar accountPage__avatar--placeholder" aria-hidden>
-                                            ?
-                                        </div>
-                                    )}
-                                </div>
 
-                                <div className="accountPage__readonlyMeta">
-                                    {profile.profileTextScore != null && (
-                                        <p>
-                                            Заполненность профиля: <strong>{profile.profileTextScore}</strong>
-                                        </p>
-                                    )}
-                                    <p>
-                                        Публичная витрина:{' '}
-                                        <strong>{profile.publicProfileConsent ? 'да' : 'нет'}</strong>
-                                    </p>
-                                </div>
-
-                                <div className="accountPage__form accountPage__form--readonly">
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Имя</span>
-                                            <ReadOnlyInput value={studentForm.firstName} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Фамилия</span>
-                                            <ReadOnlyInput value={studentForm.lastName} />
-                                        </label>
-                                    </div>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Город</span>
-                                            <ReadOnlyInput value={studentForm.city} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Дата рождения</span>
-                                            <ReadOnlyInput type="date" value={studentForm.birthDate} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
-                                        <span>Ссылка на HH</span>
-                                        <ReadOnlyInput value={studentForm.hhLink} />
-                                    </label>
-                                    <label className="accountPage__field">
-                                        <span>О себе</span>
-                                        <textarea
-                                            className="accountPage__inputReadonly"
-                                            value={studentForm.bio}
-                                            readOnly
-                                            rows={4}
-                                        />
-                                    </label>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Курс</span>
-                                            <ReadOnlyInput value={studentForm.course} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Занятость</span>
-                                            <ReadOnlyInput value={studentForm.busyness} />
-                                        </label>
-                                    </div>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Email</span>
-                                            <ReadOnlyInput value={studentForm.email} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Телефон</span>
-                                            <ReadOnlyInput value={studentForm.phoneNumber} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
-                                        <span>Telegram</span>
-                                        <ReadOnlyInput value={studentForm.telegramUsername} />
-                                    </label>
-                                    {profile.speciality ? (
-                                        <p className="accountPage__hint">Специальность: {profile.speciality}</p>
-                                    ) : null}
-                                    {studentForm.skillsLabel ? (
-                                        <p className="accountPage__hint">Навыки: {studentForm.skillsLabel}</p>
-                                    ) : null}
-                                </div>
-                            </section>
-
-                            <StudentRequestsSection studentId={profile.id} />
+                            <StudentProfileResume
+                                variant="owner"
+                                student={{
+                                    ...profile,
+                                    speciality: specialtyLabel(profile),
+                                }}
+                                skills={Array.isArray(profile.skills) ? profile.skills : []}
+                                experiences={experiences}
+                                educations={educations}
+                                avatarSrc={avatarUrl}
+                                verified={Boolean(profile.publicProfileConsent)}
+                                onEdit={() => navigate('/resume/create')}
+                                onEditAvatar={() => navigate('/resume/create')}
+                                onAddOccupation={() => navigate('/resume/create')}
+                                onEmployerView={() => navigate(`/profile/${profile.id}`)}
+                            />
                         </>
-                    )}
+                    ) : null}
 
                     {!loading && role === 'recruiter' && profile && (
                         <>
+                            <h1 className="accountPage__title">Настройки</h1>
+                            <p className="accountPage__lead">
+                                Просмотр профиля. Изменения в анкете вносит администратор после модерации.
+                            </p>
+                            <p className="accountPage__settingsNav">
+                                <Link to="/chats" className="accountPage__settingsNavLink">
+                                    Перейти к чатам
+                                </Link>
+                                <button
+                                    type="button"
+                                    className="accountPage__settingsNavLink accountPage__settingsNavLink--btn"
+                                    onClick={handleLogout}
+                                    disabled={loggingOut}
+                                >
+                                    {loggingOut ? 'Выходим…' : 'Выйти'}
+                                </button>
+                            </p>
                             <section className="accountPage__card">
                                 <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
                                 <div className="accountPage__form accountPage__form--readonly">
@@ -247,14 +243,16 @@ const SettingsPage = () => {
                                         <span>Email</span>
                                         <ReadOnlyInput value={recruiterForm.email} />
                                     </label>
-                                    <label className="accountPage__field">
-                                        <span>Телефон</span>
-                                        <ReadOnlyInput value={recruiterForm.phoneNumber} />
-                                    </label>
-                                    <label className="accountPage__field">
-                                        <span>Telegram</span>
-                                        <ReadOnlyInput value={recruiterForm.telegramUsername} />
-                                    </label>
+                                    <div className="accountPage__grid2">
+                                        <label className="accountPage__field">
+                                            <span>Телефон</span>
+                                            <ReadOnlyInput value={recruiterForm.phoneNumber} />
+                                        </label>
+                                        <label className="accountPage__field">
+                                            <span>Telegram</span>
+                                            <ReadOnlyInput value={recruiterForm.telegramUsername} />
+                                        </label>
+                                    </div>
                                 </div>
                             </section>
                             <RecruiterRequestsSection recruiterId={profile.id} />

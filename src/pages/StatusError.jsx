@@ -45,7 +45,13 @@ const StatusError = ({ code: codeProp }) => {
     const slashRef = useRef(null);
 
     useEffect(() => {
+        const previousTitle = document.title;
         document.title = `Status: ${code}`;
+        return () => {
+            document.title = previousTitle && !previousTitle.startsWith('Status:')
+                ? previousTitle
+                : 'Singularity Resume';
+        };
     }, [code]);
 
     useEffect(() => {
@@ -109,9 +115,23 @@ const StatusError = ({ code: codeProp }) => {
                     <p className="statusError__message">{content.message}</p>
                 </div>
 
-                <Link to="/" className="statusError__homeLink">
-                    На главную
-                </Link>
+                <div className="statusError__actions">
+                    {override?.ctaTo && override?.ctaLabel ? (
+                        <Link to={override.ctaTo} className="statusError__homeLink">
+                            {override.ctaLabel}
+                        </Link>
+                    ) : null}
+                    <Link
+                        to="/"
+                        className={
+                            override?.ctaTo
+                                ? 'statusError__homeLink statusError__homeLink--secondary'
+                                : 'statusError__homeLink'
+                        }
+                    >
+                        На главную
+                    </Link>
+                </div>
             </div>
         </main>
     );

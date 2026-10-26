@@ -4,28 +4,33 @@ import './experienceForm.css';
 const EXPERIENCE_MIN_YEAR = new Date().getFullYear() - 60;
 const EXPERIENCE_MAX_YEAR = new Date().getFullYear();
 
-const formatDateLabel = (value) => {
-    if (!value) return 'н.в.';
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-    const [y, m, d] = value.split('-');
-    return `${d}.${m}.${y}`;
-};
-
 const ExperienceForm = ({
     values = {},
-    items = [],
     companies = [],
+    editingId = null,
     onChange,
     onAdd,
+    onUpdate,
+    onCancelEdit,
 }) => {
     const {
         companyId = '',
         companyName = '',
+        companyUrl = '',
         position = '',
         startDate = '',
         endDate = '',
         additionalInfo = '',
+        activityKind = 'work',
     } = values;
+
+    const isEditing = editingId != null && editingId !== '';
+    const selectedKind = activityKind === 'project' ? 'project' : 'work';
+    const isProject = selectedKind === 'project';
+    const companyPlaceholder = isProject ? 'Название проекта' : 'Название организации';
+    const companyUrlPlaceholder = isProject
+        ? 'Ссылка на проект (необязательно)'
+        : 'Ссылка на организацию (необязательно)';
 
     const handleCompanyChange = (raw) => {
         const nextName = raw;
@@ -38,78 +43,110 @@ const ExperienceForm = ({
         });
     };
 
-    const handleAdd = () => {
-        onAdd?.({
-            companyId: companyId || undefined,
-            companyName: companyName.trim(),
-            position: position.trim(),
-            additionalInfo,
-            startDate,
-            endDate: endDate || undefined,
-        });
+    const buildEntry = () => ({
+        id: editingId || undefined,
+        companyId: companyId || undefined,
+        companyName: companyName.trim(),
+        companyUrl: companyUrl.trim(),
+        position: position.trim(),
+        additionalInfo,
+        startDate,
+        endDate: endDate || undefined,
+        activityKind: selectedKind,
+    });
+
+    const handleSubmit = () => {
+        const entry = buildEntry();
+        if (isEditing) {
+            onUpdate?.(entry);
+            return;
+        }
+        onAdd?.(entry);
     };
 
     return (
         <section className="experienceForm">
-            <h2>Опыт работы</h2>
+            <h2>Добавьте опыт работы или проект</h2>
 
-            {items.length > 0 ? (
-                <ul className="experienceForm__list">
-                    {items.map((item) => (
-                        <li key={item.id || `${item.position}-${item.startDate}`} className="experienceForm__listItem">
-                            <div className="experienceForm__listTitle">
-                                {item.position || 'Должность'}
-                                {item.companyName ? ` · ${item.companyName}` : ''}
-                            </div>
-                            <div className="experienceForm__listDates">
-                                {formatDateLabel(item.startDate)}
-                                {' — '}
-                                {formatDateLabel(item.endDate)}
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            ) : null}
-
-            <div className="experienceForm__field">
-                <label htmlFor="experience-company">Компания</label>
-                <input
-                    id="experience-company"
-                    type="text"
-                    list="experience-company-list"
-                    value={companyName}
-                    placeholder="Выберите из списка или введите название"
-                    autoComplete="off"
-                    onChange={(event) => handleCompanyChange(event.target.value)}
-                />
-                <datalist id="experience-company-list">
-                    {companies.map((item) => (
-                        <option key={item.id} value={item.name} />
-                    ))}
-                </datalist>
-                <p className="experienceForm__hint">
-                    Компания должна быть в справочнике (иначе опыт не сохранится)
-                </p>
+            <div
+                className={`experienceForm__kind experienceForm__kind--${selectedKind}`}
+                role="group"
+                aria-label="Тип записи"
+            >
+                <span className="experienceForm__kindThumb" aria-hidden="true" />
+                <button
+                    type="button"
+                    className={
+                        'experienceForm__kindBtn'
+                        + (selectedKind === 'work' ? ' is-active' : '')
+                    }
+                    aria-pressed={selectedKind === 'work'}
+                    onClick={() => onChange?.({ activityKind: 'work' })}
+                >
+                    Опыт работы
+                </button>
+                <button
+                    type="button"
+                    className={
+                        'experienceForm__kindBtn'
+                        + (selectedKind === 'project' ? ' is-active' : '')
+                    }
+                    aria-pressed={selectedKind === 'project'}
+                    onClick={() => onChange?.({ activityKind: 'project' })}
+                >
+                    Проектная деятельность
+                </button>
             </div>
 
             <div className="experienceForm__field">
-                <label htmlFor="experience-position">Должность</label>
+                <input
+                    id="experience-company"
+                    type="text"
+                    list={isProject ? undefined : 'experience-company-list'}
+                    value={companyName}
+                    placeholder={companyPlaceholder}
+                    autoComplete="off"
+                    aria-label={companyPlaceholder}
+                    onChange={(event) => handleCompanyChange(event.target.value)}
+                />
+                {!isProject ? (
+                    <datalist id="experience-company-list">
+                        {companies.map((item) => (
+                            <option key={item.id} value={item.name} />
+                        ))}
+                    </datalist>
+                ) : null}
+            </div>
+
+            <div className="experienceForm__field">
+                <input
+                    id="experience-company-url"
+                    type="url"
+                    value={companyUrl}
+                    placeholder={companyUrlPlaceholder}
+                    autoComplete="off"
+                    aria-label={companyUrlPlaceholder}
+                    onChange={(event) => onChange?.({ companyUrl: event.target.value })}
+                />
+            </div>
+
+            <div className="experienceForm__field">
                 <input
                     id="experience-position"
                     type="text"
                     value={position}
-                    placeholder="Ваша роль"
+                    placeholder="Роль"
+                    aria-label="Роль"
                     onChange={(event) => onChange?.({ position: event.target.value })}
                 />
             </div>
 
             <div className="experienceForm__row">
                 <div className="experienceForm__field">
-                    <label htmlFor="experience-start">Начало</label>
                     <BirthDatePicker
                         id="experience-start"
                         value={startDate}
-                        placeholder="ДД.ММ.ГГГГ"
+                        placeholder="Начало работы"
                         minYear={EXPERIENCE_MIN_YEAR}
                         maxYear={EXPERIENCE_MAX_YEAR}
                         maxDate={endDate || undefined}
@@ -123,11 +160,10 @@ const ExperienceForm = ({
                     />
                 </div>
                 <div className="experienceForm__field">
-                    <label htmlFor="experience-end">Окончание</label>
                     <BirthDatePicker
                         id="experience-end"
                         value={endDate}
-                        placeholder="ДД.ММ.ГГГГ"
+                        placeholder="Окончание"
                         minYear={EXPERIENCE_MIN_YEAR}
                         maxYear={EXPERIENCE_MAX_YEAR}
                         minDate={startDate || undefined}
@@ -138,19 +174,29 @@ const ExperienceForm = ({
             </div>
 
             <div className="experienceForm__field">
-                <label htmlFor="experience-description">Описание</label>
                 <textarea
                     id="experience-description"
-                    rows="4"
                     value={additionalInfo}
-                    placeholder="Что вы делали и какого результата достигли"
+                    placeholder="Описание результата работы и выших задач"
+                    aria-label="Описание"
                     onChange={(event) => onChange?.({ additionalInfo: event.target.value })}
                 />
             </div>
 
-            <button type="button" className="experienceForm__add" onClick={handleAdd}>
-                Добавить
-            </button>
+            <div className="experienceForm__actions">
+                <button type="button" className="experienceForm__add" onClick={handleSubmit}>
+                    {isEditing ? 'Сохранить' : 'Добавить'}
+                </button>
+                {isEditing ? (
+                    <button
+                        type="button"
+                        className="experienceForm__cancel"
+                        onClick={() => onCancelEdit?.()}
+                    >
+                        Отмена
+                    </button>
+                ) : null}
+            </div>
         </section>
     );
 };

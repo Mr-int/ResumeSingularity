@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { filterRequests, postStudentDecision } from '../../services/requestApi.js';
 import { getRecruiterById } from '../../services/getApi.js';
+import './studentRequestsSection.css';
 
 const RESULT_LABELS = {
     CREATION: 'Создана',
@@ -16,6 +17,15 @@ const RESULT_LABELS = {
 
 const canDecide = (result) =>
     result === 'WAITING' || result === 'EXPECTATION' || result === 'CREATION';
+
+const statusTone = (result) => {
+    if (result === 'SUCCESS' || result === 'STUDENT_CONFIRMED' || result === 'RECRUITER_CONFIRMED') {
+        return 'success';
+    }
+    if (result === 'REFUSAL') return 'danger';
+    if (result === 'WAITING' || result === 'EXPECTATION' || result === 'CREATION') return 'pending';
+    return 'muted';
+};
 
 const StudentRequestsSection = ({ studentId }) => {
     const [requests, setRequests] = useState([]);
@@ -73,42 +83,73 @@ const StudentRequestsSection = ({ studentId }) => {
     };
 
     return (
-        <section className="accountPage__card">
-            <h2 className="accountPage__cardTitle">Заявки от работодателей</h2>
-            {loading && <p className="accountPage__muted">Загрузка…</p>}
+        <section className="studentRequests" aria-labelledby="student-requests-title">
+            <div className="studentRequests__header">
+                <h2 id="student-requests-title" className="studentRequests__title">
+                    <svg className="studentRequests__titleIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                    Заявки от работодателей
+                </h2>
+                {!loading && requests.length > 0 ? (
+                    <span className="studentRequests__count">{requests.length}</span>
+                ) : null}
+            </div>
+
+            {loading && <p className="studentRequests__muted">Загрузка…</p>}
             {error ? (
-                <div className="accountPage__error" role="alert">
+                <div className="studentRequests__error" role="alert">
                     {error}
                 </div>
             ) : null}
+
             {!loading && requests.length === 0 && (
-                <p className="accountPage__text">Пока нет входящих заявок.</p>
+                <div className="studentRequests__empty">
+                    <p>Пока нет входящих заявок</p>
+                    <span>Когда работодатель откликнется, заявка появится здесь</span>
+                </div>
             )}
-            <ul className="accountPage__requestList">
+
+            <ul className="studentRequests__list">
                 {requests.map((req) => {
                     const recruiter = recruiters[req.recruiterId];
-                    const recruiterLabel = recruiter
-                        ? [recruiter.companyName, recruiter.firstName, recruiter.lastName].filter(Boolean).join(' · ')
-                        : 'Рекрутер';
+                    const company = recruiter?.companyName || '';
+                    const person = [recruiter?.firstName, recruiter?.lastName].filter(Boolean).join(' ');
+                    const recruiterLabel = company || person || 'Рекрутер';
                     const status = RESULT_LABELS[req.result] || req.result || '—';
+                    const tone = statusTone(req.result);
                     const showActions = canDecide(req.result);
+
                     return (
-                        <li key={req.id} className="accountPage__requestItem">
-                            <div className="accountPage__requestHead">
-                                <strong>{recruiterLabel}</strong>
-                                <span className="accountPage__requestStatus">{status}</span>
+                        <li key={req.id} className="studentRequests__card">
+                            <div className="studentRequests__cardTop">
+                                <div className="studentRequests__who">
+                                    <strong>{recruiterLabel}</strong>
+                                    {company && person ? (
+                                        <span className="studentRequests__whoSub">{person}</span>
+                                    ) : null}
+                                </div>
+                                <span className={`studentRequests__status studentRequests__status--${tone}`}>
+                                    {status}
+                                </span>
                             </div>
+
                             {req.createdAt ? (
-                                <p className="accountPage__hint">
+                                <time className="studentRequests__date" dateTime={req.createdAt}>
                                     {new Date(req.createdAt).toLocaleString('ru-RU')}
+                                </time>
+                            ) : null}
+
+                            {req.studentResponseText ? (
+                                <p className="studentRequests__reply">
+                                    Ваш ответ: {req.studentResponseText}
                                 </p>
                             ) : null}
-                            {req.studentResponseText ? (
-                                <p className="accountPage__text">Ваш ответ: {req.studentResponseText}</p>
-                            ) : null}
+
                             {showActions ? (
-                                <>
-                                    <label className="accountPage__field">
+                                <div className="studentRequests__decide">
+                                    <label className="studentRequests__field">
                                         <span>Комментарий (необязательно)</span>
                                         <textarea
                                             rows={2}
@@ -116,12 +157,13 @@ const StudentRequestsSection = ({ studentId }) => {
                                             onChange={(e) =>
                                                 setComments((prev) => ({ ...prev, [req.id]: e.target.value }))
                                             }
+                                            placeholder="Короткий ответ работодателю"
                                         />
                                     </label>
-                                    <div className="accountPage__requestActions">
+                                    <div className="studentRequests__actions">
                                         <button
                                             type="button"
-                                            className="accountPage__submit"
+                                            className="studentRequests__btn studentRequests__btn--accept"
                                             disabled={busyId === req.id}
                                             onClick={() => handleDecision(req.id, true)}
                                         >
@@ -129,19 +171,20 @@ const StudentRequestsSection = ({ studentId }) => {
                                         </button>
                                         <button
                                             type="button"
-                                            className="accountPage__submit accountPage__submit--secondary"
+                                            className="studentRequests__btn studentRequests__btn--decline"
                                             disabled={busyId === req.id}
                                             onClick={() => handleDecision(req.id, false)}
                                         >
                                             Отклонить
                                         </button>
                                     </div>
-                                </>
+                                </div>
                             ) : null}
+
                             {req.appChatId ? (
                                 <Link
                                     to={`/chats?chatId=${encodeURIComponent(req.appChatId)}`}
-                                    className="accountPage__settingsNavLink"
+                                    className="studentRequests__chatLink"
                                 >
                                     Открыть чат
                                 </Link>

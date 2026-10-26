@@ -1,0 +1,455 @@
+import { useEffect, useState } from 'react';
+import './studentProfileResume.css';
+import editIcon from '../../assets/icons/edit.svg';
+import folderIcon from '../../assets/icons/folder.svg';
+import expIcon from '../../assets/icons/exp.svg';
+import educationIcon from '../../assets/icons/education.svg';
+import whiteFolder from '../../assets/folders/white_folder.png';
+import yellowFolder from '../../assets/folders/yellow_folder.png';
+import greenFolder from '../../assets/folders/green_folder.png';
+import pinkFolder from '../../assets/folders/pink_folder.png';
+import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
+import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
+import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
+import { appPath } from '../../utils/appBase.js';
+
+const PORTFOLIO_FOLDERS = [
+    { id: 'white', src: whiteFolder, alt: 'Папка портфолио' },
+    { id: 'yellow', src: yellowFolder, alt: 'Папка портфолио' },
+    { id: 'green', src: greenFolder, alt: 'Папка портфолио' },
+    { id: 'pink', src: pinkFolder, alt: 'Папка портфолио' },
+];
+const SKILLS_VISIBLE = 8;
+
+const courseTone = (course) => {
+    switch (course) {
+        case 'FIRST':
+            return 1;
+        case 'SECOND':
+            return 2;
+        case 'THIRD':
+            return 3;
+        case 'FOURTH':
+            return 4;
+        case 'NEW':
+        case 'FIFTH':
+            return 'star';
+        default:
+            return '';
+    }
+};
+
+const IconEdit = () => (
+    <img
+        src={editIcon}
+        alt=""
+        className="studentProfileResume__btnIcon"
+        width={14}
+        height={14}
+        aria-hidden="true"
+    />
+);
+
+const calcAge = (birthDate) => {
+    if (!birthDate) return null;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    if (Number.isNaN(birth.getTime())) return null;
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age -= 1;
+    return age > 0 ? age : null;
+};
+
+const ageLabel = (age) => {
+    if (age == null) return '';
+    const mod10 = age % 10;
+    const mod100 = age % 100;
+    if (mod100 >= 11 && mod100 <= 14) return `${age} лет`;
+    if (mod10 === 1) return `${age} год`;
+    if (mod10 >= 2 && mod10 <= 4) return `${age} года`;
+    return `${age} лет`;
+};
+
+const formatEduPeriod = (start, end) => {
+    const a = start ? String(start) : '';
+    const b = end ? String(end) : '';
+    if (a && b) return `${a} – ${b}`;
+    return a || b || '';
+};
+
+/**
+ * Профиль студента.
+ * @param {'owner'|'public'} variant — owner: кнопки редактирования; public: вид для каталога/работодателя
+ */
+const StudentProfileResume = ({
+    student = {},
+    skills = [],
+    experiences = [],
+    educations = [],
+    avatarSrc,
+    verified = true,
+    variant = 'owner',
+    onEdit,
+    onEditAvatar,
+    onAddOccupation,
+    onEmployerView,
+}) => {
+    const isOwner = variant === 'owner';
+    const [linkCopied, setLinkCopied] = useState(false);
+    const firstName = student.firstName || '';
+    const lastName = student.lastName || '';
+    const studentId = student.id || '';
+    /** Уникальная ссылка = UUID карточки на бэке (отдельного slug в API нет). */
+    const resumePath = studentId ? appPath(`profile/${studentId}`) : '';
+    const resumeUrl = resumePath
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}${resumePath}`
+        : '';
+    const specialty = typeof student.speciality === 'string'
+        ? student.speciality
+        : (student.speciality?.name || student.profession || student.specialityName || 'Специальность не указана');
+    const specialtyIcon = getSpecialtyIcon(specialty);
+    const hasSpecialty = Boolean(specialty && specialty !== 'Специальность не указана');
+    const specialtyBadgeContent = specialtyIcon ? (
+        <img
+            src={specialtyIcon}
+            alt={hasSpecialty ? specialty : ''}
+            className="studentProfileResume__badgeIcon"
+        />
+    ) : (
+        <span className="studentProfileResume__badgePlaceholder" aria-hidden="true">—</span>
+    );
+    const course = student.course || '';
+    const courseLabel = courseUiLabel(course);
+    const tone = courseTone(course);
+    const courseBadgeClass = tone
+        ? `studentProfileResume__badge studentProfileResume__badge--course studentProfileResume__badge--course-${tone}`
+        : 'studentProfileResume__badge studentProfileResume__badge--course';
+    const bio = student.bio || student.description || student.about || '';
+    const age = calcAge(student.birthDate);
+    const city = student.city ? (String(student.city).startsWith('г.') ? student.city : `г. ${student.city}`) : '';
+
+    const skillList = Array.isArray(skills) && skills.length
+        ? skills
+        : (Array.isArray(student.skills) ? student.skills : []);
+    const visibleSkills = skillList.slice(0, SKILLS_VISIBLE);
+    const hiddenSkills = Math.max(0, skillList.length - SKILLS_VISIBLE);
+
+    const experienceItems = (Array.isArray(experiences) ? experiences : []).map((item) => {
+        const href = (item.webUrl || item.link || item.companyUrl || '').toString().trim();
+        return {
+            id: item.id,
+            company: (item.company || item.companyName || '').toString().trim(),
+            period: formatExperiencePeriodText(item.startDate, item.endDate, item.current),
+            position: (item.position || item.role || '').toString().trim(),
+            description: (item.description || item.additionalInfo || '').toString().trim(),
+            href,
+            hrefLabel: href,
+        };
+    });
+
+    const educationItems = (Array.isArray(educations) ? educations : []).map((item, index) => ({
+        id: item.id || `edu-${index}`,
+        title: item.name || item.institution || 'Учебное заведение',
+        period: formatEduPeriod(item.startDate || item.startYear, item.endDate || item.endYear),
+        role: item.speciality || item.additionalInfo || item.role || '',
+        href: (item.webUrl || item.link || '').toString().trim(),
+        hrefLabel: item.webUrl || item.link ? 'Ссылка на уч. заведение' : '',
+        tag: item.tag || item.educationType || (index === 0 ? 'Среднее профессиональное' : 'Онлайн-курс'),
+        tone: index % 2 === 0 ? 'blue' : 'green',
+    }));
+
+    useEffect(() => {
+        if (!linkCopied) return undefined;
+        const timer = window.setTimeout(() => setLinkCopied(false), 2000);
+        return () => window.clearTimeout(timer);
+    }, [linkCopied]);
+
+    const handleCopyResumeLink = async () => {
+        if (!resumeUrl) return;
+        try {
+            await navigator.clipboard.writeText(resumeUrl);
+            setLinkCopied(true);
+        } catch {
+            window.prompt('Скопируйте ссылку на резюме:', resumeUrl);
+        }
+    };
+
+    return (
+        <div className="studentProfileResume">
+            <div className="studentProfileResume__layout">
+                <aside className="studentProfileResume__sidebar">
+                    <header className="studentProfileResume__profileCard">
+                        <div className="studentProfileResume__avatar">
+                            {avatarSrc ? (
+                                <img
+                                    src={avatarSrc}
+                                    alt=""
+                                    className="studentProfileResume__avatarImg"
+                                />
+                            ) : null}
+                            {verified ? (
+                                <span
+                                    className="studentProfileResume__badge studentProfileResume__badge--verified"
+                                    aria-label="Подтверждённый аккаунт"
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                </span>
+                            ) : null}
+                            <div className="studentProfileResume__badges">
+                                {onEditAvatar ? (
+                                    <button
+                                        type="button"
+                                        className="studentProfileResume__badge studentProfileResume__badge--edit"
+                                        aria-label="Редактировать аватар"
+                                        title={hasSpecialty ? specialty : 'Специальность'}
+                                        onClick={onEditAvatar}
+                                    >
+                                        {specialtyBadgeContent}
+                                    </button>
+                                ) : (
+                                    <span
+                                        className="studentProfileResume__badge studentProfileResume__badge--edit"
+                                        title={hasSpecialty ? specialty : 'Специальность'}
+                                    >
+                                        {specialtyBadgeContent}
+                                    </span>
+                                )}
+                                {courseLabel ? (
+                                    <span
+                                        className={courseBadgeClass}
+                                        aria-label={`Курс: ${courseLabel}`}
+                                    >
+                                        {courseLabel}
+                                    </span>
+                                ) : null}
+                            </div>
+                        </div>
+                        <h1 className="studentProfileResume__name">
+                            <span>{firstName || 'Имя'}</span>
+                            <span>{lastName || 'Фамилия'}</span>
+                        </h1>
+                        <p className="studentProfileResume__specialty">{specialty}</p>
+                    </header>
+
+                    {isOwner ? (
+                        <nav className="studentProfileResume__nav" aria-label="Навигация по профилю">
+                            <button
+                                type="button"
+                                className="studentProfileResume__btn studentProfileResume__btn--addOccupation"
+                                onClick={onAddOccupation}
+                            >
+                                Добавить занятость
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path d="M7 1V13M1 7H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                            </button>
+                            <button type="button" className="studentProfileResume__btn studentProfileResume__btn--primary" onClick={onEdit}>
+                                Редактировать
+                                <IconEdit />
+                            </button>
+                            <button type="button" className="studentProfileResume__btn studentProfileResume__btn--secondary" onClick={onEmployerView}>
+                                Вид от работодателя
+                            </button>
+                            {resumeUrl ? (
+                                <button
+                                    type="button"
+                                    className="studentProfileResume__btn studentProfileResume__btn--secondary studentProfileResume__btn--copyLink"
+                                    onClick={handleCopyResumeLink}
+                                    title={resumeUrl}
+                                >
+                                    {linkCopied ? 'Скопировано' : 'Скопировать ссылку'}
+                                </button>
+                            ) : null}
+                        </nav>
+                    ) : null}
+
+                    {isOwner ? (
+                        <footer className="studentProfileResume__sidebarFooter">
+                            Достижения аккаунта
+                        </footer>
+                    ) : null}
+                </aside>
+
+                <main className="studentProfileResume__main">
+                    <section className="studentProfileResume__about" aria-labelledby="spr-about-title">
+                        <div className="studentProfileResume__bio">
+                            <h2 id="spr-about-title" className="studentProfileResume__sectionTitle">Обо мне</h2>
+                            <p className="studentProfileResume__bioText">
+                                {bio || 'Информация о себе пока не заполнена'}
+                            </p>
+                        </div>
+
+                        <div className="studentProfileResume__infoSkills">
+                            <div className="studentProfileResume__infoBlock">
+                                <h3 className="studentProfileResume__sectionTitle">
+                                    <svg className="studentProfileResume__iconBlue" width="16" height="16" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <polygon
+                                            points="60,25 100,95 20,95"
+                                            fill="#3E8EFF"
+                                            stroke="#3E8EFF"
+                                            strokeWidth="12"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                    Инфо
+                                </h3>
+                                <div className="studentProfileResume__infoText">
+                                    {age != null ? <p>{ageLabel(age)}</p> : null}
+                                    {city ? <p>{city}</p> : null}
+                                    {age == null && !city ? (
+                                        <p className="studentProfileResume__empty">Данные не указаны</p>
+                                    ) : null}
+                                </div>
+                            </div>
+
+                            <div className="studentProfileResume__skillsBlock">
+                                <h3 className="studentProfileResume__sectionTitle">
+                                    <svg className="studentProfileResume__iconPink" width="18" height="18" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                        <polygon
+                                            points="60,20 100,50 85,95 35,95 20,50"
+                                            fill="#e02bf2"
+                                            stroke="#e02bf2"
+                                            strokeWidth="6"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
+                                    Навыки
+                                </h3>
+                                {visibleSkills.length > 0 ? (
+                                    <ul className="studentProfileResume__skills">
+                                        {visibleSkills.map((skill, index) => (
+                                            <li key={skill.id || index} className="studentProfileResume__tag">
+                                                {skill.name || skill.title || 'Навык'}
+                                            </li>
+                                        ))}
+                                        {hiddenSkills > 0 ? (
+                                            <li className="studentProfileResume__tag studentProfileResume__tag--more">
+                                                и ещё {hiddenSkills}+
+                                            </li>
+                                        ) : null}
+                                    </ul>
+                                ) : (
+                                    <p className="studentProfileResume__empty">Навыки не указаны</p>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="studentProfileResume__section" aria-labelledby="spr-portfolio-title">
+                        <h2 id="spr-portfolio-title" className="studentProfileResume__sectionTitle">
+                            <img className="studentProfileResume__iconGreen" src={folderIcon} alt="" width={16} height={16} aria-hidden="true" />
+                            Портфолио
+                        </h2>
+                        <div className="studentProfileResume__portfolioFolders">
+                            {PORTFOLIO_FOLDERS.map((folder) => (
+                                <img
+                                    key={folder.id}
+                                    className="studentProfileResume__portfolioFolder"
+                                    src={folder.src}
+                                    alt={folder.alt}
+                                    width={210}
+                                    height={135}
+                                />
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className="studentProfileResume__section" aria-labelledby="spr-experience-title">
+                        <h2 id="spr-experience-title" className="studentProfileResume__sectionTitle">
+                            <img className="studentProfileResume__iconOrange" src={expIcon} alt="" width={16} height={16} aria-hidden="true" />
+                            Опыт работы
+                        </h2>
+                        {experienceItems.length > 0 ? (
+                            <div className="studentProfileResume__experienceGrid">
+                                {experienceItems.map((item, index) => (
+                                    <article key={item.id || index} className="studentProfileResume__experienceCard">
+                                        <h3 className="studentProfileResume__experienceCompany">
+                                            {item.company || 'Компания не указана'}
+                                        </h3>
+                                        {item.period ? (
+                                            <p className="studentProfileResume__experiencePeriod">{item.period}</p>
+                                        ) : null}
+                                        {item.position ? (
+                                            <p className="studentProfileResume__experiencePosition">{item.position}</p>
+                                        ) : null}
+                                        {item.description ? (
+                                            <p className="studentProfileResume__experienceDescription">{item.description}</p>
+                                        ) : null}
+                                        {item.href ? (
+                                            <a
+                                                className="studentProfileResume__experienceLink"
+                                                href={item.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {item.hrefLabel}
+                                            </a>
+                                        ) : null}
+                                    </article>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="studentProfileResume__empty">Опыт пока не добавлен</p>
+                        )}
+                    </section>
+
+                    <section className="studentProfileResume__section" aria-labelledby="spr-education-title">
+                        <h2 id="spr-education-title" className="studentProfileResume__sectionTitle">
+                            <img className="studentProfileResume__iconPurple" src={educationIcon} alt="" width={16} height={16} aria-hidden="true" />
+                            Образование
+                        </h2>
+                        {educationItems.length > 0 ? (
+                            <div className="studentProfileResume__educationGrid">
+                                {educationItems.map((item) => (
+                                    <article
+                                        key={item.id}
+                                        className={`studentProfileResume__educationCard studentProfileResume__educationCard--${item.tone}`}
+                                    >
+                                        <h3>{item.title}</h3>
+                                        {item.period ? (
+                                            <time className="studentProfileResume__educationDate">{item.period}</time>
+                                        ) : null}
+                                        {item.role ? (
+                                            <div className="studentProfileResume__educationRole">{item.role}</div>
+                                        ) : null}
+                                        {item.href ? (
+                                            <a href={item.href} target="_blank" rel="noopener noreferrer">
+                                                {item.hrefLabel || 'Ссылка'}
+                                            </a>
+                                        ) : null}
+                                        {item.tag ? (
+                                            <span className="studentProfileResume__educationTag">{item.tag}</span>
+                                        ) : null}
+                                    </article>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="studentProfileResume__empty">Образование пока не добавлено</p>
+                        )}
+                    </section>
+
+                    {isOwner ? (
+                        <footer className="studentProfileResume__banner">
+                            <p>
+                                Вы можете отредактировать ваше резюме, изменив его, вы снова отправляете ваше резюме на ревью.
+                            </p>
+                            <button
+                                type="button"
+                                className="studentProfileResume__btn studentProfileResume__btn--primary"
+                                onClick={onEdit}
+                            >
+                                Редактировать
+                                <IconEdit />
+                            </button>
+                        </footer>
+                    ) : null}
+                </main>
+            </div>
+        </div>
+    );
+};
+
+export default StudentProfileResume;

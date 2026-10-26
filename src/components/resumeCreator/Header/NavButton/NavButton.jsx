@@ -4,10 +4,12 @@ const NavButton = forwardRef(({
     children,
     active = false,
     disabled = false,
+    variant = '',
     onClick,
 }, ref) => {
     const className = [
         'studentCreatorHeader__navButton',
+        variant ? `studentCreatorHeader__navButton--${variant}` : '',
         active ? 'is-active' : '',
         disabled ? 'is-disabled' : '',
     ].filter(Boolean).join(' ');

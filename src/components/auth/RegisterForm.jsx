@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     clearRegistrationDraft,
+    clearServerSessionBeforeLogin,
     confirmEmail,
     EMAIL_CONFIRMATION_EMAIL_KEY,
     EMAIL_CONFIRMATION_PENDING_KEY,
-    logoutServer,
+    fetchAuthMe,
+    isRegistrationPendingForRole,
+    REGISTRATION_PENDING_ROLE_KEY,
     REGISTRATION_USERNAME_KEY,
     registerRecruiter,
     registerStudent,
@@ -19,7 +22,8 @@ import {
     usernameFromName,
     usernameWithSuffix,
 } from '../../utils/registrationIdentity.js';
-import { patchStudentMe } from '../../services/accountApi.js';
+import { completeStudentRegistration } from '../../services/accountApi.js';
+import { markStudentRegistrationCompleted } from '../../utils/studentOnboarding.js';
 import './registerForm.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -27,12 +31,13 @@ import EmailIcon from '../../assets/icons/email.svg';
 
 import { CAMPUS_OPTIONS } from '../../constants/campusCities.js';
 
-const COURSE_OPTIONS = [1, 2, 3, 4];
+const COURSE_OPTIONS = [1, 2, 3, 4, 5];
 const COURSE_API = {
     1: 'FIRST',
     2: 'SECOND',
     3: 'THIRD',
     4: 'FOURTH',
+    5: 'FIFTH',
 };
 const CODE_LENGTH = 4;
 const MESSAGE_TIMEOUT = 3000;
@@ -42,9 +47,54 @@ const REGISTER_COOLDOWN_KEY = 'resume:register-cooldown-until';
 /** После 429 не долбим API — сервер режет по IP на несколько минут. */
 const REGISTER_COOLDOWN_MS = 15 * 60 * 1000;
 const USERNAME_RETRY_LIMIT = 2;
+const MIN_AGE_YEARS = 14;
 
-const emailConfirmationPending = () =>
-    sessionStorage.getItem(EMAIL_CONFIRMATION_PENDING_KEY) === '1';
+const EyeIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="12" cy="12" r="3" />
+    </svg>
+);
+
+const EyeOffIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1 1l22 22" strokeLinecap="round" />
+    </svg>
+);
+
+/** Полных лет на сегодня по ISO-дате yyyy-MM-dd. */
+const ageFromBirthDate = (isoDate) => {
+    if (!isoDate) return null;
+    const birth = new Date(`${isoDate}T00:00:00`);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age -= 1;
+    }
+    return age;
+};
+
+/** Макс. дата рождения, при которой исполняется 15 лет (старше 14). */
+const maxBirthDateIso = () => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - (MIN_AGE_YEARS + 1));
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+};
+
+const birthDateErrorText = (isoDate) => {
+    if (!isoDate) return 'Укажите дату рождения';
+    const age = ageFromBirthDate(isoDate);
+    if (age == null) return 'Некорректная дата рождения';
+    if (age < 0) return 'Дата рождения не может быть в будущем';
+    if (age <= MIN_AGE_YEARS) return 'Регистрация доступна с 15 лет (старше 14)';
+    return '';
+};
 
 const readTakenEmails = () => {
     try {
@@ -62,18 +112,13 @@ const rememberTakenEmail = (email) => {
     sessionStorage.setItem(TAKEN_EMAILS_KEY, JSON.stringify([...set]));
 };
 
-const markEmailConfirmationPending = (email, username) => {
+const markEmailConfirmationPending = (email, username, role) => {
     sessionStorage.setItem(EMAIL_CONFIRMATION_PENDING_KEY, '1');
     sessionStorage.setItem(EMAIL_CONFIRMATION_EMAIL_KEY, email);
     sessionStorage.setItem(REGISTRATION_USERNAME_KEY, username);
-};
-
-const usernameFromEmail = (email) => {
-    const local = String(email || '').split('@')[0] || '';
-    const base = usernameFromName(local, 'user');
-    // Сразу уникальный суффикс — меньше повторных register-student при коллизии логина
-    const suffix = Math.random().toString(36).slice(2, 6);
-    return `${base.slice(0, 59)}_${suffix}`;
+    if (role) {
+        sessionStorage.setItem(REGISTRATION_PENDING_ROLE_KEY, role);
+    }
 };
 
 const isRateLimitedError = (err) =>
@@ -108,15 +153,20 @@ const humanizeRegisterError = (err) => {
 
 const RegisterForm = ({ role, onBack, onSuccess }) => {
     const isStudent = role === 'student';
-    const hadPendingOnOpen = isStudent && emailConfirmationPending();
+    // «Продолжить?» только если снова выбрали ту же роль, что в незавершённой регистрации
+    const hadPendingOnOpen = isRegistrationPendingForRole(role);
 
-    // Студент: 0 продолжение → 1 email → 2 пароль+телефон (1× register) → 3 код → 4 ФИО → 5 курс
+    // Студент: 0 продолжение → 1 email → 2 ФИО → 3 пароль+телефон (register, логин из ФИО) → 4 код → 5 курс
     const [step, setStep] = useState(hadPendingOnOpen ? 0 : 1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const [studentAccountCreated, setStudentAccountCreated] = useState(hadPendingOnOpen);
+    const [studentAccountCreated, setStudentAccountCreated] = useState(hadPendingOnOpen && isStudent);
     const [emailConfirmed, setEmailConfirmed] = useState(false);
+    /** После 204 complete-registration кнопку блокируем (повтор шлёт письмо снова). */
+    const [registrationCompleted, setRegistrationCompleted] = useState(false);
     const [emailTouched, setEmailTouched] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
     const [assignedUsername, setAssignedUsername] = useState(
         hadPendingOnOpen ? (sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '') : '',
     );
@@ -192,7 +242,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
 
     const startFresh = async () => {
         clearRegistrationDraft();
-        await logoutServer().catch(() => {});
+        await clearServerSessionBeforeLogin().catch(() => {});
         setStudentAccountCreated(false);
         setEmailConfirmed(false);
         setAssignedUsername('');
@@ -226,13 +276,11 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         setStudentAccountCreated(true);
         setAssignedUsername(sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '');
         if (email) {
-            markEmailConfirmationPending(
-                email,
-                sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || assignedUsername || usernameFromEmail(email),
-            );
+            const login = sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || assignedUsername || '';
+            markEmailConfirmationPending(email, login, role);
         }
         setCode(['', '', '', '']);
-        setStep(3);
+        setStep(4);
     };
 
     const emailErrorText = (value = formData.email) => {
@@ -332,22 +380,24 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         setLoading(true);
         try {
             if (!studentAccountCreated) {
-                const base = usernameFromEmail(email);
+                const base = usernameFromName(formData.lastName, formData.firstName);
                 const username = await registerWithFreeUsername(base, (login) => registerStudent({
                     username: login,
                     password: formData.password,
                     passwordConfirm: formData.passwordConfirm,
-                    firstName: '',
-                    lastName: '',
-                    middleName: '',
+                    firstName: formData.firstName.trim(),
+                    lastName: formData.lastName.trim(),
+                    middleName: formData.noMiddleName ? '' : formData.middleName.trim(),
                     email,
                     phoneNumber,
+                    birthDate: formData.birthDate,
                 }));
-                markEmailConfirmationPending(email, username);
+                markEmailConfirmationPending(email, username, role);
+                setAssignedUsername(username);
                 setStudentAccountCreated(true);
             }
             setCode(['', '', '', '']);
-            setStep(3);
+            setStep(4);
         } catch (err) {
             const message = humanizeRegisterError(err);
             if (isEmailTakenError(err)) {
@@ -405,7 +455,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         try {
             await confirmEmail(fullCode);
             setEmailConfirmed(true);
-            setStep(4);
+            setStep(5);
         } catch (err) {
             const message = err.message || 'Неверный код';
             setCode(['', '', '', '']);
@@ -416,36 +466,26 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
     };
 
-    const saveStudentStepFio = async () => {
-        setLoading(true);
-        try {
-            await patchStudentMe({
-                firstName: formData.firstName.trim(),
-                lastName: formData.lastName.trim(),
-                middleName: formData.noMiddleName ? '' : formData.middleName.trim(),
-                birthDate: formData.birthDate,
-            });
-            setStep(5);
-        } catch (err) {
-            const message = err.message || 'Не удалось сохранить данные';
-            setError(message);
-            showMessage(message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const saveStudentStepCourse = async () => {
+        if (registrationCompleted) return;
         setLoading(true);
         try {
-            await patchStudentMe({
+            await completeStudentRegistration({
+                birthDate: formData.birthDate,
                 course: COURSE_API[Number(formData.course)],
                 city: formData.campus,
             });
+            try {
+                const me = await fetchAuthMe();
+                markStudentRegistrationCompleted(me?.id);
+            } catch {
+                /* флаг только против повторного письма */
+            }
             clearRegistrationDraft();
-            onSuccess(role, assignedUsername);
+            setRegistrationCompleted(true);
+            onSuccess(role, assignedUsername, { next: 'questionnaire' });
         } catch (err) {
-            const message = err.message || 'Не удалось сохранить профиль';
+            const message = err.message || 'Не удалось завершить регистрацию';
             setError(message);
             showMessage(message);
         } finally {
@@ -613,20 +653,6 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
 
         if (step === 2) {
-            if (studentAccountCreated) {
-                setStep(3);
-                return;
-            }
-            registerStudentAndSendCode();
-            return;
-        }
-
-        if (step === 3) {
-            confirmStudentEmail();
-            return;
-        }
-
-        if (step === 4) {
             if (!formData.firstName.trim() || !formData.lastName.trim()) {
                 setErrorAndShow('Заполните имя и фамилию');
                 return;
@@ -635,15 +661,33 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 setErrorAndShow('Заполните отчество или отметьте галочку "Нет отчества"');
                 return;
             }
-            if (!formData.birthDate) {
-                setErrorAndShow('Укажите дату рождения');
+            const birthErr = birthDateErrorText(formData.birthDate);
+            if (birthErr) {
+                setErrorAndShow(birthErr);
                 return;
             }
-            saveStudentStepFio();
+            setStep(3);
+            return;
+        }
+
+        if (step === 3) {
+            if (studentAccountCreated) {
+                setStep(4);
+                return;
+            }
+            registerStudentAndSendCode();
+            return;
+        }
+
+        if (step === 4) {
+            confirmStudentEmail();
             return;
         }
 
         if (step === 5) {
+            if (registrationCompleted) return;
+            const birthErr = birthDateErrorText(formData.birthDate);
+            if (birthErr) { setErrorAndShow(birthErr); return; }
             if (!formData.course) { setErrorAndShow('Выберите курс'); return; }
             if (!formData.campus) { setErrorAndShow('Выберите кампус'); return; }
             saveStudentStepCourse();
@@ -654,7 +698,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         setError('');
         clearMessage();
 
-        if (isStudent && step === 0) {
+        if (step === 0) {
             onBack();
             return;
         }
@@ -664,13 +708,14 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             return;
         }
 
-        if (isStudent && step === 3) {
-            setStep(2);
+        // С кода — назад к паролю; с пароля после создания аккаунта ФИО уже нельзя менять
+        if (isStudent && step === 4) {
+            setStep(3);
             return;
         }
 
-        if (isStudent && step === 4 && emailConfirmed) {
-            setStep(3);
+        if (isStudent && step === 3 && studentAccountCreated) {
+            onBack();
             return;
         }
 
@@ -739,11 +784,51 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 3</h2>
                             <div className="registerForm__inputGroup">
                                 <label>Пароль</label>
-                                <input type="password" name="password" value={formData.password} onChange={handleChange} disabled={loading} />
+                                <div className="registerForm__inputWrap">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        className="registerForm__inputPassword"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="registerForm__passwordToggle"
+                                        onClick={() => setShowPassword((v) => !v)}
+                                        disabled={loading}
+                                        aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                                        aria-pressed={showPassword}
+                                    >
+                                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                    </button>
+                                </div>
                             </div>
                             <div className="registerForm__inputGroup">
                                 <label>Повтор пароля</label>
-                                <input type="password" name="passwordConfirm" value={formData.passwordConfirm} onChange={handleChange} disabled={loading} />
+                                <div className="registerForm__inputWrap">
+                                    <input
+                                        type={showPasswordConfirm ? 'text' : 'password'}
+                                        name="passwordConfirm"
+                                        className="registerForm__inputPassword"
+                                        value={formData.passwordConfirm}
+                                        onChange={handleChange}
+                                        disabled={loading}
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="registerForm__passwordToggle"
+                                        onClick={() => setShowPasswordConfirm((v) => !v)}
+                                        disabled={loading}
+                                        aria-label={showPasswordConfirm ? 'Скрыть пароль' : 'Показать пароль'}
+                                        aria-pressed={showPasswordConfirm}
+                                    >
+                                        {showPasswordConfirm ? <EyeOffIcon /> : <EyeIcon />}
+                                    </button>
+                                </div>
                             </div>
                         </>
                     );
@@ -809,9 +894,42 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             case 2:
                 return (
                     <>
+                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 1 из 2</h2>
+                        <div className="registerForm__inputGroup">
+                            <label>Имя</label>
+                            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} disabled={loading} />
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Фамилия</label>
+                            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} disabled={loading} />
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Отчество</label>
+                            <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} disabled={loading || formData.noMiddleName} />
+                            <div className="registerForm__checkboxWrap">
+                                <input type="checkbox" id="noMiddleName" name="noMiddleName" checked={formData.noMiddleName} onChange={handleChange} disabled={loading} />
+                                <label htmlFor="noMiddleName">Нет отчества</label>
+                            </div>
+                        </div>
+                        <div className="registerForm__inputGroup">
+                            <label>Дата рождения</label>
+                            <input
+                                type="date"
+                                name="birthDate"
+                                value={formData.birthDate}
+                                onChange={handleChange}
+                                disabled={loading}
+                                max={maxBirthDateIso()}
+                            />
+                        </div>
+                    </>
+                );
+            case 3:
+                return (
+                    <>
                         <h2 className="registerForm__heading">Данные для входа</h2>
                         <p className="registerForm__subheading">
-                            После «Получить код» аккаунт уже создаётся на сервере, код уходит на {formData.email || pendingEmail}. Подтверждение кода — следующий шаг.
+                            Логин создаётся из фамилии и имени. После «Получить код» аккаунт уже создаётся на сервере, код уходит на {formData.email || pendingEmail}.
                         </p>
                         <div className="registerForm__inputGroup">
                             <label htmlFor="registerForm-phone">Телефон</label>
@@ -830,27 +948,55 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
                         <div className="registerForm__inputGroup">
                             <label>Пароль</label>
-                            <input
-                                type="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                disabled={loading || studentAccountCreated}
-                            />
+                            <div className="registerForm__inputWrap">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    className="registerForm__inputPassword"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    disabled={loading || studentAccountCreated}
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="registerForm__passwordToggle"
+                                    onClick={() => setShowPassword((v) => !v)}
+                                    disabled={loading || studentAccountCreated}
+                                    aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                                    aria-pressed={showPassword}
+                                >
+                                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                                </button>
+                            </div>
                         </div>
                         <div className="registerForm__inputGroup">
                             <label>Повтор пароля</label>
-                            <input
-                                type="password"
-                                name="passwordConfirm"
-                                value={formData.passwordConfirm}
-                                onChange={handleChange}
-                                disabled={loading || studentAccountCreated}
-                            />
+                            <div className="registerForm__inputWrap">
+                                <input
+                                    type={showPasswordConfirm ? 'text' : 'password'}
+                                    name="passwordConfirm"
+                                    className="registerForm__inputPassword"
+                                    value={formData.passwordConfirm}
+                                    onChange={handleChange}
+                                    disabled={loading || studentAccountCreated}
+                                    autoComplete="new-password"
+                                />
+                                <button
+                                    type="button"
+                                    className="registerForm__passwordToggle"
+                                    onClick={() => setShowPasswordConfirm((v) => !v)}
+                                    disabled={loading || studentAccountCreated}
+                                    aria-label={showPasswordConfirm ? 'Скрыть пароль' : 'Показать пароль'}
+                                    aria-pressed={showPasswordConfirm}
+                                >
+                                    {showPasswordConfirm ? <EyeOffIcon /> : <EyeIcon />}
+                                </button>
+                            </div>
                         </div>
                     </>
                 );
-            case 3:
+            case 4:
                 return (
                     <>
                         <h2 className="registerForm__heading">Введите код из письма</h2>
@@ -886,39 +1032,21 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
                     </>
                 );
-            case 4:
-                return (
-                    <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 1 из 2</h2>
-                        <div className="registerForm__inputGroup">
-                            <label>Имя</label>
-                            <input type="text" name="firstName" value={formData.firstName} onChange={handleChange} disabled={loading} />
-                        </div>
-                        <div className="registerForm__inputGroup">
-                            <label>Фамилия</label>
-                            <input type="text" name="lastName" value={formData.lastName} onChange={handleChange} disabled={loading} />
-                        </div>
-                        <div className="registerForm__inputGroup">
-                            <label>Отчество</label>
-                            <input type="text" name="middleName" value={formData.middleName} onChange={handleChange} disabled={loading || formData.noMiddleName} />
-                            <div className="registerForm__checkboxWrap">
-                                <input type="checkbox" id="noMiddleName" name="noMiddleName" checked={formData.noMiddleName} onChange={handleChange} disabled={loading} />
-                                <label htmlFor="noMiddleName">Нет отчества</label>
-                            </div>
-                        </div>
-                        <div className="registerForm__inputGroup">
-                            <label>Дата рождения</label>
-                            <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange} disabled={loading} />
-                        </div>
-                    </>
-                );
             case 5:
                 return (
                     <>
-                        <h2 className="registerForm__heading registerForm__heading--step">Шаг 2 из 2</h2>
+                        <h2 className="registerForm__heading registerForm__heading--step">Завершение регистрации</h2>
+                        <p className="registerForm__subheading">
+                            Курс и кампус сохраняются вместе с датой рождения. На почту уйдёт письмо о завершении регистрации.
+                        </p>
                         <div className="registerForm__inputGroup">
                             <label>Курс</label>
-                            <select name="course" value={formData.course} onChange={handleChange} disabled={loading}>
+                            <select
+                                name="course"
+                                value={formData.course}
+                                onChange={handleChange}
+                                disabled={loading || registrationCompleted}
+                            >
                                 <option value="">Выберите курс</option>
                                 {COURSE_OPTIONS.map((c) => (
                                     <option key={c} value={c}>{c} курс</option>
@@ -927,7 +1055,12 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </div>
                         <div className="registerForm__inputGroup">
                             <label>Кампус</label>
-                            <select name="campus" value={formData.campus} onChange={handleChange} disabled={loading}>
+                            <select
+                                name="campus"
+                                value={formData.campus}
+                                onChange={handleChange}
+                                disabled={loading || registrationCompleted}
+                            >
                                 <option value="">Выберите кампус</option>
                                 {CAMPUS_OPTIONS.map((c) => (
                                     <option key={c} value={c}>{c}</option>
@@ -946,16 +1079,16 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         (messageLeaving ? ' registerForm__messageSlot--leaving' : '');
 
     const showStepsCard = isStudent
-        ? step === 2 || step === 4 || step === 5
+        ? step === 2 || step === 3 || step === 5
         : step >= 2;
 
     const primaryLabel = () => {
         if (loading) return 'Отправка…';
         if (isStudent) {
             if (step === 0) return null;
-            if (step === 3) return 'Подтвердить';
-            if (step === 5) return 'Завершить';
-            if (step === 2) return studentAccountCreated ? 'К коду' : 'Получить код';
+            if (step === 4) return 'Подтвердить';
+            if (step === 5) return registrationCompleted ? 'Готово' : 'Завершить';
+            if (step === 3) return studentAccountCreated ? 'К коду' : 'Получить код';
             return 'Далее';
         }
         if (step === 4) return 'Зарегистрироваться';
@@ -981,13 +1114,13 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 <div className="registerForm__form">
                     {renderStepContent()}
 
-                    {assignedUsername && ((isStudent && step >= 2 && step !== 0) || (!isStudent && step >= 3)) ? (
+                    {assignedUsername && ((isStudent && step >= 3 && step !== 0) || (!isStudent && step >= 3)) ? (
                         <p className="registerForm__subheading">
                             Логин для входа: {assignedUsername}
                         </p>
                     ) : null}
 
-                    {isStudent && step === 0 ? (
+                    {step === 0 ? (
                         <>
                             <button
                                 type="button"
@@ -1011,13 +1144,13 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             type="button"
                             className="registerForm__primaryBtn"
                             onClick={handleNextStep}
-                            disabled={loading}
+                            disabled={loading || (isStudent && step === 5 && registrationCompleted)}
                         >
                             {primaryLabel()}
                         </button>
                     )}
 
-                    {isStudent && step === 3 ? (
+                    {isStudent && step === 4 ? (
                         <button
                             type="button"
                             className="registerForm__primaryBtn registerForm__primaryBtn--secondary"

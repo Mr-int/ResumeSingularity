@@ -2,16 +2,15 @@
     box-sizing: border-box;
     width: 610px;
     max-width: 100%;
-    height: 200px;
+    height: 148px;
     background-color: #2b2e33;
     border-radius: 20px;
     display: flex;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .photoReadyCard__photo {
-    width: 170px;
+    width: 138px;
     flex-shrink: 0;
     height: 100%;
     background-color: #ffffff;
@@ -38,10 +37,11 @@
 .photoReadyCard__info {
     flex: 1;
     min-width: 0;
-    padding: 30px 24px;
+    padding: 18px 24px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    background-color: #41464B;
 }
 
 .photoReadyCard__text {
@@ -52,7 +52,8 @@
 
 .photoReadyCard__label {
     color: #ffffff;
-    font-size: 16px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
     font-weight: 400;
     margin: 0;
 }
@@ -68,13 +69,15 @@
 }
 
 .photoReadyCard__action {
-    width: fit-content;
-    height: 44px;
+    width: 158px;
+    height: 32px;
     background-color: #3b82f6;
     color: #ffffff;
     border: none;
     border-radius: 10px;
-    padding: 0 20px;
+    padding: 0;
+    box-sizing: border-box;
+    justify-content: center;
     font-size: 15px;
     font-weight: 400;
     font-family: inherit;
@@ -101,20 +104,16 @@
 
 @media (max-width: 720px) {
     .photoReadyCard {
-        height: 170px;
+        height: 148px;
         border-radius: 16px;
     }
 
     .photoReadyCard__photo {
-        width: 130px;
+        width: 138px;
     }
 
     .photoReadyCard__info {
         padding: 20px 16px;
-    }
-
-    .photoReadyCard__label {
-        font-size: 15px;
     }
 
     .photoReadyCard__filename {
@@ -122,8 +121,8 @@
     }
 
     .photoReadyCard__action {
-        height: 40px;
-        padding: 0 14px;
+        width: 158px;
+        height: 32px;
         font-size: 14px;
     }
 }

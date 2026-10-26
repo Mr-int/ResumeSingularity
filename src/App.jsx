@@ -1,6 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import Home from './pages/Home.jsx';
+import CareerCenter from './pages/CareerCenter.jsx';
 import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
 import Settings from "./pages/Settings.jsx";
@@ -11,6 +12,29 @@ import Auth from './pages/Auth.jsx';
 import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
 import { routerBasename } from './utils/appBase.js';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Старые URL → уникальная ссылка /profile/:id (только UUID, не /resume/create). */
+const ProfileIdRedirect = () => {
+  const { id } = useParams();
+  if (!id || !UUID_RE.test(id)) {
+    return <Navigate to="/resume/create" replace />;
+  }
+  return <Navigate to={`/profile/${id}`} replace />;
+};
+
+/**
+ * `/` — новая заглушка CareerCenter.
+ * Старый Home.jsx сохранён: /#projects открывает его секцию проектов.
+ */
+const CareerOrLegacyHome = () => {
+  const { hash } = useLocation();
+  if (hash === '#projects') {
+    return <Home />;
+  }
+  return <CareerCenter />;
+};
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -36,7 +60,7 @@ const AppRoutes = () => {
   return (
       <>
         <Routes>
-          <Route path='/' element={<Home />} />
+          <Route path='/' element={<CareerOrLegacyHome />} />
           <Route path='/login' element={<Auth />} />
           <Route path='/registration' element={<Auth />} />
           <Route path='/forgot-password' element={<Auth />} />
@@ -45,27 +69,35 @@ const AppRoutes = () => {
               <Students />
             </ProtectedRoute>
           } />
-          <Route path='/studentsResume/:id' element={
-            <ProtectedRoute>
-              <Resume />
-            </ProtectedRoute>
-          } />
-          <Route path='/settings' element={
+          {/* Свой профиль / настройки */}
+          <Route path='/profile' element={
             <ProtectedRoute>
               <Settings />
             </ProtectedRoute>
           } />
+          {/* Уникальная ссылка на студента: /profile/{uuid} */}
+          {/* Статичный путь выше /resume/:id, иначе «create» уходит в GET student/create */}
+          <Route path='/resume/create' element={
+            <ProtectedRoute>
+              <ResumeCreator />
+            </ProtectedRoute>
+          } />
+          <Route path='/profile/:id' element={
+            <ProtectedRoute>
+              <Resume />
+            </ProtectedRoute>
+          } />
+          <Route path='/resume/:id' element={<ProfileIdRedirect />} />
+          <Route path='/studentsResume/:id' element={<ProfileIdRedirect />} />
+          <Route path='/settings' element={<Navigate to="/profile" replace />} />
+          <Route path='/account' element={<Navigate to="/profile" replace />} />
           <Route path='/chats' element={
             <ProtectedRoute>
               <Chats />
             </ProtectedRoute>
           } />
-          <Route path='/account' element={<Navigate to="/settings" replace />} />
-          <Route path='/plug' element={
-            <ProtectedRoute>
-              <ResumeCreator />
-            </ProtectedRoute>
-          } />
+          <Route path='/plug' element={<Navigate to="/resume/create" replace />} />
+          <Route path='/onboarding' element={<Navigate to="/resume/create" replace />} />
           <Route path='/error/:code' element={<StatusError />} />
           <Route path='*' element={<StatusError code="404" />} />
         </Routes>

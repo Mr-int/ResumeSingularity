@@ -4,9 +4,22 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import { getAllStudents } from "../../services/studentApi.js";
+import { getAllStudents, getPublicHomeVitrina } from "../../services/studentApi.js";
+import { isAuthenticated } from "../../services/authApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
+
+/** На главной показываем только одобренные / витринные карточки. */
+const isCatalogApprovedStudent = (student) => {
+    if (!student || typeof student !== 'object') return false;
+    const status = student.accountStatus ?? student.userAccountStatus ?? null;
+    if (status != null && String(status).toUpperCase() !== 'APPROVED') {
+        return false;
+    }
+    // Если бэкенд явно отдал скрытую карточку — не показываем
+    if (student.catalogVisible === false) return false;
+    return true;
+};
 
 const StudentSlider = () => {
     const [searchValue, setSearchValue] = useState('');
@@ -25,15 +38,39 @@ const StudentSlider = () => {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
-                const data = await getAllStudents();
-                const visible = (Array.isArray(data) ? data : []).filter(hasStudentProfilePhoto);
+                let list = [];
+
+                try {
+                    const vitrina = await getPublicHomeVitrina();
+                    list = Array.isArray(vitrina.students) ? vitrina.students : [];
+                } catch (vitrinaErr) {
+                    console.warn('[StudentSlider] vitrina failed', vitrinaErr);
+                }
+
+                // cardsFilter только для вошедших: без сессии даёт 401 и шумел в консоли.
+                // Гостям достаточно public/vitrina/home (бэкенд уже режет неодобренных).
+                if (list.length === 0 && isAuthenticated()) {
+                    try {
+                        list = await getAllStudents();
+                    } catch (catalogErr) {
+                        console.warn('[StudentSlider] cardsFilter fallback failed', catalogErr);
+                        list = [];
+                    }
+                }
+
+                const approved = list.filter(isCatalogApprovedStudent);
+                const withPhoto = approved.filter(hasStudentProfilePhoto);
+                // Не обнуляем витрину, если у карточек нет imagePath в DTO
+                const visible = withPhoto.length > 0 ? withPhoto : approved;
                 setStudents(visible);
                 if (visible.length > 0) {
-                    const middleIndex = Math.floor(visible.length / 2);
-                    setActiveCardIndex(middleIndex);
+                    setActiveCardIndex(Math.floor(visible.length / 2));
+                } else {
+                    setActiveCardIndex(0);
                 }
             } catch (error) {
                 console.error('Failed to fetch students:', error);
+                setStudents([]);
             } finally {
                 setLoading(false);
             }
@@ -202,7 +239,7 @@ const StudentSlider = () => {
                         </GradientButton>
                     </>
                 ) : (
-                    <p style={{ color: '#fff' }}>Для показа студентов ты должен быть авторизован :(</p>
+                    <p style={{ color: '#fff' }}>Пока нет студентов для показа</p>
                 )}
             </div>
         </section>

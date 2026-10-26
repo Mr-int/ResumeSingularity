@@ -1,6 +1,6 @@
 .accountPage {
     min-height: calc(100vh - 120px);
-    background: #050508;
+    background: #131313;
     color: #e4e4e7;
     padding: 40px 20px 80px;
     box-sizing: border-box;
@@ -9,6 +9,74 @@
 .accountPage__inner {
     max-width: 720px;
     margin: 0 auto;
+}
+
+.accountPage--profile {
+    font-family: 'StratosSemiLight', sans-serif;
+}
+
+.accountPage__accountBlock button,
+.accountPage__accountBlock input,
+.accountPage__accountBlock textarea,
+.accountPage__accountBlock a {
+    font-family: inherit;
+}
+
+.accountPage__inner--wide {
+    max-width: 1300px;
+}
+
+.accountPage__accountBlock {
+    margin-top: 40px;
+    padding: 24px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 24px;
+}
+
+.accountPage__accountBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 8px;
+}
+
+.accountPage__accountTitle {
+    margin: 0 0 4px;
+    font-size: 18px;
+    font-weight: 400;
+    color: #fff;
+}
+
+.accountPage__accountHint {
+    margin: 0;
+    font-size: 14px;
+    color: #a3a3a3;
+}
+
+.accountPage__logoutBtn {
+    padding: 12px 22px;
+    border-radius: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.accountPage__logoutBtn:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.28);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.7);
+}
+
+.accountPage__logoutBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
 }
 
 .accountPage__title {
@@ -28,6 +96,10 @@
 
 .accountPage__settingsNav {
     margin: 0 0 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    align-items: center;
 }
 
 .accountPage__settingsNavLink {
@@ -38,11 +110,24 @@
     text-decoration: none;
     border-bottom: 1px solid rgba(196, 181, 253, 0.45);
     padding-bottom: 2px;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font: inherit;
+    cursor: pointer;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .accountPage__settingsNavLink:hover {
     color: #fff;
     border-bottom-color: rgba(255, 255, 255, 0.5);
+}
+
+.accountPage__settingsNavLink:disabled {
+    opacity: 0.6;
+    cursor: default;
 }
 
 .accountPage__code {

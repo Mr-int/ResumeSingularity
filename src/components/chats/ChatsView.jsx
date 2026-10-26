@@ -239,13 +239,18 @@ const ChatsView = () => {
             setTitles(nextTitles);
             setSubtitles(nextSubtitles);
         } catch (e) {
-            // Чаты недоступны (профиль не дозаполнен и т.п.) — не разлогиниваем, показываем error-страницу
+            // Чаты недоступны (профиль не дозаполнен и т.п.) — не разлогиниваем
             if (e?.status === 403 || e?.status === 404) {
-                navigate('/error/404', {
+                const msg = e.message || 'Дозаполните профиль, чтобы открыть переписку.';
+                const needsResume = /дозаполн|профил|резюме/i.test(msg);
+                navigate(needsResume ? '/error/403' : '/error/404', {
                     replace: true,
                     state: {
                         title: 'Чаты пока недоступны',
-                        message: e.message || 'Дозаполните профиль, чтобы открыть переписку.',
+                        message: msg,
+                        ...(needsResume
+                            ? { ctaTo: '/resume/create', ctaLabel: 'Заполнить резюме' }
+                            : {}),
                     },
                 });
                 return;
@@ -387,7 +392,7 @@ const ChatsView = () => {
                             ← Каталог
                         </Link>
                         <span className="chatsView__pageNavTitle">Чаты</span>
-                        <Link to="/settings" className="chatsView__pageNavLink">
+                        <Link to="/profile" className="chatsView__pageNavLink">
                             Настройки
                         </Link>
                     </nav>
@@ -454,7 +459,7 @@ const ChatsView = () => {
                     </div>
                     {showResumeBtn ? (
                         <Link
-                            to={`/studentsResume/${selectedChat.studentId}`}
+                            to={`/profile/${selectedChat.studentId}`}
                             className="chatsView__resumeBtn"
                         >
                             Смотреть резюме

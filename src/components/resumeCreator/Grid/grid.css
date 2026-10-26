@@ -38,9 +38,36 @@
 }
 
 .studentCreatorGrid__left {
-    height: 100%;
+    height: auto;
+    max-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
+}
+
+.studentCreatorGrid__left::-webkit-scrollbar {
+    width: 6px;
+}
+
+.studentCreatorGrid__left::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+
+.studentCreatorGrid__left::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: rgba(65, 70, 75, 0.55);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+}
+
+.studentCreatorGrid__left::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(115, 125, 133, 0.7);
+}
+
+.studentCreatorGrid__left::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 /* Список специальностей доходит до края карточки и клипается border-radius грида */
@@ -61,8 +88,11 @@
 
 .studentCreatorGrid__right {
     width: 560px;
+    height: 100%;
     flex-shrink: 0;
-    overflow: hidden;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
 }
 
 .studentCreatorGrid__left > * {
@@ -73,6 +103,8 @@
 .studentCreatorGrid__right > * {
     width: 560px;
     max-width: 560px;
+    height: 100%;
+    max-height: 450px;
 }
 
 @media (max-width: 1100px) {
@@ -89,6 +121,7 @@
 
     .studentCreatorGrid__right {
         width: 100%;
+        height: auto;
         display: flex;
         justify-content: center;
     }
@@ -96,6 +129,8 @@
     .studentCreatorGrid__right > * {
         width: min(560px, 100%);
         max-width: 100%;
+        height: auto;
+        max-height: none;
     }
 }
 

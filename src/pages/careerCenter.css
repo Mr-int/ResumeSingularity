@@ -1,0 +1,355 @@
+.careerCenter {
+    min-height: 100vh;
+    background-color: #131313;
+    display: flex;
+    flex-direction: column;
+}
+
+.careerCenter__main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 32px 24px 48px;
+}
+
+.careerCenter__stage {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 40px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.careerCenter__letter {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 683px;
+}
+
+.careerCenter__letterTitle {
+    margin: 0;
+    padding-left: 8px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #ffffff;
+}
+
+.careerCenter__image {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 683 / 384;
+    border: 1px solid #A3C9FF;
+    border-radius: 48px;
+    box-sizing: border-box;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.careerCenter__imageText {
+    margin: 0;
+    max-width: 320px;
+    text-align: center;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.35;
+    color: #ffffff;
+}
+
+.careerCenter__imageBtn {
+    width: 150px;
+    height: 45px;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    background-color: #ffffff;
+    color: #000000;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.careerCenter__imageBtn:hover {
+    filter: brightness(0.95);
+}
+
+.careerCenter__messages {
+    width: 473px;
+    max-width: 42%;
+    flex: 0 1 473px;
+    min-width: 0;
+}
+
+.careerCenter__messagesHead {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-left: 8px;
+}
+
+.careerCenter__messagesTitle {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: #ffffff;
+}
+
+.careerCenter__messagesIcon {
+    width: 22px;
+    height: 22px;
+    fill: #ffffff;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
+.careerCenter__messagesCard {
+    box-sizing: border-box;
+    width: 100%;
+    height: 447px;
+    max-height: min(447px, 70vh);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(90deg, #202123 0%, #121315 100%);
+    border: 1px solid #2F2F2F;
+    border-radius: 48px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+}
+
+.careerCenter__messagesBadge {
+    align-self: flex-start;
+    margin-bottom: 16px;
+    padding: 6px 14px;
+    border-radius: 12px;
+    background-color: #e55c5c;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.careerCenter__messageItem {
+    position: relative;
+    box-sizing: border-box;
+    align-self: center;
+    width: 410px;
+    max-width: 100%;
+    height: 90px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: none;
+    border-radius: 16px;
+    background-color: #41464B;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.careerCenter__messageAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: #2a2a2a;
+}
+
+.careerCenter__messageAvatarImg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.careerCenter__messageBody {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    padding-right: 45px;
+}
+
+.careerCenter__messageAuthor {
+    margin: 0 0 4px;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.careerCenter__messageText {
+    margin: 0;
+    font-family: 'StratosLight', sans-serif;
+    font-size: 13px;
+    color: #cccccc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.careerCenter__messageMeta {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.careerCenter__messageTime {
+    font-family: 'StratosLight', sans-serif;
+    font-size: 11px;
+    color: #aaaaaa;
+}
+
+.careerCenter__messageCount {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #555555;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.careerCenter__messagesEmpty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    box-sizing: border-box;
+    border-radius: 16px;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.25);
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    text-align: center;
+    user-select: none;
+}
+
+.careerCenter__messagesOpen {
+    box-sizing: border-box;
+    width: 152px;
+    height: 46px;
+    margin-left: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    background-color: #41464B;
+    color: #ffffff;
+    font-family: "Sansation", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    transition: filter 0.2s ease;
+}
+
+.careerCenter__messagesOpen:hover {
+    filter: brightness(1.08);
+}
+
+@media (max-width: 1200px) {
+    .careerCenter__main {
+        padding: 24px 16px 40px;
+    }
+
+    .careerCenter__stage {
+        gap: 24px;
+    }
+
+    .careerCenter__image {
+        border-radius: 32px;
+    }
+
+    .careerCenter__messagesCard {
+        border-radius: 32px;
+        padding: 16px;
+        height: auto;
+        min-height: 320px;
+    }
+
+    .careerCenter__messageItem {
+        width: 100%;
+    }
+}
+
+@media (max-width: 720px) {
+    .careerCenter__stage {
+        gap: 16px;
+    }
+
+    .careerCenter__letterTitle,
+    .careerCenter__messagesTitle {
+        font-size: 16px;
+    }
+
+    .careerCenter__imageText {
+        font-size: 14px;
+        max-width: 90%;
+    }
+
+    .careerCenter__imageBtn {
+        width: 120px;
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .careerCenter__messages {
+        max-width: 46%;
+    }
+
+    .careerCenter__messagesCard {
+        border-radius: 24px;
+        padding: 12px;
+        min-height: 260px;
+    }
+
+    .careerCenter__messageItem {
+        height: 72px;
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .careerCenter__messageBody {
+        padding-right: 36px;
+    }
+
+    .careerCenter__messagesOpen {
+        width: 100%;
+        margin-left: 0;
+    }
+}
