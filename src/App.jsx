@@ -13,10 +13,15 @@ import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
 import { routerBasename } from './utils/appBase.js';
 
-/** Старые URL → уникальная ссылка /profile/:id */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Старые URL → уникальная ссылка /profile/:id (только UUID, не /resume/create). */
 const ProfileIdRedirect = () => {
   const { id } = useParams();
-  return <Navigate to={`/profile/${id || ''}`} replace />;
+  if (!id || !UUID_RE.test(id)) {
+    return <Navigate to="/resume/create" replace />;
+  }
+  return <Navigate to={`/profile/${id}`} replace />;
 };
 
 /**
@@ -71,6 +76,12 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } />
           {/* Уникальная ссылка на студента: /profile/{uuid} */}
+          {/* Статичный путь выше /resume/:id, иначе «create» уходит в GET student/create */}
+          <Route path='/resume/create' element={
+            <ProtectedRoute>
+              <ResumeCreator />
+            </ProtectedRoute>
+          } />
           <Route path='/profile/:id' element={
             <ProtectedRoute>
               <Resume />
@@ -83,11 +94,6 @@ const AppRoutes = () => {
           <Route path='/chats' element={
             <ProtectedRoute>
               <Chats />
-            </ProtectedRoute>
-          } />
-          <Route path='/resume/create' element={
-            <ProtectedRoute>
-              <ResumeCreator />
             </ProtectedRoute>
           } />
           <Route path='/plug' element={<Navigate to="/resume/create" replace />} />
