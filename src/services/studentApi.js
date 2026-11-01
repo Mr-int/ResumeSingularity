@@ -537,6 +537,9 @@ export const filterStudents = async (filterReq = {}) => {
 /**
  * POST /student/cardsFilter
  * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
+ *
+ * Важно: студент без APPROVED получает только свою карточку.
+ * Для каталога неодобренных — POST /public/students/cards.
  */
 export const filterStudentCardsPage = async (
     filterReq = {},
@@ -553,6 +556,49 @@ export const filterStudentCardsPage = async (
 
     return {
         data: Array.isArray(resp?.data) ? resp.data : [],
+        page: typeof resp?.page === 'number' ? resp.page : page,
+        size: typeof resp?.size === 'number' ? resp.size : size,
+        totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
+        totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
+    };
+};
+
+/**
+ * POST /public/students/cards — публичный каталог без JWT (permitAll).
+ * Сервер всегда режет по publicProfileConsent=true и catalogVisible=true.
+ * Нужен неодобренным студентам: /student/cardsFilter им отдаёт только себя.
+ */
+export const filterPublicStudentCardsPage = async (
+    filterReq = {},
+    pageable = { page: 0, size: 100 },
+) => {
+    const page = typeof pageable.page === 'number' ? pageable.page : 0;
+    const size = typeof pageable.size === 'number' ? pageable.size : 100;
+    const response = await fetch(
+        `${API_BASE_URL}public/students/cards?page=${page}&size=${size}`,
+        {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(filterReq ?? {}),
+        },
+    );
+    if (!response.ok) {
+        const err = new Error(`public/students/cards failed: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    let resp = {};
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        try {
+            resp = await response.json();
+        } catch {
+            resp = {};
+        }
+    }
+    return {
+        data: Array.isArray(resp?.data) ? resp.data : pageItems(resp),
         page: typeof resp?.page === 'number' ? resp.page : page,
         size: typeof resp?.size === 'number' ? resp.size : size,
         totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,

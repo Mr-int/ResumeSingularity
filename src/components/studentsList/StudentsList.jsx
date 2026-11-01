@@ -5,7 +5,12 @@ import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
-import { filterStudentsPage, getAllSpecialities } from "../../services/studentApi.js";
+import {
+    filterPublicStudentCardsPage,
+    filterStudentCardsPage,
+    getAllSpecialities,
+} from "../../services/studentApi.js";
+import { getStoredAccountStatus, getStoredRole } from "../../services/authApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 
 const STUDENTS_PER_PAGE = 5;
@@ -37,6 +42,38 @@ const buildStudentFilterReq = (filters) => {
     if (specialtyIds.length > 0) req.specialitiesIds = specialtyIds;
 
     return req;
+};
+
+/** Неодобренный студент на /student/* видит только себя — каталог берём с public. */
+const shouldUsePublicStudentCatalog = () => {
+    const role = getStoredRole();
+    if (role === 'ADMIN' || role === 'RECRUITER') return false;
+    const status = getStoredAccountStatus();
+    return status !== 'APPROVED';
+};
+
+const fetchAllCardPages = async (fetchPage, filterData) => {
+    const pageSize = 200;
+    const maxPages = 200;
+    const byId = new Map();
+    const first = await fetchPage(filterData, { page: 0, size: pageSize });
+    const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
+    const pagesToFetch = Math.min(totalPages, maxPages);
+
+    for (const s of first.data) {
+        const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+        if (!byId.has(key)) byId.set(key, s);
+    }
+
+    for (let page = 1; page < pagesToFetch; page += 1) {
+        const res = await fetchPage(filterData, { page, size: pageSize });
+        for (const s of res.data) {
+            const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+            if (!byId.has(key)) byId.set(key, s);
+        }
+    }
+
+    return Array.from(byId.values());
 };
 
 const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef, specialties }) => {
@@ -265,40 +302,50 @@ const StudentsList = () => {
     const filterRef = useRef(null);
     const searchInputRef = useRef(null);
 
-    // Мемоизированная функция для получения студентов с фильтрами
+    // Каталог: cardsFilter для APPROVED / рекрутера; иначе public (PENDING видит только себя на /student/*).
     const fetchFilteredStudents = useCallback(async (filters) => {
         try {
             setLoading(true);
 
             const filterData = buildStudentFilterReq(filters);
 
-            // /student/filter is pageable. В API page/size должны быть в query (?page=&size=),
-            // а в ответе используем PageResponseStudentDTO { data, totalPages, totalElements }.
-            const pageSize = 200;
-            const maxPages = 200; // safety cap
-            const byId = new Map();
-            const first = await filterStudentsPage(filterData, { page: 0, size: pageSize });
-            const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
-            const pagesToFetch = Math.min(totalPages, maxPages);
-
-            for (const s of first.data) {
-                const key = s?.id != null ? String(s.id) : JSON.stringify(s);
-                if (!byId.has(key)) byId.set(key, s);
+            if (shouldUsePublicStudentCatalog()) {
+                const publicList = await fetchAllCardPages(filterPublicStudentCardsPage, filterData);
+                console.log('[API] Public catalog students:', publicList.length);
+                return publicList;
             }
 
-            for (let page = 1; page < pagesToFetch; page += 1) {
-                const res = await filterStudentsPage(filterData, { page, size: pageSize });
-                for (const s of res.data) {
-                    const key = s?.id != null ? String(s.id) : JSON.stringify(s);
-                    if (!byId.has(key)) byId.set(key, s);
+            const authFilter = { ...filterData, catalogVisible: true };
+            let list = await fetchAllCardPages(
+                (req, pageable) => filterStudentCardsPage(req, pageable, { skipAuthRedirect: true }),
+                authFilter,
+            );
+
+            // Запасной путь: статус в storage устарел / ещё PENDING — API отдал только себя.
+            if (list.length <= 1) {
+                try {
+                    const publicList = await fetchAllCardPages(filterPublicStudentCardsPage, filterData);
+                    if (publicList.length > list.length) {
+                        list = publicList;
+                    }
+                } catch (publicErr) {
+                    console.warn('[API] public catalog fallback failed', publicErr);
                 }
             }
 
-            const all = Array.from(byId.values());
-            console.log('[API] Received filtered students (all pages, deduped):', all);
-            return all;
+            console.log('[API] Received filtered students (all pages, deduped):', list.length);
+            return list;
         } catch (err) {
             console.error('Failed to fetch filtered students:', err);
+            try {
+                const publicList = await fetchAllCardPages(
+                    filterPublicStudentCardsPage,
+                    buildStudentFilterReq(filters),
+                );
+                if (publicList.length > 0) return publicList;
+            } catch {
+                // ignore
+            }
             if (err?.status !== 403) {
                 setError(err.message);
             }
@@ -368,7 +415,8 @@ const StudentsList = () => {
     }, [currentFilters]);
 
     useEffect(() => {
-        const visibleStudentsCount = allStudents.filter(hasStudentProfilePhoto).length;
+        const withPhoto = allStudents.filter(hasStudentProfilePhoto);
+        const visibleStudentsCount = withPhoto.length > 0 ? withPhoto.length : allStudents.length;
         const nextTotalPages = Math.max(1, Math.ceil(visibleStudentsCount / STUDENTS_PER_PAGE));
         setCurrentPage((prev) => Math.min(prev, nextTotalPages));
     }, [allStudents]);
@@ -514,7 +562,9 @@ const StudentsList = () => {
         currentFilters.adult ||
         (Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0) ||
         currentFilters.searchQuery;
-    const visibleStudents = allStudents.filter(hasStudentProfilePhoto);
+    // Как на главной: не обнуляем каталог, если у карточек нет imagePath в DTO
+    const withPhoto = allStudents.filter(hasStudentProfilePhoto);
+    const visibleStudents = withPhoto.length > 0 ? withPhoto : allStudents;
     const totalPages = Math.max(1, Math.ceil(visibleStudents.length / STUDENTS_PER_PAGE));
     const safeCurrentPage = Math.min(currentPage, totalPages);
     const pageStartIndex = (safeCurrentPage - 1) * STUDENTS_PER_PAGE;
