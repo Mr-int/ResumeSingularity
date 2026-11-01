@@ -6,6 +6,7 @@ import StudentProfileResume from '../components/studentProfileResume/StudentProf
 import {
     getEducationDetailsByStudentId,
     getExperienceDetailsByStudentId,
+    getPortfolioByStudentId,
     getStudentById,
 } from '../services/studentApi.js';
 import { getImageUrl } from '../config/api.js';
@@ -26,6 +27,7 @@ const Resume = () => {
     const [student, setStudent] = useState(null);
     const [experiences, setExperiences] = useState([]);
     const [educations, setEducations] = useState([]);
+    const [portfolios, setPortfolios] = useState([]);
 
     useEffect(() => {
         let cancelled = false;
@@ -50,9 +52,10 @@ const Resume = () => {
                 if (cancelled) return;
                 setStudent(studentData);
 
-                const [educationResult, experienceResult] = await Promise.allSettled([
+                const [educationResult, experienceResult, portfolioResult] = await Promise.allSettled([
                     getEducationDetailsByStudentId(id),
                     getExperienceDetailsByStudentId(id),
+                    getPortfolioByStudentId(id),
                 ]);
 
                 if (cancelled) return;
@@ -80,6 +83,12 @@ const Resume = () => {
                 setExperiences(
                     experienceResult.status === 'fulfilled' && Array.isArray(experienceResult.value)
                         ? experienceResult.value
+                        : [],
+                );
+
+                setPortfolios(
+                    portfolioResult.status === 'fulfilled' && Array.isArray(portfolioResult.value)
+                        ? portfolioResult.value
                         : [],
                 );
             } catch (err) {
@@ -132,6 +141,7 @@ const Resume = () => {
                             skills={Array.isArray(student.skills) ? student.skills : []}
                             experiences={experiences}
                             educations={educations}
+                            portfolios={portfolios}
                             avatarSrc={avatarUrl}
                             verified={Boolean(student.publicProfileConsent)}
                         />

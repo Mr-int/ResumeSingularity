@@ -193,6 +193,7 @@ const SettingsPage = () => {
                                 skills={Array.isArray(profile.skills) ? profile.skills : []}
                                 experiences={experiences}
                                 educations={educations}
+                                portfolios={portfolio}
                                 avatarSrc={avatarUrl}
                                 verified={Boolean(profile.publicProfileConsent)}
                                 onEdit={() => navigate('/resume/create')}

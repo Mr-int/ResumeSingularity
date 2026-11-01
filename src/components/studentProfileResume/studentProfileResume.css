@@ -522,11 +522,61 @@
 }
 
 .studentProfileResume__portfolioFolder {
+    position: relative;
+    box-sizing: border-box;
+    width: 210px;
+    height: 135px;
+    flex-shrink: 0;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.18s ease;
+}
+
+a.studentProfileResume__portfolioFolder:hover {
+    transform: translateY(-2px);
+}
+
+.studentProfileResume__portfolioFolderImg {
+    display: block;
     width: 210px;
     height: 135px;
     object-fit: contain;
-    display: block;
-    flex-shrink: 0;
+    object-position: center bottom;
+    pointer-events: none;
+    user-select: none;
+}
+
+.studentProfileResume__portfolioFolderCopy {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    pointer-events: none;
+}
+
+.studentProfileResume__portfolioFolderName,
+.studentProfileResume__portfolioFolderDesc {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-weight: 400;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.studentProfileResume__portfolioFolderName {
+    font-size: 14px;
+    color: #2F2F2F;
+}
+
+.studentProfileResume__portfolioFolderDesc {
+    font-size: 13px;
+    color: #5F5F5F;
 }
 
 .studentProfileResume__experienceGrid {

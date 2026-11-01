@@ -13,13 +13,17 @@ import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 import { appPath } from '../../utils/appBase.js';
 
-const PORTFOLIO_FOLDERS = [
-    { id: 'white', src: whiteFolder, alt: 'Папка портфолио' },
-    { id: 'yellow', src: yellowFolder, alt: 'Папка портфолио' },
-    { id: 'green', src: greenFolder, alt: 'Папка портфолио' },
-    { id: 'pink', src: pinkFolder, alt: 'Папка портфолио' },
-];
+const PORTFOLIO_FOLDER_IMAGES = [whiteFolder, yellowFolder, greenFolder, pinkFolder];
 const SKILLS_VISIBLE = 8;
+
+const normalizePortfolioHref = (raw) => {
+    const href = String(raw || '').trim();
+    if (!href) return '';
+    if (/^https?:\/\//i.test(href) || href.startsWith('mailto:') || href.startsWith('//')) {
+        return href;
+    }
+    return `https://${href}`;
+};
 
 const courseTone = (course) => {
     switch (course) {
@@ -87,6 +91,7 @@ const StudentProfileResume = ({
     skills = [],
     experiences = [],
     educations = [],
+    portfolios = [],
     avatarSrc,
     verified = true,
     variant = 'owner',
@@ -158,6 +163,22 @@ const StudentProfileResume = ({
         tag: item.tag || item.educationType || (index === 0 ? 'Среднее профессиональное' : 'Онлайн-курс'),
         tone: index % 2 === 0 ? 'blue' : 'green',
     }));
+
+    const portfolioItems = (Array.isArray(portfolios) ? portfolios : [])
+        .map((item, index) => {
+            const href = normalizePortfolioHref(item.link || item.url || item.webUrl);
+            const name = (item.name || item.title || '').toString().trim();
+            const description = (item.description || item.about || item.additionalInfo || '').toString().trim();
+            if (!name && !description && !href) return null;
+            return {
+                id: item.id ?? item.portfolioId ?? `portfolio-${index}`,
+                name: name || 'Ссылка',
+                description,
+                href,
+                src: PORTFOLIO_FOLDER_IMAGES[index % PORTFOLIO_FOLDER_IMAGES.length],
+            };
+        })
+        .filter(Boolean);
 
     useEffect(() => {
         if (!linkCopied) return undefined;
@@ -343,18 +364,59 @@ const StudentProfileResume = ({
                             <img className="studentProfileResume__iconGreen" src={folderIcon} alt="" width={16} height={16} aria-hidden="true" />
                             Портфолио
                         </h2>
-                        <div className="studentProfileResume__portfolioFolders">
-                            {PORTFOLIO_FOLDERS.map((folder) => (
-                                <img
-                                    key={folder.id}
-                                    className="studentProfileResume__portfolioFolder"
-                                    src={folder.src}
-                                    alt={folder.alt}
-                                    width={210}
-                                    height={135}
-                                />
-                            ))}
-                        </div>
+                        {portfolioItems.length > 0 ? (
+                            <div className="studentProfileResume__portfolioFolders">
+                                {portfolioItems.map((item) => {
+                                    const content = (
+                                        <>
+                                            <img
+                                                className="studentProfileResume__portfolioFolderImg"
+                                                src={item.src}
+                                                alt=""
+                                                width={210}
+                                                height={135}
+                                            />
+                                            <div className="studentProfileResume__portfolioFolderCopy">
+                                                <p className="studentProfileResume__portfolioFolderName">
+                                                    {item.name}
+                                                </p>
+                                                {item.description ? (
+                                                    <p className="studentProfileResume__portfolioFolderDesc">
+                                                        {item.description}
+                                                    </p>
+                                                ) : null}
+                                            </div>
+                                        </>
+                                    );
+
+                                    if (item.href) {
+                                        return (
+                                            <a
+                                                key={item.id}
+                                                className="studentProfileResume__portfolioFolder"
+                                                href={item.href}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={item.name}
+                                            >
+                                                {content}
+                                            </a>
+                                        );
+                                    }
+
+                                    return (
+                                        <article
+                                            key={item.id}
+                                            className="studentProfileResume__portfolioFolder"
+                                        >
+                                            {content}
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="studentProfileResume__empty">Работы в портфолио не добавлены</p>
+                        )}
                     </section>
 
                     <section className="studentProfileResume__section" aria-labelledby="spr-experience-title">
