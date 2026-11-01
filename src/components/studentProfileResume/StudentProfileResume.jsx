@@ -9,6 +9,7 @@ import yellowFolder from '../../assets/folders/yellow_folder.png';
 import greenFolder from '../../assets/folders/green_folder.png';
 import pinkFolder from '../../assets/folders/pink_folder.png';
 import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
+import { normalizePortfolioItem } from '../../utils/portfolio.js';
 import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 import { appPath } from '../../utils/appBase.js';
@@ -166,14 +167,13 @@ const StudentProfileResume = ({
 
     const portfolioItems = (Array.isArray(portfolios) ? portfolios : [])
         .map((item, index) => {
-            const href = normalizePortfolioHref(item.link || item.url || item.webUrl);
-            const name = (item.name || item.title || '').toString().trim();
-            const description = (item.description || item.about || item.additionalInfo || '').toString().trim();
-            if (!name && !description && !href) return null;
+            const normalized = normalizePortfolioItem(item);
+            const href = normalizePortfolioHref(normalized.link);
+            if (!normalized.name && !normalized.description && !href) return null;
             return {
-                id: item.id ?? item.portfolioId ?? `portfolio-${index}`,
-                name: name || 'Ссылка',
-                description,
+                id: normalized.id ?? `portfolio-${index}`,
+                name: normalized.name || 'Ссылка',
+                description: normalized.description,
                 href,
                 src: PORTFOLIO_FOLDER_IMAGES[index % PORTFOLIO_FOLDER_IMAGES.length],
             };

@@ -65,6 +65,7 @@ import {
     validateResumeThroughStep,
 } from './resumeCreatorValidation.js';
 import { packExperienceAdditionalInfo } from '../utils/experienceWebUrl.js';
+import { buildPortfolioPayload, normalizePortfolioItem } from '../utils/portfolio.js';
 import {
     clearExperienceDraft,
     clearResumeCreatorStep,
@@ -77,13 +78,6 @@ import {
 const TOTAL_STEPS = 8;
 
 const emptyPortfolioDraft = () => ({ name: '', description: '', link: '' });
-
-const normalizePortfolioItem = (item) => ({
-    id: item?.id ?? item?.portfolioId ?? null,
-    name: item?.name || item?.title || '',
-    description: item?.description || item?.about || item?.additionalInfo || '',
-    link: item?.link || item?.url || item?.webUrl || '',
-});
 
 const skillEntityId = (item) => {
     if (item == null || typeof item !== 'object') return null;
@@ -203,20 +197,21 @@ const MEMO_BY_STEP = {
     7: [
         {
             id: 'edu-1',
-            tone: 'success',
-            title: 'Что указать в образовании?',
-            bullets: [
-                'Вуз, направление и годы обучения. Курс уточняется в профиле.',
-                'Можно добавить несколько вузов по одной записи.',
-            ],
+            title: 'Что если у меня нет высшего образования?',
+            content:
+                'Укажите среднее профессиональное образование или добавьте релевантные образовательные курсы во вкладке «Образовательные курсы». Для многих junior-позиций важнее навыки и проекты, чем диплом.',
         },
         {
             id: 'edu-2',
-            tone: 'error',
-            title: 'Чего избегать?',
-            bullets: [
-                'Неактуальные краткосрочные курсы без связи со специальностью и избыточные школьные детали.',
-            ],
+            title: 'Какой год окончания выбрать, если ещё не окончил?',
+            content:
+                'Укажите планируемый год выпуска. Если точная дата неизвестна, поставьте текущий или следующий учебный год — это нормальная практика для студентов.',
+        },
+        {
+            id: 'edu-3',
+            title: 'Подойдут ли неофициальные курсы?',
+            content:
+                'Да, если курс дал применимые навыки. Укажите название, платформу и ссылку; при наличии приложите сертификат — так проще подтвердить обучение на собеседовании.',
         },
     ],
 };
@@ -562,25 +557,13 @@ const ResumeCreator = () => {
     };
 
     const refreshPortfolios = async () => {
-        if (!studentId) return;
+        if (!studentId) return [];
         const list = await getPortfolioByStudentId(studentId);
-        setPortfolios(
-            (Array.isArray(list) ? list : [])
-                .map(normalizePortfolioItem)
-                .filter((item) => item.name || item.link || item.description),
-        );
-    };
-
-    const buildPortfolioBody = () => {
-        const name = portfolioDraft.name.trim();
-        const link = portfolioDraft.link.trim();
-        const description = portfolioDraft.description.trim();
-        if (!name && !link && !description) return { empty: true };
-        if (!name) return { error: 'Введите название' };
-        if (!link) return { error: 'Введите ссылку на материал' };
-        const body = { name, link, studentId };
-        if (description) body.description = description;
-        return { body };
+        const normalized = (Array.isArray(list) ? list : [])
+            .map(normalizePortfolioItem)
+            .filter((item) => item.name || item.link || item.description);
+        setPortfolios(normalized);
+        return normalized;
     };
 
     const savePortfolioBody = async (body) => {
@@ -589,21 +572,42 @@ const ResumeCreator = () => {
                 ? updatePortfolio(editingPortfolioId, payload)
                 : createPortfolio(payload)
         );
-        try {
-            await send(body);
-        } catch (err) {
-            if (body.description && (err?.status === 400 || err?.status === 422)) {
-                const rest = { ...body };
+
+        const trySend = async (payload) => {
+            try {
+                return await send(payload);
+            } catch (err) {
+                if (!(err?.status === 400 || err?.status === 422)) throw err;
+                // Убираем опциональные алиасы, которые старый API может не принимать.
+                const rest = { ...payload };
+                delete rest.title;
+                delete rest.url;
+                delete rest.additionalInfo;
                 delete rest.description;
-                await send(rest);
-                return;
+                if (!rest.name && payload.title) rest.name = payload.title;
+                if (!rest.link && payload.url) rest.link = payload.url;
+                // Если без description тоже 400 — пробуем только обязательный минимум.
+                try {
+                    return await send(rest);
+                } catch (err2) {
+                    if (!(err2?.status === 400 || err2?.status === 422)) throw err2;
+                    return send({
+                        studentId: payload.studentId,
+                        name: payload.name || payload.title,
+                        link: payload.link || payload.url,
+                    });
+                }
             }
-            throw err;
-        }
+        };
+
+        return trySend(body);
     };
 
     const commitPortfolioDraft = async ({ requireContent = false } = {}) => {
-        const built = buildPortfolioBody();
+        const built = buildPortfolioPayload({
+            ...portfolioDraft,
+            studentId,
+        });
         if (built.empty) {
             if (requireContent) {
                 showToast('Введите название и ссылку', { error: true });
@@ -615,10 +619,70 @@ const ResumeCreator = () => {
             showToast(built.error, { error: true });
             return false;
         }
-        await savePortfolioBody(built.body);
+
+        const created = await savePortfolioBody(built.body);
+        const createdId = created?.id ?? created?.portfolioId ?? editingPortfolioId;
+        const localItem = {
+            id: createdId ?? `local-${Date.now()}`,
+            ...built.local,
+        };
+
+        // Сразу показываем то, что ввёл пользователь — даже если API name не вернул.
+        setPortfolios((prev) => {
+            if (editingPortfolioId != null) {
+                return prev.map((item) => (
+                    String(item.id) === String(editingPortfolioId)
+                        ? { ...item, ...localItem, id: item.id }
+                        : item
+                ));
+            }
+            const withoutDup = prev.filter((item) => (
+                String(item.link) !== String(localItem.link)
+                || String(item.name) !== String(localItem.name)
+            ));
+            return [...withoutDup, localItem];
+        });
+
         setPortfolioDraft(emptyPortfolioDraft());
         setEditingPortfolioId(null);
-        await refreshPortfolios();
+
+        const refreshed = await refreshPortfolios();
+        // Если после refresh имя пропало — дозаписываем packed description и оставляем локальное имя в UI.
+        const matched = refreshed.find((item) => (
+            (createdId != null && String(item.id) === String(createdId))
+            || String(item.link) === String(localItem.link)
+        ));
+        if (matched?.id != null && !matched.name) {
+            await updatePortfolio(matched.id, {
+                studentId,
+                link: localItem.link,
+                url: localItem.link,
+                name: localItem.name,
+                title: localItem.name,
+                description: built.body.description,
+                additionalInfo: built.body.description,
+            }).catch(() => null);
+            const again = await refreshPortfolios();
+            const stillMissing = again.find((item) => String(item.id) === String(matched.id));
+            if (stillMissing && !stillMissing.name) {
+                setPortfolios((prev) => prev.map((item) => (
+                    String(item.id) === String(matched.id)
+                        ? { ...item, name: localItem.name, description: localItem.description, link: localItem.link }
+                        : item
+                )));
+            }
+        } else if (matched?.id != null) {
+            // Подтягиваем серверный id, имя уже есть.
+            setPortfolios((prev) => {
+                const hasMatched = prev.some((item) => String(item.id) === String(matched.id));
+                if (hasMatched) return prev;
+                return prev.map((item) => (
+                    String(item.link) === String(localItem.link)
+                        ? { ...item, id: matched.id }
+                        : item
+                ));
+            });
+        }
         return true;
     };
 
@@ -1073,8 +1137,14 @@ const ResumeCreator = () => {
     };
 
     const handleAddEducation = async (entry) => {
+        const kind = entry?.educationKind === 'course' ? 'course' : 'gov';
         const institutionName = entry?.institutionName?.trim() || '';
-        if (!(Number(entry?.educationId) > 0) && !institutionName) {
+        if (kind === 'course') {
+            if (!entry?.courseName?.trim() && !entry?.platform?.trim()) {
+                showToast('Укажите название курса или платформу', { error: true });
+                return;
+            }
+        } else if (!(Number(entry?.educationId) > 0) && !institutionName) {
             showToast('Укажите образовательную организацию', { error: true });
             return;
         }
@@ -1102,12 +1172,13 @@ const ResumeCreator = () => {
 
             setEducationsAdded((prev) => [...prev, {
                 ...entry,
+                educationKind: kind,
                 educationId,
                 institutionName: resolvedName,
                 id: created?.institution?.id || created?.educationId || educationId,
             }]);
-            setEducationDraft({});
-            showToast('Образование добавлено');
+            setEducationDraft({ educationKind: kind });
+            showToast(kind === 'course' ? 'Курс добавлен' : 'Образование добавлено');
         } catch (err) {
             showToast(err?.message || 'Не удалось добавить образование', { error: true });
         } finally {

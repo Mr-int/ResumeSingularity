@@ -2,12 +2,18 @@ import { useEffect, useState } from 'react';
 import agreeIcon from '../../../assets/icons/agree.png';
 import cancelIcon from '../../../assets/icons/cancel.png';
 import arrowSmallIcon from '../../../assets/icons/arrow_small.svg';
+import bookIcon from '../../../assets/icons/memo-book.svg';
 import './memoBlock.css';
 
 const HeaderIcon = () => (
-    <svg className="memoBlock__headerIcon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
-    </svg>
+    <img
+        src={bookIcon}
+        alt=""
+        className="memoBlock__headerIcon"
+        width={22}
+        height={22}
+        aria-hidden="true"
+    />
 );
 
 const SuccessIcon = () => (
@@ -65,6 +71,7 @@ const MemoBlock = ({ title = 'Памятка', items = [] }) => {
 
             {items.map((item) => {
                 const isOpen = openId === item.id;
+                const showTone = item.tone === 'error' || item.tone === 'success';
                 const tone = item.tone === 'error' ? 'error' : 'success';
                 const bullets = toBullets(item);
 
@@ -77,7 +84,7 @@ const MemoBlock = ({ title = 'Памятка', items = [] }) => {
                             onClick={() => setOpenId(isOpen ? null : item.id)}
                         >
                             <span className="memoBlock__summaryMain">
-                                {tone === 'error' ? <ErrorIcon /> : <SuccessIcon />}
+                                {showTone ? (tone === 'error' ? <ErrorIcon /> : <SuccessIcon />) : null}
                                 <span className="memoBlock__summaryText">{item.title}</span>
                             </span>
                             <ArrowIcon />
