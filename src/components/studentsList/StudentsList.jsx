@@ -9,10 +9,8 @@ import {
     filterPublicStudentCardsPage,
     filterStudentCardsPage,
     getAllSpecialities,
+    getPublicHomeVitrina,
 } from "../../services/studentApi.js";
-import { getStoredAccountStatus, getStoredRole } from "../../services/authApi.js";
-import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
-
 const STUDENTS_PER_PAGE = 5;
 const MAX_VISIBLE_PAGES = 5;
 
@@ -44,12 +42,51 @@ const buildStudentFilterReq = (filters) => {
     return req;
 };
 
-/** Неодобренный студент на /student/* видит только себя — каталог берём с public. */
-const shouldUsePublicStudentCatalog = () => {
-    const role = getStoredRole();
-    if (role === 'ADMIN' || role === 'RECRUITER') return false;
-    const status = getStoredAccountStatus();
-    return status !== 'APPROVED';
+const specialtyNameOf = (student) => {
+    if (!student) return '';
+    if (typeof student.speciality === 'string') return student.speciality;
+    if (student.speciality?.name) return student.speciality.name;
+    return student.specialityName || student.profession || '';
+};
+
+/** Клиентская фильтрация для витрины (у неё нет FilterStudentReq). */
+const applyClientFilters = (students, filters) => {
+    const list = Array.isArray(students) ? students : [];
+    const search = filters.searchQuery?.trim().toLowerCase() || '';
+    const courses = Array.isArray(filters.course) ? filters.course : [];
+    const apiCourses = new Set(courses.map(mapCourseToApiEnum).filter(Boolean));
+    const specialtyIds = new Set(
+        (Array.isArray(filters.specialty) ? filters.specialty : [])
+            .map((s) => String(s?.id ?? s))
+            .filter(Boolean),
+    );
+    const specialtyNames = new Set(
+        (Array.isArray(filters.specialty) ? filters.specialty : [])
+            .map((s) => String(s?.name || '').toLowerCase())
+            .filter(Boolean),
+    );
+
+    return list.filter((s) => {
+        if (apiCourses.size > 0 && !apiCourses.has(s?.course)) return false;
+        if (specialtyIds.size > 0 || specialtyNames.size > 0) {
+            const sid = s?.specialityId != null ? String(s.specialityId)
+                : (s?.speciality?.id != null ? String(s.speciality.id) : '');
+            const sname = specialtyNameOf(s).toLowerCase();
+            const byId = sid && specialtyIds.has(sid);
+            const byName = sname && specialtyNames.has(sname);
+            if (!byId && !byName) return false;
+        }
+        if (search) {
+            const hay = [
+                s?.firstName,
+                s?.lastName,
+                s?.bio,
+                specialtyNameOf(s),
+            ].filter(Boolean).join(' ').toLowerCase();
+            if (!hay.includes(search)) return false;
+        }
+        return true;
+    });
 };
 
 const fetchAllCardPages = async (fetchPage, filterData) => {
@@ -58,7 +95,7 @@ const fetchAllCardPages = async (fetchPage, filterData) => {
     const byId = new Map();
     const first = await fetchPage(filterData, { page: 0, size: pageSize });
     const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
-    const pagesToFetch = Math.min(totalPages, maxPages);
+    const pagesToFetch = Math.min(Math.max(totalPages, 1), maxPages);
 
     for (const s of first.data) {
         const key = s?.id != null ? String(s.id) : JSON.stringify(s);
@@ -73,6 +110,26 @@ const fetchAllCardPages = async (fetchPage, filterData) => {
         }
     }
 
+    return Array.from(byId.values());
+};
+
+const mergeByIdPreferLonger = (primary, secondary) => {
+    if (!secondary?.length) return primary || [];
+    if (!primary?.length) return secondary;
+    if (secondary.length <= primary.length) {
+        // Добавляем недостающие из secondary
+        const byId = new Map(primary.map((s) => [String(s?.id), s]));
+        for (const s of secondary) {
+            const key = s?.id != null ? String(s.id) : null;
+            if (key && !byId.has(key)) byId.set(key, s);
+        }
+        return Array.from(byId.values());
+    }
+    const byId = new Map(secondary.map((s) => [String(s?.id), s]));
+    for (const s of primary) {
+        const key = s?.id != null ? String(s.id) : null;
+        if (key && !byId.has(key)) byId.set(key, s);
+    }
     return Array.from(byId.values());
 };
 
@@ -302,50 +359,55 @@ const StudentsList = () => {
     const filterRef = useRef(null);
     const searchInputRef = useRef(null);
 
-    // Каталог: cardsFilter для APPROVED / рекрутера; иначе public (PENDING видит только себя на /student/*).
+    /**
+     * Каталог:
+     * 1) POST /student/cardsFilter — без catalogVisible в теле: иначе PENDING со скрытой
+     *    своей карточкой получает []. Сервер сам режет выдачу по роли/статусу.
+     * 2) public/students/cards — только publicProfileConsent (часто пусто)
+     * 3) public/vitrina/home — студенты с главной
+     */
     const fetchFilteredStudents = useCallback(async (filters) => {
         try {
             setLoading(true);
-
             const filterData = buildStudentFilterReq(filters);
+            let list = [];
 
-            if (shouldUsePublicStudentCatalog()) {
-                const publicList = await fetchAllCardPages(filterPublicStudentCardsPage, filterData);
-                console.log('[API] Public catalog students:', publicList.length);
-                return publicList;
+            try {
+                list = await fetchAllCardPages(
+                    (req, pageable) => filterStudentCardsPage(req, pageable, { skipAuthRedirect: true }),
+                    filterData,
+                );
+                console.log('[API] cardsFilter:', list.length);
+            } catch (authErr) {
+                console.warn('[API] cardsFilter failed', authErr);
             }
 
-            const authFilter = { ...filterData, catalogVisible: true };
-            let list = await fetchAllCardPages(
-                (req, pageable) => filterStudentCardsPage(req, pageable, { skipAuthRedirect: true }),
-                authFilter,
-            );
+            // Витрина главной — основной источник «чужих» карточек для PENDING
+            try {
+                const vitrina = await getPublicHomeVitrina();
+                const fromVitrina = applyClientFilters(
+                    Array.isArray(vitrina.students) ? vitrina.students : [],
+                    filters,
+                );
+                console.log('[API] vitrina/home students:', fromVitrina.length);
+                list = mergeByIdPreferLonger(list, fromVitrina);
+            } catch (vitrinaErr) {
+                console.warn('[API] vitrina failed', vitrinaErr);
+            }
 
-            // Запасной путь: статус в storage устарел / ещё PENDING — API отдал только себя.
             if (list.length <= 1) {
                 try {
                     const publicList = await fetchAllCardPages(filterPublicStudentCardsPage, filterData);
-                    if (publicList.length > list.length) {
-                        list = publicList;
-                    }
+                    console.log('[API] public/students/cards:', publicList.length);
+                    list = mergeByIdPreferLonger(list, publicList);
                 } catch (publicErr) {
-                    console.warn('[API] public catalog fallback failed', publicErr);
+                    console.warn('[API] public cards failed', publicErr);
                 }
             }
 
-            console.log('[API] Received filtered students (all pages, deduped):', list.length);
             return list;
         } catch (err) {
             console.error('Failed to fetch filtered students:', err);
-            try {
-                const publicList = await fetchAllCardPages(
-                    filterPublicStudentCardsPage,
-                    buildStudentFilterReq(filters),
-                );
-                if (publicList.length > 0) return publicList;
-            } catch {
-                // ignore
-            }
             if (err?.status !== 403) {
                 setError(err.message);
             }
@@ -415,9 +477,7 @@ const StudentsList = () => {
     }, [currentFilters]);
 
     useEffect(() => {
-        const withPhoto = allStudents.filter(hasStudentProfilePhoto);
-        const visibleStudentsCount = withPhoto.length > 0 ? withPhoto.length : allStudents.length;
-        const nextTotalPages = Math.max(1, Math.ceil(visibleStudentsCount / STUDENTS_PER_PAGE));
+        const nextTotalPages = Math.max(1, Math.ceil(allStudents.length / STUDENTS_PER_PAGE));
         setCurrentPage((prev) => Math.min(prev, nextTotalPages));
     }, [allStudents]);
 
@@ -562,9 +622,8 @@ const StudentsList = () => {
         currentFilters.adult ||
         (Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0) ||
         currentFilters.searchQuery;
-    // Как на главной: не обнуляем каталог, если у карточек нет imagePath в DTO
-    const withPhoto = allStudents.filter(hasStudentProfilePhoto);
-    const visibleStudents = withPhoto.length > 0 ? withPhoto : allStudents;
+    // Список каталога — все карточки с API; placeholder-аватар рисует StudentsListCard
+    const visibleStudents = allStudents;
     const totalPages = Math.max(1, Math.ceil(visibleStudents.length / STUDENTS_PER_PAGE));
     const safeCurrentPage = Math.min(currentPage, totalPages);
     const pageStartIndex = (safeCurrentPage - 1) * STUDENTS_PER_PAGE;
