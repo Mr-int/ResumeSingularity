@@ -667,6 +667,15 @@ export const createPortfolio = (body) =>
         body: JSON.stringify(body),
     });
 
+export const updatePortfolio = (id, body) =>
+    apiClientJson(`portfolio/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });
+
+export const deletePortfolio = (id) =>
+    apiClientJson(`portfolio/${id}`, { method: 'DELETE' });
+
 /** POST /skill/filter — справочник навыков. FilterSkillReq: { name }. */
 export const filterSkills = async (filterReq = {}, pageable = { page: 0, size: 200 }) => {
     const resp = await apiClientJson(withPageQuery('skill/filter', pageable), {

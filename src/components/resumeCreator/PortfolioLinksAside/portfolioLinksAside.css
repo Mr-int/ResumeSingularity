@@ -1,0 +1,185 @@
+.portfolioAside {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    max-height: 450px;
+    border: 1px solid #2F2F2F;
+    border-radius: 24px;
+    background: linear-gradient(110deg, #191A1B 0.86%, #131313 97.54%);
+    overflow: hidden;
+}
+
+.portfolioAside__scroll {
+    box-sizing: border-box;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 23px 27px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
+}
+
+.portfolioAside__scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.portfolioAside__scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: rgba(65, 70, 75, 0.55);
+}
+
+.portfolioAside__folders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    flex-shrink: 0;
+}
+
+.portfolioAside__folder {
+    position: relative;
+    width: 205px;
+    height: 131px;
+    flex: 0 0 205px;
+}
+
+.portfolioAside__folderImg {
+    display: block;
+    width: 205px;
+    height: 131px;
+    object-fit: contain;
+    object-position: center bottom;
+    pointer-events: none;
+    user-select: none;
+}
+
+.portfolioAside__tools {
+    position: absolute;
+    top: 28px;
+    right: 10px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.portfolioAside__tool {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.portfolioAside__tool:hover {
+    opacity: 0.7;
+}
+
+.portfolioAside__copy {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    pointer-events: none;
+}
+
+.portfolioAside__name,
+.portfolioAside__desc {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-weight: 400;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.portfolioAside__name {
+    font-size: 14px;
+    color: #2F2F2F;
+}
+
+.portfolioAside__desc {
+    font-size: 13px;
+    color: #5F5F5F;
+}
+
+.portfolioAside__memo {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex-shrink: 0;
+}
+
+.portfolioAside__memoHead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.portfolioAside__memoTitle {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.32px;
+    color: #B3B5B7;
+}
+
+.portfolioAside__questions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.portfolioAside__question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.28px;
+    color: #B3B5B7;
+}
+
+.portfolioAside__question span {
+    min-width: 0;
+}
+
+.portfolioAside__fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 36px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(19, 19, 19, 0), #131313);
+}
+
+@media (max-width: 600px) {
+    .portfolioAside {
+        max-height: none;
+        min-height: 360px;
+    }
+
+    .portfolioAside__question {
+        font-size: 13px;
+    }
+}

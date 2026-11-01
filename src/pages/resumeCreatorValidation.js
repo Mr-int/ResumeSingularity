@@ -6,7 +6,8 @@ const fail = (message) => ({ valid: false, message });
 
 /**
  * Обязательные поля мастера резюме.
- * Не проверяем: опыт (шаг 6), поля опциональные в PATCH (отчество, hh, telegram и т.д.).
+ * Не проверяем: опыт (шаг 6), ссылки портфолио (шаг 8),
+ * поля опциональные в PATCH (отчество, hh, telegram и т.д.).
  */
 export const validateResumeStep = (step, ctx) => {
     const {
@@ -48,12 +49,6 @@ export const validateResumeStep = (step, ctx) => {
                 return fail('В «О себе» нужно не меньше 30 символов');
             }
             if (bio.length > 2000) return fail('Описание не должно превышать 2000 символов');
-            // HH / портфолио — необязательны на шаге; проверяются только при отправке на модерацию
-            const portName = String(ctx.portfolioName || '').trim();
-            const portLink = String(ctx.portfolioLink || '').trim();
-            if ((portName && !portLink) || (!portName && portLink)) {
-                return fail('Для портфолио заполните и название, и ссылку — или очистите оба поля');
-            }
             return ok();
         }
         case 5: {
@@ -67,6 +62,8 @@ export const validateResumeStep = (step, ctx) => {
             if (totalEducation < 1) return fail('Добавьте хотя бы одно образование');
             return ok();
         }
+        case 8:
+            return ok();
         default:
             return ok();
     }
@@ -85,11 +82,11 @@ export const validatePartialSave = (ctx) => {
     return ok();
 };
 
-/** Проверка шагов 1…maxStep; шаг 6 (опыт) пропускаем. */
+/** Проверка шагов 1…maxStep; шаг 6 (опыт) и шаг 8 (портфолио) пропускаем. */
 export const validateResumeThroughStep = (maxStep, ctx) => {
-    const last = Math.min(Math.max(maxStep, 1), 7);
+    const last = Math.min(Math.max(maxStep, 1), 8);
     for (let s = 1; s <= last; s += 1) {
-        if (s === 6) continue;
+        if (s === 6 || s === 8) continue;
         const result = validateResumeStep(s, ctx);
         if (!result.valid) return result;
     }
@@ -105,9 +102,6 @@ export const resumeValidationContext = ({
     savedInstitutionCount,
     legacyCity = '',
     hhLink = '',
-    portfolioName = '',
-    portfolioLink = '',
-    hasPortfolio = false,
 }) => ({
     profile,
     bio,
@@ -117,7 +111,4 @@ export const resumeValidationContext = ({
     savedInstitutionCount,
     legacyCity,
     hhLink,
-    portfolioName,
-    portfolioLink,
-    hasPortfolio,
 });

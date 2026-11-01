@@ -15,6 +15,8 @@ import {
     ExperienceForm,
     ExperienceAside,
     EducationForm,
+    PortfolioLinksForm,
+    PortfolioLinksAside,
 } from '../components/resumeCreator/index.js';
 import PhotoCropModal from '../components/resumeCreator/PhotoUploader/PhotoCropModal/PhotoCropModal.jsx';
 import correctPhoto from '../assets/photoExamples/CorrectPhoto.png';
@@ -47,6 +49,8 @@ import {
     deleteExperience,
     createInstitution,
     createPortfolio,
+    updatePortfolio,
+    deletePortfolio,
     getAllCompanies,
     getExperienceDetailsByStudentId,
     getInstitutionsByStudentId,
@@ -70,7 +74,16 @@ import {
     saveResumeCreatorStep,
 } from './resumeCreatorStepStorage.js';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
+
+const emptyPortfolioDraft = () => ({ name: '', description: '', link: '' });
+
+const normalizePortfolioItem = (item) => ({
+    id: item?.id ?? item?.portfolioId ?? null,
+    name: item?.name || item?.title || '',
+    description: item?.description || item?.about || item?.additionalInfo || '',
+    link: item?.link || item?.url || item?.webUrl || '',
+});
 
 const skillEntityId = (item) => {
     if (item == null || typeof item !== 'object') return null;
@@ -253,9 +266,9 @@ const ResumeCreator = () => {
     const cropDraftUrlRef = useRef(null);
     const [bio, setBio] = useState('');
     const [hhLink, setHhLink] = useState('');
-    const [portfolioName, setPortfolioName] = useState('');
-    const [portfolioLink, setPortfolioLink] = useState('');
-    const [hasPortfolio, setHasPortfolio] = useState(false);
+    const [portfolios, setPortfolios] = useState([]);
+    const [portfolioDraft, setPortfolioDraft] = useState(emptyPortfolioDraft);
+    const [editingPortfolioId, setEditingPortfolioId] = useState(null);
     const [selectedSkills, setSelectedSkills] = useState([]);
     const [experienceDraft, setExperienceDraft] = useState({});
     const [educationDraft, setEducationDraft] = useState({});
@@ -285,9 +298,6 @@ const ResumeCreator = () => {
             profile,
             bio,
             hhLink,
-            portfolioName,
-            portfolioLink,
-            hasPortfolio,
             selectedSkills,
             photoPreview,
             educationsAdded,
@@ -295,7 +305,7 @@ const ResumeCreator = () => {
             legacyCity,
         }),
         [
-            profile, bio, hhLink, portfolioName, portfolioLink, hasPortfolio,
+            profile, bio, hhLink,
             selectedSkills, photoPreview, educationsAdded, savedInstitutionCount, legacyCity,
         ],
     );
@@ -371,7 +381,11 @@ const ResumeCreator = () => {
                 if (cancelled) return;
 
                 setStudentId(me.id);
-                setHasPortfolio(Array.isArray(portfolio) && portfolio.length > 0);
+                setPortfolios(
+                    (Array.isArray(portfolio) ? portfolio : [])
+                        .map(normalizePortfolioItem)
+                        .filter((item) => item.name || item.link || item.description),
+                );
                 setHhLink(me.hhLink || '');
                 setSpecialties(Array.isArray(specs) ? specs : []);
                 setCompaniesCatalog(Array.isArray(companies) ? companies : []);
@@ -547,6 +561,67 @@ const ResumeCreator = () => {
         };
     };
 
+    const refreshPortfolios = async () => {
+        if (!studentId) return;
+        const list = await getPortfolioByStudentId(studentId);
+        setPortfolios(
+            (Array.isArray(list) ? list : [])
+                .map(normalizePortfolioItem)
+                .filter((item) => item.name || item.link || item.description),
+        );
+    };
+
+    const buildPortfolioBody = () => {
+        const name = portfolioDraft.name.trim();
+        const link = portfolioDraft.link.trim();
+        const description = portfolioDraft.description.trim();
+        if (!name && !link && !description) return { empty: true };
+        if (!name) return { error: 'Введите название' };
+        if (!link) return { error: 'Введите ссылку на материал' };
+        const body = { name, link, studentId };
+        if (description) body.description = description;
+        return { body };
+    };
+
+    const savePortfolioBody = async (body) => {
+        const send = (payload) => (
+            editingPortfolioId != null
+                ? updatePortfolio(editingPortfolioId, payload)
+                : createPortfolio(payload)
+        );
+        try {
+            await send(body);
+        } catch (err) {
+            if (body.description && (err?.status === 400 || err?.status === 422)) {
+                const rest = { ...body };
+                delete rest.description;
+                await send(rest);
+                return;
+            }
+            throw err;
+        }
+    };
+
+    const commitPortfolioDraft = async ({ requireContent = false } = {}) => {
+        const built = buildPortfolioBody();
+        if (built.empty) {
+            if (requireContent) {
+                showToast('Введите название и ссылку', { error: true });
+                return false;
+            }
+            return true;
+        }
+        if (built.error) {
+            showToast(built.error, { error: true });
+            return false;
+        }
+        await savePortfolioBody(built.body);
+        setPortfolioDraft(emptyPortfolioDraft());
+        setEditingPortfolioId(null);
+        await refreshPortfolios();
+        return true;
+    };
+
     const handleSaveProgress = async () => {
         if (saving) return;
         const check = validatePartialSave(validationCtx);
@@ -623,22 +698,12 @@ const ResumeCreator = () => {
                     }
                 }
             }
-            if (step === 4) {
-                const portName = portfolioName.trim();
-                const portLink = portfolioLink.trim();
-                if (portName && portLink && !hasPortfolio && studentId) {
-                    await createPortfolio({
-                        name: portName,
-                        link: portLink,
-                        studentId,
-                    });
-                    setHasPortfolio(true);
-                    setPortfolioName('');
-                    setPortfolioLink('');
-                }
-            }
             if (step === 6) {
                 await flushExperienceDraftIfReady();
+            }
+            if (step >= TOTAL_STEPS) {
+                const saved = await commitPortfolioDraft();
+                if (!saved) return;
             }
             if (step >= TOTAL_STEPS) {
                 const result = await persistProfile();
@@ -659,24 +724,6 @@ const ResumeCreator = () => {
                 const pending = String(authMe?.accountStatus || '').toUpperCase() === 'PENDING_APPROVAL';
 
                 if (pending) {
-                    const portName = portfolioName.trim();
-                    const portLink = portfolioLink.trim();
-                    if (portName && portLink && !hasPortfolio) {
-                        try {
-                            await createPortfolio({
-                                name: portName,
-                                link: portLink,
-                                studentId,
-                            });
-                            setHasPortfolio(true);
-                            setPortfolioName('');
-                            setPortfolioLink('');
-                        } catch (portErr) {
-                            showToast(portErr?.message || 'Не удалось сохранить портфолио', { error: true });
-                            return;
-                        }
-                    }
-
                     // communication-readiness временно не блокируем — сразу submit-for-review
                     let submitted = false;
                     try {
@@ -1068,6 +1115,54 @@ const ResumeCreator = () => {
         }
     };
 
+    const handlePortfolioSubmit = async () => {
+        if (saving) return;
+        const wasEditing = editingPortfolioId != null;
+        setSaving(true);
+        try {
+            const saved = await commitPortfolioDraft({ requireContent: true });
+            if (saved) showToast(wasEditing ? 'Ссылка обновлена' : 'Ссылка добавлена');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось сохранить ссылку', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleEditPortfolio = (item) => {
+        if (item?.id == null) {
+            showToast('У этой ссылки нет id — обновите страницу', { error: true });
+            return;
+        }
+        setEditingPortfolioId(item.id);
+        setPortfolioDraft({
+            name: item.name || '',
+            description: item.description || '',
+            link: item.link || '',
+        });
+    };
+
+    const handleDeletePortfolio = async (item) => {
+        if (item?.id == null) {
+            showToast('Нельзя удалить ссылку без id', { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            await deletePortfolio(item.id);
+            setPortfolios((prev) => prev.filter((row) => String(row.id) !== String(item.id)));
+            if (String(editingPortfolioId) === String(item.id)) {
+                setEditingPortfolioId(null);
+                setPortfolioDraft(emptyPortfolioDraft());
+            }
+            showToast('Ссылка удалена');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось удалить ссылку', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (bootLoading) {
         return (
             <Layout>
@@ -1127,12 +1222,8 @@ const ResumeCreator = () => {
                     <ResumeBioForm
                         value={bio}
                         hhLink={hhLink}
-                        portfolioName={portfolioName}
-                        portfolioLink={portfolioLink}
                         onChange={setBio}
                         onHhLinkChange={setHhLink}
-                        onPortfolioNameChange={setPortfolioName}
-                        onPortfolioLinkChange={setPortfolioLink}
                     />
                 );
             case 5:
@@ -1182,6 +1273,24 @@ const ResumeCreator = () => {
                         onAdd={handleAddEducation}
                     />
                 );
+            case 8:
+                return (
+                    <PortfolioLinksForm
+                        name={portfolioDraft.name}
+                        description={portfolioDraft.description}
+                        link={portfolioDraft.link}
+                        submitLabel={
+                            editingPortfolioId != null || portfolios.length === 0
+                                ? 'Сохранить'
+                                : 'Добавить'
+                        }
+                        disabled={saving}
+                        onChange={(patch) => {
+                            setPortfolioDraft((prev) => ({ ...prev, ...patch }));
+                        }}
+                        onSubmit={handlePortfolioSubmit}
+                    />
+                );
             default:
                 return null;
         }
@@ -1221,6 +1330,15 @@ const ResumeCreator = () => {
                     memoItems={MEMO_BY_STEP[6] || []}
                     onEdit={handleSelectExperience}
                     onDelete={handleDeleteExperience}
+                />
+            );
+        }
+        if (step === 8) {
+            return (
+                <PortfolioLinksAside
+                    items={portfolios}
+                    onEdit={handleEditPortfolio}
+                    onDelete={handleDeletePortfolio}
                 />
             );
         }

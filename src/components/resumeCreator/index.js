@@ -21,3 +21,5 @@ export { default as SkillsAside } from './SkillsAside/SkillsAside.jsx';
 export { default as ExperienceForm } from './ExperienceForm/ExperienceForm.jsx';
 export { default as ExperienceAside } from './ExperienceAside/ExperienceAside.jsx';
 export { default as EducationForm } from './EducationForm/EducationForm.jsx';
+export { default as PortfolioLinksForm } from './PortfolioLinksForm/PortfolioLinksForm.jsx';
+export { default as PortfolioLinksAside } from './PortfolioLinksAside/PortfolioLinksAside.jsx';

@@ -5,12 +5,8 @@ const ResumeBioForm = ({
     maxLength = 2000,
     minLength = 30,
     hhLink = '',
-    portfolioName = '',
-    portfolioLink = '',
     onChange,
     onHhLinkChange,
-    onPortfolioNameChange,
-    onPortfolioLinkChange,
 }) => {
     const length = value.length;
     const isEmpty = length === 0;
@@ -20,8 +16,8 @@ const ResumeBioForm = ({
         <section className="resumeBioForm">
             <h2 className="resumeBioForm__title">Заполните описание резюме</h2>
             <p className="resumeBioForm__subtitle">
-                «О себе» — не короче {minLength} символов. Ссылку на HH или портфолио можно добавить сейчас
-                или позже, перед отправкой анкеты на проверку.
+                «О себе» — не короче {minLength} символов. Ссылку на HH можно добавить сейчас
+                или позже, ссылки портфолио — на последнем шаге.
             </p>
 
             <div className="resumeBioForm__box">
@@ -51,7 +47,7 @@ const ResumeBioForm = ({
             <div className="resumeBioForm__extra">
                 <div className="resumeBioForm__field">
                     <label htmlFor="student-hh" className="resumeBioForm__label">
-                        Ссылка на HH (или портфолио ниже)
+                        Ссылка на HH
                     </label>
                     <input
                         id="student-hh"
@@ -60,32 +56,6 @@ const ResumeBioForm = ({
                         placeholder="https://hh.ru/resume/…"
                         value={hhLink}
                         onChange={(e) => onHhLinkChange?.(e.target.value)}
-                    />
-                </div>
-                <div className="resumeBioForm__field">
-                    <label htmlFor="student-portfolio-name" className="resumeBioForm__label">
-                        Название работы в портфолио
-                    </label>
-                    <input
-                        id="student-portfolio-name"
-                        type="text"
-                        className="resumeBioForm__input"
-                        placeholder="Учебный проект"
-                        value={portfolioName}
-                        onChange={(e) => onPortfolioNameChange?.(e.target.value)}
-                    />
-                </div>
-                <div className="resumeBioForm__field">
-                    <label htmlFor="student-portfolio-link" className="resumeBioForm__label">
-                        Ссылка на работу
-                    </label>
-                    <input
-                        id="student-portfolio-link"
-                        type="url"
-                        className="resumeBioForm__input"
-                        placeholder="https://…"
-                        value={portfolioLink}
-                        onChange={(e) => onPortfolioLinkChange?.(e.target.value)}
                     />
                 </div>
             </div>
