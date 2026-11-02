@@ -201,7 +201,6 @@ const SettingsPage = () => {
                                 verified={Boolean(profile.publicProfileConsent)}
                                 onEdit={() => navigate('/resume/create')}
                                 onEditAvatar={() => navigate('/resume/create')}
-                                onAddOccupation={() => navigate('/resume/create')}
                                 onEmployerView={() => navigate(`/profile/${profile.id}`)}
                             />
                         </>

@@ -364,7 +364,7 @@ export const resolveEducationId = async (institutionName, existingId, localCatal
     try {
         const created = await createEducation({
             institution: trimmed,
-            additionalInfo: 'Добавлено студентом',
+            additionalInfo: trimmed.slice(0, 2000) || 'Учебное заведение',
             webUrl: 'https://',
         });
         const id = Number(created?.id);
@@ -423,16 +423,23 @@ export const getEducationDetailsByStudentId = async (studentId) => {
                             || edu.educationType
                             || 'STATE'
                         ).toString().toUpperCase();
+                        const catalogInfo = String(details?.additionalInfo || '').trim();
+                        const isPlaceholderInfo = !catalogInfo
+                            || /^добавлено студентом$/i.test(catalogInfo)
+                            || catalogInfo === String(details?.institution || '').trim();
                         return {
-                            ...details,
                             id: institution.id || edu.educationId,
                             educationId: edu.educationId,
                             institutionId: institution.id,
+                            institution: details?.institution || '',
+                            webUrl: details?.webUrl || '',
                             startYear: institution.startYear,
                             endYear: institution.endYear,
                             educationType: educationTypeRaw === 'COURSE' ? 'COURSE' : 'STATE',
                             direction: institution.direction || edu.direction || '',
                             educationLevel: institution.educationLevel || edu.educationLevel || '',
+                            // Описание справочника не показываем как направление/уровень.
+                            additionalInfo: isPlaceholderInfo ? '' : catalogInfo,
                         };
                     }
                     return null;

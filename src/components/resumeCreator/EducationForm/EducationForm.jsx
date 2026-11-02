@@ -71,11 +71,17 @@ const EducationForm = ({
             return needle && (label.includes(needle) || needle.includes(label));
         });
         const matched = partial || null;
+        const catalogInfo = String(matched?.additionalInfo || '').trim();
+        const usableLevel = catalogInfo
+            && !/^добавлено студентом$/i.test(catalogInfo)
+            && catalogInfo !== String(matched?.institution || '').trim()
+            ? catalogInfo
+            : educationLevel;
         patch({
             institutionName: nextName,
             educationId: matched?.id != null ? String(matched.id) : '',
             webUrl: matched?.webUrl || webUrl,
-            educationLevel: matched?.additionalInfo || educationLevel,
+            educationLevel: usableLevel,
         });
     };
 

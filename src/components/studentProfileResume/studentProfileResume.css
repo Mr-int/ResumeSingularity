@@ -172,19 +172,28 @@
     z-index: 2;
 }
 
+.studentProfileResume__identity {
+    position: relative;
+    align-self: stretch;
+    width: 100%;
+    padding: 0 6px;
+    box-sizing: border-box;
+}
+
+.studentProfileResume__identity--specialty {
+    margin-top: 4px;
+}
+
 .studentProfileResume__name {
     font-size: 23px;
     font-weight: 700;
-    margin: 0 0 4px;
+    margin: 0;
     line-height: 1.15;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    align-self: stretch;
-    width: auto;
-    box-sizing: border-box;
-    padding: 0 6px;
     text-align: left;
+    padding-right: 28px;
 }
 
 .studentProfileResume__name span {
@@ -195,25 +204,114 @@
     color: #fff;
     font-size: 14px;
     margin: 0;
-    align-self: stretch;
-    padding: 0 6px;
     text-align: left;
+    padding-right: 28px;
+}
+
+.studentProfileResume__miniEdit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.75;
+}
+
+.studentProfileResume__avatar .studentProfileResume__miniEdit {
+    top: 10px;
+    right: 10px;
+    z-index: 3;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.studentProfileResume__miniEdit:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.studentProfileResume__miniEditIcon {
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+.studentProfileResume__statusBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.studentProfileResume__statusRow {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.studentProfileResume__statusHead {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 26px;
+}
+
+.studentProfileResume__statusHead .studentProfileResume__miniEdit {
+    position: static;
+}
+
+.studentProfileResume__statusLabel {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #B3B5B7;
+}
+
+.studentProfileResume__statusValue {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    letter-spacing: 0.28px;
+    color: #ffffff;
+}
+
+.studentProfileResume__statusValue.is-looking {
+    color: #84FF79;
+}
+
+.studentProfileResume__statusValue img {
+    display: block;
+    flex-shrink: 0;
 }
 
 .studentProfileResume__nav {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .studentProfileResume__btn {
     width: 100%;
-    padding: 14px 16px;
+    height: 46px;
+    padding: 0 16px;
     border-radius: 12px;
     border: none;
-    font-weight: 500;
+    font-weight: 400;
     font-size: 14px;
-    font-family: "Sansation", sans-serif;
+    font-family: 'StratosSemiLight', sans-serif;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -231,51 +329,27 @@
 .studentProfileResume__btn--primary {
     background-color: #3E8EFF;
     color: white;
-    font-family: "Sansation", sans-serif;
-    font-size: 14px;
+}
+
+.studentProfileResume__btn--edit {
+    background-color: #ffffff;
+    color: #121212;
+}
+
+.studentProfileResume__btn--share {
+    background-color: #2F2F2F;
+    color: #ffffff;
+}
+
+.studentProfileResume__btn--outline {
+    background: transparent;
+    color: #ffffff;
+    border: 1px solid #41464B;
 }
 
 .studentProfileResume__btn--secondary {
     background-color: #41464B;
     color: #B3B5B7;
-    font-family: "Sansation", sans-serif;
-    font-size: 14px;
-}
-
-.studentProfileResume__btn--addOccupation {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 24px;
-    margin-bottom: 12px;
-    font-family: 'StratosSemiLight', sans-serif;
-    font-size: 14px;
-    font-weight: 400;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px dashed rgba(255, 255, 255, 0.6);
-    border-radius: 11px;
-    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-}
-
-.studentProfileResume__btn--addOccupation:hover {
-    opacity: 1;
-    background-color: rgba(255, 255, 255, 0.15);
-    border-color: #ffffff;
-}
-
-.studentProfileResume__btn--addOccupation:active {
-    transform: scale(0.98);
-    background-color: rgba(255, 255, 255, 0.08);
-}
-
-.studentProfileResume__btn--addOccupation svg {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    display: block;
 }
 
 .studentProfileResume__btnIcon {
@@ -283,27 +357,6 @@
     height: 14px;
     flex-shrink: 0;
     display: block;
-}
-
-.studentProfileResume__btn--copyLink {
-    background-color: #35393E;
-    color: #C4C6C8;
-}
-
-.studentProfileResume__btn--copyLink:hover {
-    opacity: 1;
-    background-color: #3C4147;
-}
-
-.studentProfileResume__sidebarFooter {
-    margin-top: auto;
-    padding: 20px;
-    background-color: var(--spr-card);
-    border-radius: 16px;
-    border: 1px solid var(--spr-border);
-    color: var(--spr-muted);
-    font-size: 14px;
-    text-align: center;
 }
 
 .studentProfileResume__main {
@@ -354,6 +407,16 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.studentProfileResume__sectionHead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.studentProfileResume__sectionHead .studentProfileResume__miniEdit {
+    position: static;
 }
 
 .studentProfileResume__sectionTitle {
@@ -443,6 +506,8 @@
 .studentProfileResume__skills .studentProfileResume__tag--more {
     background-color: #2a2a2a;
     color: #a3a3a3;
+    border: none;
+    cursor: pointer;
 }
 
 .studentProfileResume__section {
@@ -634,16 +699,17 @@ a.studentProfileResume__portfolioFolder:hover {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: fit-content;
+    width: 107px;
     height: 30px;
     margin-top: auto;
-    padding: 0 16px;
+    padding: 0;
     border-radius: 50px;
     font-family: 'StratosSemiLight', sans-serif;
     font-size: 12px;
     font-weight: 400;
     line-height: 1.4;
     letter-spacing: 0.24px;
+    white-space: nowrap;
 }
 
 .studentProfileResume__experienceCard--work .studentProfileResume__experienceTag {
@@ -666,6 +732,18 @@ a.studentProfileResume__portfolioFolder:hover {
     margin: 0;
 }
 
+.studentProfileResume__experienceDescriptionBtn {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
 .studentProfileResume__experienceDescription {
     font-family: 'StratosSemiLight', sans-serif;
     font-size: 12px;
@@ -674,6 +752,22 @@ a.studentProfileResume__portfolioFolder:hover {
     line-height: 1.5;
     margin: 0;
     flex: 1;
+}
+
+.studentProfileResume__chevron {
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+    margin-top: 2px;
+    border-right: 1.5px solid #B3B5B7;
+    border-bottom: 1.5px solid #B3B5B7;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+}
+
+.studentProfileResume__chevron.is-open {
+    transform: rotate(225deg);
+    margin-top: 6px;
 }
 
 .studentProfileResume__experienceLink {
@@ -745,6 +839,10 @@ a.studentProfileResume__portfolioFolder:hover {
 }
 
 .studentProfileResume__educationCard--blue .studentProfileResume__educationTag {
+    width: auto;
+    min-width: 107px;
+    max-width: 100%;
+    padding: 0 16px;
     border: 1px solid #3E8EFF;
     background: rgba(62, 142, 255, 0.1);
     color: #3E8EFF;
