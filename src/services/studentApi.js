@@ -244,16 +244,27 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                     || ''
                 ).toString().trim();
 
+                const experienceTypeRaw = (
+                    experience.experienceType
+                    || item.experienceType
+                    || experience.type
+                    || item.type
+                    || 'WORK'
+                ).toString().toUpperCase();
+                const experienceType = experienceTypeRaw === 'PROJECT' ? 'PROJECT' : 'WORK';
+
                 return {
                     id,
                     companyId,
                     position: (experience.position || item.position || '').toString().trim(),
                     company: companyMeta.name,
                     description: packedInfo.description,
-                    webUrl,
+                    webUrl: webUrl || (item.companyWebsite || '').toString().trim(),
                     startDate: experience.startDate || item.startDate || '',
                     endDate,
                     current: Boolean(experience.current || item.current || !endDateRaw),
+                    experienceType,
+                    activityKind: experienceType === 'PROJECT' ? 'project' : 'work',
                 };
             })
             .filter((item) => item !== null);
@@ -406,12 +417,22 @@ export const getEducationDetailsByStudentId = async (studentId) => {
                 try {
                     if (edu.educationId) {
                         const details = await getEducationById(edu.educationId);
+                        const institution = edu.institution || {};
+                        const educationTypeRaw = (
+                            institution.educationType
+                            || edu.educationType
+                            || 'STATE'
+                        ).toString().toUpperCase();
                         return {
                             ...details,
-                            id: edu.educationId,
-                            institutionId: edu.institution?.id,
-                            startYear: edu.institution?.startYear,
-                            endYear: edu.institution?.endYear
+                            id: institution.id || edu.educationId,
+                            educationId: edu.educationId,
+                            institutionId: institution.id,
+                            startYear: institution.startYear,
+                            endYear: institution.endYear,
+                            educationType: educationTypeRaw === 'COURSE' ? 'COURSE' : 'STATE',
+                            direction: institution.direction || edu.direction || '',
+                            educationLevel: institution.educationLevel || edu.educationLevel || '',
                         };
                     }
                     return null;

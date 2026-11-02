@@ -597,12 +597,19 @@ a.studentProfileResume__portfolioFolder:hover {
     height: auto;
     box-sizing: border-box;
     background-color: #2F2F2F;
-    border-radius: 20px;
-    padding: 24px;
+    border-radius: 24px;
+    padding: 24px 32px;
     border: 1px solid #41464B;
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.studentProfileResume__experienceMeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
 }
 
 .studentProfileResume__experienceCompany {
@@ -620,6 +627,35 @@ a.studentProfileResume__portfolioFolder:hover {
     color: #B3B5B7;
     line-height: 1.4;
     margin: 0;
+}
+
+.studentProfileResume__experienceTag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: fit-content;
+    height: 30px;
+    margin-top: auto;
+    padding: 0 16px;
+    border-radius: 50px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+}
+
+.studentProfileResume__experienceCard--work .studentProfileResume__experienceTag {
+    border: 0.5px solid #FF8C00;
+    background: rgba(255, 140, 0, 0.1);
+    color: #FF8C00;
+}
+
+.studentProfileResume__experienceCard--project .studentProfileResume__experienceTag {
+    border: 0.5px solid #E53BCF;
+    background: rgba(229, 59, 207, 0.1);
+    color: #E53BCF;
 }
 
 .studentProfileResume__experiencePosition {
@@ -642,11 +678,10 @@ a.studentProfileResume__portfolioFolder:hover {
 
 .studentProfileResume__experienceLink {
     color: #3e8eff;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 400;
     text-decoration: none;
     word-break: break-all;
-    margin-top: auto;
 }
 
 .studentProfileResume__experienceLink:hover {

@@ -8,7 +8,10 @@ import whiteFolder from '../../assets/folders/white_folder.png';
 import yellowFolder from '../../assets/folders/yellow_folder.png';
 import greenFolder from '../../assets/folders/green_folder.png';
 import pinkFolder from '../../assets/folders/pink_folder.png';
-import { formatExperiencePeriodText } from '../../utils/formatExperiencePeriod.js';
+import {
+    formatExperienceDurationShort,
+    formatExperiencePeriodText,
+} from '../../utils/formatExperiencePeriod.js';
 import { normalizePortfolioItem } from '../../utils/portfolio.js';
 import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
@@ -143,27 +146,46 @@ const StudentProfileResume = ({
 
     const experienceItems = (Array.isArray(experiences) ? experiences : []).map((item) => {
         const href = (item.webUrl || item.link || item.companyUrl || '').toString().trim();
+        const isProject = String(item.experienceType || '').toUpperCase() === 'PROJECT'
+            || item.activityKind === 'project';
+        const period = isProject
+            ? formatExperienceDurationShort(item.startDate, item.endDate, item.current)
+            : formatExperiencePeriodText(item.startDate, item.endDate, item.current);
         return {
             id: item.id,
             company: (item.company || item.companyName || '').toString().trim(),
-            period: formatExperiencePeriodText(item.startDate, item.endDate, item.current),
+            period,
             position: (item.position || item.role || '').toString().trim(),
             description: (item.description || item.additionalInfo || '').toString().trim(),
             href,
-            hrefLabel: href,
+            hrefLabel: isProject ? 'Ссылка на материалы' : 'Ссылка на организацию',
+            kind: isProject ? 'project' : 'work',
+            tag: isProject ? 'Проект' : 'Опыт работы',
         };
     });
 
-    const educationItems = (Array.isArray(educations) ? educations : []).map((item, index) => ({
-        id: item.id || `edu-${index}`,
-        title: item.name || item.institution || 'Учебное заведение',
-        period: formatEduPeriod(item.startDate || item.startYear, item.endDate || item.endYear),
-        role: item.speciality || item.additionalInfo || item.role || '',
-        href: (item.webUrl || item.link || '').toString().trim(),
-        hrefLabel: item.webUrl || item.link ? 'Ссылка на уч. заведение' : '',
-        tag: item.tag || item.educationType || (index === 0 ? 'Среднее профессиональное' : 'Онлайн-курс'),
-        tone: index % 2 === 0 ? 'blue' : 'green',
-    }));
+    const educationItems = (Array.isArray(educations) ? educations : []).map((item, index) => {
+        const educationType = String(item.educationType || '').toUpperCase();
+        const isCourse = educationType === 'COURSE'
+            || item.educationKind === 'course'
+            || item.tag === 'Онлайн-курс';
+        const levelOrDirection = item.educationLevel || item.direction || item.speciality
+            || item.additionalInfo || item.role || '';
+        return {
+            id: item.id || `edu-${index}`,
+            title: item.name || item.institution || item.institutionName || 'Учебное заведение',
+            period: formatEduPeriod(item.startDate || item.startYear, item.endDate || item.endYear),
+            role: levelOrDirection,
+            href: (item.webUrl || item.link || '').toString().trim(),
+            hrefLabel: item.webUrl || item.link
+                ? (isCourse ? 'Ссылка на курс' : 'Ссылка на уч. заведение')
+                : '',
+            tag: isCourse
+                ? 'Онлайн-курс'
+                : (item.educationLevel || item.tag || 'Гос. образование'),
+            tone: isCourse ? 'green' : 'blue',
+        };
+    });
 
     const portfolioItems = (Array.isArray(portfolios) ? portfolios : [])
         .map((item, index) => {
@@ -427,13 +449,23 @@ const StudentProfileResume = ({
                         {experienceItems.length > 0 ? (
                             <div className="studentProfileResume__experienceGrid">
                                 {experienceItems.map((item, index) => (
-                                    <article key={item.id || index} className="studentProfileResume__experienceCard">
-                                        <h3 className="studentProfileResume__experienceCompany">
-                                            {item.company || 'Компания не указана'}
-                                        </h3>
-                                        {item.period ? (
-                                            <p className="studentProfileResume__experiencePeriod">{item.period}</p>
-                                        ) : null}
+                                    <article
+                                        key={item.id || index}
+                                        className={
+                                            'studentProfileResume__experienceCard'
+                                            + (item.kind === 'project'
+                                                ? ' studentProfileResume__experienceCard--project'
+                                                : ' studentProfileResume__experienceCard--work')
+                                        }
+                                    >
+                                        <div className="studentProfileResume__experienceMeta">
+                                            <h3 className="studentProfileResume__experienceCompany">
+                                                {item.company || (item.kind === 'project' ? 'Проект' : 'Компания не указана')}
+                                            </h3>
+                                            {item.period ? (
+                                                <p className="studentProfileResume__experiencePeriod">{item.period}</p>
+                                            ) : null}
+                                        </div>
                                         {item.position ? (
                                             <p className="studentProfileResume__experiencePosition">{item.position}</p>
                                         ) : null}
@@ -449,6 +481,9 @@ const StudentProfileResume = ({
                                             >
                                                 {item.hrefLabel}
                                             </a>
+                                        ) : null}
+                                        {item.tag ? (
+                                            <span className="studentProfileResume__experienceTag">{item.tag}</span>
                                         ) : null}
                                     </article>
                                 ))}

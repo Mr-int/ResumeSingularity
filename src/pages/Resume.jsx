@@ -67,13 +67,16 @@ const Resume = () => {
                             .map((edu, index) => ({
                                 id: edu.id || `edu-${index}`,
                                 name: edu.institution || 'Образовательное учреждение',
-                                speciality: edu.additionalInfo || '',
+                                speciality: edu.direction || edu.educationLevel || edu.additionalInfo || '',
                                 startDate: edu.startYear ? String(edu.startYear) : '',
                                 endDate: edu.endYear
                                     ? String(edu.endYear)
                                     : (edu.current ? 'по настоящее время' : ''),
                                 webUrl: edu.webUrl || '',
                                 additionalInfo: edu.additionalInfo || '',
+                                educationType: edu.educationType === 'COURSE' ? 'COURSE' : 'STATE',
+                                direction: edu.direction || '',
+                                educationLevel: edu.educationLevel || '',
                             })),
                     );
                 } else {

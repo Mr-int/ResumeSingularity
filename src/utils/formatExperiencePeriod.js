@@ -120,11 +120,40 @@ export const formatExperiencePeriodText = (startRaw, endRaw, isCurrent = false) 
 
     const durationLine = lines.find((line) => line.startsWith('('));
     const dateLines = lines.filter((line) => !line.startsWith('('));
-    const datesPart = dateLines.join(' — ');
+    const datesPart = dateLines
+        .join(' — ')
+        .replace(/по настоящее время/gi, 'Сейчас');
 
     if (durationLine) {
         return datesPart ? `${datesPart} ${durationLine}` : durationLine;
     }
 
     return datesPart;
+};
+
+/** Короткий срок для карточек проектов: «1 мес.» / «2 года». */
+export const formatExperienceDurationShort = (startRaw, endRaw, isCurrent = false) => {
+    const ongoing = isCurrent || isOngoingExperienceDate(endRaw);
+    const start = parseExperienceDate(startRaw);
+    const end = ongoing ? new Date() : parseExperienceDate(endRaw);
+    if (!start || !end) return '';
+
+    const diffMs = end.getTime() - start.getTime();
+    if (diffMs < 0) return '';
+
+    const days = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+    const totalMonths = Math.max(1, Math.round(days / 30));
+
+    if (totalMonths >= 12) {
+        const years = Math.round(totalMonths / 12);
+        return `${years} ${pluralize(years, 'год', 'года', 'лет')}`;
+    }
+
+    return `${totalMonths} ${pluralize(totalMonths, 'мес.', 'мес.', 'мес.')}`;
+};
+
+export const isProjectExperience = (item = {}) => {
+    const type = item.experienceType || item.type || '';
+    const kind = item.activityKind || item.kind || '';
+    return String(type).toUpperCase() === 'PROJECT' || kind === 'project';
 };

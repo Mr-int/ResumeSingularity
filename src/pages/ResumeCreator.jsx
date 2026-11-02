@@ -178,20 +178,33 @@ const MEMO_BY_STEP = {
     6: [
         {
             id: 'exp-1',
-            tone: 'success',
-            title: 'Как описать опыт?',
-            bullets: [
-                'Роль, период и 1–2 конкретных результата с цифрами, если есть.',
-                'Фокус на задачах, близких к желаемой позиции.',
-            ],
+            title: 'Что если у меня нет опыта работы?',
+            content:
+                'Добавьте учебные и личные проекты во вкладке «Проектная деятельность»: название, роль, срок и ссылку на материалы. Это показывает практику даже без официального трудоустройства.',
         },
         {
             id: 'exp-2',
-            tone: 'error',
-            title: 'Чего не писать в опыте?',
-            bullets: [
-                'Длинные списки обязанностей без результата и нерелевантные подработки без пояснения.',
-            ],
+            title: 'Какую ссылку оставить в опыте работы?',
+            content:
+                'Для работы — сайт организации или публичный профиль. Для проекта — портфолио, GitHub, Figma или демо. Ссылка должна открываться без пароля.',
+        },
+        {
+            id: 'exp-3',
+            title: 'Подойдет ли неофициальное трудоустройство?',
+            content:
+                'Да. Укажите организацию, роль и задачи так же, как при официальной работе. Важно описать результат, а не только формальный статус.',
+        },
+        {
+            id: 'exp-4',
+            title: 'На сколько важно иметь опыт работы в резюме?',
+            content:
+                'Опыт и проекты — ключевой блок для рекрутера. Даже короткий релевантный кейс сильнее длинного списка курсов без практики.',
+        },
+        {
+            id: 'exp-5',
+            title: 'Что представляет из себя опыт работы?',
+            content:
+                'Это подтверждённая практика: где вы работали или какой проект делали, в какой роли, сколько длилось и какой был результат.',
         },
     ],
     7: [
@@ -412,6 +425,10 @@ const ResumeCreator = () => {
                                     ? ''
                                     : (item.endDate || ''),
                                 additionalInfo: item.description || '',
+                                experienceType: item.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK',
+                                activityKind: item.activityKind === 'project' || item.experienceType === 'PROJECT'
+                                    ? 'project'
+                                    : 'work',
                             }))
                             .filter((item) => isPersistedExperienceId(item.id))
                         : [],
@@ -931,15 +948,21 @@ const ResumeCreator = () => {
             entry.companyUrl || entry.webUrl || '',
         );
 
+        const experienceType = entry.experienceType === 'PROJECT'
+            || entry.activityKind === 'project'
+            ? 'PROJECT'
+            : 'WORK';
+
         const body = {
             studentId,
             companyId,
             position: entry.position.trim(),
             startDate: entry.startDate,
+            experienceType,
         };
         if (additionalInfo) body.additionalInfo = additionalInfo;
         if (entry.endDate) body.endDate = entry.endDate;
-        return { body, companyName, companyId };
+        return { body, companyName, companyId, experienceType };
     };
 
     const rememberCompany = (companyId, companyName) => {
@@ -965,11 +988,14 @@ const ResumeCreator = () => {
     };
 
     const validateExperienceEntry = (entry) => {
+        const isProject = entry?.experienceType === 'PROJECT' || entry?.activityKind === 'project';
         if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
-            return 'Укажите компанию';
+            return isProject ? 'Укажите название проекта' : 'Укажите компанию';
         }
         if (!entry?.position?.trim() || !entry?.startDate) {
-            return 'Укажите должность и дату начала';
+            return isProject
+                ? 'Укажите роль и дату начала'
+                : 'Укажите должность и дату начала';
         }
         return '';
     };
@@ -982,11 +1008,14 @@ const ResumeCreator = () => {
         if (!isPersistedExperienceId(id)) {
             throw new Error('Сервер не вернул id опыта — обновите страницу');
         }
+        const experienceType = body.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK';
         const saved = {
             ...entry,
             id,
             companyId: companyId || entry.companyId,
             companyName: companyName || entry.companyName || '',
+            experienceType,
+            activityKind: experienceType === 'PROJECT' ? 'project' : 'work',
         };
         setExperiences((prev) => [...prev, saved]);
         rememberCompany(saved.companyId, saved.companyName);
@@ -998,11 +1027,14 @@ const ResumeCreator = () => {
     const persistExperienceUpdate = async (entry, id) => {
         const { body, companyName, companyId } = await buildExperienceBody(entry);
         await updateExperience(id, body);
+        const experienceType = body.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK';
         const saved = {
             ...entry,
             id,
             companyId: companyId || entry.companyId,
             companyName: companyName || entry.companyName || '',
+            experienceType,
+            activityKind: experienceType === 'PROJECT' ? 'project' : 'work',
         };
         setExperiences((prev) =>
             prev.map((item) => (String(item.id) === String(id) ? { ...item, ...saved } : item)),
@@ -1070,7 +1102,10 @@ const ResumeCreator = () => {
             startDate: item.startDate || '',
             endDate: item.endDate || '',
             additionalInfo: item.additionalInfo || '',
-            activityKind: item.activityKind === 'project' ? 'project' : 'work',
+            experienceType: item.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK',
+            activityKind: item.activityKind === 'project' || item.experienceType === 'PROJECT'
+                ? 'project'
+                : 'work',
         };
         setExperienceDraft(next);
         saveExperienceDraft(studentId, next);
@@ -1160,11 +1195,17 @@ const ResumeCreator = () => {
                 entry.educationId,
                 educationsCatalog,
             );
+            const educationType = kind === 'course' ? 'COURSE' : 'STATE';
+            const direction = (entry.direction || entry.courseName || '').trim();
+            const educationLevel = (entry.educationLevel || '').trim();
             const created = await createInstitution({
                 studentId,
                 educationId,
                 startYear: entry.startYear,
                 endYear: entry.endYear,
+                educationType,
+                ...(direction ? { direction } : {}),
+                ...(educationLevel ? { educationLevel } : {}),
             });
             const resolvedName = educationsCatalog.find(
                 (item) => Number(item.id) === Number(educationId),
@@ -1173,6 +1214,9 @@ const ResumeCreator = () => {
             setEducationsAdded((prev) => [...prev, {
                 ...entry,
                 educationKind: kind,
+                educationType,
+                direction,
+                educationLevel,
                 educationId,
                 institutionName: resolvedName,
                 id: created?.institution?.id || created?.educationId || educationId,
