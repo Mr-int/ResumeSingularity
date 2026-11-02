@@ -208,6 +208,12 @@
     padding-right: 28px;
 }
 
+.studentProfileResume.is-editing .studentProfileResume__sectionHead,
+.studentProfileResume.is-editing .studentProfileResume__identity,
+.studentProfileResume.is-editing .studentProfileResume__statusHead {
+    outline: 1px dashed transparent;
+}
+
 .studentProfileResume__miniEdit {
     position: absolute;
     top: 0;
@@ -217,12 +223,12 @@
     padding: 0;
     border: none;
     border-radius: 8px;
-    background: transparent;
+    background: rgba(62, 142, 255, 0.12);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.75;
+    opacity: 1;
 }
 
 .studentProfileResume__avatar .studentProfileResume__miniEdit {
@@ -820,13 +826,18 @@ a.studentProfileResume__portfolioFolder:hover {
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    width: 200px;
-    height: 30px;
-    padding: 0 12px;
+    width: auto;
+    height: auto;
+    padding: 6px 16px;
     margin: 0;
-    border-radius: 20px;
+    margin-top: auto;
+    border-radius: 50px;
+    font-family: 'StratosSemiLight', sans-serif;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    white-space: nowrap;
 }
 
 .studentProfileResume__educationCard--blue {
@@ -839,11 +850,7 @@ a.studentProfileResume__portfolioFolder:hover {
 }
 
 .studentProfileResume__educationCard--blue .studentProfileResume__educationTag {
-    width: auto;
-    min-width: 107px;
-    max-width: 100%;
-    padding: 0 16px;
-    border: 1px solid #3E8EFF;
+    border: 0.5px solid #3E8EFF;
     background: rgba(62, 142, 255, 0.1);
     color: #3E8EFF;
 }
@@ -858,9 +865,7 @@ a.studentProfileResume__portfolioFolder:hover {
 }
 
 .studentProfileResume__educationCard--green .studentProfileResume__educationTag {
-    width: 107px;
-    height: 30px;
-    border: 1px solid #C5FF74;
+    border: 0.5px solid #C5FF74;
     background: rgba(197, 255, 116, 0.1);
     color: #C5FF74;
 }

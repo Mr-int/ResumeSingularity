@@ -199,9 +199,8 @@ const SettingsPage = () => {
                                 portfolios={portfolio}
                                 avatarSrc={avatarUrl}
                                 verified={Boolean(profile.publicProfileConsent)}
-                                onEdit={() => navigate('/resume/create')}
-                                onEditAvatar={() => navigate('/resume/create')}
                                 onEmployerView={() => navigate(`/profile/${profile.id}`)}
+                                onRefresh={loadProfile}
                             />
                         </>
                     ) : null}
