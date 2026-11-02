@@ -64,7 +64,9 @@ const Resume = () => {
                         educationResult.value
                             .filter((edu) => edu && typeof edu === 'object')
                             .map((edu, index) => ({
-                                id: edu.id || `edu-${index}`,
+                                id: edu.id ?? `edu-${index}`,
+                                educationId: edu.educationId ?? null,
+                                institutionId: edu.institutionId ?? edu.id ?? null,
                                 name: edu.institution || 'Образовательное учреждение',
                                 speciality: edu.direction || edu.educationLevel || edu.additionalInfo || '',
                                 startDate: edu.startYear ? String(edu.startYear) : '',

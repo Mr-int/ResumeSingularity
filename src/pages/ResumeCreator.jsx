@@ -1194,10 +1194,18 @@ const ResumeCreator = () => {
                 institutionName,
                 entry.educationId,
                 educationsCatalog,
+                {
+                    webUrl: entry.webUrl || entry.courseLink || '',
+                    additionalInfo: entry.educationLevel
+                        || entry.direction
+                        || entry.courseName
+                        || institutionName,
+                },
             );
             const educationType = kind === 'course' ? 'COURSE' : 'STATE';
             const direction = (entry.direction || entry.courseName || '').trim();
             const educationLevel = (entry.educationLevel || '').trim();
+            // POST /institution — запись обучения на карточке студента
             const created = await createInstitution({
                 studentId,
                 educationId,
@@ -1210,6 +1218,21 @@ const ResumeCreator = () => {
             const resolvedName = educationsCatalog.find(
                 (item) => Number(item.id) === Number(educationId),
             )?.institution || institutionName;
+            const institutionRecordId = created?.institution?.id
+                ?? created?.id
+                ?? null;
+
+            if (!educationsCatalog.some((item) => Number(item.id) === Number(educationId))) {
+                setEducationsCatalog((prev) => [
+                    ...prev,
+                    {
+                        id: educationId,
+                        institution: resolvedName,
+                        additionalInfo: educationLevel || resolvedName,
+                        webUrl: entry.webUrl || entry.courseLink || '',
+                    },
+                ]);
+            }
 
             setEducationsAdded((prev) => [...prev, {
                 ...entry,
@@ -1219,7 +1242,7 @@ const ResumeCreator = () => {
                 educationLevel,
                 educationId,
                 institutionName: resolvedName,
-                id: created?.institution?.id || created?.educationId || educationId,
+                id: institutionRecordId,
             }]);
             setEducationDraft({ educationKind: kind });
             showToast(kind === 'course' ? 'Курс добавлен' : 'Образование добавлено');

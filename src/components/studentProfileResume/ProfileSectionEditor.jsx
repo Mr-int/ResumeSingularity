@@ -54,9 +54,12 @@ const ProfileSectionEditor = ({
     experiences = [],
     educations = [],
     portfolios = [],
+    /** inline — форма прямо в блоке профиля; drawer — боковая панель */
+    layout = 'inline',
     onClose,
     onSaved,
 }) => {
+    const isInline = layout === 'inline';
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [specialities, setSpecialities] = useState([]);
@@ -97,8 +100,11 @@ const ProfileSectionEditor = ({
     ));
     const [educationDrafts, setEducationDrafts] = useState(() => (
         (Array.isArray(educations) ? educations : []).map((item) => ({
-            id: item.id,
-            educationId: item.educationId || item.id,
+            // id — запись /institution; educationId — справочник /education (не путать)
+            id: item.id != null && Number(item.id) > 0 ? item.id : null,
+            educationId: item.educationId != null && Number(item.educationId) > 0
+                ? item.educationId
+                : '',
             institutionName: item.name || item.institution || item.institutionName || '',
             direction: item.direction || item.speciality || '',
             educationLevel: item.educationLevel || '',
@@ -283,6 +289,10 @@ const ProfileSectionEditor = ({
                         institutionName,
                         draft.educationId,
                         [],
+                        {
+                            webUrl: draft.webUrl,
+                            additionalInfo: draft.educationLevel || draft.direction || institutionName,
+                        },
                     );
                     const body = {
                         studentId,
@@ -316,18 +326,8 @@ const ProfileSectionEditor = ({
         }
     };
 
-    return (
-        <div className="profileSectionEditor" role="dialog" aria-modal="true" aria-label={title}>
-            <div className="profileSectionEditor__backdrop" onClick={onClose} />
-            <div className="profileSectionEditor__panel">
-                <header className="profileSectionEditor__head">
-                    <h3>{title}</h3>
-                    <button type="button" className="profileSectionEditor__close" onClick={onClose}>
-                        Закрыть
-                    </button>
-                </header>
-
-                <div className="profileSectionEditor__body">
+    const formBody = (
+                <>
                     {section === 'avatar' ? (
                         <label className="profileSectionEditor__field">
                             <span>Новое фото</span>
@@ -672,16 +672,49 @@ const ProfileSectionEditor = ({
                     ) : null}
 
                     {error ? <p className="profileSectionEditor__error">{error}</p> : null}
-                </div>
+                </>
+    );
 
-                <footer className="profileSectionEditor__foot">
-                    <button type="button" className="profileSectionEditor__cancel" onClick={onClose} disabled={saving}>
-                        Отмена
+    const formFoot = (
+        <footer className="profileSectionEditor__foot">
+            <button type="button" className="profileSectionEditor__cancel" onClick={onClose} disabled={saving}>
+                Отмена
+            </button>
+            <button type="button" className="profileSectionEditor__save" onClick={save} disabled={saving}>
+                {saving ? 'Сохранение…' : 'Сохранить'}
+            </button>
+        </footer>
+    );
+
+    if (isInline) {
+        return (
+            <div
+                className={`profileSectionEditor profileSectionEditor--inline profileSectionEditor--${section}`}
+                role="group"
+                aria-label={title}
+            >
+                <div className="profileSectionEditor__body">
+                    {formBody}
+                </div>
+                {formFoot}
+            </div>
+        );
+    }
+
+    return (
+        <div className="profileSectionEditor" role="dialog" aria-modal="true" aria-label={title}>
+            <div className="profileSectionEditor__backdrop" onClick={onClose} />
+            <div className="profileSectionEditor__panel">
+                <header className="profileSectionEditor__head">
+                    <h3>{title}</h3>
+                    <button type="button" className="profileSectionEditor__close" onClick={onClose}>
+                        Закрыть
                     </button>
-                    <button type="button" className="profileSectionEditor__save" onClick={save} disabled={saving}>
-                        {saving ? 'Сохранение…' : 'Сохранить'}
-                    </button>
-                </footer>
+                </header>
+                <div className="profileSectionEditor__body">
+                    {formBody}
+                </div>
+                {formFoot}
             </div>
         </div>
     );

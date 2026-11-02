@@ -6,6 +6,61 @@
     justify-content: flex-end;
 }
 
+.profileSectionEditor--inline {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 8px;
+    border: 1px solid #41464B;
+    border-radius: 16px;
+    background: rgba(26, 27, 29, 0.92);
+    overflow: hidden;
+}
+
+.profileSectionEditor--inline .profileSectionEditor__body {
+    padding: 16px;
+}
+
+.profileSectionEditor--inline .profileSectionEditor__foot {
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.profileSectionEditor--inline .profileSectionEditor__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+}
+
+.profileSectionEditor--inline .profileSectionEditor__card {
+    height: 100%;
+}
+
+.profileSectionEditor--inline .profileSectionEditor__add {
+    grid-column: 1 / -1;
+    justify-self: start;
+}
+
+.profileSectionEditor--inline.profileSectionEditor--bio,
+.profileSectionEditor--inline.profileSectionEditor--info,
+.profileSectionEditor--inline.profileSectionEditor--skills,
+.profileSectionEditor--inline.profileSectionEditor--name,
+.profileSectionEditor--inline.profileSectionEditor--specialty,
+.profileSectionEditor--inline.profileSectionEditor--avatar {
+    border-radius: 12px;
+}
+
+.profileSectionEditor--inline.profileSectionEditor--bio .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--name .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--info .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--specialty .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--avatar .profileSectionEditor__field {
+    width: 100%;
+}
+
 .profileSectionEditor__backdrop {
     position: absolute;
     inset: 0;

@@ -148,7 +148,7 @@ const StudentProfileResume = ({
 
     const openSection = (section) => {
         if (!editMode) return;
-        setActiveSection(section);
+        setActiveSection((prev) => (prev === section ? null : section));
     };
 
     const handleToggleEditMode = () => {
@@ -158,6 +158,13 @@ const StudentProfileResume = ({
             return;
         }
         setEditMode(true);
+    };
+
+    const closeSectionEditor = () => setActiveSection(null);
+
+    const handleSectionSaved = async () => {
+        await onRefresh?.();
+        setActiveSection(null);
     };
 
     const firstName = student.firstName || '';
@@ -287,6 +294,20 @@ const StudentProfileResume = ({
         });
     };
 
+    const renderInlineEditor = (section) => (
+        <ProfileSectionEditor
+            layout="inline"
+            section={section}
+            student={student}
+            skills={skillList}
+            experiences={experiences}
+            educations={educations}
+            portfolios={portfolios}
+            onClose={closeSectionEditor}
+            onSaved={handleSectionSaved}
+        />
+    );
+
     return (
         <div className={`studentProfileResume${editMode ? ' is-editing' : ''}`}>
             <div className="studentProfileResume__layout">
@@ -327,29 +348,42 @@ const StudentProfileResume = ({
                                 ) : null}
                             </div>
                             <MiniEdit
-                                visible={isOwner && editMode}
+                                visible={isOwner && editMode && activeSection !== 'avatar'}
                                 onClick={() => openSection('avatar')}
                                 label="Редактировать фото"
                             />
                         </div>
+                        {activeSection === 'avatar' ? renderInlineEditor('avatar') : null}
                         <div className="studentProfileResume__identity">
-                            <h1 className="studentProfileResume__name">
-                                <span>{firstName || 'Имя'}</span>
-                                <span>{lastName || 'Фамилия'}</span>
-                            </h1>
-                            <MiniEdit
-                                visible={isOwner && editMode}
-                                onClick={() => openSection('name')}
-                                label="Редактировать имя"
-                            />
+                            {activeSection === 'name' ? (
+                                renderInlineEditor('name')
+                            ) : (
+                                <>
+                                    <h1 className="studentProfileResume__name">
+                                        <span>{firstName || 'Имя'}</span>
+                                        <span>{lastName || 'Фамилия'}</span>
+                                    </h1>
+                                    <MiniEdit
+                                        visible={isOwner && editMode}
+                                        onClick={() => openSection('name')}
+                                        label="Редактировать имя"
+                                    />
+                                </>
+                            )}
                         </div>
                         <div className="studentProfileResume__identity studentProfileResume__identity--specialty">
-                            <p className="studentProfileResume__specialty">{specialty}</p>
-                            <MiniEdit
-                                visible={isOwner && editMode}
-                                onClick={() => openSection('specialty')}
-                                label="Редактировать специальность"
-                            />
+                            {activeSection === 'specialty' ? (
+                                renderInlineEditor('specialty')
+                            ) : (
+                                <>
+                                    <p className="studentProfileResume__specialty">{specialty}</p>
+                                    <MiniEdit
+                                        visible={isOwner && editMode}
+                                        onClick={() => openSection('specialty')}
+                                        label="Редактировать специальность"
+                                    />
+                                </>
+                            )}
                         </div>
                     </header>
 
@@ -453,14 +487,18 @@ const StudentProfileResume = ({
                             <div className="studentProfileResume__sectionHead">
                                 <h2 id="spr-about-title" className="studentProfileResume__sectionTitle">Обо мне</h2>
                                 <MiniEdit
-                                    visible={isOwner && editMode}
+                                    visible={isOwner && editMode && activeSection !== 'bio'}
                                     onClick={() => openSection('bio')}
                                     label="Редактировать описание"
                                 />
                             </div>
-                            <p className="studentProfileResume__bioText">
-                                {bio || 'Информация о себе пока не заполнена'}
-                            </p>
+                            {activeSection === 'bio' ? (
+                                renderInlineEditor('bio')
+                            ) : (
+                                <p className="studentProfileResume__bioText">
+                                    {bio || 'Информация о себе пока не заполнена'}
+                                </p>
+                            )}
                         </div>
 
                         <div className="studentProfileResume__infoSkills">
@@ -479,18 +517,22 @@ const StudentProfileResume = ({
                                         Инфо
                                     </h3>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && editMode && activeSection !== 'info'}
                                         onClick={() => openSection('info')}
                                         label="Редактировать инфо"
                                     />
                                 </div>
-                                <div className="studentProfileResume__infoText">
-                                    {age != null ? <p>{ageLabel(age)}</p> : null}
-                                    {city ? <p>{city}</p> : null}
-                                    {age == null && !city ? (
-                                        <p className="studentProfileResume__empty">Данные не указаны</p>
-                                    ) : null}
-                                </div>
+                                {activeSection === 'info' ? (
+                                    renderInlineEditor('info')
+                                ) : (
+                                    <div className="studentProfileResume__infoText">
+                                        {age != null ? <p>{ageLabel(age)}</p> : null}
+                                        {city ? <p>{city}</p> : null}
+                                        {age == null && !city ? (
+                                            <p className="studentProfileResume__empty">Данные не указаны</p>
+                                        ) : null}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="studentProfileResume__skillsBlock">
@@ -508,12 +550,14 @@ const StudentProfileResume = ({
                                         Навыки
                                     </h3>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && editMode && activeSection !== 'skills'}
                                         onClick={() => openSection('skills')}
                                         label="Редактировать навыки"
                                     />
                                 </div>
-                                {skillList.length > 0 ? (
+                                {activeSection === 'skills' ? (
+                                    renderInlineEditor('skills')
+                                ) : skillList.length > 0 ? (
                                     <ul className="studentProfileResume__skills">
                                         {visibleSkills.map((skill, index) => (
                                             <li key={skill.id || index} className="studentProfileResume__tag">
@@ -557,12 +601,14 @@ const StudentProfileResume = ({
                                 Портфолио
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode}
+                                visible={isOwner && editMode && activeSection !== 'portfolio'}
                                 onClick={() => openSection('portfolio')}
                                 label="Редактировать портфолио"
                             />
                         </div>
-                        {portfolioItems.length > 0 ? (
+                        {activeSection === 'portfolio' ? (
+                            renderInlineEditor('portfolio')
+                        ) : portfolioItems.length > 0 ? (
                             <div className="studentProfileResume__portfolioFolders">
                                 {portfolioItems.map((item) => {
                                     const content = (
@@ -624,12 +670,14 @@ const StudentProfileResume = ({
                                 Опыт работы
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode}
+                                visible={isOwner && editMode && activeSection !== 'experience'}
                                 onClick={() => openSection('experience')}
                                 label="Редактировать опыт"
                             />
                         </div>
-                        {experienceItems.length > 0 ? (
+                        {activeSection === 'experience' ? (
+                            renderInlineEditor('experience')
+                        ) : experienceItems.length > 0 ? (
                             <div className="studentProfileResume__experienceGrid">
                                 {experienceItems.map((item, index) => {
                                     const key = item.id || index;
@@ -706,12 +754,14 @@ const StudentProfileResume = ({
                                 Образование
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode}
+                                visible={isOwner && editMode && activeSection !== 'education'}
                                 onClick={() => openSection('education')}
                                 label="Редактировать образование"
                             />
                         </div>
-                        {educationItems.length > 0 ? (
+                        {activeSection === 'education' ? (
+                            renderInlineEditor('education')
+                        ) : educationItems.length > 0 ? (
                             <div className="studentProfileResume__educationGrid">
                                 {educationItems.map((item) => (
                                     <article
@@ -758,21 +808,6 @@ const StudentProfileResume = ({
                     ) : null}
                 </main>
             </div>
-
-            {isOwner && activeSection ? (
-                <ProfileSectionEditor
-                    section={activeSection}
-                    student={student}
-                    skills={skillList}
-                    experiences={experiences}
-                    educations={educations}
-                    portfolios={portfolios}
-                    onClose={() => setActiveSection(null)}
-                    onSaved={async () => {
-                        await onRefresh?.();
-                    }}
-                />
-            ) : null}
         </div>
     );
 };
