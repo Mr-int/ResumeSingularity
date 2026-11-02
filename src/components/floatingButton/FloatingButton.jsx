@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ApplicationForm from '../applicationForm/ApplicationForm.jsx';
 import { getStudentById } from '../../services/studentApi.js';
+import { getStoredRole } from '../../services/authApi.js';
 import mailIcon from "../../assets/icons/mailIcon.svg";
 import './floatingButton.css';
 
@@ -15,6 +16,8 @@ const FloatingButton = () => {
     const [studentId, setStudentId] = useState(null);
     const wrapperRef = useRef(null);
     const location = useLocation();
+    const role = getStoredRole();
+    const isStudentUser = role === 'STUDENT';
 
     const profileIdMatch = location.pathname.match(/\/(?:profile|resume|studentsResume)\/([^/]+)/);
     const isStudentPage = Boolean(profileIdMatch);
@@ -92,6 +95,8 @@ const FloatingButton = () => {
 
     if (
         isHidden
+        || isStudentUser
+        || location.pathname === '/'
         || location.pathname === '/chats'
         || location.pathname === '/settings'
         || location.pathname === '/profile'
