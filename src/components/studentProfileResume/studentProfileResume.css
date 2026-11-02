@@ -825,10 +825,12 @@ a.studentProfileResume__portfolioFolder:hover {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    align-self: flex-start;
     box-sizing: border-box;
-    width: auto;
+    width: fit-content;
+    max-width: 100%;
     height: auto;
-    padding: 6px 16px;
+    padding: 7px 16px;
     margin: 0;
     margin-top: auto;
     border-radius: 50px;
