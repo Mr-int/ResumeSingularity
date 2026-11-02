@@ -1,4 +1,4 @@
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
 
 const storageKey = (studentId) => `resumeCreator.step.${studentId}`;
 const experienceDraftKey = (studentId) => `resumeCreator.experienceDraft.${studentId}`;

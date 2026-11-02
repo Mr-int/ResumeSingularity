@@ -244,16 +244,27 @@ export const getExperienceDetailsByStudentId = async (studentId) => {
                     || ''
                 ).toString().trim();
 
+                const experienceTypeRaw = (
+                    experience.experienceType
+                    || item.experienceType
+                    || experience.type
+                    || item.type
+                    || 'WORK'
+                ).toString().toUpperCase();
+                const experienceType = experienceTypeRaw === 'PROJECT' ? 'PROJECT' : 'WORK';
+
                 return {
                     id,
                     companyId,
                     position: (experience.position || item.position || '').toString().trim(),
                     company: companyMeta.name,
                     description: packedInfo.description,
-                    webUrl,
+                    webUrl: webUrl || (item.companyWebsite || '').toString().trim(),
                     startDate: experience.startDate || item.startDate || '',
                     endDate,
                     current: Boolean(experience.current || item.current || !endDateRaw),
+                    experienceType,
+                    activityKind: experienceType === 'PROJECT' ? 'project' : 'work',
                 };
             })
             .filter((item) => item !== null);
@@ -288,12 +299,20 @@ export const getAllEducation = async () => {
     return pageRes.data;
 };
 
+/** POST /education — справочник (institution, additionalInfo, webUrl). */
 export const createEducation = (body) =>
     apiClientJson('education', {
         method: 'POST',
         body: JSON.stringify(body),
         skipSessionClearOn403: true,
     });
+
+const normalizeEducationWebUrl = (raw) => {
+    const value = String(raw || '').trim();
+    if (!value) return 'https://example.com';
+    if (/^https?:\/\//i.test(value)) return value.slice(0, 255);
+    return `https://${value}`.slice(0, 255);
+};
 
 const pickEducationId = (items, name) => {
     const trimmed = name.trim().toLowerCase();
@@ -330,10 +349,11 @@ export const findEducationIdByName = async (name) => {
 };
 
 /**
- * Нужен educationId > 0 (иначе бэкенд ищет id 0 → NOT_FOUND).
- * Справочник education студенту создавать нельзя (403).
+ * Нужен educationId > 0 для POST /institution (иначе бэкенд ищет id 0 → NOT_FOUND).
+ * Сначала ищем в справочнике /education, при отсутствии пробуем POST /education.
+ * options: { webUrl, additionalInfo } — для AddEducationReq.
  */
-export const resolveEducationId = async (institutionName, existingId, localCatalog = []) => {
+export const resolveEducationId = async (institutionName, existingId, localCatalog = [], options = {}) => {
     const fromEntry = Number(existingId);
     if (Number.isFinite(fromEntry) && fromEntry > 0) return fromEntry;
 
@@ -350,11 +370,15 @@ export const resolveEducationId = async (institutionName, existingId, localCatal
     const found = await findEducationIdByName(trimmed);
     if (found) return found;
 
+    const additionalInfo = String(options.additionalInfo || '').trim().slice(0, 2000)
+        || trimmed.slice(0, 2000)
+        || 'Учебное заведение';
+
     try {
         const created = await createEducation({
-            institution: trimmed,
-            additionalInfo: 'Добавлено студентом',
-            webUrl: 'https://',
+            institution: trimmed.slice(0, 255),
+            additionalInfo,
+            webUrl: normalizeEducationWebUrl(options.webUrl),
         });
         const id = Number(created?.id);
         if (Number.isFinite(id) && id > 0) return id;
@@ -387,6 +411,10 @@ export const getEducationById = async (id) => {
     }
 };
 
+/**
+ * InstitutionDTO: { educationId, studentId, institution: InstitutionRes }.
+ * Имя/сайт учреждения — из справочника GET /education/{educationId}.
+ */
 export const getEducationDetailsByStudentId = async (studentId) => {
     try {
         const educationList = await apiClientJson(withPageQuery('institution/filter'), {
@@ -394,35 +422,69 @@ export const getEducationDetailsByStudentId = async (studentId) => {
             body: JSON.stringify({ studentId }),
         });
 
-        let educationArray = [];
-        if (educationList && educationList.data && Array.isArray(educationList.data)) {
-            educationArray = educationList.data;
-        } else if (Array.isArray(educationList)) {
-            educationArray = educationList;
-        }
+        const educationArray = pageItems(educationList);
 
         const educationDetails = await Promise.all(
             educationArray.map(async (edu) => {
+                if (!edu || typeof edu !== 'object') return null;
                 try {
-                    if (edu.educationId) {
-                        const details = await getEducationById(edu.educationId);
-                        return {
-                            ...details,
-                            id: edu.educationId,
-                            institutionId: edu.institution?.id,
-                            startYear: edu.institution?.startYear,
-                            endYear: edu.institution?.endYear
-                        };
+                    const institution = edu.institution && typeof edu.institution === 'object'
+                        ? edu.institution
+                        : {};
+                    const educationIdRaw = edu.educationId ?? institution.educationId ?? null;
+                    const educationIdNum = Number(educationIdRaw);
+                    const educationId = Number.isFinite(educationIdNum) && educationIdNum > 0
+                        ? educationIdNum
+                        : null;
+                    const recordIdRaw = institution.id ?? edu.id ?? null;
+                    const recordIdNum = Number(recordIdRaw);
+                    const recordId = Number.isFinite(recordIdNum) && recordIdNum > 0
+                        ? recordIdNum
+                        : null;
+
+                    if (!educationId && !recordId) return null;
+
+                    let details = null;
+                    if (educationId) {
+                        try {
+                            details = await getEducationById(educationId);
+                        } catch {
+                            details = null;
+                        }
                     }
-                    return null;
-                } catch (err) {
+
+                    const educationTypeRaw = (
+                        institution.educationType
+                        || edu.educationType
+                        || 'STATE'
+                    ).toString().toUpperCase();
+                    const catalogInfo = String(details?.additionalInfo || '').trim();
+                    const isPlaceholderInfo = !catalogInfo
+                        || /^добавлено студентом$/i.test(catalogInfo)
+                        || catalogInfo === String(details?.institution || '').trim();
+
+                    return {
+                        // id записи обучения студента (для PUT/DELETE /institution/{id})
+                        id: recordId,
+                        educationId,
+                        institutionId: recordId,
+                        institution: details?.institution || '',
+                        webUrl: details?.webUrl || '',
+                        startYear: institution.startYear ?? edu.startYear,
+                        endYear: institution.endYear ?? edu.endYear,
+                        educationType: educationTypeRaw === 'COURSE' ? 'COURSE' : 'STATE',
+                        direction: institution.direction || edu.direction || '',
+                        educationLevel: institution.educationLevel || edu.educationLevel || '',
+                        additionalInfo: isPlaceholderInfo ? '' : catalogInfo,
+                    };
+                } catch {
                     return null;
                 }
-            })
+            }),
         );
 
-        return educationDetails.filter(item => item !== null);
-    } catch (error) {
+        return educationDetails.filter((item) => item !== null);
+    } catch {
         return [];
     }
 };
@@ -537,6 +599,9 @@ export const filterStudents = async (filterReq = {}) => {
 /**
  * POST /student/cardsFilter
  * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
+ *
+ * Важно: студент без APPROVED получает только свою карточку.
+ * Для каталога неодобренных — POST /public/students/cards.
  */
 export const filterStudentCardsPage = async (
     filterReq = {},
@@ -553,6 +618,49 @@ export const filterStudentCardsPage = async (
 
     return {
         data: Array.isArray(resp?.data) ? resp.data : [],
+        page: typeof resp?.page === 'number' ? resp.page : page,
+        size: typeof resp?.size === 'number' ? resp.size : size,
+        totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
+        totalPages: typeof resp?.totalPages === 'number' ? resp.totalPages : 0,
+    };
+};
+
+/**
+ * POST /public/students/cards — публичный каталог без JWT (permitAll).
+ * Сервер всегда режет по publicProfileConsent=true и catalogVisible=true.
+ * Нужен неодобренным студентам: /student/cardsFilter им отдаёт только себя.
+ */
+export const filterPublicStudentCardsPage = async (
+    filterReq = {},
+    pageable = { page: 0, size: 100 },
+) => {
+    const page = typeof pageable.page === 'number' ? pageable.page : 0;
+    const size = typeof pageable.size === 'number' ? pageable.size : 100;
+    const response = await fetch(
+        `${API_BASE_URL}public/students/cards?page=${page}&size=${size}`,
+        {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(filterReq ?? {}),
+        },
+    );
+    if (!response.ok) {
+        const err = new Error(`public/students/cards failed: ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+    let resp = {};
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+        try {
+            resp = await response.json();
+        } catch {
+            resp = {};
+        }
+    }
+    return {
+        data: Array.isArray(resp?.data) ? resp.data : pageItems(resp),
         page: typeof resp?.page === 'number' ? resp.page : page,
         size: typeof resp?.size === 'number' ? resp.size : size,
         totalElements: typeof resp?.totalElements === 'number' ? resp.totalElements : 0,
@@ -620,6 +728,15 @@ export const createPortfolio = (body) =>
         method: 'POST',
         body: JSON.stringify(body),
     });
+
+export const updatePortfolio = (id, body) =>
+    apiClientJson(`portfolio/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });
+
+export const deletePortfolio = (id) =>
+    apiClientJson(`portfolio/${id}`, { method: 'DELETE' });
 
 /** POST /skill/filter — справочник навыков. FilterSkillReq: { name }. */
 export const filterSkills = async (filterReq = {}, pageable = { page: 0, size: 200 }) => {
@@ -709,6 +826,7 @@ export const resolveCompanyId = async (companyName, existingId) => {
     throw err;
 };
 
+/** POST /experience — AddExperienceReq → ExperienceDTO */
 export const createExperience = (body) =>
     apiClientJson('experience', {
         method: 'POST',
@@ -724,6 +842,7 @@ export const updateExperience = (id, body) =>
 export const deleteExperience = (id) =>
     apiClientJson(`experience/${id}`, { method: 'DELETE' });
 
+/** POST /institution — AddInstitutionReq (educationType: STATE|COURSE) → InstitutionDTO */
 export const createInstitution = (body) =>
     apiClientJson('institution', {
         method: 'POST',

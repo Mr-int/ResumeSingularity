@@ -16,10 +16,15 @@
 }
 
 .memoBlock__headerIcon {
-    width: 20px;
-    height: 20px;
-    fill: #ff8c00;
+    width: 22px;
+    height: 22px;
     flex-shrink: 0;
+    display: block;
+    object-fit: contain;
+}
+
+.memoBlock__item.is-open .memoBlock__summaryText {
+    color: #3E8EFF;
 }
 
 .memoBlock__title {

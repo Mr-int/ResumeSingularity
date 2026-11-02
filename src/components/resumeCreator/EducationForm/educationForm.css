@@ -1,60 +1,350 @@
-.educationForm h2 {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 16px;
+.educationForm {
+    width: 100%;
+    max-width: 533px;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
-.educationForm__field {
+.educationForm__title {
+    margin: 0 0 24px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.32px;
+    color: #ffffff;
+}
+
+.educationForm__kind {
+    --education-kind-gap: 4px;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--education-kind-gap);
+    width: 100%;
+    height: 40px;
+    padding: 4px;
+    margin: 0 0 16px;
+    background-color: #131313;
+    border-radius: 15px;
+}
+
+.educationForm__kindThumb {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    z-index: 0;
+    box-sizing: border-box;
+    width: calc((100% - 8px - var(--education-kind-gap)) / 2);
+    height: 32px;
+    border-radius: 12px;
+    background-color: #3E8EFF;
+    pointer-events: none;
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateX(0);
+}
+
+.educationForm__kind--course .educationForm__kindThumb {
+    transform: translateX(calc(100% + var(--education-kind-gap)));
+}
+
+.educationForm__kindBtn {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    flex: 1 1 0;
+    height: 32px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.25s ease;
+}
+
+.educationForm__kindBtn.is-active {
+    color: #ffffff;
+}
+
+.educationForm__box {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #3E8EFF;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.educationForm__fields {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 14px;
-}
-
-.educationForm__field label {
-    font-size: 12px;
-    color: #8e8e93;
-}
-
-.educationForm__hint {
-    margin: 0;
-    font-size: 12px;
-    color: #6a6d73;
-}
-
-.educationForm__field input,
-.educationForm__field select {
-    background: transparent;
-    border: 1px solid #3a3a3c;
-    border-radius: 10px;
-    padding: 12px 16px;
-    color: #ffffff;
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    width: 100%;
 }
 
 .educationForm__row {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+}
+
+.educationForm__field {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 41px;
+    border: 1px solid #737D85;
+    border-radius: 8px;
+    background: transparent;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.educationForm__field.is-filled {
+    border-color: transparent;
+    background-color: #191A1B;
+}
+
+.educationForm__field.is-muted {
+    opacity: 0.55;
+}
+
+.educationForm__field input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 41px;
+    padding: 11px 24px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #B3B5B7;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+    outline: none;
+}
+
+.educationForm__field.is-filled input {
+    color: #ffffff;
+}
+
+.educationForm__field.is-link input {
+    color: #3E8EFF;
+    padding-right: 48px;
+}
+
+.educationForm__field input::placeholder {
+    color: #B3B5B7;
+}
+
+.educationForm__field--icon input {
+    padding-right: 48px;
+}
+
+.educationForm__field--select input {
+    padding-right: 48px;
+}
+
+.educationForm__field > img {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.educationForm__chevron {
+    width: 16px;
+    height: 7px;
+    opacity: 0.85;
+}
+
+.educationForm__dropzone {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 132px;
+    padding: 24px 16px;
+    border: 1px dashed #5F5F5F;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 16px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.educationForm__dropzone.is-dragging,
+.educationForm__dropzone:hover {
+    border-color: #3E8EFF;
+    background-color: rgba(62, 142, 255, 0.06);
+}
+
+.educationForm__dropzoneText {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-width: 201px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    color: #5F5F5F;
+    text-align: center;
+}
+
+.educationForm__dropzoneLead {
+    color: #B3B5B7;
+}
+
+.educationForm__fileInput {
+    display: none;
+}
+
+.educationForm__certificate {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 127px;
+    border-radius: 16px;
+    background-color: #41464B;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 171px 1fr;
+}
+
+.educationForm__certificateThumb {
+    background-color: #2F2F2F;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 127px;
+    overflow: hidden;
+}
+
+.educationForm__certificateThumb img {
+    display: block;
+    width: 136px;
+    height: 102px;
+    object-fit: cover;
+    border-radius: 4px;
+    opacity: 0.9;
+}
+
+.educationForm__certificatePdf {
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 18px;
+    color: #B3B5B7;
+}
+
+.educationForm__certificateCopy {
+    position: relative;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.educationForm__certificateTitle {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    color: #ffffff;
+}
+
+.educationForm__certificateName {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    color: #B3B5B7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.educationForm__certificateReplace {
+    margin-top: auto;
+    height: 32px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    background: #3E8EFF;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.educationForm__certificateReplace span {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .educationForm__add {
-    margin-top: 8px;
-    background: #007bff;
-    color: #ffffff;
+    height: 46px;
+    padding: 0 46px;
     border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
-    cursor: pointer;
+    border-radius: 12px;
+    background: #3E8EFF;
+    color: #ffffff;
+    font-family: 'Sansation', sans-serif;
     font-size: 14px;
-    font-family: inherit;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+    cursor: pointer;
+}
+
+.educationForm__add:hover {
+    filter: brightness(1.06);
 }
 
 @media (max-width: 600px) {
     .educationForm__row {
         grid-template-columns: 1fr;
+    }
+
+    .educationForm__kindBtn {
+        font-size: 12px;
+        padding: 0 6px;
+    }
+
+    .educationForm__certificate {
+        grid-template-columns: 1fr;
+    }
+
+    .educationForm__certificateThumb {
+        min-height: 100px;
     }
 }

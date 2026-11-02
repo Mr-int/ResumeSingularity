@@ -1,6 +1,10 @@
 import editIcon from '../../../assets/icons/edit.svg';
 import MemoBlock from '../MemoBlock/MemoBlock.jsx';
-import { formatExperiencePeriodText } from '../../../utils/formatExperiencePeriod.js';
+import {
+    formatExperienceDurationShort,
+    formatExperiencePeriodText,
+    isProjectExperience,
+} from '../../../utils/formatExperiencePeriod.js';
 import './experienceAside.css';
 
 const TrashIcon = () => (
@@ -30,7 +34,15 @@ const ExperienceAside = ({
                     {items.map((item) => {
                         const itemKey = item.id || `${item.position}-${item.startDate}`;
                         const isActive = editingId != null && String(item.id) === String(editingId);
-                        const period = formatExperiencePeriodText(item.startDate, item.endDate);
+                        const isProject = isProjectExperience(item);
+                        const period = isProject
+                            ? formatExperienceDurationShort(item.startDate, item.endDate, item.current)
+                            : formatExperiencePeriodText(item.startDate, item.endDate, item.current);
+                        const linkLabel = isProject ? 'Ссылка на материалы' : 'Ссылка на организацию';
+                        const description = String(item.additionalInfo || item.description || '').trim();
+                        const truncatedDescription = description.length > 72
+                            ? `${description.slice(0, 72).trimEnd()}...`
+                            : description;
 
                         return (
                             <article
@@ -38,57 +50,70 @@ const ExperienceAside = ({
                                 className={
                                     'experienceAside__card'
                                     + (isActive ? ' is-active' : '')
+                                    + (isProject ? ' experienceAside__card--project' : ' experienceAside__card--work')
                                 }
                             >
-                                <button
-                                    type="button"
-                                    className="experienceAside__delete"
-                                    aria-label={`Удалить опыт: ${item.position || 'запись'}`}
-                                    onClick={() => onDelete?.(item)}
-                                >
-                                    <TrashIcon />
-                                </button>
+                                <div className="experienceAside__main">
+                                    <div className="experienceAside__meta">
+                                        <p className="experienceAside__company">
+                                            {item.companyName || (isProject ? 'Проект' : 'Компания не указана')}
+                                        </p>
+                                        {period ? (
+                                            <p className="experienceAside__period">{period}</p>
+                                        ) : null}
+                                    </div>
 
-                                <h3 className="experienceAside__company">
-                                    {item.companyName || 'Компания не указана'}
-                                </h3>
-                                {period ? (
-                                    <p className="experienceAside__period">{period}</p>
-                                ) : null}
-                                {item.position ? (
-                                    <p className="experienceAside__position">{item.position}</p>
-                                ) : null}
-                                {item.additionalInfo ? (
-                                    <p className="experienceAside__description">
-                                        {item.additionalInfo}
-                                    </p>
-                                ) : null}
-                                {item.companyUrl ? (
-                                    <a
-                                        className="experienceAside__link"
-                                        href={item.companyUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <div className="experienceAside__body">
+                                        {item.position ? (
+                                            <p className="experienceAside__position">{item.position}</p>
+                                        ) : null}
+                                        {truncatedDescription ? (
+                                            <p className="experienceAside__description">
+                                                {truncatedDescription}
+                                            </p>
+                                        ) : null}
+                                        {item.companyUrl ? (
+                                            <a
+                                                className="experienceAside__link"
+                                                href={item.companyUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {linkLabel}
+                                            </a>
+                                        ) : null}
+                                    </div>
+
+                                    <span className="experienceAside__tag">
+                                        {isProject ? 'Проект' : 'Опыт работы'}
+                                    </span>
+                                </div>
+
+                                <div className="experienceAside__tools">
+                                    <button
+                                        type="button"
+                                        className="experienceAside__delete"
+                                        aria-label={`Удалить опыт: ${item.position || 'запись'}`}
+                                        onClick={() => onDelete?.(item)}
                                     >
-                                        {item.companyUrl}
-                                    </a>
-                                ) : null}
-
-                                <button
-                                    type="button"
-                                    className="experienceAside__edit"
-                                    aria-label={`Редактировать: ${item.position || 'запись'}`}
-                                    onClick={() => onEdit?.(item)}
-                                >
-                                    <img
-                                        src={editIcon}
-                                        alt=""
-                                        className="experienceAside__editIcon"
-                                        width={14}
-                                        height={14}
-                                        aria-hidden="true"
-                                    />
-                                </button>
+                                        <TrashIcon />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="experienceAside__edit"
+                                        aria-label={`Редактировать: ${item.position || 'запись'}`}
+                                        onClick={() => onEdit?.(item)}
+                                    >
+                                        <img
+                                            src={editIcon}
+                                            alt=""
+                                            className="experienceAside__editIcon"
+                                            width={14}
+                                            height={14}
+                                            aria-hidden="true"
+                                        />
+                                    </button>
+                                </div>
                             </article>
                         );
                     })}

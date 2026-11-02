@@ -1,29 +1,22 @@
 .experienceForm {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
+    width: 100%;
+    max-width: 533px;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
-.experienceForm::-webkit-scrollbar {
-    width: 6px;
-}
-
-.experienceForm::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.experienceForm::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background-color: rgba(65, 70, 75, 0.55);
-}
-
-.experienceForm h2 {
-    font-size: 16px;
-    font-weight: 500;
+.experienceForm__title {
     margin: 0 0 24px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.32px;
+    color: #ffffff;
 }
 
 .experienceForm__kind {
-    --experience-kind-gap: 6px;
+    --experience-kind-gap: 4px;
     box-sizing: border-box;
     position: relative;
     display: flex;
@@ -66,11 +59,12 @@
     border: none;
     border-radius: 12px;
     background: transparent;
-    color: #737D85;
+    color: rgba(255, 255, 255, 0.8);
     font-family: 'StratosSemiLight', sans-serif;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 400;
-    line-height: 1;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
     cursor: pointer;
     white-space: nowrap;
     transition: color 0.25s ease;
@@ -80,80 +74,183 @@
     color: #ffffff;
 }
 
-.experienceForm__field {
+.experienceForm__box {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed #3E8EFF;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.experienceForm__fields {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 14px;
-}
-
-.experienceForm__field input,
-.experienceForm__field .birthDatePicker__trigger,
-.experienceForm__row .birthDatePicker__trigger {
-    background: transparent;
-    border: 1px solid #737D85;
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: #ffffff;
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    width: 100%;
-}
-
-.experienceForm__field input::placeholder {
-    color: #737D85;
-}
-
-.experienceForm__field .birthDatePicker__trigger:not(.has-value),
-.experienceForm__row .birthDatePicker__trigger:not(.has-value) {
-    color: #737D85;
-}
-
-.experienceForm__field textarea {
-    box-sizing: border-box;
-    width: 100%;
-    height: 80px;
-    min-height: 80px;
-    max-height: 80px;
-    padding: 12px 16px;
-    border: 1px solid #2F2F2F;
-    border-radius: 10px;
-    background-color: #131313;
-    color: #B3B5B7;
-    font-size: 14px;
-    font-family: inherit;
-    line-height: 1.4;
-    outline: none;
-    resize: none;
-}
-
-.experienceForm__field textarea::placeholder {
-    color: #B3B5B7;
 }
 
 .experienceForm__row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 8px;
+    width: 100%;
+}
+
+.experienceForm__field {
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 41px;
+    border: 1px solid #737D85;
+    border-radius: 8px;
+    background: transparent;
+    transition:
+        border-color 0.2s ease,
+        background-color 0.2s ease;
+}
+
+.experienceForm__field.is-filled {
+    border-color: transparent;
+    background-color: #191A1B;
+}
+
+.experienceForm__field input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 41px;
+    padding: 11px 24px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #B3B5B7;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+    outline: none;
+}
+
+.experienceForm__field.is-filled input {
+    color: #ffffff;
+}
+
+.experienceForm__field.is-link input {
+    color: #3E8EFF;
+}
+
+.experienceForm__field input::placeholder {
+    color: #B3B5B7;
+}
+
+.experienceForm__field--icon input {
+    padding-right: 48px;
+}
+
+.experienceForm__field--icon > img {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.experienceForm__field--picker {
+    overflow: visible;
+}
+
+.experienceForm__field--picker .birthDatePicker {
+    width: 100%;
+}
+
+.experienceForm__field--picker .birthDatePicker__trigger {
+    width: 100%;
+    min-height: 41px;
+    height: 41px;
+    padding: 11px 24px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    box-shadow: none;
+    color: #B3B5B7;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+}
+
+.experienceForm__field--picker.is-filled .birthDatePicker__trigger,
+.experienceForm__field--picker .birthDatePicker__trigger.has-value {
+    color: #ffffff;
+}
+
+.experienceForm__textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 96px;
+    border: 1px solid #2F2F2F;
+    border-radius: 8px;
+    background-color: #131313;
+    overflow: hidden;
+}
+
+.experienceForm__textarea.is-filled {
+    background-color: #191A1B;
+}
+
+.experienceForm__textarea textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 96px;
+    height: 96px;
+    padding: 11px 24px;
+    border: none;
+    background: transparent;
+    color: #B3B5B7;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+    outline: none;
+    resize: none;
+}
+
+.experienceForm__textarea.is-filled textarea {
+    color: #ffffff;
+}
+
+.experienceForm__textarea textarea::placeholder {
+    color: #B3B5B7;
 }
 
 .experienceForm__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 8px;
 }
 
 .experienceForm__add {
-    background: #007bff;
-    color: #ffffff;
+    height: 46px;
+    padding: 0 46px;
     border: none;
-    border-radius: 10px;
-    padding: 12px 24px;
-    cursor: pointer;
+    border-radius: 12px;
+    background: #3E8EFF;
+    color: #ffffff;
+    font-family: 'Sansation', sans-serif;
     font-size: 14px;
-    font-family: inherit;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+    cursor: pointer;
 }
 
 .experienceForm__add:hover {
@@ -161,14 +258,15 @@
 }
 
 .experienceForm__cancel {
+    height: 46px;
+    padding: 0 24px;
+    border: 1px solid #2a2a2a;
+    border-radius: 12px;
     background: transparent;
     color: #a3a3a3;
-    border: 1px solid #2a2a2a;
-    border-radius: 10px;
-    padding: 12px 20px;
-    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
     font-size: 14px;
-    font-family: inherit;
+    cursor: pointer;
 }
 
 .experienceForm__cancel:hover {
@@ -176,14 +274,13 @@
     background: #262626;
 }
 
-@media (max-width: 520px) {
-    .experienceForm__row {
-        grid-template-columns: 1fr;
-    }
-}
-
 @media (max-width: 600px) {
     .experienceForm__row {
         grid-template-columns: 1fr;
+    }
+
+    .experienceForm__kindBtn {
+        font-size: 12px;
+        padding: 0 6px;
     }
 }

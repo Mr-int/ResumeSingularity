@@ -1,5 +1,3 @@
-/** Этапы онбординга студента после входа (GET /auth/me + GET /student/me). */
-
 export const STUDENT_STAGE = {
     CONFIRM_EMAIL: 'confirm_email',
     COMPLETE_REGISTRATION: 'complete_registration',

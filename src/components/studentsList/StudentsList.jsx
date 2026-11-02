@@ -5,9 +5,12 @@ import searchIcon from "../../assets/icons/searchIcon.svg";
 import filterIcon from "../../assets/icons/filterIcon.svg";
 import arrowIcon from "../../assets/icons/arrow_small.svg";
 import StudentsListCard from "./StudentsListCard/StudentsListCard.jsx";
-import { filterStudentsPage, getAllSpecialities } from "../../services/studentApi.js";
-import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
-
+import {
+    filterPublicStudentCardsPage,
+    filterStudentCardsPage,
+    getAllSpecialities,
+    getPublicHomeVitrina,
+} from "../../services/studentApi.js";
 const STUDENTS_PER_PAGE = 5;
 const MAX_VISIBLE_PAGES = 5;
 
@@ -37,6 +40,97 @@ const buildStudentFilterReq = (filters) => {
     if (specialtyIds.length > 0) req.specialitiesIds = specialtyIds;
 
     return req;
+};
+
+const specialtyNameOf = (student) => {
+    if (!student) return '';
+    if (typeof student.speciality === 'string') return student.speciality;
+    if (student.speciality?.name) return student.speciality.name;
+    return student.specialityName || student.profession || '';
+};
+
+/** Клиентская фильтрация для витрины (у неё нет FilterStudentReq). */
+const applyClientFilters = (students, filters) => {
+    const list = Array.isArray(students) ? students : [];
+    const search = filters.searchQuery?.trim().toLowerCase() || '';
+    const courses = Array.isArray(filters.course) ? filters.course : [];
+    const apiCourses = new Set(courses.map(mapCourseToApiEnum).filter(Boolean));
+    const specialtyIds = new Set(
+        (Array.isArray(filters.specialty) ? filters.specialty : [])
+            .map((s) => String(s?.id ?? s))
+            .filter(Boolean),
+    );
+    const specialtyNames = new Set(
+        (Array.isArray(filters.specialty) ? filters.specialty : [])
+            .map((s) => String(s?.name || '').toLowerCase())
+            .filter(Boolean),
+    );
+
+    return list.filter((s) => {
+        if (apiCourses.size > 0 && !apiCourses.has(s?.course)) return false;
+        if (specialtyIds.size > 0 || specialtyNames.size > 0) {
+            const sid = s?.specialityId != null ? String(s.specialityId)
+                : (s?.speciality?.id != null ? String(s.speciality.id) : '');
+            const sname = specialtyNameOf(s).toLowerCase();
+            const byId = sid && specialtyIds.has(sid);
+            const byName = sname && specialtyNames.has(sname);
+            if (!byId && !byName) return false;
+        }
+        if (search) {
+            const hay = [
+                s?.firstName,
+                s?.lastName,
+                s?.bio,
+                specialtyNameOf(s),
+            ].filter(Boolean).join(' ').toLowerCase();
+            if (!hay.includes(search)) return false;
+        }
+        return true;
+    });
+};
+
+const fetchAllCardPages = async (fetchPage, filterData) => {
+    const pageSize = 200;
+    const maxPages = 200;
+    const byId = new Map();
+    const first = await fetchPage(filterData, { page: 0, size: pageSize });
+    const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
+    const pagesToFetch = Math.min(Math.max(totalPages, 1), maxPages);
+
+    for (const s of first.data) {
+        const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+        if (!byId.has(key)) byId.set(key, s);
+    }
+
+    for (let page = 1; page < pagesToFetch; page += 1) {
+        const res = await fetchPage(filterData, { page, size: pageSize });
+        for (const s of res.data) {
+            const key = s?.id != null ? String(s.id) : JSON.stringify(s);
+            if (!byId.has(key)) byId.set(key, s);
+        }
+    }
+
+    return Array.from(byId.values());
+};
+
+const mergeByIdPreferLonger = (primary, secondary) => {
+    if (!secondary?.length) return primary || [];
+    if (!primary?.length) return secondary;
+    if (secondary.length <= primary.length) {
+        // Добавляем недостающие из secondary
+        const byId = new Map(primary.map((s) => [String(s?.id), s]));
+        for (const s of secondary) {
+            const key = s?.id != null ? String(s.id) : null;
+            if (key && !byId.has(key)) byId.set(key, s);
+        }
+        return Array.from(byId.values());
+    }
+    const byId = new Map(secondary.map((s) => [String(s?.id), s]));
+    for (const s of primary) {
+        const key = s?.id != null ? String(s.id) : null;
+        if (key && !byId.has(key)) byId.set(key, s);
+    }
+    return Array.from(byId.values());
 };
 
 const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilters, initialFilters, isMobile, filterRef, specialties }) => {
@@ -265,38 +359,53 @@ const StudentsList = () => {
     const filterRef = useRef(null);
     const searchInputRef = useRef(null);
 
-    // Мемоизированная функция для получения студентов с фильтрами
+    /**
+     * Каталог:
+     * 1) POST /student/cardsFilter — без catalogVisible в теле: иначе PENDING со скрытой
+     *    своей карточкой получает []. Сервер сам режет выдачу по роли/статусу.
+     * 2) public/students/cards — только publicProfileConsent (часто пусто)
+     * 3) public/vitrina/home — студенты с главной
+     */
     const fetchFilteredStudents = useCallback(async (filters) => {
         try {
             setLoading(true);
-
             const filterData = buildStudentFilterReq(filters);
+            let list = [];
 
-            // /student/filter is pageable. В API page/size должны быть в query (?page=&size=),
-            // а в ответе используем PageResponseStudentDTO { data, totalPages, totalElements }.
-            const pageSize = 200;
-            const maxPages = 200; // safety cap
-            const byId = new Map();
-            const first = await filterStudentsPage(filterData, { page: 0, size: pageSize });
-            const totalPages = typeof first.totalPages === 'number' ? first.totalPages : 0;
-            const pagesToFetch = Math.min(totalPages, maxPages);
-
-            for (const s of first.data) {
-                const key = s?.id != null ? String(s.id) : JSON.stringify(s);
-                if (!byId.has(key)) byId.set(key, s);
+            try {
+                list = await fetchAllCardPages(
+                    (req, pageable) => filterStudentCardsPage(req, pageable, { skipAuthRedirect: true }),
+                    filterData,
+                );
+                console.log('[API] cardsFilter:', list.length);
+            } catch (authErr) {
+                console.warn('[API] cardsFilter failed', authErr);
             }
 
-            for (let page = 1; page < pagesToFetch; page += 1) {
-                const res = await filterStudentsPage(filterData, { page, size: pageSize });
-                for (const s of res.data) {
-                    const key = s?.id != null ? String(s.id) : JSON.stringify(s);
-                    if (!byId.has(key)) byId.set(key, s);
+            // Витрина главной — основной источник «чужих» карточек для PENDING
+            try {
+                const vitrina = await getPublicHomeVitrina();
+                const fromVitrina = applyClientFilters(
+                    Array.isArray(vitrina.students) ? vitrina.students : [],
+                    filters,
+                );
+                console.log('[API] vitrina/home students:', fromVitrina.length);
+                list = mergeByIdPreferLonger(list, fromVitrina);
+            } catch (vitrinaErr) {
+                console.warn('[API] vitrina failed', vitrinaErr);
+            }
+
+            if (list.length <= 1) {
+                try {
+                    const publicList = await fetchAllCardPages(filterPublicStudentCardsPage, filterData);
+                    console.log('[API] public/students/cards:', publicList.length);
+                    list = mergeByIdPreferLonger(list, publicList);
+                } catch (publicErr) {
+                    console.warn('[API] public cards failed', publicErr);
                 }
             }
 
-            const all = Array.from(byId.values());
-            console.log('[API] Received filtered students (all pages, deduped):', all);
-            return all;
+            return list;
         } catch (err) {
             console.error('Failed to fetch filtered students:', err);
             if (err?.status !== 403) {
@@ -368,8 +477,7 @@ const StudentsList = () => {
     }, [currentFilters]);
 
     useEffect(() => {
-        const visibleStudentsCount = allStudents.filter(hasStudentProfilePhoto).length;
-        const nextTotalPages = Math.max(1, Math.ceil(visibleStudentsCount / STUDENTS_PER_PAGE));
+        const nextTotalPages = Math.max(1, Math.ceil(allStudents.length / STUDENTS_PER_PAGE));
         setCurrentPage((prev) => Math.min(prev, nextTotalPages));
     }, [allStudents]);
 
@@ -514,7 +622,8 @@ const StudentsList = () => {
         currentFilters.adult ||
         (Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0) ||
         currentFilters.searchQuery;
-    const visibleStudents = allStudents.filter(hasStudentProfilePhoto);
+    // Список каталога — все карточки с API; placeholder-аватар рисует StudentsListCard
+    const visibleStudents = allStudents;
     const totalPages = Math.max(1, Math.ceil(visibleStudents.length / STUDENTS_PER_PAGE));
     const safeCurrentPage = Math.min(currentPage, totalPages);
     const pageStartIndex = (safeCurrentPage - 1) * STUDENTS_PER_PAGE;

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
-import Footer from '../components/footer/Footer.jsx';
 import StudentProfileResume from '../components/studentProfileResume/StudentProfileResume.jsx';
 import {
     getEducationDetailsByStudentId,
     getExperienceDetailsByStudentId,
+    getPortfolioByStudentId,
     getStudentById,
 } from '../services/studentApi.js';
 import { getImageUrl } from '../config/api.js';
@@ -26,6 +26,7 @@ const Resume = () => {
     const [student, setStudent] = useState(null);
     const [experiences, setExperiences] = useState([]);
     const [educations, setEducations] = useState([]);
+    const [portfolios, setPortfolios] = useState([]);
 
     useEffect(() => {
         let cancelled = false;
@@ -50,9 +51,10 @@ const Resume = () => {
                 if (cancelled) return;
                 setStudent(studentData);
 
-                const [educationResult, experienceResult] = await Promise.allSettled([
+                const [educationResult, experienceResult, portfolioResult] = await Promise.allSettled([
                     getEducationDetailsByStudentId(id),
                     getExperienceDetailsByStudentId(id),
+                    getPortfolioByStudentId(id),
                 ]);
 
                 if (cancelled) return;
@@ -62,15 +64,20 @@ const Resume = () => {
                         educationResult.value
                             .filter((edu) => edu && typeof edu === 'object')
                             .map((edu, index) => ({
-                                id: edu.id || `edu-${index}`,
+                                id: edu.id ?? `edu-${index}`,
+                                educationId: edu.educationId ?? null,
+                                institutionId: edu.institutionId ?? edu.id ?? null,
                                 name: edu.institution || 'Образовательное учреждение',
-                                speciality: edu.additionalInfo || '',
+                                speciality: edu.direction || edu.educationLevel || edu.additionalInfo || '',
                                 startDate: edu.startYear ? String(edu.startYear) : '',
                                 endDate: edu.endYear
                                     ? String(edu.endYear)
                                     : (edu.current ? 'по настоящее время' : ''),
                                 webUrl: edu.webUrl || '',
                                 additionalInfo: edu.additionalInfo || '',
+                                educationType: edu.educationType === 'COURSE' ? 'COURSE' : 'STATE',
+                                direction: edu.direction || '',
+                                educationLevel: edu.educationLevel || '',
                             })),
                     );
                 } else {
@@ -80,6 +87,12 @@ const Resume = () => {
                 setExperiences(
                     experienceResult.status === 'fulfilled' && Array.isArray(experienceResult.value)
                         ? experienceResult.value
+                        : [],
+                );
+
+                setPortfolios(
+                    portfolioResult.status === 'fulfilled' && Array.isArray(portfolioResult.value)
+                        ? portfolioResult.value
                         : [],
                 );
             } catch (err) {
@@ -132,13 +145,13 @@ const Resume = () => {
                             skills={Array.isArray(student.skills) ? student.skills : []}
                             experiences={experiences}
                             educations={educations}
+                            portfolios={portfolios}
                             avatarSrc={avatarUrl}
                             verified={Boolean(student.publicProfileConsent)}
                         />
                     ) : null}
                 </div>
             </main>
-            <Footer />
         </>
     );
 };

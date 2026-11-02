@@ -251,13 +251,22 @@ const Header = ({
                             />
                         </>
                     ) : (
-                        <button
-                            type="button"
-                            className="studentCreatorHeader__loginBtn"
-                            onClick={() => navigate('/login', { state: { from: location.pathname } })}
-                        >
-                            Войти
-                        </button>
+                        <div className="studentCreatorHeader__authBtns">
+                            <button
+                                type="button"
+                                className="studentCreatorHeader__loginBtn studentCreatorHeader__loginBtn--register"
+                                onClick={() => navigate('/registration', { state: { from: location.pathname } })}
+                            >
+                                Регистрация
+                            </button>
+                            <button
+                                type="button"
+                                className="studentCreatorHeader__loginBtn studentCreatorHeader__loginBtn--login"
+                                onClick={() => navigate('/login', { state: { from: location.pathname } })}
+                            >
+                                Войти
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>

@@ -172,31 +172,54 @@
     object-fit: contain;
 }
 
+.studentCreatorHeader__authBtns {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
 .studentCreatorHeader__loginBtn {
     box-sizing: border-box;
-    height: 44px;
-    padding: 0 20px;
+    height: 46px;
+    padding: 0 32px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #2F2F2F;
-    border-radius: 100px;
-    background: linear-gradient(to right, #0f0f0f, #1b1b1b);
-    color: rgba(255, 255, 255, 0.78);
+    gap: 6px;
+    border: none;
+    border-radius: 12px;
     font-family: "Sansation", sans-serif;
     font-size: 14px;
-    font-weight: 300;
-    letter-spacing: 0.04em;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0.28px;
+    white-space: nowrap;
     cursor: pointer;
     flex-shrink: 0;
     transition:
         color 0.25s ease,
-        background-color 0.25s ease;
+        background-color 0.25s ease,
+        opacity 0.25s ease;
 }
 
-.studentCreatorHeader__loginBtn:hover {
+.studentCreatorHeader__loginBtn--register {
+    background: #ffffff;
+    color: #2f2f2f;
+}
+
+.studentCreatorHeader__loginBtn--register:hover {
+    background: #f2f2f2;
+}
+
+.studentCreatorHeader__loginBtn--login {
+    background: transparent;
     color: #ffffff;
-    background: linear-gradient(to right, #141414, #222222);
+}
+
+.studentCreatorHeader__loginBtn--login:hover {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .studentCreatorHeader__avatarWrap {

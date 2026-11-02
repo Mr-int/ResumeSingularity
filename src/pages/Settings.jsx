@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
-import Footer from '../components/footer/Footer.jsx';
 import StudentProfileResume from '../components/studentProfileResume/StudentProfileResume.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
@@ -83,15 +82,20 @@ const SettingsPage = () => {
                         educationResult.value
                             .filter((edu) => edu && typeof edu === 'object')
                             .map((edu, index) => ({
-                                id: edu.id || `edu-${index}`,
+                                id: edu.id ?? `edu-${index}`,
+                                educationId: edu.educationId ?? null,
+                                institutionId: edu.institutionId ?? edu.id ?? null,
                                 name: edu.institution || 'Образовательное учреждение',
-                                speciality: edu.additionalInfo || '',
+                                speciality: edu.direction || edu.educationLevel || edu.additionalInfo || '',
                                 startDate: edu.startYear ? String(edu.startYear) : '',
                                 endDate: edu.endYear
                                     ? String(edu.endYear)
                                     : (edu.current ? 'по настоящее время' : ''),
                                 webUrl: edu.webUrl || '',
                                 additionalInfo: edu.additionalInfo || '',
+                                educationType: edu.educationType === 'COURSE' ? 'COURSE' : 'STATE',
+                                direction: edu.direction || '',
+                                educationLevel: edu.educationLevel || '',
                             })),
                     );
                 } else {
@@ -193,12 +197,11 @@ const SettingsPage = () => {
                                 skills={Array.isArray(profile.skills) ? profile.skills : []}
                                 experiences={experiences}
                                 educations={educations}
+                                portfolios={portfolio}
                                 avatarSrc={avatarUrl}
                                 verified={Boolean(profile.publicProfileConsent)}
-                                onEdit={() => navigate('/resume/create')}
-                                onEditAvatar={() => navigate('/resume/create')}
-                                onAddOccupation={() => navigate('/resume/create')}
                                 onEmployerView={() => navigate(`/profile/${profile.id}`)}
+                                onRefresh={loadProfile}
                             />
                         </>
                     ) : null}
@@ -260,7 +263,6 @@ const SettingsPage = () => {
                     )}
                 </div>
             </main>
-            <Footer />
         </>
     );
 };

@@ -15,6 +15,8 @@ import {
     ExperienceForm,
     ExperienceAside,
     EducationForm,
+    PortfolioLinksForm,
+    PortfolioLinksAside,
 } from '../components/resumeCreator/index.js';
 import PhotoCropModal from '../components/resumeCreator/PhotoUploader/PhotoCropModal/PhotoCropModal.jsx';
 import correctPhoto from '../assets/photoExamples/CorrectPhoto.png';
@@ -47,6 +49,8 @@ import {
     deleteExperience,
     createInstitution,
     createPortfolio,
+    updatePortfolio,
+    deletePortfolio,
     getAllCompanies,
     getExperienceDetailsByStudentId,
     getInstitutionsByStudentId,
@@ -61,6 +65,7 @@ import {
     validateResumeThroughStep,
 } from './resumeCreatorValidation.js';
 import { packExperienceAdditionalInfo } from '../utils/experienceWebUrl.js';
+import { buildPortfolioPayload, normalizePortfolioItem } from '../utils/portfolio.js';
 import {
     clearExperienceDraft,
     clearResumeCreatorStep,
@@ -70,7 +75,9 @@ import {
     saveResumeCreatorStep,
 } from './resumeCreatorStepStorage.js';
 
-const TOTAL_STEPS = 7;
+const TOTAL_STEPS = 8;
+
+const emptyPortfolioDraft = () => ({ name: '', description: '', link: '' });
 
 const skillEntityId = (item) => {
     if (item == null || typeof item !== 'object') return null;
@@ -171,39 +178,53 @@ const MEMO_BY_STEP = {
     6: [
         {
             id: 'exp-1',
-            tone: 'success',
-            title: 'Как описать опыт?',
-            bullets: [
-                'Роль, период и 1–2 конкретных результата с цифрами, если есть.',
-                'Фокус на задачах, близких к желаемой позиции.',
-            ],
+            title: 'Что если у меня нет опыта работы?',
+            content:
+                'Добавьте учебные и личные проекты во вкладке «Проектная деятельность»: название, роль, срок и ссылку на материалы. Это показывает практику даже без официального трудоустройства.',
         },
         {
             id: 'exp-2',
-            tone: 'error',
-            title: 'Чего не писать в опыте?',
-            bullets: [
-                'Длинные списки обязанностей без результата и нерелевантные подработки без пояснения.',
-            ],
+            title: 'Какую ссылку оставить в опыте работы?',
+            content:
+                'Для работы — сайт организации или публичный профиль. Для проекта — портфолио, GitHub, Figma или демо. Ссылка должна открываться без пароля.',
+        },
+        {
+            id: 'exp-3',
+            title: 'Подойдет ли неофициальное трудоустройство?',
+            content:
+                'Да. Укажите организацию, роль и задачи так же, как при официальной работе. Важно описать результат, а не только формальный статус.',
+        },
+        {
+            id: 'exp-4',
+            title: 'На сколько важно иметь опыт работы в резюме?',
+            content:
+                'Опыт и проекты — ключевой блок для рекрутера. Даже короткий релевантный кейс сильнее длинного списка курсов без практики.',
+        },
+        {
+            id: 'exp-5',
+            title: 'Что представляет из себя опыт работы?',
+            content:
+                'Это подтверждённая практика: где вы работали или какой проект делали, в какой роли, сколько длилось и какой был результат.',
         },
     ],
     7: [
         {
             id: 'edu-1',
-            tone: 'success',
-            title: 'Что указать в образовании?',
-            bullets: [
-                'Вуз, направление и годы обучения. Курс уточняется в профиле.',
-                'Можно добавить несколько вузов по одной записи.',
-            ],
+            title: 'Что если у меня нет высшего образования?',
+            content:
+                'Укажите среднее профессиональное образование или добавьте релевантные образовательные курсы во вкладке «Образовательные курсы». Для многих junior-позиций важнее навыки и проекты, чем диплом.',
         },
         {
             id: 'edu-2',
-            tone: 'error',
-            title: 'Чего избегать?',
-            bullets: [
-                'Неактуальные краткосрочные курсы без связи со специальностью и избыточные школьные детали.',
-            ],
+            title: 'Какой год окончания выбрать, если ещё не окончил?',
+            content:
+                'Укажите планируемый год выпуска. Если точная дата неизвестна, поставьте текущий или следующий учебный год — это нормальная практика для студентов.',
+        },
+        {
+            id: 'edu-3',
+            title: 'Подойдут ли неофициальные курсы?',
+            content:
+                'Да, если курс дал применимые навыки. Укажите название, платформу и ссылку; при наличии приложите сертификат — так проще подтвердить обучение на собеседовании.',
         },
     ],
 };
@@ -253,9 +274,9 @@ const ResumeCreator = () => {
     const cropDraftUrlRef = useRef(null);
     const [bio, setBio] = useState('');
     const [hhLink, setHhLink] = useState('');
-    const [portfolioName, setPortfolioName] = useState('');
-    const [portfolioLink, setPortfolioLink] = useState('');
-    const [hasPortfolio, setHasPortfolio] = useState(false);
+    const [portfolios, setPortfolios] = useState([]);
+    const [portfolioDraft, setPortfolioDraft] = useState(emptyPortfolioDraft);
+    const [editingPortfolioId, setEditingPortfolioId] = useState(null);
     const [selectedSkills, setSelectedSkills] = useState([]);
     const [experienceDraft, setExperienceDraft] = useState({});
     const [educationDraft, setEducationDraft] = useState({});
@@ -285,9 +306,6 @@ const ResumeCreator = () => {
             profile,
             bio,
             hhLink,
-            portfolioName,
-            portfolioLink,
-            hasPortfolio,
             selectedSkills,
             photoPreview,
             educationsAdded,
@@ -295,7 +313,7 @@ const ResumeCreator = () => {
             legacyCity,
         }),
         [
-            profile, bio, hhLink, portfolioName, portfolioLink, hasPortfolio,
+            profile, bio, hhLink,
             selectedSkills, photoPreview, educationsAdded, savedInstitutionCount, legacyCity,
         ],
     );
@@ -371,7 +389,11 @@ const ResumeCreator = () => {
                 if (cancelled) return;
 
                 setStudentId(me.id);
-                setHasPortfolio(Array.isArray(portfolio) && portfolio.length > 0);
+                setPortfolios(
+                    (Array.isArray(portfolio) ? portfolio : [])
+                        .map(normalizePortfolioItem)
+                        .filter((item) => item.name || item.link || item.description),
+                );
                 setHhLink(me.hhLink || '');
                 setSpecialties(Array.isArray(specs) ? specs : []);
                 setCompaniesCatalog(Array.isArray(companies) ? companies : []);
@@ -403,6 +425,10 @@ const ResumeCreator = () => {
                                     ? ''
                                     : (item.endDate || ''),
                                 additionalInfo: item.description || '',
+                                experienceType: item.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK',
+                                activityKind: item.activityKind === 'project' || item.experienceType === 'PROJECT'
+                                    ? 'project'
+                                    : 'work',
                             }))
                             .filter((item) => isPersistedExperienceId(item.id))
                         : [],
@@ -547,6 +573,136 @@ const ResumeCreator = () => {
         };
     };
 
+    const refreshPortfolios = async () => {
+        if (!studentId) return [];
+        const list = await getPortfolioByStudentId(studentId);
+        const normalized = (Array.isArray(list) ? list : [])
+            .map(normalizePortfolioItem)
+            .filter((item) => item.name || item.link || item.description);
+        setPortfolios(normalized);
+        return normalized;
+    };
+
+    const savePortfolioBody = async (body) => {
+        const send = (payload) => (
+            editingPortfolioId != null
+                ? updatePortfolio(editingPortfolioId, payload)
+                : createPortfolio(payload)
+        );
+
+        const trySend = async (payload) => {
+            try {
+                return await send(payload);
+            } catch (err) {
+                if (!(err?.status === 400 || err?.status === 422)) throw err;
+                // Убираем опциональные алиасы, которые старый API может не принимать.
+                const rest = { ...payload };
+                delete rest.title;
+                delete rest.url;
+                delete rest.additionalInfo;
+                delete rest.description;
+                if (!rest.name && payload.title) rest.name = payload.title;
+                if (!rest.link && payload.url) rest.link = payload.url;
+                // Если без description тоже 400 — пробуем только обязательный минимум.
+                try {
+                    return await send(rest);
+                } catch (err2) {
+                    if (!(err2?.status === 400 || err2?.status === 422)) throw err2;
+                    return send({
+                        studentId: payload.studentId,
+                        name: payload.name || payload.title,
+                        link: payload.link || payload.url,
+                    });
+                }
+            }
+        };
+
+        return trySend(body);
+    };
+
+    const commitPortfolioDraft = async ({ requireContent = false } = {}) => {
+        const built = buildPortfolioPayload({
+            ...portfolioDraft,
+            studentId,
+        });
+        if (built.empty) {
+            if (requireContent) {
+                showToast('Введите название и ссылку', { error: true });
+                return false;
+            }
+            return true;
+        }
+        if (built.error) {
+            showToast(built.error, { error: true });
+            return false;
+        }
+
+        const created = await savePortfolioBody(built.body);
+        const createdId = created?.id ?? created?.portfolioId ?? editingPortfolioId;
+        const localItem = {
+            id: createdId ?? `local-${Date.now()}`,
+            ...built.local,
+        };
+
+        // Сразу показываем то, что ввёл пользователь — даже если API name не вернул.
+        setPortfolios((prev) => {
+            if (editingPortfolioId != null) {
+                return prev.map((item) => (
+                    String(item.id) === String(editingPortfolioId)
+                        ? { ...item, ...localItem, id: item.id }
+                        : item
+                ));
+            }
+            const withoutDup = prev.filter((item) => (
+                String(item.link) !== String(localItem.link)
+                || String(item.name) !== String(localItem.name)
+            ));
+            return [...withoutDup, localItem];
+        });
+
+        setPortfolioDraft(emptyPortfolioDraft());
+        setEditingPortfolioId(null);
+
+        const refreshed = await refreshPortfolios();
+        // Если после refresh имя пропало — дозаписываем packed description и оставляем локальное имя в UI.
+        const matched = refreshed.find((item) => (
+            (createdId != null && String(item.id) === String(createdId))
+            || String(item.link) === String(localItem.link)
+        ));
+        if (matched?.id != null && !matched.name) {
+            await updatePortfolio(matched.id, {
+                studentId,
+                link: localItem.link,
+                url: localItem.link,
+                name: localItem.name,
+                title: localItem.name,
+                description: built.body.description,
+                additionalInfo: built.body.description,
+            }).catch(() => null);
+            const again = await refreshPortfolios();
+            const stillMissing = again.find((item) => String(item.id) === String(matched.id));
+            if (stillMissing && !stillMissing.name) {
+                setPortfolios((prev) => prev.map((item) => (
+                    String(item.id) === String(matched.id)
+                        ? { ...item, name: localItem.name, description: localItem.description, link: localItem.link }
+                        : item
+                )));
+            }
+        } else if (matched?.id != null) {
+            // Подтягиваем серверный id, имя уже есть.
+            setPortfolios((prev) => {
+                const hasMatched = prev.some((item) => String(item.id) === String(matched.id));
+                if (hasMatched) return prev;
+                return prev.map((item) => (
+                    String(item.link) === String(localItem.link)
+                        ? { ...item, id: matched.id }
+                        : item
+                ));
+            });
+        }
+        return true;
+    };
+
     const handleSaveProgress = async () => {
         if (saving) return;
         const check = validatePartialSave(validationCtx);
@@ -623,22 +779,12 @@ const ResumeCreator = () => {
                     }
                 }
             }
-            if (step === 4) {
-                const portName = portfolioName.trim();
-                const portLink = portfolioLink.trim();
-                if (portName && portLink && !hasPortfolio && studentId) {
-                    await createPortfolio({
-                        name: portName,
-                        link: portLink,
-                        studentId,
-                    });
-                    setHasPortfolio(true);
-                    setPortfolioName('');
-                    setPortfolioLink('');
-                }
-            }
             if (step === 6) {
                 await flushExperienceDraftIfReady();
+            }
+            if (step >= TOTAL_STEPS) {
+                const saved = await commitPortfolioDraft();
+                if (!saved) return;
             }
             if (step >= TOTAL_STEPS) {
                 const result = await persistProfile();
@@ -659,24 +805,6 @@ const ResumeCreator = () => {
                 const pending = String(authMe?.accountStatus || '').toUpperCase() === 'PENDING_APPROVAL';
 
                 if (pending) {
-                    const portName = portfolioName.trim();
-                    const portLink = portfolioLink.trim();
-                    if (portName && portLink && !hasPortfolio) {
-                        try {
-                            await createPortfolio({
-                                name: portName,
-                                link: portLink,
-                                studentId,
-                            });
-                            setHasPortfolio(true);
-                            setPortfolioName('');
-                            setPortfolioLink('');
-                        } catch (portErr) {
-                            showToast(portErr?.message || 'Не удалось сохранить портфолио', { error: true });
-                            return;
-                        }
-                    }
-
                     // communication-readiness временно не блокируем — сразу submit-for-review
                     let submitted = false;
                     try {
@@ -820,15 +948,21 @@ const ResumeCreator = () => {
             entry.companyUrl || entry.webUrl || '',
         );
 
+        const experienceType = entry.experienceType === 'PROJECT'
+            || entry.activityKind === 'project'
+            ? 'PROJECT'
+            : 'WORK';
+
         const body = {
             studentId,
             companyId,
             position: entry.position.trim(),
             startDate: entry.startDate,
+            experienceType,
         };
         if (additionalInfo) body.additionalInfo = additionalInfo;
         if (entry.endDate) body.endDate = entry.endDate;
-        return { body, companyName, companyId };
+        return { body, companyName, companyId, experienceType };
     };
 
     const rememberCompany = (companyId, companyName) => {
@@ -854,11 +988,14 @@ const ResumeCreator = () => {
     };
 
     const validateExperienceEntry = (entry) => {
+        const isProject = entry?.experienceType === 'PROJECT' || entry?.activityKind === 'project';
         if (!entry?.companyName?.trim() && !(Number(entry?.companyId) > 0)) {
-            return 'Укажите компанию';
+            return isProject ? 'Укажите название проекта' : 'Укажите компанию';
         }
         if (!entry?.position?.trim() || !entry?.startDate) {
-            return 'Укажите должность и дату начала';
+            return isProject
+                ? 'Укажите роль и дату начала'
+                : 'Укажите должность и дату начала';
         }
         return '';
     };
@@ -871,11 +1008,14 @@ const ResumeCreator = () => {
         if (!isPersistedExperienceId(id)) {
             throw new Error('Сервер не вернул id опыта — обновите страницу');
         }
+        const experienceType = body.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK';
         const saved = {
             ...entry,
             id,
             companyId: companyId || entry.companyId,
             companyName: companyName || entry.companyName || '',
+            experienceType,
+            activityKind: experienceType === 'PROJECT' ? 'project' : 'work',
         };
         setExperiences((prev) => [...prev, saved]);
         rememberCompany(saved.companyId, saved.companyName);
@@ -887,11 +1027,14 @@ const ResumeCreator = () => {
     const persistExperienceUpdate = async (entry, id) => {
         const { body, companyName, companyId } = await buildExperienceBody(entry);
         await updateExperience(id, body);
+        const experienceType = body.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK';
         const saved = {
             ...entry,
             id,
             companyId: companyId || entry.companyId,
             companyName: companyName || entry.companyName || '',
+            experienceType,
+            activityKind: experienceType === 'PROJECT' ? 'project' : 'work',
         };
         setExperiences((prev) =>
             prev.map((item) => (String(item.id) === String(id) ? { ...item, ...saved } : item)),
@@ -959,7 +1102,10 @@ const ResumeCreator = () => {
             startDate: item.startDate || '',
             endDate: item.endDate || '',
             additionalInfo: item.additionalInfo || '',
-            activityKind: item.activityKind === 'project' ? 'project' : 'work',
+            experienceType: item.experienceType === 'PROJECT' ? 'PROJECT' : 'WORK',
+            activityKind: item.activityKind === 'project' || item.experienceType === 'PROJECT'
+                ? 'project'
+                : 'work',
         };
         setExperienceDraft(next);
         saveExperienceDraft(studentId, next);
@@ -1026,8 +1172,14 @@ const ResumeCreator = () => {
     };
 
     const handleAddEducation = async (entry) => {
+        const kind = entry?.educationKind === 'course' ? 'course' : 'gov';
         const institutionName = entry?.institutionName?.trim() || '';
-        if (!(Number(entry?.educationId) > 0) && !institutionName) {
+        if (kind === 'course') {
+            if (!entry?.courseName?.trim() && !entry?.platform?.trim()) {
+                showToast('Укажите название курса или платформу', { error: true });
+                return;
+            }
+        } else if (!(Number(entry?.educationId) > 0) && !institutionName) {
             showToast('Укажите образовательную организацию', { error: true });
             return;
         }
@@ -1042,27 +1194,108 @@ const ResumeCreator = () => {
                 institutionName,
                 entry.educationId,
                 educationsCatalog,
+                {
+                    webUrl: entry.webUrl || entry.courseLink || '',
+                    additionalInfo: entry.educationLevel
+                        || entry.direction
+                        || entry.courseName
+                        || institutionName,
+                },
             );
+            const educationType = kind === 'course' ? 'COURSE' : 'STATE';
+            const direction = (entry.direction || entry.courseName || '').trim();
+            const educationLevel = (entry.educationLevel || '').trim();
+            // POST /institution — запись обучения на карточке студента
             const created = await createInstitution({
                 studentId,
                 educationId,
                 startYear: entry.startYear,
                 endYear: entry.endYear,
+                educationType,
+                ...(direction ? { direction } : {}),
+                ...(educationLevel ? { educationLevel } : {}),
             });
             const resolvedName = educationsCatalog.find(
                 (item) => Number(item.id) === Number(educationId),
             )?.institution || institutionName;
+            const institutionRecordId = created?.institution?.id
+                ?? created?.id
+                ?? null;
+
+            if (!educationsCatalog.some((item) => Number(item.id) === Number(educationId))) {
+                setEducationsCatalog((prev) => [
+                    ...prev,
+                    {
+                        id: educationId,
+                        institution: resolvedName,
+                        additionalInfo: educationLevel || resolvedName,
+                        webUrl: entry.webUrl || entry.courseLink || '',
+                    },
+                ]);
+            }
 
             setEducationsAdded((prev) => [...prev, {
                 ...entry,
+                educationKind: kind,
+                educationType,
+                direction,
+                educationLevel,
                 educationId,
                 institutionName: resolvedName,
-                id: created?.institution?.id || created?.educationId || educationId,
+                id: institutionRecordId,
             }]);
-            setEducationDraft({});
-            showToast('Образование добавлено');
+            setEducationDraft({ educationKind: kind });
+            showToast(kind === 'course' ? 'Курс добавлен' : 'Образование добавлено');
         } catch (err) {
             showToast(err?.message || 'Не удалось добавить образование', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handlePortfolioSubmit = async () => {
+        if (saving) return;
+        const wasEditing = editingPortfolioId != null;
+        setSaving(true);
+        try {
+            const saved = await commitPortfolioDraft({ requireContent: true });
+            if (saved) showToast(wasEditing ? 'Ссылка обновлена' : 'Ссылка добавлена');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось сохранить ссылку', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleEditPortfolio = (item) => {
+        if (item?.id == null) {
+            showToast('У этой ссылки нет id — обновите страницу', { error: true });
+            return;
+        }
+        setEditingPortfolioId(item.id);
+        setPortfolioDraft({
+            name: item.name || '',
+            description: item.description || '',
+            link: item.link || '',
+        });
+    };
+
+    const handleDeletePortfolio = async (item) => {
+        if (item?.id == null) {
+            showToast('Нельзя удалить ссылку без id', { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            await deletePortfolio(item.id);
+            setPortfolios((prev) => prev.filter((row) => String(row.id) !== String(item.id)));
+            if (String(editingPortfolioId) === String(item.id)) {
+                setEditingPortfolioId(null);
+                setPortfolioDraft(emptyPortfolioDraft());
+            }
+            showToast('Ссылка удалена');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось удалить ссылку', { error: true });
         } finally {
             setSaving(false);
         }
@@ -1127,12 +1360,8 @@ const ResumeCreator = () => {
                     <ResumeBioForm
                         value={bio}
                         hhLink={hhLink}
-                        portfolioName={portfolioName}
-                        portfolioLink={portfolioLink}
                         onChange={setBio}
                         onHhLinkChange={setHhLink}
-                        onPortfolioNameChange={setPortfolioName}
-                        onPortfolioLinkChange={setPortfolioLink}
                     />
                 );
             case 5:
@@ -1182,6 +1411,24 @@ const ResumeCreator = () => {
                         onAdd={handleAddEducation}
                     />
                 );
+            case 8:
+                return (
+                    <PortfolioLinksForm
+                        name={portfolioDraft.name}
+                        description={portfolioDraft.description}
+                        link={portfolioDraft.link}
+                        submitLabel={
+                            editingPortfolioId != null || portfolios.length === 0
+                                ? 'Сохранить'
+                                : 'Добавить'
+                        }
+                        disabled={saving}
+                        onChange={(patch) => {
+                            setPortfolioDraft((prev) => ({ ...prev, ...patch }));
+                        }}
+                        onSubmit={handlePortfolioSubmit}
+                    />
+                );
             default:
                 return null;
         }
@@ -1221,6 +1468,15 @@ const ResumeCreator = () => {
                     memoItems={MEMO_BY_STEP[6] || []}
                     onEdit={handleSelectExperience}
                     onDelete={handleDeleteExperience}
+                />
+            );
+        }
+        if (step === 8) {
+            return (
+                <PortfolioLinksAside
+                    items={portfolios}
+                    onEdit={handleEditPortfolio}
+                    onDelete={handleDeletePortfolio}
                 />
             );
         }

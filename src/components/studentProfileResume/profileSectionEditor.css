@@ -1,0 +1,410 @@
+.profileSectionEditor {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Inline: форма = тот же объект, поля прозрачные */
+.profileSectionEditor--inline {
+    position: static;
+    inset: auto;
+    z-index: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+}
+
+.sprInlineField {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+    outline: none;
+    resize: none;
+}
+
+.sprInlineField:focus {
+    border-bottom-color: rgba(62, 142, 255, 0.7);
+}
+
+.sprInlineField--muted {
+    opacity: 0.7;
+    font-size: 0.75em;
+    font-weight: 400;
+}
+
+.sprInlineField--title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.sprInlineField--link {
+    color: #3E8EFF;
+    font-size: 13px;
+}
+
+.sprInlineName {
+    gap: 6px;
+    width: 100%;
+}
+
+.sprInlineName .sprInlineField {
+    color: #fff;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+textarea.studentProfileResume__bioText.sprInlineField {
+    width: 100%;
+    min-height: 140px;
+    margin-top: 16px;
+    white-space: pre-wrap;
+}
+
+.studentProfileResume__infoText .sprInlineField {
+    color: var(--spr-muted, #B3B5B7);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+select.studentProfileResume__specialty.sprInlineField {
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    appearance: none;
+    padding-right: 18px;
+}
+
+.sprInlineDates {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sprInlineDates .sprInlineField {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 110px;
+}
+
+.sprInlineCardFoot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.sprInlineTagSelect {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
+    outline: none;
+}
+
+.sprInlineActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.sprInlineBtn {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 13px;
+    padding: 8px 14px;
+}
+
+.sprInlineBtn--ghost {
+    background: transparent;
+    color: #B3B5B7;
+}
+
+.sprInlineBtn--save {
+    background: #3E8EFF;
+    color: #fff;
+}
+
+.sprInlineBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.sprInlineAdd,
+.sprInlineRemove {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.sprInlineAdd {
+    align-self: flex-start;
+    background: rgba(62, 142, 255, 0.12);
+    color: #3E8EFF;
+}
+
+.sprInlineRemove {
+    background: transparent;
+    color: #E88;
+    padding: 4px 0;
+}
+
+.sprInlineFile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #B3B5B7;
+    font-size: 13px;
+}
+
+.sprInlinePortfolioCard {
+    min-height: 135px;
+    background: #2a2a2a;
+    border: 1px dashed #41464B;
+}
+
+.sprInlinePortfolioCopy {
+    position: static;
+    pointer-events: auto;
+    padding: 14px;
+    gap: 8px;
+}
+
+.sprInlinePortfolioCopy .sprInlineField {
+    color: #fff;
+}
+
+.profileSectionEditor--inline .studentProfileResume__experienceGrid,
+.profileSectionEditor--inline .studentProfileResume__educationGrid,
+.profileSectionEditor--inline .studentProfileResume__portfolioFolders {
+    width: 100%;
+}
+
+.profileSectionEditor--inline .studentProfileResume__experienceGrid > .sprInlineAdd,
+.profileSectionEditor--inline .studentProfileResume__educationGrid > .sprInlineAdd,
+.profileSectionEditor--inline .studentProfileResume__portfolioFolders > .sprInlineAdd {
+    grid-column: 1 / -1;
+}
+
+.profileSectionEditor--inline.profileSectionEditor--bio .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--name .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--info .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--specialty .profileSectionEditor__field,
+.profileSectionEditor--inline.profileSectionEditor--avatar .profileSectionEditor__field {
+    width: 100%;
+}
+
+.profileSectionEditor__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.profileSectionEditor__panel {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    width: min(480px, 100%);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #1a1b1d;
+    border-left: 1px solid #41464B;
+    box-shadow: -16px 0 40px rgba(0, 0, 0, 0.35);
+}
+
+.profileSectionEditor__head,
+.profileSectionEditor__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #2F2F2F;
+}
+
+.profileSectionEditor__foot {
+    border-bottom: none;
+    border-top: 1px solid #2F2F2F;
+}
+
+.profileSectionEditor__head h3 {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: #fff;
+}
+
+.profileSectionEditor__close,
+.profileSectionEditor__cancel,
+.profileSectionEditor__save,
+.profileSectionEditor__add,
+.profileSectionEditor__remove {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+}
+
+.profileSectionEditor__close,
+.profileSectionEditor__cancel {
+    background: transparent;
+    color: #B3B5B7;
+    padding: 8px 12px;
+}
+
+.profileSectionEditor__save {
+    background: #3E8EFF;
+    color: #fff;
+    padding: 12px 20px;
+}
+
+.profileSectionEditor__save:disabled,
+.profileSectionEditor__cancel:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.profileSectionEditor__body {
+    flex: 1;
+    overflow: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.profileSectionEditor__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #B3B5B7;
+    font-size: 13px;
+}
+
+.profileSectionEditor__field input,
+.profileSectionEditor__field textarea,
+.profileSectionEditor__field select,
+.profileSectionEditor__card input,
+.profileSectionEditor__card textarea,
+.profileSectionEditor__card select {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #737D85;
+    border-radius: 8px;
+    background: transparent;
+    color: #fff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    outline: none;
+}
+
+.profileSectionEditor__field textarea,
+.profileSectionEditor__card textarea {
+    resize: vertical;
+}
+
+.profileSectionEditor__skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profileSectionEditor__skill {
+    height: 28px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 34px;
+    background: #2a2a2a;
+    color: #B3B5B7;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+}
+
+.profileSectionEditor__skill.is-active {
+    background: #fff;
+    color: #2F2F2F;
+}
+
+.profileSectionEditor__list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.profileSectionEditor__card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid #41464B;
+    border-radius: 12px;
+    background: #131313;
+}
+
+.profileSectionEditor__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.profileSectionEditor__add {
+    align-self: flex-start;
+    padding: 10px 16px;
+    background: rgba(62, 142, 255, 0.15);
+    color: #3E8EFF;
+}
+
+.profileSectionEditor__remove {
+    align-self: flex-start;
+    padding: 8px 12px;
+    background: rgba(139, 69, 69, 0.2);
+    color: #E88;
+}
+
+.profileSectionEditor__error {
+    margin: 0;
+    color: #ff8a8a;
+    font-size: 13px;
+}
+
+@media (max-width: 600px) {
+    .profileSectionEditor__panel {
+        width: 100%;
+    }
+
+    .profileSectionEditor__row {
+        grid-template-columns: 1fr;
+    }
+}
