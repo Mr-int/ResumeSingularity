@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
-import Footer from '../components/footer/Footer.jsx';
 import StudentProfileResume from '../components/studentProfileResume/StudentProfileResume.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
@@ -262,7 +261,6 @@ const SettingsPage = () => {
                     )}
                 </div>
             </main>
-            <Footer />
         </>
     );
 };

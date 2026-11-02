@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
-import Footer from '../components/footer/Footer.jsx';
 import StudentProfileResume from '../components/studentProfileResume/StudentProfileResume.jsx';
 import {
     getEducationDetailsByStudentId,
@@ -151,7 +150,6 @@ const Resume = () => {
                     ) : null}
                 </div>
             </main>
-            <Footer />
         </>
     );
 };
