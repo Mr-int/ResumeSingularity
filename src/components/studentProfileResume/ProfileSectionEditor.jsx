@@ -326,364 +326,478 @@ const ProfileSectionEditor = ({
         }
     };
 
-    const formBody = (
+    const patchExperience = (index, patch) => {
+        setExperienceDrafts((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+    };
+    const patchEducation = (index, patch) => {
+        setEducationDrafts((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+    };
+    const patchPortfolio = (index, patch) => {
+        setPortfolioDrafts((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+    };
+
+    const inlineActions = (
+        <div className="sprInlineActions">
+            <button type="button" className="sprInlineBtn sprInlineBtn--ghost" onClick={onClose} disabled={saving}>
+                Отмена
+            </button>
+            <button type="button" className="sprInlineBtn sprInlineBtn--save" onClick={save} disabled={saving}>
+                {saving ? 'Сохранение…' : 'Сохранить'}
+            </button>
+        </div>
+    );
+
+    const drawerBody = (
+        <>
+            {section === 'avatar' ? (
+                <label className="profileSectionEditor__field">
+                    <span>Новое фото</span>
+                    <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={(event) => setAvatarFile(event.target.files?.[0] || null)}
+                    />
+                </label>
+            ) : null}
+
+            {section === 'name' ? (
                 <>
-                    {section === 'avatar' ? (
-                        <label className="profileSectionEditor__field">
-                            <span>Новое фото</span>
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
-                                onChange={(event) => setAvatarFile(event.target.files?.[0] || null)}
-                            />
-                        </label>
-                    ) : null}
+                    <label className="profileSectionEditor__field">
+                        <span>Имя</span>
+                        <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                    </label>
+                    <label className="profileSectionEditor__field">
+                        <span>Фамилия</span>
+                        <input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                    </label>
+                    <label className="profileSectionEditor__field">
+                        <span>Отчество</span>
+                        <input value={middleName} onChange={(e) => setMiddleName(e.target.value)} />
+                    </label>
+                </>
+            ) : null}
 
-                    {section === 'name' ? (
-                        <>
-                            <label className="profileSectionEditor__field">
-                                <span>Имя</span>
-                                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-                            </label>
-                            <label className="profileSectionEditor__field">
-                                <span>Фамилия</span>
-                                <input value={lastName} onChange={(e) => setLastName(e.target.value)} />
-                            </label>
-                            <label className="profileSectionEditor__field">
-                                <span>Отчество</span>
-                                <input value={middleName} onChange={(e) => setMiddleName(e.target.value)} />
-                            </label>
-                        </>
-                    ) : null}
+            {section === 'specialty' ? (
+                <label className="profileSectionEditor__field">
+                    <span>Специальность</span>
+                    <select value={specialityId || ''} onChange={(e) => setSpecialityId(e.target.value)}>
+                        <option value="">Выберите</option>
+                        {specialities.map((item) => (
+                            <option key={item.id} value={item.id}>{item.name}</option>
+                        ))}
+                    </select>
+                </label>
+            ) : null}
 
-                    {section === 'specialty' ? (
-                        <label className="profileSectionEditor__field">
-                            <span>Специальность</span>
-                            <select
-                                value={specialityId || ''}
-                                onChange={(e) => setSpecialityId(e.target.value)}
-                            >
-                                <option value="">Выберите</option>
-                                {specialities.map((item) => (
-                                    <option key={item.id} value={item.id}>{item.name}</option>
-                                ))}
-                            </select>
-                        </label>
-                    ) : null}
+            {section === 'bio' ? (
+                <label className="profileSectionEditor__field">
+                    <span>Текст</span>
+                    <textarea rows={8} maxLength={2000} value={bio} onChange={(e) => setBio(e.target.value)} />
+                </label>
+            ) : null}
 
-                    {section === 'bio' ? (
-                        <label className="profileSectionEditor__field">
-                            <span>Текст</span>
-                            <textarea
-                                rows={8}
-                                maxLength={2000}
-                                value={bio}
-                                onChange={(e) => setBio(e.target.value)}
-                            />
-                        </label>
-                    ) : null}
+            {section === 'info' ? (
+                <>
+                    <label className="profileSectionEditor__field">
+                        <span>Город</span>
+                        <input value={city} onChange={(e) => setCity(e.target.value)} />
+                    </label>
+                    <label className="profileSectionEditor__field">
+                        <span>Дата рождения</span>
+                        <input type="date" value={birthDate || ''} onChange={(e) => setBirthDate(e.target.value)} />
+                    </label>
+                </>
+            ) : null}
 
-                    {section === 'info' ? (
-                        <>
-                            <label className="profileSectionEditor__field">
-                                <span>Город</span>
-                                <input value={city} onChange={(e) => setCity(e.target.value)} />
-                            </label>
-                            <label className="profileSectionEditor__field">
-                                <span>Дата рождения</span>
-                                <input
-                                    type="date"
-                                    value={birthDate || ''}
-                                    onChange={(e) => setBirthDate(e.target.value)}
-                                />
-                            </label>
-                        </>
-                    ) : null}
-
-                    {section === 'status' ? (
-                        <>
-                            <label className="profileSectionEditor__field">
-                                <span>Статус поиска</span>
-                                <select
-                                    value={jobSearchStatus || ''}
-                                    onChange={(e) => setJobSearchStatus(e.target.value)}
-                                >
-                                    <option value="">Не указан</option>
-                                    {JOB_SEARCH_OPTIONS.map((item) => (
-                                        <option key={item.value} value={item.value}>{item.label}</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="profileSectionEditor__field">
-                                <span>Желаемый формат</span>
-                                <select
-                                    value={desiredBusyness || ''}
-                                    onChange={(e) => setDesiredBusyness(e.target.value)}
-                                >
-                                    <option value="">Не указан</option>
-                                    {DESIRED_BUSYNESS_OPTIONS.map((item) => (
-                                        <option key={item.value} value={item.value}>{item.label}</option>
-                                    ))}
-                                </select>
-                            </label>
-                            <label className="profileSectionEditor__field">
-                                <span>Имеется занятость</span>
-                                <select
-                                    value={busyness || ''}
-                                    onChange={(e) => setBusyness(e.target.value)}
-                                >
-                                    {BUSYNESS_OPTIONS.map((item) => (
-                                        <option key={item.value} value={item.value}>{item.label}</option>
-                                    ))}
-                                </select>
-                            </label>
-                        </>
-                    ) : null}
-
-                    {section === 'skills' ? (
-                        <div className="profileSectionEditor__skills">
-                            {skillOptions.map((skill) => {
-                                const id = String(skill.id);
-                                const active = selectedSkillIds.includes(id);
-                                return (
-                                    <button
-                                        key={id}
-                                        type="button"
-                                        className={`profileSectionEditor__skill${active ? ' is-active' : ''}`}
-                                        onClick={() => toggleSkill(id)}
-                                    >
-                                        {skill.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    ) : null}
-
-                    {section === 'portfolio' ? (
-                        <div className="profileSectionEditor__list">
-                            {portfolioDrafts.map((draft, index) => (
-                                <div key={draft.id ?? `new-${index}`} className="profileSectionEditor__card">
-                                    <input
-                                        placeholder="Название"
-                                        value={draft.name}
-                                        onChange={(e) => setPortfolioDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, name: e.target.value } : item
-                                        )))}
-                                    />
-                                    <input
-                                        placeholder="Описание"
-                                        value={draft.description}
-                                        onChange={(e) => setPortfolioDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, description: e.target.value } : item
-                                        )))}
-                                    />
-                                    <input
-                                        placeholder="Ссылка"
-                                        value={draft.link}
-                                        onChange={(e) => setPortfolioDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, link: e.target.value } : item
-                                        )))}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="profileSectionEditor__remove"
-                                        onClick={() => setPortfolioDrafts((prev) => prev.filter((_, i) => i !== index))}
-                                    >
-                                        Удалить
-                                    </button>
-                                </div>
+            {section === 'status' ? (
+                <>
+                    <label className="profileSectionEditor__field">
+                        <span>Статус поиска</span>
+                        <select value={jobSearchStatus || ''} onChange={(e) => setJobSearchStatus(e.target.value)}>
+                            <option value="">Не указан</option>
+                            {JOB_SEARCH_OPTIONS.map((item) => (
+                                <option key={item.value} value={item.value}>{item.label}</option>
                             ))}
-                            <button
-                                type="button"
-                                className="profileSectionEditor__add"
-                                onClick={() => setPortfolioDrafts((prev) => [...prev, { id: null, name: '', description: '', link: '' }])}
-                            >
-                                Добавить ссылку
-                            </button>
-                        </div>
-                    ) : null}
+                        </select>
+                    </label>
+                    <label className="profileSectionEditor__field">
+                        <span>Желаемый формат</span>
+                        <select value={desiredBusyness || ''} onChange={(e) => setDesiredBusyness(e.target.value)}>
+                            <option value="">Не указан</option>
+                            {DESIRED_BUSYNESS_OPTIONS.map((item) => (
+                                <option key={item.value} value={item.value}>{item.label}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="profileSectionEditor__field">
+                        <span>Имеется занятость</span>
+                        <select value={busyness || ''} onChange={(e) => setBusyness(e.target.value)}>
+                            {BUSYNESS_OPTIONS.map((item) => (
+                                <option key={item.value} value={item.value}>{item.label}</option>
+                            ))}
+                        </select>
+                    </label>
+                </>
+            ) : null}
 
-                    {section === 'experience' ? (
-                        <div className="profileSectionEditor__list">
-                            {experienceDrafts.map((draft, index) => (
-                                <div key={draft.id ?? `new-${index}`} className="profileSectionEditor__card">
+            {section === 'skills' ? (
+                <div className="profileSectionEditor__skills">
+                    {skillOptions.map((skill) => {
+                        const id = String(skill.id);
+                        const active = selectedSkillIds.includes(id);
+                        return (
+                            <button
+                                key={id}
+                                type="button"
+                                className={`profileSectionEditor__skill${active ? ' is-active' : ''}`}
+                                onClick={() => toggleSkill(id)}
+                            >
+                                {skill.name}
+                            </button>
+                        );
+                    })}
+                </div>
+            ) : null}
+
+            {section === 'portfolio' || section === 'experience' || section === 'education' ? (
+                <p className="profileSectionEditor__error">Используйте inline-редактирование в профиле</p>
+            ) : null}
+
+            {error ? <p className="profileSectionEditor__error">{error}</p> : null}
+        </>
+    );
+
+    const inlineBody = (
+        <>
+            {section === 'avatar' ? (
+                <label className="sprInlineFile">
+                    <span>Выбрать новое фото</span>
+                    <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={(event) => setAvatarFile(event.target.files?.[0] || null)}
+                    />
+                </label>
+            ) : null}
+
+            {section === 'name' ? (
+                <h1 className="studentProfileResume__name sprInlineName">
+                    <input
+                        className="sprInlineField"
+                        value={firstName}
+                        placeholder="Имя"
+                        aria-label="Имя"
+                        onChange={(e) => setFirstName(e.target.value)}
+                    />
+                    <input
+                        className="sprInlineField"
+                        value={lastName}
+                        placeholder="Фамилия"
+                        aria-label="Фамилия"
+                        onChange={(e) => setLastName(e.target.value)}
+                    />
+                    <input
+                        className="sprInlineField sprInlineField--muted"
+                        value={middleName}
+                        placeholder="Отчество"
+                        aria-label="Отчество"
+                        onChange={(e) => setMiddleName(e.target.value)}
+                    />
+                </h1>
+            ) : null}
+
+            {section === 'specialty' ? (
+                <select
+                    className="sprInlineField studentProfileResume__specialty"
+                    value={specialityId || ''}
+                    aria-label="Специальность"
+                    onChange={(e) => setSpecialityId(e.target.value)}
+                >
+                    <option value="">Выберите специальность</option>
+                    {specialities.map((item) => (
+                        <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                </select>
+            ) : null}
+
+            {section === 'bio' ? (
+                <textarea
+                    className="sprInlineField studentProfileResume__bioText"
+                    rows={6}
+                    maxLength={2000}
+                    value={bio}
+                    aria-label="Обо мне"
+                    onChange={(e) => setBio(e.target.value)}
+                />
+            ) : null}
+
+            {section === 'info' ? (
+                <div className="studentProfileResume__infoText">
+                    <input
+                        className="sprInlineField"
+                        type="date"
+                        value={birthDate || ''}
+                        aria-label="Дата рождения"
+                        onChange={(e) => setBirthDate(e.target.value)}
+                    />
+                    <input
+                        className="sprInlineField"
+                        value={city}
+                        placeholder="Город"
+                        aria-label="Город"
+                        onChange={(e) => setCity(e.target.value)}
+                    />
+                </div>
+            ) : null}
+
+            {section === 'skills' ? (
+                <ul className="studentProfileResume__skills">
+                    {skillOptions.map((skill) => {
+                        const id = String(skill.id);
+                        const active = selectedSkillIds.includes(id);
+                        return (
+                            <li key={id}>
+                                <button
+                                    type="button"
+                                    className={`studentProfileResume__tag${active ? '' : ' studentProfileResume__tag--more'}`}
+                                    onClick={() => toggleSkill(id)}
+                                >
+                                    {skill.name}
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
+            ) : null}
+
+            {section === 'portfolio' ? (
+                <div className="studentProfileResume__portfolioFolders">
+                    {portfolioDrafts.map((draft, index) => (
+                        <article key={draft.id ?? `new-${index}`} className="studentProfileResume__portfolioFolder sprInlinePortfolioCard">
+                            <div className="studentProfileResume__portfolioFolderCopy sprInlinePortfolioCopy">
+                                <input
+                                    className="sprInlineField studentProfileResume__portfolioFolderName"
+                                    placeholder="Название"
+                                    value={draft.name}
+                                    onChange={(e) => patchPortfolio(index, { name: e.target.value })}
+                                />
+                                <input
+                                    className="sprInlineField studentProfileResume__portfolioFolderDesc"
+                                    placeholder="Описание"
+                                    value={draft.description}
+                                    onChange={(e) => patchPortfolio(index, { description: e.target.value })}
+                                />
+                                <input
+                                    className="sprInlineField sprInlineField--link"
+                                    placeholder="Ссылка"
+                                    value={draft.link}
+                                    onChange={(e) => patchPortfolio(index, { link: e.target.value })}
+                                />
+                                <button
+                                    type="button"
+                                    className="sprInlineRemove"
+                                    onClick={() => setPortfolioDrafts((prev) => prev.filter((_, i) => i !== index))}
+                                >
+                                    Удалить
+                                </button>
+                            </div>
+                        </article>
+                    ))}
+                    <button
+                        type="button"
+                        className="sprInlineAdd"
+                        onClick={() => setPortfolioDrafts((prev) => [...prev, { id: null, name: '', description: '', link: '' }])}
+                    >
+                        + Добавить
+                    </button>
+                </div>
+            ) : null}
+
+            {section === 'experience' ? (
+                <div className="studentProfileResume__experienceGrid">
+                    {experienceDrafts.map((draft, index) => {
+                        const isProject = draft.experienceType === 'PROJECT';
+                        return (
+                            <article
+                                key={draft.id ?? `new-${index}`}
+                                className={
+                                    'studentProfileResume__experienceCard'
+                                    + (isProject
+                                        ? ' studentProfileResume__experienceCard--project'
+                                        : ' studentProfileResume__experienceCard--work')
+                                }
+                            >
+                                <div className="studentProfileResume__experienceMeta">
+                                    <input
+                                        className="sprInlineField studentProfileResume__experienceCompany"
+                                        placeholder={isProject ? 'Название проекта' : 'Организация'}
+                                        value={draft.companyName}
+                                        onChange={(e) => patchExperience(index, { companyName: e.target.value })}
+                                    />
+                                    <div className="sprInlineDates">
+                                        <input
+                                            className="sprInlineField studentProfileResume__experiencePeriod"
+                                            type="date"
+                                            value={draft.startDate || ''}
+                                            aria-label="Начало"
+                                            onChange={(e) => patchExperience(index, { startDate: e.target.value })}
+                                        />
+                                        <input
+                                            className="sprInlineField studentProfileResume__experiencePeriod"
+                                            type="date"
+                                            value={draft.endDate || ''}
+                                            aria-label="Окончание"
+                                            onChange={(e) => patchExperience(index, { endDate: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <input
+                                    className="sprInlineField studentProfileResume__experiencePosition"
+                                    placeholder="Роль / должность"
+                                    value={draft.position}
+                                    onChange={(e) => patchExperience(index, { position: e.target.value })}
+                                />
+                                <textarea
+                                    className="sprInlineField studentProfileResume__experienceDescription"
+                                    rows={3}
+                                    placeholder="Описание"
+                                    value={draft.additionalInfo}
+                                    onChange={(e) => patchExperience(index, { additionalInfo: e.target.value })}
+                                />
+                                <input
+                                    className="sprInlineField studentProfileResume__experienceLink"
+                                    placeholder="Ссылка"
+                                    value={draft.companyUrl}
+                                    onChange={(e) => patchExperience(index, { companyUrl: e.target.value })}
+                                />
+                                <div className="sprInlineCardFoot">
                                     <select
+                                        className="studentProfileResume__experienceTag sprInlineTagSelect"
                                         value={draft.experienceType}
-                                        onChange={(e) => setExperienceDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, experienceType: e.target.value } : item
-                                        )))}
+                                        onChange={(e) => patchExperience(index, { experienceType: e.target.value })}
                                     >
                                         <option value="WORK">Опыт работы</option>
                                         <option value="PROJECT">Проект</option>
                                     </select>
-                                    <input
-                                        placeholder={draft.experienceType === 'PROJECT' ? 'Название проекта' : 'Организация'}
-                                        value={draft.companyName}
-                                        onChange={(e) => setExperienceDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, companyName: e.target.value } : item
-                                        )))}
-                                    />
-                                    <input
-                                        placeholder="Роль"
-                                        value={draft.position}
-                                        onChange={(e) => setExperienceDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, position: e.target.value } : item
-                                        )))}
-                                    />
-                                    <input
-                                        placeholder="Ссылка"
-                                        value={draft.companyUrl}
-                                        onChange={(e) => setExperienceDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, companyUrl: e.target.value } : item
-                                        )))}
-                                    />
-                                    <div className="profileSectionEditor__row">
-                                        <input
-                                            type="date"
-                                            value={draft.startDate || ''}
-                                            onChange={(e) => setExperienceDrafts((prev) => prev.map((item, i) => (
-                                                i === index ? { ...item, startDate: e.target.value } : item
-                                            )))}
-                                        />
-                                        <input
-                                            type="date"
-                                            value={draft.endDate || ''}
-                                            onChange={(e) => setExperienceDrafts((prev) => prev.map((item, i) => (
-                                                i === index ? { ...item, endDate: e.target.value } : item
-                                            )))}
-                                        />
-                                    </div>
-                                    <textarea
-                                        rows={3}
-                                        placeholder="Описание"
-                                        value={draft.additionalInfo}
-                                        onChange={(e) => setExperienceDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, additionalInfo: e.target.value } : item
-                                        )))}
-                                    />
                                     <button
                                         type="button"
-                                        className="profileSectionEditor__remove"
+                                        className="sprInlineRemove"
                                         onClick={() => setExperienceDrafts((prev) => prev.filter((_, i) => i !== index))}
                                     >
                                         Удалить
                                     </button>
                                 </div>
-                            ))}
-                            <button
-                                type="button"
-                                className="profileSectionEditor__add"
-                                onClick={() => setExperienceDrafts((prev) => [...prev, {
-                                    id: null,
-                                    companyId: '',
-                                    companyName: '',
-                                    companyUrl: '',
-                                    position: '',
-                                    startDate: '',
-                                    endDate: '',
-                                    additionalInfo: '',
-                                    experienceType: 'WORK',
-                                }])}
-                            >
-                                Добавить запись
-                            </button>
-                        </div>
-                    ) : null}
+                            </article>
+                        );
+                    })}
+                    <button
+                        type="button"
+                        className="sprInlineAdd"
+                        onClick={() => setExperienceDrafts((prev) => [...prev, {
+                            id: null,
+                            companyId: '',
+                            companyName: '',
+                            companyUrl: '',
+                            position: '',
+                            startDate: '',
+                            endDate: '',
+                            additionalInfo: '',
+                            experienceType: 'WORK',
+                        }])}
+                    >
+                        + Добавить
+                    </button>
+                </div>
+            ) : null}
 
-                    {section === 'education' ? (
-                        <div className="profileSectionEditor__list">
-                            {educationDrafts.map((draft, index) => (
-                                <div key={draft.id ?? `new-${index}`} className="profileSectionEditor__card">
+            {section === 'education' ? (
+                <div className="studentProfileResume__educationGrid">
+                    {educationDrafts.map((draft, index) => {
+                        const isCourse = draft.educationType === 'COURSE';
+                        const tone = isCourse ? 'green' : 'blue';
+                        return (
+                            <article
+                                key={draft.id ?? `new-${index}`}
+                                className={`studentProfileResume__educationCard studentProfileResume__educationCard--${tone}`}
+                            >
+                                <input
+                                    className="sprInlineField sprInlineField--title"
+                                    placeholder={isCourse ? 'Платформа / курс' : 'Учебное заведение'}
+                                    value={draft.institutionName}
+                                    onChange={(e) => patchEducation(index, { institutionName: e.target.value })}
+                                />
+                                <div className="sprInlineDates">
+                                    <input
+                                        className="sprInlineField studentProfileResume__educationDate"
+                                        type="number"
+                                        placeholder="Начало"
+                                        value={draft.startYear}
+                                        onChange={(e) => patchEducation(index, { startYear: e.target.value })}
+                                    />
+                                    <span className="studentProfileResume__educationDate">–</span>
+                                    <input
+                                        className="sprInlineField studentProfileResume__educationDate"
+                                        type="number"
+                                        placeholder="Окончание"
+                                        value={draft.endYear}
+                                        onChange={(e) => patchEducation(index, { endYear: e.target.value })}
+                                    />
+                                </div>
+                                <input
+                                    className="sprInlineField studentProfileResume__educationRole"
+                                    placeholder="Направление"
+                                    value={draft.direction}
+                                    onChange={(e) => patchEducation(index, { direction: e.target.value })}
+                                />
+                                <input
+                                    className="sprInlineField sprInlineField--link"
+                                    placeholder="Уровень образования"
+                                    value={draft.educationLevel}
+                                    onChange={(e) => patchEducation(index, { educationLevel: e.target.value })}
+                                />
+                                <div className="sprInlineCardFoot">
                                     <select
+                                        className="studentProfileResume__educationTag sprInlineTagSelect"
                                         value={draft.educationType}
-                                        onChange={(e) => setEducationDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, educationType: e.target.value } : item
-                                        )))}
+                                        onChange={(e) => patchEducation(index, { educationType: e.target.value })}
                                     >
                                         <option value="STATE">Гос. образование</option>
-                                        <option value="COURSE">Курс</option>
+                                        <option value="COURSE">Онлайн-курс</option>
                                     </select>
-                                    <input
-                                        placeholder={draft.educationType === 'COURSE' ? 'Платформа / курс' : 'Учебное заведение'}
-                                        value={draft.institutionName}
-                                        onChange={(e) => setEducationDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, institutionName: e.target.value } : item
-                                        )))}
-                                    />
-                                    <input
-                                        placeholder="Направление"
-                                        value={draft.direction}
-                                        onChange={(e) => setEducationDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, direction: e.target.value } : item
-                                        )))}
-                                    />
-                                    <input
-                                        placeholder="Уровень образования"
-                                        value={draft.educationLevel}
-                                        onChange={(e) => setEducationDrafts((prev) => prev.map((item, i) => (
-                                            i === index ? { ...item, educationLevel: e.target.value } : item
-                                        )))}
-                                    />
-                                    <div className="profileSectionEditor__row">
-                                        <input
-                                            type="number"
-                                            placeholder="Начало"
-                                            value={draft.startYear}
-                                            onChange={(e) => setEducationDrafts((prev) => prev.map((item, i) => (
-                                                i === index ? { ...item, startYear: e.target.value } : item
-                                            )))}
-                                        />
-                                        <input
-                                            type="number"
-                                            placeholder="Окончание"
-                                            value={draft.endYear}
-                                            onChange={(e) => setEducationDrafts((prev) => prev.map((item, i) => (
-                                                i === index ? { ...item, endYear: e.target.value } : item
-                                            )))}
-                                        />
-                                    </div>
                                     <button
                                         type="button"
-                                        className="profileSectionEditor__remove"
+                                        className="sprInlineRemove"
                                         onClick={() => setEducationDrafts((prev) => prev.filter((_, i) => i !== index))}
                                     >
                                         Удалить
                                     </button>
                                 </div>
-                            ))}
-                            <button
-                                type="button"
-                                className="profileSectionEditor__add"
-                                onClick={() => setEducationDrafts((prev) => [...prev, {
-                                    id: null,
-                                    educationId: '',
-                                    institutionName: '',
-                                    direction: '',
-                                    educationLevel: '',
-                                    startYear: '',
-                                    endYear: '',
-                                    educationType: 'STATE',
-                                    webUrl: '',
-                                }])}
-                            >
-                                Добавить запись
-                            </button>
-                        </div>
-                    ) : null}
+                            </article>
+                        );
+                    })}
+                    <button
+                        type="button"
+                        className="sprInlineAdd"
+                        onClick={() => setEducationDrafts((prev) => [...prev, {
+                            id: null,
+                            educationId: '',
+                            institutionName: '',
+                            direction: '',
+                            educationLevel: '',
+                            startYear: '',
+                            endYear: '',
+                            educationType: 'STATE',
+                            webUrl: '',
+                        }])}
+                    >
+                        + Добавить
+                    </button>
+                </div>
+            ) : null}
 
-                    {error ? <p className="profileSectionEditor__error">{error}</p> : null}
-                </>
-    );
-
-    const formFoot = (
-        <footer className="profileSectionEditor__foot">
-            <button type="button" className="profileSectionEditor__cancel" onClick={onClose} disabled={saving}>
-                Отмена
-            </button>
-            <button type="button" className="profileSectionEditor__save" onClick={save} disabled={saving}>
-                {saving ? 'Сохранение…' : 'Сохранить'}
-            </button>
-        </footer>
+            {error ? <p className="profileSectionEditor__error">{error}</p> : null}
+            {inlineActions}
+        </>
     );
 
     if (isInline) {
@@ -693,10 +807,7 @@ const ProfileSectionEditor = ({
                 role="group"
                 aria-label={title}
             >
-                <div className="profileSectionEditor__body">
-                    {formBody}
-                </div>
-                {formFoot}
+                {inlineBody}
             </div>
         );
     }
@@ -712,9 +823,16 @@ const ProfileSectionEditor = ({
                     </button>
                 </header>
                 <div className="profileSectionEditor__body">
-                    {formBody}
+                    {drawerBody}
                 </div>
-                {formFoot}
+                <footer className="profileSectionEditor__foot">
+                    <button type="button" className="profileSectionEditor__cancel" onClick={onClose} disabled={saving}>
+                        Отмена
+                    </button>
+                    <button type="button" className="profileSectionEditor__save" onClick={save} disabled={saving}>
+                        {saving ? 'Сохранение…' : 'Сохранить'}
+                    </button>
+                </footer>
             </div>
         </div>
     );

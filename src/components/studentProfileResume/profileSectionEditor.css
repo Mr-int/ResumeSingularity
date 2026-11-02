@@ -6,51 +6,211 @@
     justify-content: flex-end;
 }
 
+/* Inline: форма = тот же объект, поля прозрачные */
 .profileSectionEditor--inline {
     position: static;
     inset: auto;
     z-index: auto;
     display: flex;
     flex-direction: column;
-    width: 100%;
-    margin-top: 8px;
-    border: 1px solid #41464B;
-    border-radius: 16px;
-    background: rgba(26, 27, 29, 0.92);
-    overflow: hidden;
-}
-
-.profileSectionEditor--inline .profileSectionEditor__body {
-    padding: 16px;
-}
-
-.profileSectionEditor--inline .profileSectionEditor__foot {
-    padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.profileSectionEditor--inline .profileSectionEditor__list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 12px;
+    width: 100%;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
 }
 
-.profileSectionEditor--inline .profileSectionEditor__card {
-    height: 100%;
+.sprInlineField {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    line-height: inherit;
+    outline: none;
+    resize: none;
 }
 
-.profileSectionEditor--inline .profileSectionEditor__add {
+.sprInlineField:focus {
+    border-bottom-color: rgba(62, 142, 255, 0.7);
+}
+
+.sprInlineField--muted {
+    opacity: 0.7;
+    font-size: 0.75em;
+    font-weight: 400;
+}
+
+.sprInlineField--title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.sprInlineField--link {
+    color: #3E8EFF;
+    font-size: 13px;
+}
+
+.sprInlineName {
+    gap: 6px;
+    width: 100%;
+}
+
+.sprInlineName .sprInlineField {
+    color: #fff;
+    font-size: 23px;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+textarea.studentProfileResume__bioText.sprInlineField {
+    width: 100%;
+    min-height: 140px;
+    margin-top: 16px;
+    white-space: pre-wrap;
+}
+
+.studentProfileResume__infoText .sprInlineField {
+    color: var(--spr-muted, #B3B5B7);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+select.studentProfileResume__specialty.sprInlineField {
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    appearance: none;
+    padding-right: 18px;
+}
+
+.sprInlineDates {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sprInlineDates .sprInlineField {
+    width: auto;
+    min-width: 0;
+    flex: 1 1 110px;
+}
+
+.sprInlineCardFoot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.sprInlineTagSelect {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    text-align: center;
+    outline: none;
+}
+
+.sprInlineActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.sprInlineBtn {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 13px;
+    padding: 8px 14px;
+}
+
+.sprInlineBtn--ghost {
+    background: transparent;
+    color: #B3B5B7;
+}
+
+.sprInlineBtn--save {
+    background: #3E8EFF;
+    color: #fff;
+}
+
+.sprInlineBtn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.sprInlineAdd,
+.sprInlineRemove {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.sprInlineAdd {
+    align-self: flex-start;
+    background: rgba(62, 142, 255, 0.12);
+    color: #3E8EFF;
+}
+
+.sprInlineRemove {
+    background: transparent;
+    color: #E88;
+    padding: 4px 0;
+}
+
+.sprInlineFile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #B3B5B7;
+    font-size: 13px;
+}
+
+.sprInlinePortfolioCard {
+    min-height: 135px;
+    background: #2a2a2a;
+    border: 1px dashed #41464B;
+}
+
+.sprInlinePortfolioCopy {
+    position: static;
+    pointer-events: auto;
+    padding: 14px;
+    gap: 8px;
+}
+
+.sprInlinePortfolioCopy .sprInlineField {
+    color: #fff;
+}
+
+.profileSectionEditor--inline .studentProfileResume__experienceGrid,
+.profileSectionEditor--inline .studentProfileResume__educationGrid,
+.profileSectionEditor--inline .studentProfileResume__portfolioFolders {
+    width: 100%;
+}
+
+.profileSectionEditor--inline .studentProfileResume__experienceGrid > .sprInlineAdd,
+.profileSectionEditor--inline .studentProfileResume__educationGrid > .sprInlineAdd,
+.profileSectionEditor--inline .studentProfileResume__portfolioFolders > .sprInlineAdd {
     grid-column: 1 / -1;
-    justify-self: start;
-}
-
-.profileSectionEditor--inline.profileSectionEditor--bio,
-.profileSectionEditor--inline.profileSectionEditor--info,
-.profileSectionEditor--inline.profileSectionEditor--skills,
-.profileSectionEditor--inline.profileSectionEditor--name,
-.profileSectionEditor--inline.profileSectionEditor--specialty,
-.profileSectionEditor--inline.profileSectionEditor--avatar {
-    border-radius: 12px;
 }
 
 .profileSectionEditor--inline.profileSectionEditor--bio .profileSectionEditor__field,
