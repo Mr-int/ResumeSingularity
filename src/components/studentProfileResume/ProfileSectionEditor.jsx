@@ -796,18 +796,23 @@ const ProfileSectionEditor = ({
             ) : null}
 
             {error ? <p className="profileSectionEditor__error">{error}</p> : null}
-            {inlineActions}
         </>
     );
 
     if (isInline) {
+        const isLongSection = section === 'experience'
+            || section === 'education'
+            || section === 'portfolio'
+            || section === 'skills';
         return (
             <div
                 className={`profileSectionEditor profileSectionEditor--inline profileSectionEditor--${section}`}
                 role="group"
                 aria-label={title}
             >
+                {inlineActions}
                 {inlineBody}
+                {isLongSection ? inlineActions : null}
             </div>
         );
     }

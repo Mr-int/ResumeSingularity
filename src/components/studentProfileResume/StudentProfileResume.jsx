@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './studentProfileResume.css';
 import editIcon from '../../assets/icons/edit.svg';
 import folderIcon from '../../assets/icons/folder.svg';
@@ -139,25 +140,20 @@ const StudentProfileResume = ({
     onEmployerView,
     onRefresh,
 }) => {
+    const navigate = useNavigate();
     const isOwner = variant === 'owner';
     const [linkCopied, setLinkCopied] = useState(false);
     const [skillsExpanded, setSkillsExpanded] = useState(false);
     const [expandedExperienceIds, setExpandedExperienceIds] = useState(() => new Set());
-    const [editMode, setEditMode] = useState(false);
     const [activeSection, setActiveSection] = useState(null);
 
     const openSection = (section) => {
-        if (!editMode) return;
+        if (!isOwner) return;
         setActiveSection((prev) => (prev === section ? null : section));
     };
 
-    const handleToggleEditMode = () => {
-        if (editMode) {
-            setEditMode(false);
-            setActiveSection(null);
-            return;
-        }
-        setEditMode(true);
+    const goToResumeCreator = () => {
+        navigate('/resume/create');
     };
 
     const closeSectionEditor = () => setActiveSection(null);
@@ -309,7 +305,7 @@ const StudentProfileResume = ({
     );
 
     return (
-        <div className={`studentProfileResume${editMode ? ' is-editing' : ''}`}>
+        <div className={`studentProfileResume${isOwner ? ' is-editing' : ''}`}>
             <div className="studentProfileResume__layout">
                 <aside className="studentProfileResume__sidebar">
                     <header className="studentProfileResume__profileCard">
@@ -348,7 +344,7 @@ const StudentProfileResume = ({
                                 ) : null}
                             </div>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'avatar'}
+                                visible={isOwner && activeSection !== 'avatar'}
                                 onClick={() => openSection('avatar')}
                                 label="Редактировать фото"
                             />
@@ -364,7 +360,7 @@ const StudentProfileResume = ({
                                         <span>{lastName || 'Фамилия'}</span>
                                     </h1>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && activeSection !== 'name'}
                                         onClick={() => openSection('name')}
                                         label="Редактировать имя"
                                     />
@@ -378,7 +374,7 @@ const StudentProfileResume = ({
                                 <>
                                     <p className="studentProfileResume__specialty">{specialty}</p>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && activeSection !== 'specialty'}
                                         onClick={() => openSection('specialty')}
                                         label="Редактировать специальность"
                                     />
@@ -387,13 +383,13 @@ const StudentProfileResume = ({
                         </div>
                     </header>
 
-                    {false && (editMode || jobSearchLabel || desiredBusynessLabel || busynessLabel) ? (
+                    {false && (jobSearchLabel || desiredBusynessLabel || busynessLabel) ? (
                         <div className="studentProfileResume__statusBlock">
                             <div className="studentProfileResume__statusRow">
                                 <div className="studentProfileResume__statusHead">
                                     <p className="studentProfileResume__statusLabel">Статус поиска</p>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && activeSection !== 'status'}
                                         onClick={() => openSection('status')}
                                         label="Редактировать статус поиска"
                                     />
@@ -409,7 +405,7 @@ const StudentProfileResume = ({
                                 <div className="studentProfileResume__statusHead">
                                     <p className="studentProfileResume__statusLabel">Желаемый формат</p>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && activeSection !== 'status'}
                                         onClick={() => openSection('status')}
                                         label="Редактировать желаемый формат"
                                     />
@@ -432,7 +428,7 @@ const StudentProfileResume = ({
                                 <div className="studentProfileResume__statusHead">
                                     <p className="studentProfileResume__statusLabel">Имеется занятость</p>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && activeSection !== 'status'}
                                         onClick={() => openSection('status')}
                                         label="Редактировать занятость"
                                     />
@@ -457,11 +453,11 @@ const StudentProfileResume = ({
                         <nav className="studentProfileResume__nav" aria-label="Навигация по профилю">
                             <button
                                 type="button"
-                                className={`studentProfileResume__btn${editMode ? ' studentProfileResume__btn--primary' : ' studentProfileResume__btn--edit'}`}
-                                onClick={handleToggleEditMode}
+                                className="studentProfileResume__btn studentProfileResume__btn--edit"
+                                onClick={goToResumeCreator}
                             >
-                                {editMode ? 'Готово' : 'Редактировать'}
-                                {!editMode ? <IconEdit /> : null}
+                                Редактировать
+                                <IconEdit />
                             </button>
                             {resumeUrl ? (
                                 <button
@@ -487,7 +483,7 @@ const StudentProfileResume = ({
                             <div className="studentProfileResume__sectionHead">
                                 <h2 id="spr-about-title" className="studentProfileResume__sectionTitle">Обо мне</h2>
                                 <MiniEdit
-                                    visible={isOwner && editMode && activeSection !== 'bio'}
+                                    visible={isOwner && activeSection !== 'bio'}
                                     onClick={() => openSection('bio')}
                                     label="Редактировать описание"
                                 />
@@ -517,7 +513,7 @@ const StudentProfileResume = ({
                                         Инфо
                                     </h3>
                                     <MiniEdit
-                                        visible={isOwner && editMode && activeSection !== 'info'}
+                                        visible={isOwner && activeSection !== 'info'}
                                         onClick={() => openSection('info')}
                                         label="Редактировать инфо"
                                     />
@@ -550,7 +546,7 @@ const StudentProfileResume = ({
                                         Навыки
                                     </h3>
                                     <MiniEdit
-                                        visible={isOwner && editMode && activeSection !== 'skills'}
+                                        visible={isOwner && activeSection !== 'skills'}
                                         onClick={() => openSection('skills')}
                                         label="Редактировать навыки"
                                     />
@@ -601,7 +597,7 @@ const StudentProfileResume = ({
                                 Портфолио
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'portfolio'}
+                                visible={isOwner && activeSection !== 'portfolio'}
                                 onClick={() => openSection('portfolio')}
                                 label="Редактировать портфолио"
                             />
@@ -670,7 +666,7 @@ const StudentProfileResume = ({
                                 Опыт работы
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'experience'}
+                                visible={isOwner && activeSection !== 'experience'}
                                 onClick={() => openSection('experience')}
                                 label="Редактировать опыт"
                             />
@@ -754,7 +750,7 @@ const StudentProfileResume = ({
                                 Образование
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'education'}
+                                visible={isOwner && activeSection !== 'education'}
                                 onClick={() => openSection('education')}
                                 label="Редактировать образование"
                             />
@@ -799,10 +795,10 @@ const StudentProfileResume = ({
                             <button
                                 type="button"
                                 className="studentProfileResume__btn studentProfileResume__btn--primary"
-                                onClick={handleToggleEditMode}
+                                onClick={goToResumeCreator}
                             >
-                                {editMode ? 'Готово' : 'Редактировать'}
-                                {!editMode ? <IconEdit /> : null}
+                                Редактировать
+                                <IconEdit />
                             </button>
                         </footer>
                     ) : null}
