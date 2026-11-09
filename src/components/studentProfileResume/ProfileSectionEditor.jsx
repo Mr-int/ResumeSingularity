@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { patchStudentMe, uploadStudentPhoto } from '../../services/accountApi.js';
 import {
     createExperience,
@@ -17,7 +17,67 @@ import {
 } from '../../services/studentApi.js';
 import { packExperienceAdditionalInfo } from '../../utils/experienceWebUrl.js';
 import { buildPortfolioPayload, normalizePortfolioItem } from '../../utils/portfolio.js';
+import calendarIcon from '../../assets/icons/calendar.svg';
+import arrowIcon from '../../assets/icons/arrow_small.svg';
 import './profileSectionEditor.css';
+
+const InlineField = ({ label, children, className = '' }) => (
+    <label className={`sprField${className ? ` ${className}` : ''}`}>
+        {label ? <span className="sprField__label">{label}</span> : null}
+        {children}
+    </label>
+);
+
+const InlineSelect = ({ label, value, onChange, children, className = '' }) => (
+    <label className={`sprField sprField--select${className ? ` ${className}` : ''}`}>
+        {label ? <span className="sprField__label">{label}</span> : null}
+        <span className="sprField__control">
+            <select value={value} onChange={onChange}>
+                {children}
+            </select>
+            <img src={arrowIcon} alt="" className="sprField__chevron" aria-hidden="true" />
+        </span>
+    </label>
+);
+
+const InlineDate = ({ label, value, onChange, ariaLabel }) => (
+    <label className="sprField sprField--date">
+        {label ? <span className="sprField__label">{label}</span> : null}
+        <span className="sprField__control">
+            <input
+                type="date"
+                value={value || ''}
+                aria-label={ariaLabel || label}
+                onChange={onChange}
+            />
+            <img src={calendarIcon} alt="" className="sprField__calendar" aria-hidden="true" />
+        </span>
+    </label>
+);
+
+const InlineFilePicker = ({ label = 'Выбрать файл', accept, fileName, onChange }) => {
+    const inputRef = useRef(null);
+    return (
+        <div className="sprFilePicker">
+            <input
+                ref={inputRef}
+                type="file"
+                accept={accept}
+                className="sprFilePicker__input"
+                onChange={onChange}
+            />
+            <button
+                type="button"
+                className="sprFilePicker__btn"
+                onClick={() => inputRef.current?.click()}
+            >
+                <span className="sprFilePicker__icon" aria-hidden="true">＋</span>
+                <span className="sprFilePicker__text">{label}</span>
+            </button>
+            {fileName ? <p className="sprFilePicker__name">{fileName}</p> : null}
+        </div>
+    );
+};
 
 const JOB_SEARCH_OPTIONS = [
     { value: 'LOOKING', label: 'Ищу работу' },
@@ -468,139 +528,120 @@ const ProfileSectionEditor = ({
     );
 
     const inlineBody = (
-        <>
+        <div className="sprEditSheet">
             {section === 'avatar' ? (
-                <label className="sprInlineFile">
-                    <span>Выбрать новое фото</span>
-                    <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={(event) => setAvatarFile(event.target.files?.[0] || null)}
-                    />
-                </label>
+                <InlineFilePicker
+                    label="Добавить фото"
+                    accept="image/jpeg,image/png,image/webp"
+                    fileName={avatarFile?.name || ''}
+                    onChange={(event) => setAvatarFile(event.target.files?.[0] || null)}
+                />
             ) : null}
 
             {section === 'name' ? (
-                <h1 className="studentProfileResume__name sprInlineName">
-                    <input
-                        className="sprInlineField"
-                        value={firstName}
-                        placeholder="Имя"
-                        aria-label="Имя"
-                        onChange={(e) => setFirstName(e.target.value)}
-                    />
-                    <input
-                        className="sprInlineField"
-                        value={lastName}
-                        placeholder="Фамилия"
-                        aria-label="Фамилия"
-                        onChange={(e) => setLastName(e.target.value)}
-                    />
-                    <input
-                        className="sprInlineField sprInlineField--muted"
-                        value={middleName}
-                        placeholder="Отчество"
-                        aria-label="Отчество"
-                        onChange={(e) => setMiddleName(e.target.value)}
-                    />
-                </h1>
+                <div className="sprEditSheet__stack">
+                    <InlineField label="Имя">
+                        <input value={firstName} placeholder="Имя" onChange={(e) => setFirstName(e.target.value)} />
+                    </InlineField>
+                    <InlineField label="Фамилия">
+                        <input value={lastName} placeholder="Фамилия" onChange={(e) => setLastName(e.target.value)} />
+                    </InlineField>
+                    <InlineField label="Отчество">
+                        <input value={middleName} placeholder="Необязательно" onChange={(e) => setMiddleName(e.target.value)} />
+                    </InlineField>
+                </div>
             ) : null}
 
             {section === 'specialty' ? (
-                <select
-                    className="sprInlineField studentProfileResume__specialty"
+                <InlineSelect
+                    label="Специальность"
                     value={specialityId || ''}
-                    aria-label="Специальность"
                     onChange={(e) => setSpecialityId(e.target.value)}
                 >
                     <option value="">Выберите специальность</option>
                     {specialities.map((item) => (
                         <option key={item.id} value={item.id}>{item.name}</option>
                     ))}
-                </select>
+                </InlineSelect>
             ) : null}
 
             {section === 'bio' ? (
-                <textarea
-                    className="sprInlineField studentProfileResume__bioText"
-                    rows={6}
-                    maxLength={2000}
-                    value={bio}
-                    aria-label="Обо мне"
-                    onChange={(e) => setBio(e.target.value)}
-                />
+                <InlineField label="О себе" className="sprField--area">
+                    <textarea
+                        rows={6}
+                        maxLength={2000}
+                        value={bio}
+                        placeholder="Расскажите о себе"
+                        onChange={(e) => setBio(e.target.value)}
+                    />
+                    <span className="sprField__hint">{bio.length}/2000</span>
+                </InlineField>
             ) : null}
 
             {section === 'info' ? (
-                <div className="studentProfileResume__infoText">
-                    <input
-                        className="sprInlineField"
-                        type="date"
-                        value={birthDate || ''}
-                        aria-label="Дата рождения"
+                <div className="sprEditSheet__stack">
+                    <InlineDate
+                        label="Дата рождения"
+                        value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                     />
-                    <input
-                        className="sprInlineField"
-                        value={city}
-                        placeholder="Город"
-                        aria-label="Город"
-                        onChange={(e) => setCity(e.target.value)}
-                    />
+                    <InlineField label="Город">
+                        <input value={city} placeholder="Город" onChange={(e) => setCity(e.target.value)} />
+                    </InlineField>
                 </div>
             ) : null}
 
             {section === 'skills' ? (
-                <ul className="studentProfileResume__skills">
+                <div className="sprEditSheet__skills">
                     {skillOptions.map((skill) => {
                         const id = String(skill.id);
                         const active = selectedSkillIds.includes(id);
                         return (
-                            <li key={id}>
-                                <button
-                                    type="button"
-                                    className={`studentProfileResume__tag${active ? '' : ' studentProfileResume__tag--more'}`}
-                                    onClick={() => toggleSkill(id)}
-                                >
-                                    {skill.name}
-                                </button>
-                            </li>
+                            <button
+                                key={id}
+                                type="button"
+                                className={`sprSkillChip${active ? ' is-active' : ''}`}
+                                onClick={() => toggleSkill(id)}
+                            >
+                                {skill.name}
+                            </button>
                         );
                     })}
-                </ul>
+                </div>
             ) : null}
 
             {section === 'portfolio' ? (
-                <div className="studentProfileResume__portfolioFolders">
+                <div className="sprEditSheet__list">
                     {portfolioDrafts.map((draft, index) => (
-                        <article key={draft.id ?? `new-${index}`} className="studentProfileResume__portfolioFolder sprInlinePortfolioCard">
-                            <div className="studentProfileResume__portfolioFolderCopy sprInlinePortfolioCopy">
+                        <article key={draft.id ?? `new-${index}`} className="sprEditCard">
+                            <InlineField label="Название">
                                 <input
-                                    className="sprInlineField studentProfileResume__portfolioFolderName"
-                                    placeholder="Название"
                                     value={draft.name}
+                                    placeholder="Название проекта"
                                     onChange={(e) => patchPortfolio(index, { name: e.target.value })}
                                 />
+                            </InlineField>
+                            <InlineField label="Описание">
                                 <input
-                                    className="sprInlineField studentProfileResume__portfolioFolderDesc"
-                                    placeholder="Описание"
                                     value={draft.description}
+                                    placeholder="Краткое описание"
                                     onChange={(e) => patchPortfolio(index, { description: e.target.value })}
                                 />
+                            </InlineField>
+                            <InlineField label="Ссылка">
                                 <input
-                                    className="sprInlineField sprInlineField--link"
-                                    placeholder="Ссылка"
                                     value={draft.link}
+                                    placeholder="https://"
                                     onChange={(e) => patchPortfolio(index, { link: e.target.value })}
                                 />
-                                <button
-                                    type="button"
-                                    className="sprInlineRemove"
-                                    onClick={() => setPortfolioDrafts((prev) => prev.filter((_, i) => i !== index))}
-                                >
-                                    Удалить
-                                </button>
-                            </div>
+                            </InlineField>
+                            <button
+                                type="button"
+                                className="sprInlineRemove"
+                                onClick={() => setPortfolioDrafts((prev) => prev.filter((_, i) => i !== index))}
+                            >
+                                Удалить
+                            </button>
                         </article>
                     ))}
                     <button
@@ -608,85 +649,80 @@ const ProfileSectionEditor = ({
                         className="sprInlineAdd"
                         onClick={() => setPortfolioDrafts((prev) => [...prev, { id: null, name: '', description: '', link: '' }])}
                     >
-                        + Добавить
+                        <span aria-hidden="true">＋</span>
+                        Добавить ссылку
                     </button>
                 </div>
             ) : null}
 
             {section === 'experience' ? (
-                <div className="studentProfileResume__experienceGrid">
+                <div className="sprEditSheet__list sprEditSheet__list--grid">
                     {experienceDrafts.map((draft, index) => {
                         const isProject = draft.experienceType === 'PROJECT';
                         return (
                             <article
                                 key={draft.id ?? `new-${index}`}
                                 className={
-                                    'studentProfileResume__experienceCard'
-                                    + (isProject
-                                        ? ' studentProfileResume__experienceCard--project'
-                                        : ' studentProfileResume__experienceCard--work')
+                                    'sprEditCard sprEditCard--experience'
+                                    + (isProject ? ' sprEditCard--project' : ' sprEditCard--work')
                                 }
                             >
-                                <div className="studentProfileResume__experienceMeta">
+                                <InlineSelect
+                                    label="Тип"
+                                    value={draft.experienceType}
+                                    onChange={(e) => patchExperience(index, { experienceType: e.target.value })}
+                                >
+                                    <option value="WORK">Опыт работы</option>
+                                    <option value="PROJECT">Проект</option>
+                                </InlineSelect>
+                                <InlineField label={isProject ? 'Проект' : 'Организация'}>
                                     <input
-                                        className="sprInlineField studentProfileResume__experienceCompany"
-                                        placeholder={isProject ? 'Название проекта' : 'Организация'}
                                         value={draft.companyName}
+                                        placeholder={isProject ? 'Название проекта' : 'Компания'}
                                         onChange={(e) => patchExperience(index, { companyName: e.target.value })}
                                     />
-                                    <div className="sprInlineDates">
-                                        <input
-                                            className="sprInlineField studentProfileResume__experiencePeriod"
-                                            type="date"
-                                            value={draft.startDate || ''}
-                                            aria-label="Начало"
-                                            onChange={(e) => patchExperience(index, { startDate: e.target.value })}
-                                        />
-                                        <input
-                                            className="sprInlineField studentProfileResume__experiencePeriod"
-                                            type="date"
-                                            value={draft.endDate || ''}
-                                            aria-label="Окончание"
-                                            onChange={(e) => patchExperience(index, { endDate: e.target.value })}
-                                        />
-                                    </div>
+                                </InlineField>
+                                <InlineField label="Роль">
+                                    <input
+                                        value={draft.position}
+                                        placeholder="Должность / роль"
+                                        onChange={(e) => patchExperience(index, { position: e.target.value })}
+                                    />
+                                </InlineField>
+                                <div className="sprEditSheet__row">
+                                    <InlineDate
+                                        label="Начало"
+                                        value={draft.startDate}
+                                        onChange={(e) => patchExperience(index, { startDate: e.target.value })}
+                                    />
+                                    <InlineDate
+                                        label="Окончание"
+                                        value={draft.endDate}
+                                        onChange={(e) => patchExperience(index, { endDate: e.target.value })}
+                                    />
                                 </div>
-                                <input
-                                    className="sprInlineField studentProfileResume__experiencePosition"
-                                    placeholder="Роль / должность"
-                                    value={draft.position}
-                                    onChange={(e) => patchExperience(index, { position: e.target.value })}
-                                />
-                                <textarea
-                                    className="sprInlineField studentProfileResume__experienceDescription"
-                                    rows={3}
-                                    placeholder="Описание"
-                                    value={draft.additionalInfo}
-                                    onChange={(e) => patchExperience(index, { additionalInfo: e.target.value })}
-                                />
-                                <input
-                                    className="sprInlineField studentProfileResume__experienceLink"
-                                    placeholder="Ссылка"
-                                    value={draft.companyUrl}
-                                    onChange={(e) => patchExperience(index, { companyUrl: e.target.value })}
-                                />
-                                <div className="sprInlineCardFoot">
-                                    <select
-                                        className="studentProfileResume__experienceTag sprInlineTagSelect"
-                                        value={draft.experienceType}
-                                        onChange={(e) => patchExperience(index, { experienceType: e.target.value })}
-                                    >
-                                        <option value="WORK">Опыт работы</option>
-                                        <option value="PROJECT">Проект</option>
-                                    </select>
-                                    <button
-                                        type="button"
-                                        className="sprInlineRemove"
-                                        onClick={() => setExperienceDrafts((prev) => prev.filter((_, i) => i !== index))}
-                                    >
-                                        Удалить
-                                    </button>
-                                </div>
+                                <InlineField label="Описание" className="sprField--area">
+                                    <textarea
+                                        rows={3}
+                                        value={draft.additionalInfo}
+                                        placeholder="Что делали"
+                                        onChange={(e) => patchExperience(index, { additionalInfo: e.target.value })}
+                                    />
+                                </InlineField>
+                                <InlineField label="Ссылка">
+                                    <input
+                                        value={draft.companyUrl}
+                                        placeholder="https://"
+                                        onChange={(e) => patchExperience(index, { companyUrl: e.target.value })}
+                                    />
+                                </InlineField>
+                                <button
+                                    type="button"
+                                    className="sprInlineRemove"
+                                    onClick={() => setExperienceDrafts((prev) => prev.filter((_, i) => i !== index))}
+                                >
+                                    Удалить
+                                </button>
                             </article>
                         );
                     })}
@@ -705,73 +741,78 @@ const ProfileSectionEditor = ({
                             experienceType: 'WORK',
                         }])}
                     >
-                        + Добавить
+                        <span aria-hidden="true">＋</span>
+                        Добавить запись
                     </button>
                 </div>
             ) : null}
 
             {section === 'education' ? (
-                <div className="studentProfileResume__educationGrid">
+                <div className="sprEditSheet__list sprEditSheet__list--grid">
                     {educationDrafts.map((draft, index) => {
                         const isCourse = draft.educationType === 'COURSE';
-                        const tone = isCourse ? 'green' : 'blue';
                         return (
                             <article
                                 key={draft.id ?? `new-${index}`}
-                                className={`studentProfileResume__educationCard studentProfileResume__educationCard--${tone}`}
+                                className={
+                                    'sprEditCard sprEditCard--education'
+                                    + (isCourse ? ' sprEditCard--course' : ' sprEditCard--state')
+                                }
                             >
-                                <input
-                                    className="sprInlineField sprInlineField--title"
-                                    placeholder={isCourse ? 'Платформа / курс' : 'Учебное заведение'}
-                                    value={draft.institutionName}
-                                    onChange={(e) => patchEducation(index, { institutionName: e.target.value })}
-                                />
-                                <div className="sprInlineDates">
+                                <InlineSelect
+                                    label="Тип"
+                                    value={draft.educationType}
+                                    onChange={(e) => patchEducation(index, { educationType: e.target.value })}
+                                >
+                                    <option value="STATE">Гос. образование</option>
+                                    <option value="COURSE">Онлайн-курс</option>
+                                </InlineSelect>
+                                <InlineField label={isCourse ? 'Платформа / курс' : 'Учебное заведение'}>
                                     <input
-                                        className="sprInlineField studentProfileResume__educationDate"
-                                        type="number"
-                                        placeholder="Начало"
-                                        value={draft.startYear}
-                                        onChange={(e) => patchEducation(index, { startYear: e.target.value })}
+                                        value={draft.institutionName}
+                                        placeholder={isCourse ? 'Coursera / Skillbox' : 'Университет'}
+                                        onChange={(e) => patchEducation(index, { institutionName: e.target.value })}
                                     />
-                                    <span className="studentProfileResume__educationDate">–</span>
+                                </InlineField>
+                                <InlineField label="Направление">
                                     <input
-                                        className="sprInlineField studentProfileResume__educationDate"
-                                        type="number"
-                                        placeholder="Окончание"
-                                        value={draft.endYear}
-                                        onChange={(e) => patchEducation(index, { endYear: e.target.value })}
+                                        value={draft.direction}
+                                        placeholder="Направление"
+                                        onChange={(e) => patchEducation(index, { direction: e.target.value })}
                                     />
+                                </InlineField>
+                                <InlineField label="Уровень">
+                                    <input
+                                        value={draft.educationLevel}
+                                        placeholder="Бакалавриат / курс"
+                                        onChange={(e) => patchEducation(index, { educationLevel: e.target.value })}
+                                    />
+                                </InlineField>
+                                <div className="sprEditSheet__row">
+                                    <InlineField label="Начало">
+                                        <input
+                                            type="number"
+                                            value={draft.startYear}
+                                            placeholder="2020"
+                                            onChange={(e) => patchEducation(index, { startYear: e.target.value })}
+                                        />
+                                    </InlineField>
+                                    <InlineField label="Окончание">
+                                        <input
+                                            type="number"
+                                            value={draft.endYear}
+                                            placeholder="2024"
+                                            onChange={(e) => patchEducation(index, { endYear: e.target.value })}
+                                        />
+                                    </InlineField>
                                 </div>
-                                <input
-                                    className="sprInlineField studentProfileResume__educationRole"
-                                    placeholder="Направление"
-                                    value={draft.direction}
-                                    onChange={(e) => patchEducation(index, { direction: e.target.value })}
-                                />
-                                <input
-                                    className="sprInlineField sprInlineField--link"
-                                    placeholder="Уровень образования"
-                                    value={draft.educationLevel}
-                                    onChange={(e) => patchEducation(index, { educationLevel: e.target.value })}
-                                />
-                                <div className="sprInlineCardFoot">
-                                    <select
-                                        className="studentProfileResume__educationTag sprInlineTagSelect"
-                                        value={draft.educationType}
-                                        onChange={(e) => patchEducation(index, { educationType: e.target.value })}
-                                    >
-                                        <option value="STATE">Гос. образование</option>
-                                        <option value="COURSE">Онлайн-курс</option>
-                                    </select>
-                                    <button
-                                        type="button"
-                                        className="sprInlineRemove"
-                                        onClick={() => setEducationDrafts((prev) => prev.filter((_, i) => i !== index))}
-                                    >
-                                        Удалить
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    className="sprInlineRemove"
+                                    onClick={() => setEducationDrafts((prev) => prev.filter((_, i) => i !== index))}
+                                >
+                                    Удалить
+                                </button>
                             </article>
                         );
                     })}
@@ -790,13 +831,14 @@ const ProfileSectionEditor = ({
                             webUrl: '',
                         }])}
                     >
-                        + Добавить
+                        <span aria-hidden="true">＋</span>
+                        Добавить запись
                     </button>
                 </div>
             ) : null}
 
             {error ? <p className="profileSectionEditor__error">{error}</p> : null}
-        </>
+        </div>
     );
 
     if (isInline) {

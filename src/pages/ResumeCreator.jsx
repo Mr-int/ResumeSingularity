@@ -66,6 +66,7 @@ import {
 } from './resumeCreatorValidation.js';
 import { packExperienceAdditionalInfo } from '../utils/experienceWebUrl.js';
 import { buildPortfolioPayload, normalizePortfolioItem } from '../utils/portfolio.js';
+import { crumbleSkillChip, flySkillChip } from '../utils/skillChipAnimations.js';
 import {
     clearExperienceDraft,
     clearResumeCreatorStep,
@@ -1369,12 +1370,23 @@ const ResumeCreator = () => {
                     <SkillsSelection
                         skills={skillsCatalog}
                         selectedSkills={selectedSkills}
-                        onToggle={(id) => {
-                            setSelectedSkills((prev) => (
-                                prev.some((item) => String(item) === String(id))
-                                    ? prev.filter((item) => String(item) !== String(id))
-                                    : [...prev, id]
-                            ));
+                        onSelect={async (id, meta = {}) => {
+                            if (selectedSkills.some((item) => String(item) === String(id))) return;
+                            if (!meta.fromRect) {
+                                setSelectedSkills((prev) => [...prev, id]);
+                                return;
+                            }
+                            const getToEl = () => document.querySelector(
+                                `[data-skill-chip="${CSS.escape(String(id))}"]`
+                            );
+                            // Клон стартует сразу; цель появится после setState
+                            const flyPromise = flySkillChip({
+                                fromRect: meta.fromRect,
+                                getToEl,
+                                label: meta.label,
+                            });
+                            setSelectedSkills((prev) => [...prev, id]);
+                            await flyPromise;
                         }}
                     />
                 );
@@ -1452,7 +1464,11 @@ const ResumeCreator = () => {
                     skills={skillsCatalog}
                     selectedSkills={selectedSkills}
                     memoItems={MEMO_BY_STEP[5] || []}
-                    onToggle={(id) => {
+                    onRemove={async (id, meta = {}) => {
+                        await crumbleSkillChip({
+                            fromEl: meta.fromEl,
+                            fromRect: meta.fromRect,
+                        });
                         setSelectedSkills((prev) =>
                             prev.filter((item) => String(item) !== String(id))
                         );

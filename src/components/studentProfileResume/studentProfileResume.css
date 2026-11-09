@@ -360,7 +360,8 @@
 
 .studentProfileResume__btn--edit {
     background-color: #ffffff;
-    color: #121212;
+    color: #2F2F2F;
+    gap: 6px;
 }
 
 .studentProfileResume__btn--share {
@@ -384,6 +385,18 @@
     height: 14px;
     flex-shrink: 0;
     display: block;
+    object-fit: contain;
+}
+
+.studentProfileResume__btnIcon--edit {
+    width: 24px;
+    height: 24px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.studentProfileResume__btn--primary .studentProfileResume__btnIcon--edit {
+    filter: invert(1);
 }
 
 .studentProfileResume__main {

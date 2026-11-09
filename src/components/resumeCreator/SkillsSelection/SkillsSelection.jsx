@@ -10,20 +10,24 @@ const SearchIcon = () => (
 const SkillsSelection = ({
     skills = [],
     selectedSkills = [],
-    onToggle,
+    onSelect,
 }) => {
     const [query, setQuery] = useState('');
     const normalizedQuery = query.trim().toLowerCase();
+    const selectedSet = new Set(selectedSkills.map((id) => String(id)));
 
-    const filteredSkills = skills.filter((skill) =>
-        (skill?.name || '').toLowerCase().includes(normalizedQuery)
-    );
+    // Выбранные навыки не показываем в левой панели
+    const filteredSkills = skills.filter((skill) => {
+        const id = String(skill?.id);
+        if (selectedSet.has(id)) return false;
+        return (skill?.name || '').toLowerCase().includes(normalizedQuery);
+    });
 
     return (
         <section className="skillsSelection">
             <h2 className="skillsSelection__title">Добавьте навыки</h2>
             <p className="skillsSelection__subtitle">
-                Эти навыки будут находиться в вашем резюме
+                Эти навыки будут находится в вашем резюме
             </p>
 
             <div className="skillsSelection__searchWrap">
@@ -31,7 +35,7 @@ const SkillsSelection = ({
                 <input
                     className="skillsSelection__search"
                     type="search"
-                    placeholder="Поиск"
+                    placeholder="Поиск по всем навыкам"
                     autoComplete="off"
                     value={query}
                     onChange={(event) => setQuery(event.target.value)}
@@ -40,19 +44,24 @@ const SkillsSelection = ({
 
             <div className="skillsSelection__pool">
                 {filteredSkills.length === 0 ? (
-                    <div className="skillsSelection__poolEmpty">Ничего не найдено</div>
+                    <div className="skillsSelection__poolEmpty">
+                        {normalizedQuery ? 'Ничего не найдено' : 'Все навыки уже выбраны'}
+                    </div>
                 ) : (
                     filteredSkills.map((skill) => {
                         const skillId = skill.id;
-                        const isAdded = selectedSkills.some((id) => String(id) === String(skillId));
-
                         return (
                             <button
                                 key={skillId}
                                 type="button"
-                                className={`skillsSelection__poolBadge${isAdded ? ' is-added' : ''}`}
-                                aria-pressed={isAdded}
-                                onClick={() => onToggle?.(skillId)}
+                                className="skillsSelection__poolBadge"
+                                data-skill-source={skillId}
+                                onClick={(event) => {
+                                    onSelect?.(skillId, {
+                                        label: skill.name,
+                                        fromRect: event.currentTarget.getBoundingClientRect(),
+                                    });
+                                }}
                             >
                                 {skill.name}
                             </button>

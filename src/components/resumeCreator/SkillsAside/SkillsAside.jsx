@@ -41,9 +41,10 @@ const SkillsAside = ({
     skills = [],
     selectedSkills = [],
     memoItems = [],
-    onToggle,
+    onRemove,
 }) => {
     const [openId, setOpenId] = useState(null);
+    const [pendingRemoveId, setPendingRemoveId] = useState(null);
 
     useEffect(() => {
         setOpenId(null);
@@ -61,7 +62,7 @@ const SkillsAside = ({
                     <h2 className="skillsAside__blockTitle">Выбранные навыки</h2>
                 </div>
 
-                <div className="skillsAside__selectedGrid">
+                <div className="skillsAside__selectedGrid" data-skills-selected-grid="true">
                     {selectedList.length === 0 ? (
                         <div className="skillsAside__selectedEmpty">Пока ничего не выбрано</div>
                     ) : (
@@ -69,9 +70,23 @@ const SkillsAside = ({
                             <button
                                 key={skill.id}
                                 type="button"
-                                className="skillsAside__selectedBadge"
+                                className={
+                                    'skillsAside__selectedBadge'
+                                    + (String(pendingRemoveId) === String(skill.id) ? ' is-removing' : '')
+                                }
+                                data-skill-chip={skill.id}
                                 aria-label={`Убрать ${skill.name}`}
-                                onClick={() => onToggle?.(skill.id)}
+                                disabled={String(pendingRemoveId) === String(skill.id)}
+                                onClick={async (event) => {
+                                    if (pendingRemoveId != null) return;
+                                    setPendingRemoveId(skill.id);
+                                    await onRemove?.(skill.id, {
+                                        label: skill.name,
+                                        fromEl: event.currentTarget,
+                                        fromRect: event.currentTarget.getBoundingClientRect(),
+                                    });
+                                    setPendingRemoveId(null);
+                                }}
                             >
                                 <span>{skill.name}</span>
                                 <span className="skillsAside__remove" aria-hidden="true">

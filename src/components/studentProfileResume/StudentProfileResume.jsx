@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './studentProfileResume.css';
 import editIcon from '../../assets/icons/edit.svg';
+import editFilledIcon from '../../assets/icons/edit-filled.svg';
 import folderIcon from '../../assets/icons/folder.svg';
 import expIcon from '../../assets/icons/exp.svg';
 import educationIcon from '../../assets/icons/education.svg';
@@ -61,13 +62,13 @@ const courseTone = (course) => {
     }
 };
 
-const IconEdit = ({ className = 'studentProfileResume__btnIcon' }) => (
+const IconEdit = ({ className = 'studentProfileResume__btnIcon', filled = false }) => (
     <img
-        src={editIcon}
+        src={filled ? editFilledIcon : editIcon}
         alt=""
         className={className}
-        width={14}
-        height={14}
+        width={filled ? 24 : 14}
+        height={filled ? 24 : 14}
         aria-hidden="true"
     />
 );
@@ -457,7 +458,7 @@ const StudentProfileResume = ({
                                 onClick={goToResumeCreator}
                             >
                                 Редактировать
-                                <IconEdit />
+                                <IconEdit filled className="studentProfileResume__btnIcon studentProfileResume__btnIcon--edit" />
                             </button>
                             {resumeUrl ? (
                                 <button
@@ -798,7 +799,7 @@ const StudentProfileResume = ({
                                 onClick={goToResumeCreator}
                             >
                                 Редактировать
-                                <IconEdit />
+                                <IconEdit filled className="studentProfileResume__btnIcon studentProfileResume__btnIcon--edit" />
                             </button>
                         </footer>
                     ) : null}

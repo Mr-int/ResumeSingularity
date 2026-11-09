@@ -599,9 +599,6 @@ export const filterStudents = async (filterReq = {}) => {
 /**
  * POST /student/cardsFilter
  * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
- *
- * Важно: студент без APPROVED получает только свою карточку.
- * Для каталога неодобренных — POST /public/students/cards.
  */
 export const filterStudentCardsPage = async (
     filterReq = {},
