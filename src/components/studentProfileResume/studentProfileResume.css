@@ -58,12 +58,12 @@
     overflow: hidden;
 }
 
-/* При inline-редактировании карточка не должна обрезать «Сохранить / Отмена» */
+/* При inline-редактировании карточка растёт по контенту, без наложения на соседнюю колонку */
 .studentProfileResume.is-editing .studentProfileResume__profileCard:has(.profileSectionEditor--inline) {
     height: auto;
     min-height: 368px;
     overflow: visible;
-    z-index: 5;
+    z-index: 1;
 }
 
 .studentProfileResume.is-editing .studentProfileResume__bio:has(.profileSectionEditor--inline),
@@ -72,6 +72,8 @@
 .studentProfileResume.is-editing .studentProfileResume__section:has(.profileSectionEditor--inline),
 .studentProfileResume.is-editing .studentProfileResume__identity:has(.profileSectionEditor--inline) {
     overflow: visible;
+    position: relative;
+    z-index: 1;
 }
 
 .studentProfileResume.is-editing .studentProfileResume__about:has(.profileSectionEditor--inline) {
@@ -214,6 +216,8 @@
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
+    padding-right: 28px;
+    box-sizing: border-box;
     padding-right: 28px;
 }
 

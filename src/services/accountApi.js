@@ -73,15 +73,15 @@ export const uploadStudentPhoto = async (studentId, file) => {
             await refreshSession();
             response = await postStudentPhotoOnce(studentId, file);
         } catch {
+            // Только если refresh реально упал — сессия мертва
             clearLocalAuth();
             window.location.href = appPath('login');
             throw new Error('HTTP error! status: 401 - Unauthorized');
         }
     }
 
+    // После refresh всё ещё 401 — не убиваем сессию (права/ACL), отдаём ошибку выше
     if (response.status === 401) {
-        clearLocalAuth();
-        window.location.href = appPath('login');
         throw new Error('HTTP error! status: 401 - Unauthorized');
     }
 

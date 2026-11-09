@@ -11,13 +11,24 @@ const withPageParams = (endpoint, pageable) => {
 
 // ---- Students / Recruiters ----
 export const getStudentById = (id) => apiClientJson(`student/${id}`, { method: 'GET' });
-/** 403 не сбрасывает сессию — иначе рекрутёр теряет вход при проверке «не студент». */
+/**
+ * Пробы роли: 403/401 на «чужом» /me не должны выкидывать из аккаунта
+ * (хедер/настройки/чаты по очереди дергают student и recruiter).
+ */
 export const getStudentMe = () =>
-    apiClientJson('student/me', { method: 'GET', skipSessionClearOn403: true });
+    apiClientJson('student/me', {
+        method: 'GET',
+        skipSessionClearOn403: true,
+        skipAuthRedirect: true,
+    });
 
 export const getRecruiterById = (id) => apiClientJson(`recruiter/${id}`, { method: 'GET' });
 export const getRecruiterMe = () =>
-    apiClientJson('recruiter/me', { method: 'GET', skipSessionClearOn403: true });
+    apiClientJson('recruiter/me', {
+        method: 'GET',
+        skipSessionClearOn403: true,
+        skipAuthRedirect: true,
+    });
 
 // ---- Dictionaries / entities ----
 export const getSpecialityById = (id) => apiClientJson(`speciality/${id}`, { method: 'GET' });
