@@ -14,22 +14,26 @@ const ensureStyles = () => {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        height: 32px;
-        padding: 0 24px;
+        box-sizing: border-box;
+        padding: 0 16px;
         border-radius: 34px;
         background: #131313;
         color: #ffffff;
         font-family: 'StratosSemiLight', sans-serif;
         font-size: 12px;
         letter-spacing: 0.24px;
+        line-height: 1.2;
         white-space: nowrap;
         box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
-        will-change: transform, opacity;
+        will-change: left, top, width, height, background-color, color, opacity;
         transition:
-          transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-          opacity 0.35s ease,
-          background-color 0.35s ease,
-          color 0.35s ease;
+          left 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+          top 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+          width 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+          height 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+          background-color 0.3s ease,
+          color 0.3s ease,
+          opacity 0.2s ease;
       }
       .${CRUMBLE_CLASS} {
         position: fixed;
@@ -55,7 +59,7 @@ const waitFrames = (count = 2) => new Promise((resolve) => {
 });
 
 /**
- * Плавный перелёт чипа из fromRect в элемент toEl (или toRect / getToEl).
+ * Плавный перелёт чипа. Не блокирует UI — можно вызывать fire-and-forget.
  */
 export const flySkillChip = async ({
     fromRect,
@@ -63,7 +67,7 @@ export const flySkillChip = async ({
     toRect,
     getToEl,
     label,
-    duration = 550,
+    duration = 420,
 }) => {
     if (typeof document === 'undefined' || !fromRect) return;
     ensureStyles();
@@ -75,19 +79,18 @@ export const flySkillChip = async ({
     clone.style.top = `${fromRect.top}px`;
     clone.style.width = `${Math.max(fromRect.width, 48)}px`;
     clone.style.height = `${Math.max(fromRect.height, 28)}px`;
-    clone.style.transform = 'translate(0, 0) scale(1)';
     document.body.appendChild(clone);
     clone.getBoundingClientRect();
 
     let target = toEl || null;
     let targetRect = toRect || null;
 
-    for (let i = 0; i < 8 && !targetRect; i += 1) {
+    for (let i = 0; i < 10 && !targetRect; i += 1) {
         await waitFrames(1);
         target = getToEl?.() || toEl || target;
         if (target) {
-            target.classList?.add?.('is-arriving');
-            targetRect = target.getBoundingClientRect?.();
+            target.classList.add('is-arriving');
+            targetRect = target.getBoundingClientRect();
         }
     }
 
@@ -97,41 +100,44 @@ export const flySkillChip = async ({
         return;
     }
 
-    const dx = targetRect.left - fromRect.left;
-    const dy = targetRect.top - fromRect.top;
-    const sx = targetRect.width / Math.max(fromRect.width, 1);
-    const sy = targetRect.height / Math.max(fromRect.height, 1);
+    // Перечитываем цель перед стартом — сетка могла сдвинуться
+    if (target) {
+        targetRect = target.getBoundingClientRect();
+    }
 
+    clone.style.left = `${targetRect.left}px`;
+    clone.style.top = `${targetRect.top}px`;
+    clone.style.width = `${Math.max(targetRect.width, 40)}px`;
+    clone.style.height = `${Math.max(targetRect.height, 24)}px`;
     clone.style.background = '#ffffff';
     clone.style.color = '#2f2f2f';
-    clone.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
 
     await new Promise((resolve) => {
         window.setTimeout(resolve, duration);
     });
+
+    clone.style.opacity = '0';
+    await waitFrames(2);
     clone.remove();
     target?.classList?.remove?.('is-arriving');
 };
 
 /**
- * «Рассыпание» чипа на крошки (как удаление на iPhone).
+ * «Рассыпание» чипа на крошки. Fire-and-forget: не ждём завершения.
+ * Важно: передавать fromRect — fromEl может уже быть размонтирован.
  */
-export const crumbleSkillChip = async ({ fromEl, fromRect, crumbCount = 22 }) => {
+export const crumbleSkillChip = ({ fromEl, fromRect, crumbCount = 18 } = {}) => {
     if (typeof document === 'undefined') return;
     ensureStyles();
 
     const rect = fromRect || fromEl?.getBoundingClientRect?.();
-    if (!rect) return;
-
-    if (fromEl) {
-        fromEl.style.visibility = 'hidden';
-    }
+    if (!rect || !rect.width || !rect.height) return;
 
     const crumbs = [];
     for (let i = 0; i < crumbCount; i += 1) {
         const crumb = document.createElement('span');
         crumb.className = CRUMBLE_CLASS;
-        const size = 2 + Math.random() * 5;
+        const size = 2 + Math.random() * 4.5;
         crumb.style.width = `${size}px`;
         crumb.style.height = `${size}px`;
         crumb.style.left = `${rect.left + Math.random() * rect.width}px`;
@@ -139,8 +145,8 @@ export const crumbleSkillChip = async ({ fromEl, fromRect, crumbCount = 22 }) =>
         crumb.style.opacity = '1';
         crumb.style.transform = 'translate(0, 0) scale(1)';
         crumb.style.transition = [
-            `transform ${0.45 + Math.random() * 0.4}s cubic-bezier(0.2, 0.7, 0.2, 1)`,
-            `opacity ${0.45 + Math.random() * 0.35}s ease`,
+            `transform ${0.4 + Math.random() * 0.35}s cubic-bezier(0.2, 0.7, 0.2, 1)`,
+            `opacity ${0.4 + Math.random() * 0.3}s ease`,
         ].join(', ');
         document.body.appendChild(crumb);
         crumbs.push(crumb);
@@ -148,18 +154,19 @@ export const crumbleSkillChip = async ({ fromEl, fromRect, crumbCount = 22 }) =>
 
     crumbs.forEach((c) => c.getBoundingClientRect());
 
-    crumbs.forEach((crumb) => {
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 28 + Math.random() * 70;
-        const dx = Math.cos(angle) * distance;
-        const dy = Math.sin(angle) * distance + (20 + Math.random() * 40);
-        const rot = (Math.random() - 0.5) * 240;
-        crumb.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${0.15 + Math.random() * 0.35})`;
-        crumb.style.opacity = '0';
+    requestAnimationFrame(() => {
+        crumbs.forEach((crumb) => {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 24 + Math.random() * 64;
+            const dx = Math.cos(angle) * distance;
+            const dy = Math.sin(angle) * distance + (16 + Math.random() * 36);
+            const rot = (Math.random() - 0.5) * 220;
+            crumb.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${0.12 + Math.random() * 0.3})`;
+            crumb.style.opacity = '0';
+        });
     });
 
-    await new Promise((resolve) => {
-        window.setTimeout(resolve, 700);
-    });
-    crumbs.forEach((c) => c.remove());
+    window.setTimeout(() => {
+        crumbs.forEach((c) => c.remove());
+    }, 750);
 };

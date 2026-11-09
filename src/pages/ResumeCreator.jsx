@@ -1370,23 +1370,20 @@ const ResumeCreator = () => {
                     <SkillsSelection
                         skills={skillsCatalog}
                         selectedSkills={selectedSkills}
-                        onSelect={async (id, meta = {}) => {
-                            if (selectedSkills.some((item) => String(item) === String(id))) return;
-                            if (!meta.fromRect) {
-                                setSelectedSkills((prev) => [...prev, id]);
-                                return;
-                            }
-                            const getToEl = () => document.querySelector(
-                                `[data-skill-chip="${CSS.escape(String(id))}"]`
-                            );
-                            // Клон стартует сразу; цель появится после setState
-                            const flyPromise = flySkillChip({
+                        onSelect={(id, meta = {}) => {
+                            setSelectedSkills((prev) => {
+                                if (prev.some((item) => String(item) === String(id))) return prev;
+                                return [...prev, id];
+                            });
+                            if (!meta.fromRect) return;
+                            // Анимация не блокирует UI — можно сразу жать другие навыки
+                            void flySkillChip({
                                 fromRect: meta.fromRect,
-                                getToEl,
+                                getToEl: () => document.querySelector(
+                                    `[data-skill-chip="${CSS.escape(String(id))}"]`
+                                ),
                                 label: meta.label,
                             });
-                            setSelectedSkills((prev) => [...prev, id]);
-                            await flyPromise;
                         }}
                     />
                 );
@@ -1464,11 +1461,11 @@ const ResumeCreator = () => {
                     skills={skillsCatalog}
                     selectedSkills={selectedSkills}
                     memoItems={MEMO_BY_STEP[5] || []}
-                    onRemove={async (id, meta = {}) => {
-                        await crumbleSkillChip({
-                            fromEl: meta.fromEl,
-                            fromRect: meta.fromRect,
-                        });
+                    onRemove={(id, meta = {}) => {
+                        // Сразу убираем из списка — крошки летят сами, без ожидания
+                        if (meta.fromRect) {
+                            crumbleSkillChip({ fromRect: meta.fromRect });
+                        }
                         setSelectedSkills((prev) =>
                             prev.filter((item) => String(item) !== String(id))
                         );

@@ -19,7 +19,10 @@ const NAV_DEFS = [
 ];
 
 const navIdFromLocation = (pathname, hash) => {
-    if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return 'resume';
+    // Просмотр резюме студента — активен пункт «Резюме»
+    if (/^\/profile\/[^/]+/.test(pathname)) return 'resume';
+    // Создание / редактирование — ни один пункт не активен
+    if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return null;
     if (pathname === '/' && hash === '#projects') return 'projects';
     if (pathname === '/') return 'career';
     return null;
@@ -38,7 +41,6 @@ const Header = ({
     const navigate = useNavigate();
     const location = useLocation();
     const routeActiveId = navIdFromLocation(location.pathname, location.hash);
-    const [activeNavId, setActiveNavId] = useState(activeNavIdProp || routeActiveId || 'career');
     const [loadedAvatarSrc, setLoadedAvatarSrc] = useState(null);
     const [avatarExpanded, setAvatarExpanded] = useState(false);
     const [profileUser, setProfileUser] = useState({
@@ -47,7 +49,8 @@ const Header = ({
         roleLabel: '',
     });
 
-    const currentActive = activeNavIdProp ?? routeActiveId ?? activeNavId;
+    // Активный пункт только из роута (или явного пропа). Без локального «залипания».
+    const currentActive = activeNavIdProp !== undefined ? activeNavIdProp : routeActiveId;
     const displayAvatarSrc = avatarSrc || loadedAvatarSrc;
 
     useEffect(() => {
@@ -151,9 +154,6 @@ const Header = ({
         if (item.disabled) {
             event.preventDefault();
             return;
-        }
-        if (activeNavIdProp == null) {
-            setActiveNavId(item.id);
         }
         onNavChange?.(item.id);
         if (item.onClick) {

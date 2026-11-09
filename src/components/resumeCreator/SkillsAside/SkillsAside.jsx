@@ -44,7 +44,6 @@ const SkillsAside = ({
     onRemove,
 }) => {
     const [openId, setOpenId] = useState(null);
-    const [pendingRemoveId, setPendingRemoveId] = useState(null);
 
     useEffect(() => {
         setOpenId(null);
@@ -70,22 +69,15 @@ const SkillsAside = ({
                             <button
                                 key={skill.id}
                                 type="button"
-                                className={
-                                    'skillsAside__selectedBadge'
-                                    + (String(pendingRemoveId) === String(skill.id) ? ' is-removing' : '')
-                                }
+                                className="skillsAside__selectedBadge"
                                 data-skill-chip={skill.id}
                                 aria-label={`Убрать ${skill.name}`}
-                                disabled={String(pendingRemoveId) === String(skill.id)}
-                                onClick={async (event) => {
-                                    if (pendingRemoveId != null) return;
-                                    setPendingRemoveId(skill.id);
-                                    await onRemove?.(skill.id, {
+                                onClick={(event) => {
+                                    const fromRect = event.currentTarget.getBoundingClientRect();
+                                    onRemove?.(skill.id, {
                                         label: skill.name,
-                                        fromEl: event.currentTarget,
-                                        fromRect: event.currentTarget.getBoundingClientRect(),
+                                        fromRect,
                                     });
-                                    setPendingRemoveId(null);
                                 }}
                             >
                                 <span>{skill.name}</span>

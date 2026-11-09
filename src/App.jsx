@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-import Home from './pages/Home.jsx';
 import CareerCenter from './pages/CareerCenter.jsx';
 import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
@@ -11,6 +10,7 @@ import FloatingButton from './components/floatingButton/FloatingButton.jsx';
 import Auth from './pages/Auth.jsx';
 import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
+import ProjectsPage from './pages/ProjectsPage.jsx';
 import { routerBasename } from './utils/appBase.js';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -25,13 +25,13 @@ const ProfileIdRedirect = () => {
 };
 
 /**
- * `/` — новая заглушка CareerCenter.
- * Старый Home.jsx сохранён: /#projects открывает его секцию проектов.
+ * `/` — CareerCenter.
+ * `/#projects` — заглушка «страница в разработке».
  */
 const CareerOrLegacyHome = () => {
   const { hash } = useLocation();
   if (hash === '#projects') {
-    return <Home />;
+    return <ProjectsPage />;
   }
   return <CareerCenter />;
 };

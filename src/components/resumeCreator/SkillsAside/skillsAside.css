@@ -87,9 +87,6 @@
 
 .skillsAside__selectedBadge.is-arriving {
     opacity: 0;
-}
-
-.skillsAside__selectedBadge.is-removing {
     pointer-events: none;
 }
 
