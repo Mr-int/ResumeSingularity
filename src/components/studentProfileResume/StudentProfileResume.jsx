@@ -9,6 +9,7 @@ import educationIcon from '../../assets/icons/education.svg';
 import shareIcon from '../../assets/icons/share-filled.svg';
 import statusLookingIcon from '../../assets/icons/status-looking.svg';
 import busynessFulltimeIcon from '../../assets/icons/busyness-fulltime.svg';
+import busynessParttimeIcon from '../../assets/icons/busyness-parttime.svg';
 import busynessProjectIcon from '../../assets/icons/busyness-project.svg';
 import infoHintIcon from '../../assets/icons/info-hint.svg';
 import whiteFolder from '../../assets/folders/white_folder.png';
@@ -24,9 +25,24 @@ import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import {
     formatBusynessLabel,
     formatJobSearchStatusLabel,
+    getBusynessIconKind,
+    getBusynessMeta,
+    getJobSearchMeta,
     isLookingForJob,
-    isProjectBusyness,
 } from '../../utils/studentStatus.js';
+
+const BUSYNESS_ICONS = {
+    fulltime: busynessFulltimeIcon,
+    parttime: busynessParttimeIcon,
+    project: busynessProjectIcon,
+};
+
+const BusynessIcon = ({ value }) => {
+    const kind = getBusynessIconKind(value);
+    const src = kind ? BUSYNESS_ICONS[kind] : null;
+    if (!src) return null;
+    return <img src={src} alt="" width={30} height={24} />;
+};
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 import { appPath } from '../../utils/appBase.js';
 import ProfileSectionEditor from './ProfileSectionEditor.jsx';
@@ -198,9 +214,11 @@ const StudentProfileResume = ({
     const jobSearchLabel = formatJobSearchStatusLabel(student.jobSearchStatus);
     const desiredBusynessLabel = formatBusynessLabel(student.desiredBusyness);
     const busynessLabel = formatBusynessLabel(student.busyness);
+    const jobSearchMeta = getJobSearchMeta(student.jobSearchStatus);
+    const desiredMeta = getBusynessMeta(student.desiredBusyness);
+    const busynessMeta = getBusynessMeta(student.busyness);
     const looking = isLookingForJob(student.jobSearchStatus);
-    const projectBusy = isProjectBusyness(student.busyness);
-    const desiredProjectBusy = isProjectBusyness(student.desiredBusyness);
+    const jobSearchTone = jobSearchMeta?.tone || '';
 
     const skillList = Array.isArray(skills) && skills.length
         ? skills
@@ -384,21 +402,36 @@ const StudentProfileResume = ({
                         </div>
                     </header>
 
-                    {false && (jobSearchLabel || desiredBusynessLabel || busynessLabel) ? (
+                    {activeSection === 'status' ? (
+                        renderInlineEditor('status')
+                    ) : (
                         <div className="studentProfileResume__statusBlock">
                             <div className="studentProfileResume__statusRow">
                                 <div className="studentProfileResume__statusHead">
                                     <p className="studentProfileResume__statusLabel">Статус поиска</p>
                                     <MiniEdit
-                                        visible={isOwner && activeSection !== 'status'}
+                                        visible={isOwner}
                                         onClick={() => openSection('status')}
                                         label="Редактировать статус поиска"
                                     />
                                 </div>
-                                <div className={`studentProfileResume__statusValue${looking ? ' is-looking' : ''}`}>
+                                <div
+                                    className={
+                                        'studentProfileResume__statusValue'
+                                        + (jobSearchTone ? ` is-${jobSearchTone}` : '')
+                                    }
+                                >
                                     <span>{jobSearchLabel || 'Не указан'}</span>
-                                    {looking ? <img src={statusLookingIcon} alt="" width={16} height={16} /> : null}
-                                    <img src={infoHintIcon} alt="" width={14} height={14} />
+                                    {looking ? (
+                                        <img src={statusLookingIcon} alt="" width={16} height={16} />
+                                    ) : null}
+                                    <img
+                                        src={infoHintIcon}
+                                        alt=""
+                                        width={14}
+                                        height={14}
+                                        title="Статус поиска: Ищу работу / Рассматриваю предложения / Не ищу работу"
+                                    />
                                 </div>
                             </div>
 
@@ -406,22 +439,21 @@ const StudentProfileResume = ({
                                 <div className="studentProfileResume__statusHead">
                                     <p className="studentProfileResume__statusLabel">Желаемый формат</p>
                                     <MiniEdit
-                                        visible={isOwner && activeSection !== 'status'}
+                                        visible={isOwner}
                                         onClick={() => openSection('status')}
                                         label="Редактировать желаемый формат"
                                     />
                                 </div>
                                 <div className="studentProfileResume__statusValue">
                                     <span>{desiredBusynessLabel || 'Не указан'}</span>
-                                    {desiredBusynessLabel ? (
-                                        <img
-                                            src={desiredProjectBusy ? busynessProjectIcon : busynessFulltimeIcon}
-                                            alt=""
-                                            width={30}
-                                            height={24}
-                                        />
-                                    ) : null}
-                                    <img src={infoHintIcon} alt="" width={14} height={14} />
+                                    <BusynessIcon value={student.desiredBusyness} />
+                                    <img
+                                        src={infoHintIcon}
+                                        alt=""
+                                        width={14}
+                                        height={14}
+                                        title={desiredMeta?.hint || 'Желаемый формат работы'}
+                                    />
                                 </div>
                             </div>
 
@@ -429,26 +461,25 @@ const StudentProfileResume = ({
                                 <div className="studentProfileResume__statusHead">
                                     <p className="studentProfileResume__statusLabel">Имеется занятость</p>
                                     <MiniEdit
-                                        visible={isOwner && activeSection !== 'status'}
+                                        visible={isOwner}
                                         onClick={() => openSection('status')}
                                         label="Редактировать занятость"
                                     />
                                 </div>
                                 <div className="studentProfileResume__statusValue">
                                     <span>{busynessLabel || 'Не указана'}</span>
-                                    {busynessLabel ? (
-                                        <img
-                                            src={projectBusy ? busynessProjectIcon : busynessFulltimeIcon}
-                                            alt=""
-                                            width={30}
-                                            height={24}
-                                        />
-                                    ) : null}
-                                    <img src={infoHintIcon} alt="" width={14} height={14} />
+                                    <BusynessIcon value={student.busyness} />
+                                    <img
+                                        src={infoHintIcon}
+                                        alt=""
+                                        width={14}
+                                        height={14}
+                                        title={busynessMeta?.hint || 'Текущая занятость'}
+                                    />
                                 </div>
                             </div>
                         </div>
-                    ) : null}
+                    )}
 
                     {isOwner ? (
                         <nav className="studentProfileResume__nav" aria-label="Навигация по профилю">

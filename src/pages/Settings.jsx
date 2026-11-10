@@ -56,8 +56,9 @@ const SettingsPage = () => {
         }
     };
 
-    const loadProfile = useCallback(async () => {
-        setLoading(true);
+    const loadProfile = useCallback(async ({ soft = false } = {}) => {
+        // soft — после сохранения секции: не размонтируем весь ЛК (белый экран / долгое «не грузит»)
+        if (!soft) setLoading(true);
         setError('');
         try {
             try {
@@ -130,7 +131,7 @@ const SettingsPage = () => {
             setProfile(null);
             setError(err.message || 'Не удалось загрузить профиль');
         } finally {
-            setLoading(false);
+            if (!soft) setLoading(false);
         }
     }, []);
 
@@ -201,7 +202,7 @@ const SettingsPage = () => {
                                 avatarSrc={avatarUrl}
                                 verified={Boolean(profile.publicProfileConsent)}
                                 onEmployerView={() => navigate(`/profile/${profile.id}`)}
-                                onRefresh={loadProfile}
+                                onRefresh={() => loadProfile({ soft: true })}
                             />
                         </>
                     ) : null}

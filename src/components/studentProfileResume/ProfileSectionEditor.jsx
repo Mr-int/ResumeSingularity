@@ -7,7 +7,7 @@ import {
     deleteExperience,
     deleteInstitution,
     deletePortfolio,
-    filterSkills,
+    getAllSkills,
     getAllSpecialities,
     resolveCompanyId,
     resolveEducationId,
@@ -17,9 +17,24 @@ import {
 } from '../../services/studentApi.js';
 import { packExperienceAdditionalInfo } from '../../utils/experienceWebUrl.js';
 import { buildPortfolioPayload, normalizePortfolioItem } from '../../utils/portfolio.js';
+import {
+    BUSYNESS_OPTIONS,
+    DESIRED_BUSYNESS_OPTIONS,
+    JOB_SEARCH_OPTIONS,
+} from '../../utils/studentStatus.js';
 import calendarIcon from '../../assets/icons/calendar.svg';
 import arrowIcon from '../../assets/icons/arrow_small.svg';
+import statusLookingIcon from '../../assets/icons/status-looking.svg';
+import busynessFulltimeIcon from '../../assets/icons/busyness-fulltime.svg';
+import busynessParttimeIcon from '../../assets/icons/busyness-parttime.svg';
+import busynessProjectIcon from '../../assets/icons/busyness-project.svg';
 import './profileSectionEditor.css';
+
+const BUSYNESS_ICONS = {
+    fulltime: busynessFulltimeIcon,
+    parttime: busynessParttimeIcon,
+    project: busynessProjectIcon,
+};
 
 const InlineField = ({ label, children, className = '' }) => (
     <label className={`sprField${className ? ` ${className}` : ''}`}>
@@ -79,20 +94,52 @@ const InlineFilePicker = ({ label = 'Выбрать файл', accept, fileName,
     );
 };
 
-const JOB_SEARCH_OPTIONS = [
-    { value: 'LOOKING', label: 'Ищу работу' },
-    { value: 'CONSIDERING', label: 'Рассматриваю предложения' },
-    { value: 'NOT_LOOKING', label: 'Не ищу работу' },
-];
-
-const BUSYNESS_OPTIONS = [
-    { value: 'EMPLOYED', label: 'Фулл-тайм' },
-    { value: 'FREELANCE', label: 'Парт-тайм' },
-    { value: 'FREE', label: 'Нет занятости' },
-    { value: 'PROJECT_WORK', label: 'Проектная работа' },
-];
-
-const DESIRED_BUSYNESS_OPTIONS = BUSYNESS_OPTIONS.filter((item) => item.value !== 'FREE');
+const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false, emptyLabel = 'Не указан' }) => (
+    <div className="sprStatusChoices">
+        <span className="sprStatusChoices__label">{label}</span>
+        <div className="sprStatusChoices__list" role="radiogroup" aria-label={label}>
+            {allowEmpty ? (
+                <button
+                    type="button"
+                    role="radio"
+                    aria-checked={!value}
+                    className={`sprStatusChoice${!value ? ' is-active' : ''}`}
+                    onClick={() => onChange('')}
+                >
+                    <span>{emptyLabel}</span>
+                </button>
+            ) : null}
+            {options.map((item) => {
+                const active = String(value) === String(item.value);
+                const iconSrc = item.icon ? BUSYNESS_ICONS[item.icon] : null;
+                const showLooking = item.tone === 'looking';
+                return (
+                    <button
+                        key={item.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        title={item.hint || item.label}
+                        className={
+                            'sprStatusChoice'
+                            + (active ? ' is-active' : '')
+                            + (item.tone ? ` sprStatusChoice--${item.tone}` : '')
+                        }
+                        onClick={() => onChange(item.value)}
+                    >
+                        <span>{item.label}</span>
+                        {showLooking ? (
+                            <img src={statusLookingIcon} alt="" width={16} height={16} />
+                        ) : null}
+                        {iconSrc ? (
+                            <img src={iconSrc} alt="" width={30} height={24} />
+                        ) : null}
+                    </button>
+                );
+            })}
+        </div>
+    </div>
+);
 
 const SECTION_TITLES = {
     avatar: 'Фото',
@@ -124,6 +171,8 @@ const ProfileSectionEditor = ({
     const [error, setError] = useState('');
     const [specialities, setSpecialities] = useState([]);
     const [skillsCatalog, setSkillsCatalog] = useState([]);
+    const [skillsLoading, setSkillsLoading] = useState(false);
+    const [skillsQuery, setSkillsQuery] = useState('');
 
     const [firstName, setFirstName] = useState(student.firstName || '');
     const [lastName, setLastName] = useState(student.lastName || '');
@@ -183,11 +232,14 @@ const ProfileSectionEditor = ({
                 if (!cancelled) setSpecialities(Array.isArray(list) ? list : []);
             }
             if (section === 'skills') {
+                if (!cancelled) setSkillsLoading(true);
                 try {
-                    const page = await filterSkills({}, { page: 0, size: 300 });
-                    if (!cancelled) setSkillsCatalog(Array.isArray(page?.data) ? page.data : []);
+                    const list = await getAllSkills();
+                    if (!cancelled) setSkillsCatalog(Array.isArray(list) ? list : []);
                 } catch {
                     if (!cancelled) setSkillsCatalog([]);
+                } finally {
+                    if (!cancelled) setSkillsLoading(false);
                 }
             }
         };
@@ -205,8 +257,18 @@ const ProfileSectionEditor = ({
             if (skill?.id == null) return;
             map.set(String(skill.id), skill);
         });
-        return [...map.values()];
+        return [...map.values()].sort((a, b) =>
+            String(a.name || '').localeCompare(String(b.name || ''), 'ru'),
+        );
     }, [skills, skillsCatalog]);
+
+    const filteredSkillOptions = useMemo(() => {
+        const q = skillsQuery.trim().toLowerCase();
+        if (!q) return skillOptions;
+        return skillOptions.filter((skill) =>
+            String(skill.name || '').toLowerCase().includes(q),
+        );
+    }, [skillOptions, skillsQuery]);
 
     const toggleSkill = (id) => {
         const key = String(id);
@@ -258,8 +320,12 @@ const ProfileSectionEditor = ({
             }
 
             if (section === 'skills') {
+                const ids = selectedSkillIds
+                    .map((id) => Number(id))
+                    .filter((id) => Number.isFinite(id) && id > 0);
                 await patchStudentMe({
-                    skillsIds: selectedSkillIds.map((id) => Number(id)).filter((id) => id > 0),
+                    skillsIds: ids,
+                    skillIds: ids,
                 });
             }
 
@@ -470,39 +536,33 @@ const ProfileSectionEditor = ({
             ) : null}
 
             {section === 'status' ? (
-                <>
-                    <label className="profileSectionEditor__field">
-                        <span>Статус поиска</span>
-                        <select value={jobSearchStatus || ''} onChange={(e) => setJobSearchStatus(e.target.value)}>
-                            <option value="">Не указан</option>
-                            {JOB_SEARCH_OPTIONS.map((item) => (
-                                <option key={item.value} value={item.value}>{item.label}</option>
-                            ))}
-                        </select>
-                    </label>
-                    <label className="profileSectionEditor__field">
-                        <span>Желаемый формат</span>
-                        <select value={desiredBusyness || ''} onChange={(e) => setDesiredBusyness(e.target.value)}>
-                            <option value="">Не указан</option>
-                            {DESIRED_BUSYNESS_OPTIONS.map((item) => (
-                                <option key={item.value} value={item.value}>{item.label}</option>
-                            ))}
-                        </select>
-                    </label>
-                    <label className="profileSectionEditor__field">
-                        <span>Имеется занятость</span>
-                        <select value={busyness || ''} onChange={(e) => setBusyness(e.target.value)}>
-                            {BUSYNESS_OPTIONS.map((item) => (
-                                <option key={item.value} value={item.value}>{item.label}</option>
-                            ))}
-                        </select>
-                    </label>
-                </>
+                <div className="sprEditSheet__stack">
+                    <StatusChoiceGroup
+                        label="Статус поиска"
+                        options={JOB_SEARCH_OPTIONS}
+                        value={jobSearchStatus || ''}
+                        onChange={setJobSearchStatus}
+                        allowEmpty
+                    />
+                    <StatusChoiceGroup
+                        label="Желаемый формат"
+                        options={DESIRED_BUSYNESS_OPTIONS}
+                        value={desiredBusyness || ''}
+                        onChange={setDesiredBusyness}
+                        allowEmpty
+                    />
+                    <StatusChoiceGroup
+                        label="Имеется занятость"
+                        options={BUSYNESS_OPTIONS}
+                        value={busyness || ''}
+                        onChange={setBusyness}
+                    />
+                </div>
             ) : null}
 
             {section === 'skills' ? (
                 <div className="profileSectionEditor__skills">
-                    {skillOptions.map((skill) => {
+                    {(filteredSkillOptions.length ? filteredSkillOptions : skillOptions).map((skill) => {
                         const id = String(skill.id);
                         const active = selectedSkillIds.includes(id);
                         return (
@@ -591,22 +651,69 @@ const ProfileSectionEditor = ({
                 </div>
             ) : null}
 
+            {section === 'status' ? (
+                <div className="sprEditSheet__stack">
+                    <StatusChoiceGroup
+                        label="Статус поиска"
+                        options={JOB_SEARCH_OPTIONS}
+                        value={jobSearchStatus || ''}
+                        onChange={setJobSearchStatus}
+                        allowEmpty
+                    />
+                    <StatusChoiceGroup
+                        label="Желаемый формат"
+                        options={DESIRED_BUSYNESS_OPTIONS}
+                        value={desiredBusyness || ''}
+                        onChange={setDesiredBusyness}
+                        allowEmpty
+                    />
+                    <StatusChoiceGroup
+                        label="Имеется занятость"
+                        options={BUSYNESS_OPTIONS}
+                        value={busyness || ''}
+                        onChange={setBusyness}
+                    />
+                </div>
+            ) : null}
+
             {section === 'skills' ? (
-                <div className="sprEditSheet__skills">
-                    {skillOptions.map((skill) => {
-                        const id = String(skill.id);
-                        const active = selectedSkillIds.includes(id);
-                        return (
-                            <button
-                                key={id}
-                                type="button"
-                                className={`sprSkillChip${active ? ' is-active' : ''}`}
-                                onClick={() => toggleSkill(id)}
-                            >
-                                {skill.name}
-                            </button>
-                        );
-                    })}
+                <div className="sprEditSheet__stack">
+                    <InlineField label="Поиск">
+                        <input
+                            type="search"
+                            value={skillsQuery}
+                            placeholder="Найти навык"
+                            autoComplete="off"
+                            onChange={(e) => setSkillsQuery(e.target.value)}
+                        />
+                    </InlineField>
+                    {skillsLoading ? (
+                        <p className="sprEditSheet__hint">Загрузка каталога навыков…</p>
+                    ) : null}
+                    {!skillsLoading && skillOptions.length <= (Array.isArray(skills) ? skills.length : 0) ? (
+                        <p className="sprEditSheet__hint">
+                            Каталог навыков пуст или не загрузился — доступны только уже выбранные.
+                        </p>
+                    ) : null}
+                    <div className="sprEditSheet__skills">
+                        {filteredSkillOptions.map((skill) => {
+                            const id = String(skill.id);
+                            const active = selectedSkillIds.includes(id);
+                            return (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    className={`sprSkillChip${active ? ' is-active' : ''}`}
+                                    onClick={() => toggleSkill(id)}
+                                >
+                                    {skill.name}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    {!skillsLoading && filteredSkillOptions.length === 0 ? (
+                        <p className="sprEditSheet__hint">Ничего не найдено</p>
+                    ) : null}
                 </div>
             ) : null}
 
