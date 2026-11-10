@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './studentProfileResume.css';
 import editIcon from '../../assets/icons/edit.svg';
+import editFilledIcon from '../../assets/icons/edit-filled.svg';
 import folderIcon from '../../assets/icons/folder.svg';
 import expIcon from '../../assets/icons/exp.svg';
 import educationIcon from '../../assets/icons/education.svg';
 import shareIcon from '../../assets/icons/share-filled.svg';
 import statusLookingIcon from '../../assets/icons/status-looking.svg';
+import statusConsideringIcon from '../../assets/icons/status-considering.svg';
+import statusNotLookingIcon from '../../assets/icons/status-not-looking.svg';
 import busynessFulltimeIcon from '../../assets/icons/busyness-fulltime.svg';
+import busynessParttimeIcon from '../../assets/icons/busyness-parttime.svg';
 import busynessProjectIcon from '../../assets/icons/busyness-project.svg';
 import infoHintIcon from '../../assets/icons/info-hint.svg';
 import whiteFolder from '../../assets/folders/white_folder.png';
@@ -22,9 +27,45 @@ import { getSpecialtyIcon } from '../../utils/specialtyIcon.js';
 import {
     formatBusynessLabel,
     formatJobSearchStatusLabel,
-    isLookingForJob,
-    isProjectBusyness,
+    getBusynessIconKind,
+    getBusynessMeta,
+    getJobSearchIconKind,
+    getJobSearchMeta,
 } from '../../utils/studentStatus.js';
+
+const BUSYNESS_ICONS = {
+    fulltime: busynessFulltimeIcon,
+    parttime: busynessParttimeIcon,
+    project: busynessProjectIcon,
+};
+
+const JOB_SEARCH_ICONS = {
+    looking: statusLookingIcon,
+    considering: statusConsideringIcon,
+    notLooking: statusNotLookingIcon,
+};
+
+const BusynessIcon = ({ value }) => {
+    const kind = getBusynessIconKind(value);
+    const src = kind ? BUSYNESS_ICONS[kind] : null;
+    if (!src) return null;
+    return (
+        <span className="studentProfileResume__statusTypeIcon studentProfileResume__statusTypeIcon--busyness" aria-hidden="true">
+            <img src={src} alt="" />
+        </span>
+    );
+};
+
+const JobSearchIcon = ({ value }) => {
+    const kind = getJobSearchIconKind(value);
+    const src = kind ? JOB_SEARCH_ICONS[kind] : null;
+    if (!src) return null;
+    return (
+        <span className="studentProfileResume__statusTypeIcon studentProfileResume__statusTypeIcon--search" aria-hidden="true">
+            <img src={src} alt="" />
+        </span>
+    );
+};
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 import { appPath } from '../../utils/appBase.js';
 import ProfileSectionEditor from './ProfileSectionEditor.jsx';
@@ -60,13 +101,13 @@ const courseTone = (course) => {
     }
 };
 
-const IconEdit = ({ className = 'studentProfileResume__btnIcon' }) => (
+const IconEdit = ({ className = 'studentProfileResume__btnIcon', filled = false }) => (
     <img
-        src={editIcon}
+        src={filled ? editFilledIcon : editIcon}
         alt=""
         className={className}
-        width={14}
-        height={14}
+        width={filled ? 24 : 14}
+        height={filled ? 24 : 14}
         aria-hidden="true"
     />
 );
@@ -82,6 +123,26 @@ const MiniEdit = ({ visible, onClick, label }) => {
         >
             <IconEdit className="studentProfileResume__miniEditIcon" />
         </button>
+    );
+};
+
+/** Info из Figma + совет Frame 886 (10287:13339), стрелка Vector 108 сверху. */
+const StatusInfoTip = ({ text }) => {
+    if (!text) return null;
+    return (
+        <span className="studentProfileResume__statusInfo">
+            <button
+                type="button"
+                className="studentProfileResume__statusInfoBtn"
+                aria-label="Подробнее"
+            >
+                <img src={infoHintIcon} alt="" width={14} height={14} aria-hidden="true" />
+            </button>
+            <span className="studentProfileResume__statusTooltip" role="tooltip">
+                <span className="studentProfileResume__statusTooltipArrow" aria-hidden="true" />
+                <span className="studentProfileResume__statusTooltipBody">{text}</span>
+            </span>
+        </span>
     );
 };
 
@@ -139,25 +200,20 @@ const StudentProfileResume = ({
     onEmployerView,
     onRefresh,
 }) => {
+    const navigate = useNavigate();
     const isOwner = variant === 'owner';
     const [linkCopied, setLinkCopied] = useState(false);
     const [skillsExpanded, setSkillsExpanded] = useState(false);
     const [expandedExperienceIds, setExpandedExperienceIds] = useState(() => new Set());
-    const [editMode, setEditMode] = useState(false);
     const [activeSection, setActiveSection] = useState(null);
 
     const openSection = (section) => {
-        if (!editMode) return;
+        if (!isOwner) return;
         setActiveSection((prev) => (prev === section ? null : section));
     };
 
-    const handleToggleEditMode = () => {
-        if (editMode) {
-            setEditMode(false);
-            setActiveSection(null);
-            return;
-        }
-        setEditMode(true);
+    const goToResumeCreator = () => {
+        navigate('/resume/create');
     };
 
     const closeSectionEditor = () => setActiveSection(null);
@@ -201,9 +257,10 @@ const StudentProfileResume = ({
     const jobSearchLabel = formatJobSearchStatusLabel(student.jobSearchStatus);
     const desiredBusynessLabel = formatBusynessLabel(student.desiredBusyness);
     const busynessLabel = formatBusynessLabel(student.busyness);
-    const looking = isLookingForJob(student.jobSearchStatus);
-    const projectBusy = isProjectBusyness(student.busyness);
-    const desiredProjectBusy = isProjectBusyness(student.desiredBusyness);
+    const jobSearchMeta = getJobSearchMeta(student.jobSearchStatus);
+    const desiredMeta = getBusynessMeta(student.desiredBusyness);
+    const busynessMeta = getBusynessMeta(student.busyness);
+    const jobSearchTone = jobSearchMeta?.tone || '';
 
     const skillList = Array.isArray(skills) && skills.length
         ? skills
@@ -309,7 +366,7 @@ const StudentProfileResume = ({
     );
 
     return (
-        <div className={`studentProfileResume${editMode ? ' is-editing' : ''}`}>
+        <div className={`studentProfileResume${isOwner ? ' is-editing' : ''}`}>
             <div className="studentProfileResume__layout">
                 <aside className="studentProfileResume__sidebar">
                     <header className="studentProfileResume__profileCard">
@@ -348,7 +405,7 @@ const StudentProfileResume = ({
                                 ) : null}
                             </div>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'avatar'}
+                                visible={isOwner && activeSection !== 'avatar'}
                                 onClick={() => openSection('avatar')}
                                 label="Редактировать фото"
                             />
@@ -364,7 +421,7 @@ const StudentProfileResume = ({
                                         <span>{lastName || 'Фамилия'}</span>
                                     </h1>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && activeSection !== 'name'}
                                         onClick={() => openSection('name')}
                                         label="Редактировать имя"
                                     />
@@ -378,7 +435,7 @@ const StudentProfileResume = ({
                                 <>
                                     <p className="studentProfileResume__specialty">{specialty}</p>
                                     <MiniEdit
-                                        visible={isOwner && editMode}
+                                        visible={isOwner && activeSection !== 'specialty'}
                                         onClick={() => openSection('specialty')}
                                         label="Редактировать специальность"
                                     />
@@ -387,81 +444,58 @@ const StudentProfileResume = ({
                         </div>
                     </header>
 
-                    {false && (editMode || jobSearchLabel || desiredBusynessLabel || busynessLabel) ? (
+                    {activeSection === 'status' ? (
+                        renderInlineEditor('status')
+                    ) : (
                         <div className="studentProfileResume__statusBlock">
+                            <MiniEdit
+                                visible={isOwner}
+                                onClick={() => openSection('status')}
+                                label="Редактировать статус и занятость"
+                            />
                             <div className="studentProfileResume__statusRow">
-                                <div className="studentProfileResume__statusHead">
-                                    <p className="studentProfileResume__statusLabel">Статус поиска</p>
-                                    <MiniEdit
-                                        visible={isOwner && editMode}
-                                        onClick={() => openSection('status')}
-                                        label="Редактировать статус поиска"
-                                    />
-                                </div>
-                                <div className={`studentProfileResume__statusValue${looking ? ' is-looking' : ''}`}>
+                                <p className="studentProfileResume__statusLabel">Статус поиска</p>
+                                <div
+                                    className={
+                                        'studentProfileResume__statusValue'
+                                        + (jobSearchTone ? ` is-${jobSearchTone}` : '')
+                                    }
+                                >
                                     <span>{jobSearchLabel || 'Не указан'}</span>
-                                    {looking ? <img src={statusLookingIcon} alt="" width={16} height={16} /> : null}
-                                    <img src={infoHintIcon} alt="" width={14} height={14} />
+                                    <JobSearchIcon value={student.jobSearchStatus} />
+                                    <StatusInfoTip text={jobSearchMeta?.hint} />
                                 </div>
                             </div>
 
                             <div className="studentProfileResume__statusRow">
-                                <div className="studentProfileResume__statusHead">
-                                    <p className="studentProfileResume__statusLabel">Желаемый формат</p>
-                                    <MiniEdit
-                                        visible={isOwner && editMode}
-                                        onClick={() => openSection('status')}
-                                        label="Редактировать желаемый формат"
-                                    />
-                                </div>
+                                <p className="studentProfileResume__statusLabel">Желаемый формат</p>
                                 <div className="studentProfileResume__statusValue">
                                     <span>{desiredBusynessLabel || 'Не указан'}</span>
-                                    {desiredBusynessLabel ? (
-                                        <img
-                                            src={desiredProjectBusy ? busynessProjectIcon : busynessFulltimeIcon}
-                                            alt=""
-                                            width={30}
-                                            height={24}
-                                        />
-                                    ) : null}
-                                    <img src={infoHintIcon} alt="" width={14} height={14} />
+                                    <BusynessIcon value={student.desiredBusyness} />
+                                    <StatusInfoTip text={desiredMeta?.hint} />
                                 </div>
                             </div>
 
                             <div className="studentProfileResume__statusRow">
-                                <div className="studentProfileResume__statusHead">
-                                    <p className="studentProfileResume__statusLabel">Имеется занятость</p>
-                                    <MiniEdit
-                                        visible={isOwner && editMode}
-                                        onClick={() => openSection('status')}
-                                        label="Редактировать занятость"
-                                    />
-                                </div>
+                                <p className="studentProfileResume__statusLabel">Имеется занятость</p>
                                 <div className="studentProfileResume__statusValue">
                                     <span>{busynessLabel || 'Не указана'}</span>
-                                    {busynessLabel ? (
-                                        <img
-                                            src={projectBusy ? busynessProjectIcon : busynessFulltimeIcon}
-                                            alt=""
-                                            width={30}
-                                            height={24}
-                                        />
-                                    ) : null}
-                                    <img src={infoHintIcon} alt="" width={14} height={14} />
+                                    <BusynessIcon value={student.busyness} />
+                                    <StatusInfoTip text={busynessMeta?.hint} />
                                 </div>
                             </div>
                         </div>
-                    ) : null}
+                    )}
 
                     {isOwner ? (
                         <nav className="studentProfileResume__nav" aria-label="Навигация по профилю">
                             <button
                                 type="button"
-                                className={`studentProfileResume__btn${editMode ? ' studentProfileResume__btn--primary' : ' studentProfileResume__btn--edit'}`}
-                                onClick={handleToggleEditMode}
+                                className="studentProfileResume__btn studentProfileResume__btn--edit"
+                                onClick={goToResumeCreator}
                             >
-                                {editMode ? 'Готово' : 'Редактировать'}
-                                {!editMode ? <IconEdit /> : null}
+                                Редактировать
+                                <IconEdit filled className="studentProfileResume__btnIcon studentProfileResume__btnIcon--edit" />
                             </button>
                             {resumeUrl ? (
                                 <button
@@ -487,7 +521,7 @@ const StudentProfileResume = ({
                             <div className="studentProfileResume__sectionHead">
                                 <h2 id="spr-about-title" className="studentProfileResume__sectionTitle">Обо мне</h2>
                                 <MiniEdit
-                                    visible={isOwner && editMode && activeSection !== 'bio'}
+                                    visible={isOwner && activeSection !== 'bio'}
                                     onClick={() => openSection('bio')}
                                     label="Редактировать описание"
                                 />
@@ -517,7 +551,7 @@ const StudentProfileResume = ({
                                         Инфо
                                     </h3>
                                     <MiniEdit
-                                        visible={isOwner && editMode && activeSection !== 'info'}
+                                        visible={isOwner && activeSection !== 'info'}
                                         onClick={() => openSection('info')}
                                         label="Редактировать инфо"
                                     />
@@ -550,7 +584,7 @@ const StudentProfileResume = ({
                                         Навыки
                                     </h3>
                                     <MiniEdit
-                                        visible={isOwner && editMode && activeSection !== 'skills'}
+                                        visible={isOwner && activeSection !== 'skills'}
                                         onClick={() => openSection('skills')}
                                         label="Редактировать навыки"
                                     />
@@ -601,7 +635,7 @@ const StudentProfileResume = ({
                                 Портфолио
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'portfolio'}
+                                visible={isOwner && activeSection !== 'portfolio'}
                                 onClick={() => openSection('portfolio')}
                                 label="Редактировать портфолио"
                             />
@@ -670,7 +704,7 @@ const StudentProfileResume = ({
                                 Опыт работы
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'experience'}
+                                visible={isOwner && activeSection !== 'experience'}
                                 onClick={() => openSection('experience')}
                                 label="Редактировать опыт"
                             />
@@ -754,7 +788,7 @@ const StudentProfileResume = ({
                                 Образование
                             </h2>
                             <MiniEdit
-                                visible={isOwner && editMode && activeSection !== 'education'}
+                                visible={isOwner && activeSection !== 'education'}
                                 onClick={() => openSection('education')}
                                 label="Редактировать образование"
                             />
@@ -799,10 +833,10 @@ const StudentProfileResume = ({
                             <button
                                 type="button"
                                 className="studentProfileResume__btn studentProfileResume__btn--primary"
-                                onClick={handleToggleEditMode}
+                                onClick={goToResumeCreator}
                             >
-                                {editMode ? 'Готово' : 'Редактировать'}
-                                {!editMode ? <IconEdit /> : null}
+                                Редактировать
+                                <IconEdit filled className="studentProfileResume__btnIcon studentProfileResume__btnIcon--edit" />
                             </button>
                         </footer>
                     ) : null}

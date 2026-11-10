@@ -8,18 +8,21 @@ import Avatar from './Avatar/Avatar.jsx';
 import chatsIco from '../../../assets/icons/chatsIco.svg';
 import { getImageUrl } from '../../../config/api.js';
 import { getRecruiterMe, getStudentMe } from '../../../services/getApi.js';
-import { isAuthenticated, logoutServer } from '../../../services/authApi.js';
+import { getStoredRole, isAuthenticated, logoutServer } from '../../../services/authApi.js';
 import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js';
 
 const NAV_DEFS = [
     { id: 'career', label: 'Центр карьеры', path: '/' },
     { id: 'projects', label: 'Проекты', path: '/#projects' },
-    { id: 'resume', label: 'Резюме', path: '/resume/create' },
+    { id: 'resume', label: 'Резюме', path: '/profile' },
     { id: 'vacancies', label: 'Вакансии', path: null },
 ];
 
 const navIdFromLocation = (pathname, hash) => {
-    if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return 'resume';
+    // ЛК студента (/profile) и просмотр резюме (/profile/:id) — активен «Резюме»
+    if (pathname === '/profile' || /^\/profile\/[^/]+/.test(pathname)) return 'resume';
+    // Создание / редактирование — ни один пункт не активен
+    if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return null;
     if (pathname === '/' && hash === '#projects') return 'projects';
     if (pathname === '/') return 'career';
     return null;
@@ -38,7 +41,6 @@ const Header = ({
     const navigate = useNavigate();
     const location = useLocation();
     const routeActiveId = navIdFromLocation(location.pathname, location.hash);
-    const [activeNavId, setActiveNavId] = useState(activeNavIdProp || routeActiveId || 'career');
     const [loadedAvatarSrc, setLoadedAvatarSrc] = useState(null);
     const [avatarExpanded, setAvatarExpanded] = useState(false);
     const [profileUser, setProfileUser] = useState({
@@ -47,7 +49,8 @@ const Header = ({
         roleLabel: '',
     });
 
-    const currentActive = activeNavIdProp ?? routeActiveId ?? activeNavId;
+    // Активный пункт только из роута (или явного пропа). Без локального «залипания».
+    const currentActive = activeNavIdProp !== undefined ? activeNavIdProp : routeActiveId;
     const displayAvatarSrc = avatarSrc || loadedAvatarSrc;
 
     useEffect(() => {
@@ -60,9 +63,10 @@ const Header = ({
 
         let cancelled = false;
         const loadAvatar = async () => {
-            try {
+            const role = getStoredRole();
+            const tryStudent = async () => {
                 const me = await getStudentMe();
-                if (cancelled) return;
+                if (cancelled) return true;
                 setProfileUser({
                     firstName: me.firstName || '',
                     lastName: me.lastName || '',
@@ -73,13 +77,11 @@ const Header = ({
                 } else if (!avatarSrc) {
                     setLoadedAvatarSrc(null);
                 }
-                return;
-            } catch {
-                /* не студент — пробуем рекрутера */
-            }
-            try {
+                return true;
+            };
+            const tryRecruiter = async () => {
                 const me = await getRecruiterMe();
-                if (cancelled) return;
+                if (cancelled) return true;
                 setProfileUser({
                     firstName: me.firstName || '',
                     lastName: me.lastName || '',
@@ -88,6 +90,42 @@ const Header = ({
                 if (!avatarSrc) {
                     const path = me?.imagePath || me?.image || me?.photo || me?.avatar;
                     setLoadedAvatarSrc(path ? getImageUrl(path) : null);
+                }
+                return true;
+            };
+
+            try {
+                // Сначала свой /me по роли — меньше «чужих» 401, которые раньше выбивали сессию
+                if (role === 'RECRUITER') {
+                    try {
+                        await tryRecruiter();
+                        return;
+                    } catch {
+                        /* fallback ниже */
+                    }
+                    try {
+                        await tryStudent();
+                        return;
+                    } catch {
+                        /* empty */
+                    }
+                } else {
+                    try {
+                        await tryStudent();
+                        return;
+                    } catch {
+                        /* fallback ниже */
+                    }
+                    try {
+                        await tryRecruiter();
+                        return;
+                    } catch {
+                        /* empty */
+                    }
+                }
+                if (!cancelled) {
+                    setLoadedAvatarSrc(null);
+                    setProfileUser({ firstName: '', lastName: '', roleLabel: '' });
                 }
             } catch {
                 if (!cancelled) {
@@ -143,7 +181,7 @@ const Header = ({
             return;
         }
         if (item.id === 'resume') {
-            goAuthed('/resume/create');
+            goAuthed('/profile');
         }
     };
 
@@ -151,9 +189,6 @@ const Header = ({
         if (item.disabled) {
             event.preventDefault();
             return;
-        }
-        if (activeNavIdProp == null) {
-            setActiveNavId(item.id);
         }
         onNavChange?.(item.id);
         if (item.onClick) {

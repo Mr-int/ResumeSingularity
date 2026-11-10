@@ -594,7 +594,8 @@ const postRefresh = async (path) => {
 
 /**
  * Выбор refresh по роли:
- * 1) GET /auth/me → ADMIN: только auth/admin/refresh, иначе auth/refresh
+ * 1) GET /auth/me OK → сессия уже жива (другой запрос мог обновить cookie) —
+ *    НЕ крутим refresh повторно (ротация refresh-токена иначе валит параллельные запросы).
  * 2) me=401 → auth/refresh, при 403 → auth/admin/refresh
  * Параллельные вызовы ждут один in-flight refresh.
  */
@@ -622,14 +623,26 @@ const refreshSessionInternal = async () => {
         }
         const role = extractRoleFromMe(me);
         if (role) setStoredRole(role);
-
-        if (isAdminRole(role)) {
-            return postRefresh('auth/admin/refresh');
-        }
-        return postRefresh('auth/refresh');
+        localStorage.setItem(AUTH_FLAG_KEY, 'true');
+        localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+        // Access уже валиден — повторный refresh только ломает сессию при гонках.
+        return me;
     }
 
     if (meResponse.status === 401) {
+        const storedRole = normalizeRole(localStorage.getItem(AUTH_ROLE_KEY));
+        if (isAdminRole(storedRole)) {
+            try {
+                return await postRefresh('auth/admin/refresh');
+            } catch (adminErr) {
+                // fallback на обычный refresh, если роль в storage устарела
+                try {
+                    return await postRefresh('auth/refresh');
+                } catch {
+                    throw adminErr;
+                }
+            }
+        }
         try {
             return await postRefresh('auth/refresh');
         } catch (err) {

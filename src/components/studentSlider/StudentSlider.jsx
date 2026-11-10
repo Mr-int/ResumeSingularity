@@ -4,7 +4,7 @@ import filterIcon from "../../assets/icons/filterIcon.svg";
 import sliderArrowIcon from "../../assets/icons/sliderArrowIcon.svg";
 import StudentSliderCard from "./studentSliderCard/StudentSliderCard.jsx";
 import StudentsListCard from "../studentsList/StudentsListCard/StudentsListCard.jsx";
-import { getAllStudents, getPublicHomeVitrina } from "../../services/studentApi.js";
+import { getAllStudents } from "../../services/studentApi.js";
 import { isAuthenticated } from "../../services/authApi.js";
 import { hasStudentProfilePhoto } from "../../utils/hasStudentProfilePhoto.js";
 import GradientButton from "../common/gradientButton/GradientButton.jsx";
@@ -16,7 +16,6 @@ const isCatalogApprovedStudent = (student) => {
     if (status != null && String(status).toUpperCase() !== 'APPROVED') {
         return false;
     }
-    // Если бэкенд явно отдал скрытую карточку — не показываем
     if (student.catalogVisible === false) return false;
     return true;
 };
@@ -38,29 +37,15 @@ const StudentSlider = () => {
         const fetchStudents = async () => {
             try {
                 setLoading(true);
+                // public/vitrina/home на бэке сейчас отдаёт 500 — не дергаем.
+                // Для гостей слайдер пустой; для авторизованных — cardsFilter.
                 let list = [];
-
-                try {
-                    const vitrina = await getPublicHomeVitrina();
-                    list = Array.isArray(vitrina.students) ? vitrina.students : [];
-                } catch (vitrinaErr) {
-                    console.warn('[StudentSlider] vitrina failed', vitrinaErr);
-                }
-
-                // cardsFilter только для вошедших: без сессии даёт 401 и шумел в консоли.
-                // Гостям достаточно public/vitrina/home (бэкенд уже режет неодобренных).
-                if (list.length === 0 && isAuthenticated()) {
-                    try {
-                        list = await getAllStudents();
-                    } catch (catalogErr) {
-                        console.warn('[StudentSlider] cardsFilter fallback failed', catalogErr);
-                        list = [];
-                    }
+                if (isAuthenticated()) {
+                    list = await getAllStudents();
                 }
 
                 const approved = list.filter(isCatalogApprovedStudent);
                 const withPhoto = approved.filter(hasStudentProfilePhoto);
-                // Не обнуляем витрину, если у карточек нет imagePath в DTO
                 const visible = withPhoto.length > 0 ? withPhoto : approved;
                 setStudents(visible);
                 if (visible.length > 0) {

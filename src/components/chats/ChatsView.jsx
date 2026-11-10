@@ -13,8 +13,9 @@ import {
 } from '../../services/chatApi.js';
 import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
-import { AUTH_USERNAME_KEY } from '../../services/authApi.js';
+import { AUTH_USERNAME_KEY, getStoredRole } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
+import { ANALYTICS_EVENT, trackAnalyticsEvent } from '../../services/analyticsApi.js';
 
 const formatTime = (iso) => {
     if (!iso) return '';
@@ -66,17 +67,22 @@ const avatarTone = (index) => `chatsView__avatar--tone${index % 3}`;
 const isMessageDeleted = (m) => Boolean(m.deletedAt || m.deletedByAdmin);
 
 async function resolveMe() {
-    try {
-        const profile = await getStudentMe();
-        return { role: 'student', profile };
-    } catch {
-        /* empty */
-    }
-    try {
-        const profile = await getRecruiterMe();
-        return { role: 'recruiter', profile };
-    } catch {
-        /* empty */
+    const preferRecruiter = getStoredRole() === 'RECRUITER';
+    const order = preferRecruiter
+        ? ['recruiter', 'student']
+        : ['student', 'recruiter'];
+
+    for (const role of order) {
+        try {
+            if (role === 'student') {
+                const profile = await getStudentMe();
+                return { role: 'student', profile };
+            }
+            const profile = await getRecruiterMe();
+            return { role: 'recruiter', profile };
+        } catch {
+            /* try next */
+        }
     }
     return null;
 }
@@ -349,6 +355,7 @@ const ChatsView = () => {
             if (message?.id) mergeMessage(message);
             else await loadMessages(selectedId);
             updateChatPreview(selectedId, text, created?.createdAt);
+            trackAnalyticsEvent(ANALYTICS_EVENT.CHAT_MESSAGE_SENT);
         } catch (err) {
             setSendError(err.message || 'Не отправилось');
         } finally {
@@ -370,6 +377,7 @@ const ChatsView = () => {
             else await loadMessages(selectedId);
             const preview = (message?.body || created?.body) || file.name || 'Вложение';
             updateChatPreview(selectedId, preview, created?.createdAt);
+            trackAnalyticsEvent(ANALYTICS_EVENT.CHAT_MESSAGE_SENT);
         } catch (err) {
             setSendError(err.message || 'Не удалось отправить файл');
         } finally {

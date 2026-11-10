@@ -12,6 +12,9 @@ const withPageQuery = (endpoint, pageable = { page: 0, size: 100 }) => {
 const pageItems = (resp) => {
     if (Array.isArray(resp?.data)) return resp.data;
     if (Array.isArray(resp?.content)) return resp.content;
+    if (Array.isArray(resp?.skills)) return resp.skills;
+    if (Array.isArray(resp?.items)) return resp.items;
+    if (Array.isArray(resp?.results)) return resp.results;
     if (Array.isArray(resp)) return resp;
     return [];
 };
@@ -599,9 +602,6 @@ export const filterStudents = async (filterReq = {}) => {
 /**
  * POST /student/cardsFilter
  * Ответ: PageResponseStudentCardDTO { data, page, size, totalElements, totalPages }
- *
- * Важно: студент без APPROVED получает только свою карточку.
- * Для каталога неодобренных — POST /public/students/cards.
  */
 export const filterStudentCardsPage = async (
     filterReq = {},
@@ -742,9 +742,41 @@ export const deletePortfolio = (id) =>
 export const filterSkills = async (filterReq = {}, pageable = { page: 0, size: 200 }) => {
     const resp = await apiClientJson(withPageQuery('skill/filter', pageable), {
         method: 'POST',
-        body: JSON.stringify(filterReq),
+        body: JSON.stringify(filterReq ?? {}),
     });
     return toPageResponse(resp, pageable);
+};
+
+/** Весь справочник навыков (несколько страниц при необходимости). */
+export const getAllSkills = async () => {
+    const pageSize = 200;
+    const maxPages = 20;
+    const byId = new Map();
+
+    try {
+        const first = await filterSkills({}, { page: 0, size: pageSize });
+        (Array.isArray(first?.data) ? first.data : []).forEach((skill) => {
+            if (skill?.id == null) return;
+            byId.set(String(skill.id), skill);
+        });
+
+        const totalPages = Math.min(
+            typeof first?.totalPages === 'number' && first.totalPages > 0 ? first.totalPages : 1,
+            maxPages,
+        );
+
+        for (let page = 1; page < totalPages; page += 1) {
+            const next = await filterSkills({}, { page, size: pageSize });
+            (Array.isArray(next?.data) ? next.data : []).forEach((skill) => {
+                if (skill?.id == null) return;
+                byId.set(String(skill.id), skill);
+            });
+        }
+    } catch {
+        /* пустой каталог — UI покажет выбранные */
+    }
+
+    return [...byId.values()];
 };
 
 export const createCompany = (body) =>

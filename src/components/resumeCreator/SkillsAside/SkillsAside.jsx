@@ -41,7 +41,7 @@ const SkillsAside = ({
     skills = [],
     selectedSkills = [],
     memoItems = [],
-    onToggle,
+    onRemove,
 }) => {
     const [openId, setOpenId] = useState(null);
 
@@ -61,7 +61,7 @@ const SkillsAside = ({
                     <h2 className="skillsAside__blockTitle">Выбранные навыки</h2>
                 </div>
 
-                <div className="skillsAside__selectedGrid">
+                <div className="skillsAside__selectedGrid" data-skills-selected-grid="true">
                     {selectedList.length === 0 ? (
                         <div className="skillsAside__selectedEmpty">Пока ничего не выбрано</div>
                     ) : (
@@ -70,8 +70,15 @@ const SkillsAside = ({
                                 key={skill.id}
                                 type="button"
                                 className="skillsAside__selectedBadge"
+                                data-skill-chip={skill.id}
                                 aria-label={`Убрать ${skill.name}`}
-                                onClick={() => onToggle?.(skill.id)}
+                                onClick={(event) => {
+                                    const fromRect = event.currentTarget.getBoundingClientRect();
+                                    onRemove?.(skill.id, {
+                                        label: skill.name,
+                                        fromRect,
+                                    });
+                                }}
                             >
                                 <span>{skill.name}</span>
                                 <span className="skillsAside__remove" aria-hidden="true">

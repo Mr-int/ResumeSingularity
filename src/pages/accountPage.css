@@ -1,5 +1,6 @@
 .accountPage {
-    min-height: calc(100vh - 120px);
+    min-height: 100vh;
+    min-height: 100dvh;
     background: #131313;
     color: #e4e4e7;
     padding: 40px 20px 80px;

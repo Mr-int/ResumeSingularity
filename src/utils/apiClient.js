@@ -2,7 +2,11 @@ import { API_BASE_URL } from '../config/api.js';
 import { clearLocalAuth, refreshSession } from '../services/authApi.js';
 import { appPath } from './appBase.js';
 
+let authRedirectInFlight = false;
+
 const clearAuthAndRedirect = () => {
+    if (authRedirectInFlight) return;
+    authRedirectInFlight = true;
     clearLocalAuth();
     sessionStorage.setItem('showLoginAfter403', 'true');
     window.dispatchEvent(new CustomEvent('resume:auth-required'));
@@ -25,12 +29,7 @@ export const apiClientJson = async (endpoint, options = {}) => {
     const headers = { ...defaultHeaders, ...options.headers };
     const body = options.body;
 
-    console.log('[API Client] Base URL:', API_BASE_URL);
-    console.log('[API Client] Endpoint:', endpoint);
-
     const url = `${API_BASE_URL}${endpoint}`;
-    console.log('[API Client] Full URL:', url);
-    console.log('[API Client] Request Body:', body);
 
     try {
         const response = await fetch(url, {
@@ -47,16 +46,29 @@ export const apiClientJson = async (endpoint, options = {}) => {
                     await refreshSession();
                     return apiClientJson(endpoint, { ...options, _retriedAfterRefresh: true });
                 } catch {
-                    /* fall through */
+                    // Refresh не удался — сессия реально мертва
+                    if (!skipAuthRedirect) {
+                        console.log('[API] 401 + refresh failed - redirecting to login');
+                        clearAuthAndRedirect();
+                    }
+                    const unauthorized = new Error('HTTP error! status: 401 - Unauthorized');
+                    unauthorized.status = 401;
+                    unauthorized.requiresAuth = true;
+                    throw unauthorized;
                 }
             }
-            if (!skipAuthRedirect) {
-                console.log('[API] 401 Unauthorized - redirecting to login');
-                clearAuthAndRedirect();
-            }
+
+            // После успешного refresh всё ещё 401 — чаще wrong-role / ACL,
+            // а не «сессия умерла». Не выкидываем из аккаунта.
             const unauthorized = new Error('HTTP error! status: 401 - Unauthorized');
             unauthorized.status = 401;
             unauthorized.requiresAuth = true;
+            if (!skipAuthRedirect && !options._retriedAfterRefresh) {
+                console.log('[API] 401 Unauthorized - redirecting to login');
+                clearAuthAndRedirect();
+            } else {
+                console.warn(`[API] 401 for ${endpoint} after refresh — session kept`);
+            }
             throw unauthorized;
         }
 
@@ -69,8 +81,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
                 responseBody = { message: errorText };
             }
             // 403 = доступ запрещён при живой сессии; сессию не сбрасываем
-            // (иначе студент вылетает из аккаунта на create company и т.п.).
-            // skipSessionClearOn403 — ожидаемый soft-probe (чаты до заполнения профиля и т.п.)
             const error = new Error(responseBody?.message || 'HTTP error! status: 403 - Forbidden');
             error.status = 403;
             error.responseBody = responseBody;
@@ -96,19 +106,17 @@ export const apiClientJson = async (endpoint, options = {}) => {
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
             return await response.json();
-        } else {
-            const text = await response.text();
-            if (text) {
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    return { message: text };
-                }
-            }
-            return {};
         }
+        const text = await response.text();
+        if (text) {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                return { message: text };
+            }
+        }
+        return {};
     } catch (error) {
-        // Уже размеченные ответы API (403 soft и т.п.) — без повторного error в консоль
         if (error?.status) {
             if (!error.softForbidden) {
                 console.warn(`[API] ${error.status} for ${endpoint}:`, error.message);
@@ -117,7 +125,6 @@ export const apiClientJson = async (endpoint, options = {}) => {
         }
 
         console.error(`[API] Error for endpoint ${endpoint}:`, error);
-        console.error('[API] Full URL was:', url);
 
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
             throw new Error(`Не удалось подключиться к серверу API. Проверьте, запущен ли сервер по адресу: ${API_BASE_URL}`);

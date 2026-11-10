@@ -66,6 +66,7 @@ import {
 } from './resumeCreatorValidation.js';
 import { packExperienceAdditionalInfo } from '../utils/experienceWebUrl.js';
 import { buildPortfolioPayload, normalizePortfolioItem } from '../utils/portfolio.js';
+import { crumbleSkillChip, flySkillChip } from '../utils/skillChipAnimations.js';
 import {
     clearExperienceDraft,
     clearResumeCreatorStep,
@@ -1369,12 +1370,20 @@ const ResumeCreator = () => {
                     <SkillsSelection
                         skills={skillsCatalog}
                         selectedSkills={selectedSkills}
-                        onToggle={(id) => {
-                            setSelectedSkills((prev) => (
-                                prev.some((item) => String(item) === String(id))
-                                    ? prev.filter((item) => String(item) !== String(id))
-                                    : [...prev, id]
-                            ));
+                        onSelect={(id, meta = {}) => {
+                            setSelectedSkills((prev) => {
+                                if (prev.some((item) => String(item) === String(id))) return prev;
+                                return [...prev, id];
+                            });
+                            if (!meta.fromRect) return;
+                            // Анимация не блокирует UI — можно сразу жать другие навыки
+                            void flySkillChip({
+                                fromRect: meta.fromRect,
+                                getToEl: () => document.querySelector(
+                                    `[data-skill-chip="${CSS.escape(String(id))}"]`
+                                ),
+                                label: meta.label,
+                            });
                         }}
                     />
                 );
@@ -1452,7 +1461,11 @@ const ResumeCreator = () => {
                     skills={skillsCatalog}
                     selectedSkills={selectedSkills}
                     memoItems={MEMO_BY_STEP[5] || []}
-                    onToggle={(id) => {
+                    onRemove={(id, meta = {}) => {
+                        // Сразу убираем из списка — крошки летят сами, без ожидания
+                        if (meta.fromRect) {
+                            crumbleSkillChip({ fromRect: meta.fromRect });
+                        }
                         setSelectedSkills((prev) =>
                             prev.filter((item) => String(item) !== String(id))
                         );

@@ -6,11 +6,11 @@
     justify-content: flex-end;
 }
 
-/* Inline: форма = тот же объект, поля прозрачные */
+/* Inline editor — в стиле ЛК */
 .profileSectionEditor--inline {
-    position: static;
+    position: relative;
     inset: auto;
-    z-index: auto;
+    z-index: 6;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -22,126 +22,422 @@
     overflow: visible;
 }
 
-.sprInlineField {
-    box-sizing: border-box;
+.profileSectionEditor--inline.profileSectionEditor--name,
+.profileSectionEditor--inline.profileSectionEditor--specialty,
+.profileSectionEditor--inline.profileSectionEditor--avatar {
     width: 100%;
+    max-width: 230px;
+}
+
+.sprEditSheet {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+.sprEditSheet__stack {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sprEditSheet__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.sprEditSheet__list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sprEditSheet__list--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+}
+
+.sprEditSheet__list--grid > .sprInlineAdd {
+    grid-column: 1 / -1;
+}
+
+.sprEditSheet__skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.sprEditSheet__hint {
     margin: 0;
-    padding: 0;
-    border: none;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.18);
-    border-radius: 0;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    letter-spacing: inherit;
-    line-height: inherit;
-    outline: none;
-    resize: none;
+    color: #8E9196;
+    font-size: 12px;
+    font-family: 'StratosSemiLight', sans-serif;
+    line-height: 1.4;
 }
 
-.sprInlineField:focus {
-    border-bottom-color: rgba(62, 142, 255, 0.7);
+/* Варианты статусов из UI kit — все видны и кликабельны */
+.sprStatusChoices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
 }
 
-.sprInlineField--muted {
-    opacity: 0.7;
-    font-size: 0.75em;
-    font-weight: 400;
+.sprStatusChoices__label {
+    color: #8E9196;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.24px;
+    line-height: 1.4;
 }
 
-.sprInlineField--title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #fff;
-}
-
-.sprInlineField--link {
-    color: #3E8EFF;
-    font-size: 13px;
-}
-
-.sprInlineName {
+.sprStatusChoices__list {
+    display: flex;
+    flex-direction: column;
     gap: 6px;
     width: 100%;
 }
 
-.sprInlineName .sprInlineField {
-    color: #fff;
-    font-size: 23px;
-    font-weight: 700;
-    line-height: 1.15;
-}
-
-textarea.studentProfileResume__bioText.sprInlineField {
+.sprStatusChoice {
+    box-sizing: border-box;
     width: 100%;
-    min-height: 140px;
-    margin-top: 16px;
-    white-space: pre-wrap;
-}
-
-.studentProfileResume__infoText .sprInlineField {
-    color: var(--spr-muted, #B3B5B7);
-    font-size: 15px;
-    line-height: 1.6;
-}
-
-select.studentProfileResume__specialty.sprInlineField {
-    color: #fff;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid #41464B;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
     font-size: 14px;
-    cursor: pointer;
-    appearance: none;
-    padding-right: 18px;
+    line-height: 1.4;
+    letter-spacing: 0.28px;
+    text-align: left;
+    overflow: visible;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.sprInlineDates {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.sprInlineDates .sprInlineField {
-    width: auto;
+.sprStatusChoice__text {
+    flex: 0 1 auto;
     min-width: 0;
-    flex: 1 1 110px;
+    white-space: nowrap;
 }
 
-.sprInlineCardFoot {
-    display: flex;
+.sprStatusChoice__icon {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: auto;
+    justify-content: center;
+    flex: 0 0 auto;
+    line-height: 0;
+    overflow: visible;
 }
 
-.sprInlineTagSelect {
-    cursor: pointer;
+.sprStatusChoice__icon--search {
+    width: 16px;
+    height: 16px;
+}
+
+.sprStatusChoice__icon--busyness {
+    width: 30px;
+    height: 24px;
+}
+
+.sprStatusChoice__icon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    flex-shrink: 0;
+}
+
+.sprStatusChoice:hover {
+    border-color: #737D85;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.sprStatusChoice.is-active {
+    border-color: #3E8EFF;
+    background: rgba(62, 142, 255, 0.12);
+}
+
+.sprStatusChoice--looking.is-active {
+    border-color: #63DA6E;
+    background: rgba(99, 218, 110, 0.12);
+    color: #63DA6E;
+}
+
+.sprStatusChoice--considering.is-active {
+    border-color: #F7A147;
+    background: rgba(247, 161, 71, 0.12);
+    color: #F7A147;
+}
+
+.sprStatusChoice--notLooking.is-active {
+    border-color: #EE6B6E;
+    background: rgba(238, 107, 110, 0.12);
+    color: #EE6B6E;
+}
+
+.sprEditCard {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid #41464B;
+    border-radius: 18px;
+    background: rgba(26, 27, 29, 0.92);
+}
+
+.sprEditCard--work {
+    border-color: rgba(255, 140, 0, 0.35);
+}
+
+.sprEditCard--project {
+    border-color: rgba(229, 59, 207, 0.35);
+}
+
+.sprEditCard--state {
+    border-color: rgba(62, 142, 255, 0.35);
+    background: rgba(62, 142, 255, 0.06);
+}
+
+.sprEditCard--course {
+    border-color: rgba(197, 255, 116, 0.35);
+    background: rgba(197, 255, 116, 0.06);
+}
+
+.sprField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    margin: 0;
+    color: #B3B5B7;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+}
+
+.sprField__label {
+    color: #8E9196;
+    letter-spacing: 0.02em;
+}
+
+.sprField__hint {
+    align-self: flex-end;
+    color: #737D85;
+    font-size: 11px;
+}
+
+.sprField input,
+.sprField textarea,
+.sprField__control select,
+.sprField__control input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 14px;
+    border: 1px solid #41464B;
+    border-radius: 12px;
+    background: #1A1B1D;
+    color: #fff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    line-height: 1.3;
+    outline: none;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.sprField textarea {
+    min-height: 110px;
+    resize: vertical;
+    padding-top: 12px;
+}
+
+.sprField input:focus,
+.sprField textarea:focus,
+.sprField__control select:focus,
+.sprField__control input:focus {
+    border-color: #3E8EFF;
+    background: #151618;
+}
+
+.sprField__control {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.sprField--select .sprField__control select {
     appearance: none;
     -webkit-appearance: none;
-    text-align: center;
-    outline: none;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.sprField__chevron {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.sprField--date .sprField__control input {
+    padding-right: 40px;
+    color-scheme: dark;
+}
+
+.sprField--date .sprField__control input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.sprField__calendar {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    opacity: 0.75;
+}
+
+.sprFilePicker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sprFilePicker__input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sprFilePicker__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 46px;
+    padding: 0 18px;
+    border: 1px dashed #3E8EFF;
+    border-radius: 12px;
+    background: rgba(62, 142, 255, 0.08);
+    color: #3E8EFF;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.sprFilePicker__btn:hover {
+    background: rgba(62, 142, 255, 0.14);
+}
+
+.sprFilePicker__icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.sprFilePicker__name {
+    margin: 0;
+    color: #B3B5B7;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.sprSkillChip {
+    height: 28px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 34px;
+    background: #2a2a2a;
+    color: #B3B5B7;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sprSkillChip.is-active {
+    background: #fff;
+    color: #2F2F2F;
 }
 
 .sprInlineActions {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
-    margin-top: 4px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 10px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    pointer-events: auto;
+}
+
+.profileSectionEditor--inline > .sprInlineActions:last-child {
+    margin: 10px 0 0;
 }
 
 .sprInlineBtn {
+    box-sizing: border-box;
     border: none;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     font-family: 'StratosSemiLight', sans-serif;
-    font-size: 13px;
-    padding: 8px 14px;
+    font-size: 12px;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    min-height: 28px;
+    height: 28px;
+    padding: 0 12px;
+    flex: 0 1 auto;
+    max-width: 100%;
+    white-space: nowrap;
 }
 
 .sprInlineBtn--ghost {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.06);
     color: #B3B5B7;
+    box-shadow: inset 0 0 0 1px #41464B;
+}
+
+.sprInlineBtn--ghost:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 .sprInlineBtn--save {
@@ -149,76 +445,64 @@ select.studentProfileResume__specialty.sprInlineField {
     color: #fff;
 }
 
+.sprInlineBtn--save:hover:not(:disabled) {
+    background: #5a9fff;
+}
+
 .sprInlineBtn:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: default;
 }
 
-.sprInlineAdd,
-.sprInlineRemove {
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: 'StratosSemiLight', sans-serif;
-    font-size: 13px;
-    padding: 8px 12px;
+/* В узкой колонке сайдбара кнопки делят ширину пополам */
+.profileSectionEditor--inline.profileSectionEditor--name .sprInlineActions,
+.profileSectionEditor--inline.profileSectionEditor--specialty .sprInlineActions,
+.profileSectionEditor--inline.profileSectionEditor--avatar .sprInlineActions {
+    gap: 6px;
+}
+
+.profileSectionEditor--inline.profileSectionEditor--name .sprInlineBtn,
+.profileSectionEditor--inline.profileSectionEditor--specialty .sprInlineBtn,
+.profileSectionEditor--inline.profileSectionEditor--avatar .sprInlineBtn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0 8px;
+    font-size: 11px;
 }
 
 .sprInlineAdd {
-    align-self: flex-start;
-    background: rgba(62, 142, 255, 0.12);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    align-self: stretch;
+    min-height: 46px;
+    padding: 0 16px;
+    border: 1px dashed #41464B;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.02);
     color: #3E8EFF;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.sprInlineAdd:hover {
+    border-color: #3E8EFF;
+    background: rgba(62, 142, 255, 0.08);
 }
 
 .sprInlineRemove {
+    align-self: flex-start;
+    margin-top: 2px;
+    padding: 6px 0;
+    border: none;
     background: transparent;
     color: #E88;
-    padding: 4px 0;
-}
-
-.sprInlineFile {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    color: #B3B5B7;
+    cursor: pointer;
+    font-family: 'StratosSemiLight', sans-serif;
     font-size: 13px;
-}
-
-.sprInlinePortfolioCard {
-    min-height: 135px;
-    background: #2a2a2a;
-    border: 1px dashed #41464B;
-}
-
-.sprInlinePortfolioCopy {
-    position: static;
-    pointer-events: auto;
-    padding: 14px;
-    gap: 8px;
-}
-
-.sprInlinePortfolioCopy .sprInlineField {
-    color: #fff;
-}
-
-.profileSectionEditor--inline .studentProfileResume__experienceGrid,
-.profileSectionEditor--inline .studentProfileResume__educationGrid,
-.profileSectionEditor--inline .studentProfileResume__portfolioFolders {
-    width: 100%;
-}
-
-.profileSectionEditor--inline .studentProfileResume__experienceGrid > .sprInlineAdd,
-.profileSectionEditor--inline .studentProfileResume__educationGrid > .sprInlineAdd,
-.profileSectionEditor--inline .studentProfileResume__portfolioFolders > .sprInlineAdd {
-    grid-column: 1 / -1;
-}
-
-.profileSectionEditor--inline.profileSectionEditor--bio .profileSectionEditor__field,
-.profileSectionEditor--inline.profileSectionEditor--name .profileSectionEditor__field,
-.profileSectionEditor--inline.profileSectionEditor--info .profileSectionEditor__field,
-.profileSectionEditor--inline.profileSectionEditor--specialty .profileSectionEditor__field,
-.profileSectionEditor--inline.profileSectionEditor--avatar .profileSectionEditor__field {
-    width: 100%;
 }
 
 .profileSectionEditor__backdrop {
@@ -404,7 +688,12 @@ select.studentProfileResume__specialty.sprInlineField {
         width: 100%;
     }
 
-    .profileSectionEditor__row {
+    .profileSectionEditor__row,
+    .sprEditSheet__row {
+        grid-template-columns: 1fr;
+    }
+
+    .sprEditSheet__list--grid {
         grid-template-columns: 1fr;
     }
 }
