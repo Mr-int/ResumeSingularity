@@ -37,6 +37,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    overflow: visible;
 }
 
 .studentProfileResume__profileCard {
@@ -285,6 +286,7 @@
     width: 100%;
     box-sizing: border-box;
     padding-right: 28px;
+    overflow: visible;
 }
 
 .studentProfileResume__statusBlock > .studentProfileResume__miniEdit {
@@ -342,12 +344,13 @@
     object-fit: contain;
 }
 
-/* Kit: [текст] [иконка типа] [i] — тултип как в Figma */
+/* Kit Search status / Busyness: [текст] [иконка] [Info] + tooltip 10327:16553 */
 .studentProfileResume__statusInfo {
     position: relative;
     display: inline-flex;
     align-items: center;
     flex-shrink: 0;
+    z-index: 2;
 }
 
 .studentProfileResume__statusInfoBtn {
@@ -367,47 +370,57 @@
     display: block;
     width: 14px;
     height: 14px;
-    opacity: 0.85;
-}
-
-.studentProfileResume__statusInfoBtn:hover img,
-.studentProfileResume__statusInfoBtn:focus-visible img {
-    opacity: 1;
 }
 
 .studentProfileResume__statusTooltip {
     position: absolute;
+    top: calc(100% + 6px);
     left: 50%;
-    bottom: calc(100% + 10px);
     transform: translateX(-50%);
     width: 232px;
     box-sizing: border-box;
-    padding: 16px 20px;
-    border-radius: 12px;
-    background: #1a1b1d;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
-    color: #ffffff;
-    font-family: 'StratosSemiLight', sans-serif;
-    font-size: 12px;
-    line-height: 1.4;
-    letter-spacing: 0.02em;
-    text-align: left;
-    white-space: normal;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.15s ease, visibility 0.15s ease;
-    z-index: 30;
+    z-index: 40;
 }
 
-.studentProfileResume__statusTooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 6px solid transparent;
-    border-top-color: #1a1b1d;
+/* Vector 108: 24×12, стрелка вверх к Info */
+.studentProfileResume__statusTooltipArrow {
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 12px solid #2F2F2F;
+    margin-bottom: -1px;
+}
+
+/* Frame 886 */
+.studentProfileResume__statusTooltipBody {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: #2F2F2F;
+    border: 1px solid #41464B;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    text-align: left;
+    white-space: normal;
+}
+
+.studentProfileResume__statusInfo:hover,
+.studentProfileResume__statusInfo:focus-within {
+    z-index: 50;
 }
 
 .studentProfileResume__statusInfo:hover .studentProfileResume__statusTooltip,

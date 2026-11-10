@@ -118,7 +118,7 @@ const MiniEdit = ({ visible, onClick, label }) => {
     );
 };
 
-/** UI kit: Info 14×14 + тултип-объяснение (как у Busyness / Search status). */
+/** UI kit: Info 14×14 + tooltip 10327:16553 (стрелка сверху, тело 232). */
 const StatusInfoTip = ({ text }) => {
     if (!text) return null;
     return (
@@ -131,7 +131,8 @@ const StatusInfoTip = ({ text }) => {
                 <img src={infoHintIcon} alt="" width={14} height={14} aria-hidden="true" />
             </button>
             <span className="studentProfileResume__statusTooltip" role="tooltip">
-                {text}
+                <span className="studentProfileResume__statusTooltipArrow" aria-hidden="true" />
+                <span className="studentProfileResume__statusTooltipBody">{text}</span>
             </span>
         </span>
     );
