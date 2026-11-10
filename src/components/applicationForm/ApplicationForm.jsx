@@ -7,6 +7,7 @@ import sunIcon from '../../assets/other/sun.png';
 import cloudMailIcon from '../../assets/other/cloudMail.png';
 import { apiClientJson } from '../../utils/apiClient.js';
 import { createRequest } from '../../services/requestApi.js';
+import { ANALYTICS_EVENT, trackAnalyticsEvent } from '../../services/analyticsApi.js';
 
 const getInputNumbersValue = (value) => String(value ?? '').replace(/\D/g, '');
 
@@ -380,6 +381,12 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
                       method: 'POST',
                       body: JSON.stringify(requestData),
                   });
+
+            trackAnalyticsEvent(
+                hasStudent
+                    ? ANALYTICS_EVENT.APPLICATION_SUBMITTED
+                    : ANALYTICS_EVENT.REQUEST_SUBMITTED,
+            );
 
             setCreatedChatId(response?.appChatId || null);
             setSuccess(true);

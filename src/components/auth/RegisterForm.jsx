@@ -24,6 +24,7 @@ import {
 } from '../../utils/registrationIdentity.js';
 import { completeStudentRegistration } from '../../services/accountApi.js';
 import { markStudentRegistrationCompleted } from '../../utils/studentOnboarding.js';
+import { ANALYTICS_EVENT, trackAnalyticsEvent } from '../../services/analyticsApi.js';
 import './registerForm.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -197,6 +198,10 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         companyName: '',
         city: '',
     });
+
+    useEffect(() => {
+        trackAnalyticsEvent(ANALYTICS_EVENT.REGISTRATION_STARTED);
+    }, []);
 
     const clearMessageTimers = () => {
         if (hideTimerRef.current) {
@@ -430,6 +435,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 companyName: formData.companyName.trim(),
                 city: formData.city.trim(),
             }));
+            trackAnalyticsEvent(ANALYTICS_EVENT.REGISTRATION_COMPLETED);
             onSuccess(role, username);
         } catch (err) {
             const message = humanizeRegisterError(err);
@@ -483,6 +489,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             }
             clearRegistrationDraft();
             setRegistrationCompleted(true);
+            trackAnalyticsEvent(ANALYTICS_EVENT.REGISTRATION_COMPLETED);
             onSuccess(role, assignedUsername, { next: 'questionnaire' });
         } catch (err) {
             const message = err.message || 'Не удалось завершить регистрацию';

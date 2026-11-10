@@ -15,6 +15,7 @@ import { getStudentById } from '../../services/studentApi.js';
 import { getRecruiterById, getStudentMe, getRecruiterMe } from '../../services/getApi.js';
 import { AUTH_USERNAME_KEY, getStoredRole } from '../../services/authApi.js';
 import { getImageUrl } from '../../config/api.js';
+import { ANALYTICS_EVENT, trackAnalyticsEvent } from '../../services/analyticsApi.js';
 
 const formatTime = (iso) => {
     if (!iso) return '';
@@ -354,6 +355,7 @@ const ChatsView = () => {
             if (message?.id) mergeMessage(message);
             else await loadMessages(selectedId);
             updateChatPreview(selectedId, text, created?.createdAt);
+            trackAnalyticsEvent(ANALYTICS_EVENT.CHAT_MESSAGE_SENT);
         } catch (err) {
             setSendError(err.message || 'Не отправилось');
         } finally {
@@ -375,6 +377,7 @@ const ChatsView = () => {
             else await loadMessages(selectedId);
             const preview = (message?.body || created?.body) || file.name || 'Вложение';
             updateChatPreview(selectedId, preview, created?.createdAt);
+            trackAnalyticsEvent(ANALYTICS_EVENT.CHAT_MESSAGE_SENT);
         } catch (err) {
             setSendError(err.message || 'Не удалось отправить файл');
         } finally {

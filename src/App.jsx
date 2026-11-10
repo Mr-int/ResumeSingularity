@@ -12,6 +12,7 @@ import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
 import { routerBasename } from './utils/appBase.js';
+import AnalyticsPageViews from './components/analytics/AnalyticsPageViews.jsx';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -59,6 +60,7 @@ const AppRoutes = () => {
 
   return (
       <>
+        <AnalyticsPageViews />
         <Routes>
           <Route path='/' element={<CareerOrLegacyHome />} />
           <Route path='/login' element={<Auth />} />
