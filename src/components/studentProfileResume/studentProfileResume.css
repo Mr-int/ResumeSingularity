@@ -327,15 +327,15 @@
 }
 
 .studentProfileResume__statusValue.is-looking {
-    color: #84FF79;
+    color: #63DA6E;
 }
 
 .studentProfileResume__statusValue.is-considering {
-    color: #FFB347;
+    color: #F7A147;
 }
 
 .studentProfileResume__statusValue.is-notLooking {
-    color: #B3B5B7;
+    color: #EE6B6E;
 }
 
 .studentProfileResume__statusTypeIcon {

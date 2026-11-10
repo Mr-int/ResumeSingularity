@@ -171,20 +171,21 @@
 }
 
 .sprStatusChoice--looking.is-active {
-    border-color: #84FF79;
-    background: rgba(132, 255, 121, 0.1);
-    color: #84FF79;
+    border-color: #63DA6E;
+    background: rgba(99, 218, 110, 0.12);
+    color: #63DA6E;
 }
 
 .sprStatusChoice--considering.is-active {
-    border-color: #FFB347;
-    background: rgba(255, 179, 71, 0.1);
-    color: #FFB347;
+    border-color: #F7A147;
+    background: rgba(247, 161, 71, 0.12);
+    color: #F7A147;
 }
 
 .sprStatusChoice--notLooking.is-active {
-    border-color: #737D85;
-    color: #B3B5B7;
+    border-color: #EE6B6E;
+    background: rgba(238, 107, 110, 0.12);
+    color: #EE6B6E;
 }
 
 .sprEditCard {
