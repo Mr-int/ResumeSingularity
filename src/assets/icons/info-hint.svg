@@ -1,6 +1,6 @@
-﻿<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="7" cy="7" r="6.25" stroke="#B3B5B7" stroke-width="1.5" fill="none"/>
-  <g transform="translate(6.37 3.85)">
-    <path d="M0.63 1.26C0.2688 1.26 0 0.9828 0 0.63C0 0.2688 0.2688 0 0.63 0C0.9996 0 1.26 0.2688 1.26 0.63C1.26 0.9828 0.9996 1.26 0.63 1.26ZM1.134 6.3H0.126V2.1H1.134V6.3Z" fill="#FFFFFF"/>
-  </g>
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Info">
+<rect width="14" height="14" rx="7" fill="#41464B"/>
+<path id="i" d="M7 5.11C6.6388 5.11 6.37 4.8328 6.37 4.48C6.37 4.1188 6.6388 3.85 7 3.85C7.3696 3.85 7.63 4.1188 7.63 4.48C7.63 4.8328 7.3696 5.11 7 5.11ZM7.504 10.15H6.496V5.95H7.504V10.15Z" fill="white"/>
+</g>
 </svg>

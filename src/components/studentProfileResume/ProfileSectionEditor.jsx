@@ -116,13 +116,15 @@ const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false
                     className={`sprStatusChoice${!value ? ' is-active' : ''}`}
                     onClick={() => onChange('')}
                 >
-                    <span>{emptyLabel}</span>
+                    <span className="sprStatusChoice__text">{emptyLabel}</span>
                 </button>
             ) : null}
             {options.map((item) => {
                 const active = String(value) === String(item.value);
                 const busynessIcon = item.icon ? BUSYNESS_ICONS[item.icon] : null;
                 const searchIcon = item.icon ? JOB_SEARCH_ICONS[item.icon] : null;
+                const iconSrc = searchIcon || busynessIcon;
+                const iconKind = searchIcon ? 'search' : busynessIcon ? 'busyness' : null;
                 return (
                     <button
                         key={item.value}
@@ -137,12 +139,14 @@ const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false
                         }
                         onClick={() => onChange(item.value)}
                     >
-                        <span>{item.label}</span>
-                        {searchIcon ? (
-                            <img src={searchIcon} alt="" width={16} height={16} />
-                        ) : null}
-                        {busynessIcon ? (
-                            <img src={busynessIcon} alt="" width={30} height={24} />
+                        <span className="sprStatusChoice__text">{item.label}</span>
+                        {iconSrc && iconKind ? (
+                            <span
+                                className={`sprStatusChoice__icon sprStatusChoice__icon--${iconKind}`}
+                                aria-hidden="true"
+                            >
+                                <img src={iconSrc} alt="" />
+                            </span>
                         ) : null}
                     </button>
                 );

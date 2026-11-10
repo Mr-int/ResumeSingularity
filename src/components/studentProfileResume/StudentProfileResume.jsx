@@ -49,14 +49,22 @@ const BusynessIcon = ({ value }) => {
     const kind = getBusynessIconKind(value);
     const src = kind ? BUSYNESS_ICONS[kind] : null;
     if (!src) return null;
-    return <img src={src} alt="" width={30} height={24} />;
+    return (
+        <span className="studentProfileResume__statusTypeIcon studentProfileResume__statusTypeIcon--busyness" aria-hidden="true">
+            <img src={src} alt="" />
+        </span>
+    );
 };
 
 const JobSearchIcon = ({ value }) => {
     const kind = getJobSearchIconKind(value);
     const src = kind ? JOB_SEARCH_ICONS[kind] : null;
     if (!src) return null;
-    return <img src={src} alt="" width={16} height={16} />;
+    return (
+        <span className="studentProfileResume__statusTypeIcon studentProfileResume__statusTypeIcon--search" aria-hidden="true">
+            <img src={src} alt="" />
+        </span>
+    );
 };
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 import { appPath } from '../../utils/appBase.js';
@@ -118,7 +126,7 @@ const MiniEdit = ({ visible, onClick, label }) => {
     );
 };
 
-/** UI kit: Info 14×14 + tooltip 10327:16553 (стрелка сверху, тело 232). */
+/** Info из Figma + совет Frame 886 (10287:13339), стрелка Vector 108 сверху. */
 const StatusInfoTip = ({ text }) => {
     if (!text) return null;
     return (

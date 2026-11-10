@@ -338,13 +338,34 @@
     color: #B3B5B7;
 }
 
-.studentProfileResume__statusValue > img {
-    display: block;
+.studentProfileResume__statusTypeIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex-shrink: 0;
-    object-fit: contain;
+    line-height: 0;
+    overflow: visible;
 }
 
-/* Kit Search status / Busyness: [текст] [иконка] [Info] + tooltip 10327:16553 */
+.studentProfileResume__statusTypeIcon--search {
+    width: 16px;
+    height: 16px;
+}
+
+.studentProfileResume__statusTypeIcon--busyness {
+    width: 30px;
+    height: 24px;
+}
+
+.studentProfileResume__statusTypeIcon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* Kit: [текст] [иконка] [Info #41464B] + совет Frame 886 (10287:13339) */
 .studentProfileResume__statusInfo {
     position: relative;
     display: inline-flex;
@@ -361,6 +382,7 @@
     height: 14px;
     padding: 0;
     border: none;
+    border-radius: 7px;
     background: transparent;
     cursor: help;
     line-height: 0;
@@ -372,9 +394,10 @@
     height: 14px;
 }
 
+/* tooltip = Vector 108 + Frame 886 */
 .studentProfileResume__statusTooltip {
     position: absolute;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     left: 50%;
     transform: translateX(-50%);
     width: 232px;
@@ -389,26 +412,25 @@
     z-index: 40;
 }
 
-/* Vector 108: 24×12, стрелка вверх к Info */
+/* Vector 108: 24×12 */
 .studentProfileResume__statusTooltipArrow {
     display: block;
     width: 0;
     height: 0;
     border-left: 12px solid transparent;
     border-right: 12px solid transparent;
-    border-bottom: 12px solid #2F2F2F;
+    border-bottom: 10px solid #232323;
     margin-bottom: -1px;
 }
 
-/* Frame 886 */
+/* Frame 886: 232, padding 20×16 */
 .studentProfileResume__statusTooltipBody {
     display: block;
     width: 100%;
     box-sizing: border-box;
     padding: 16px 20px;
     border-radius: 12px;
-    background: #2F2F2F;
-    border: 1px solid #41464B;
+    background: #232323;
     color: #ffffff;
     font-family: 'StratosSemiLight', sans-serif;
     font-size: 12px;

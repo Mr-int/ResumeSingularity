@@ -107,28 +107,57 @@
 .sprStatusChoice {
     box-sizing: border-box;
     width: 100%;
-    min-height: 36px;
-    padding: 6px 10px;
+    min-height: 40px;
+    padding: 8px 10px;
     border: 1px solid #41464B;
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.03);
     color: #ffffff;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     font-family: 'StratosSemiLight', sans-serif;
-    font-size: 13px;
-    line-height: 1.3;
-    letter-spacing: 0.02em;
+    font-size: 14px;
+    line-height: 1.4;
+    letter-spacing: 0.28px;
     text-align: left;
+    overflow: visible;
     transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.sprStatusChoice img {
+.sprStatusChoice__text {
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.sprStatusChoice__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    line-height: 0;
+    overflow: visible;
+}
+
+.sprStatusChoice__icon--search {
+    width: 16px;
+    height: 16px;
+}
+
+.sprStatusChoice__icon--busyness {
+    width: 30px;
+    height: 24px;
+}
+
+.sprStatusChoice__icon img {
     display: block;
-    flex-shrink: 0;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
+    object-position: center;
+    flex-shrink: 0;
 }
 
 .sprStatusChoice:hover {
