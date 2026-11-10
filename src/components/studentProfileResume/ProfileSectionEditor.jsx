@@ -21,10 +21,14 @@ import {
     BUSYNESS_OPTIONS,
     DESIRED_BUSYNESS_OPTIONS,
     JOB_SEARCH_OPTIONS,
+    toBusynessApiValue,
+    toBusynessFormValue,
 } from '../../utils/studentStatus.js';
 import calendarIcon from '../../assets/icons/calendar.svg';
 import arrowIcon from '../../assets/icons/arrow_small.svg';
 import statusLookingIcon from '../../assets/icons/status-looking.svg';
+import statusConsideringIcon from '../../assets/icons/status-considering.svg';
+import statusNotLookingIcon from '../../assets/icons/status-not-looking.svg';
 import busynessFulltimeIcon from '../../assets/icons/busyness-fulltime.svg';
 import busynessParttimeIcon from '../../assets/icons/busyness-parttime.svg';
 import busynessProjectIcon from '../../assets/icons/busyness-project.svg';
@@ -34,6 +38,12 @@ const BUSYNESS_ICONS = {
     fulltime: busynessFulltimeIcon,
     parttime: busynessParttimeIcon,
     project: busynessProjectIcon,
+};
+
+const JOB_SEARCH_ICONS = {
+    looking: statusLookingIcon,
+    considering: statusConsideringIcon,
+    notLooking: statusNotLookingIcon,
 };
 
 const InlineField = ({ label, children, className = '' }) => (
@@ -111,8 +121,8 @@ const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false
             ) : null}
             {options.map((item) => {
                 const active = String(value) === String(item.value);
-                const iconSrc = item.icon ? BUSYNESS_ICONS[item.icon] : null;
-                const showLooking = item.tone === 'looking';
+                const busynessIcon = item.icon ? BUSYNESS_ICONS[item.icon] : null;
+                const searchIcon = item.icon ? JOB_SEARCH_ICONS[item.icon] : null;
                 return (
                     <button
                         key={item.value}
@@ -128,11 +138,11 @@ const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false
                         onClick={() => onChange(item.value)}
                     >
                         <span>{item.label}</span>
-                        {showLooking ? (
-                            <img src={statusLookingIcon} alt="" width={16} height={16} />
+                        {searchIcon ? (
+                            <img src={searchIcon} alt="" width={16} height={16} />
                         ) : null}
-                        {iconSrc ? (
-                            <img src={iconSrc} alt="" width={30} height={24} />
+                        {busynessIcon ? (
+                            <img src={busynessIcon} alt="" width={30} height={24} />
                         ) : null}
                     </button>
                 );
@@ -182,8 +192,12 @@ const ProfileSectionEditor = ({
     const [city, setCity] = useState(student.city || '');
     const [birthDate, setBirthDate] = useState(student.birthDate || '');
     const [jobSearchStatus, setJobSearchStatus] = useState(student.jobSearchStatus || '');
-    const [desiredBusyness, setDesiredBusyness] = useState(student.desiredBusyness || '');
-    const [busyness, setBusyness] = useState(student.busyness || 'FREE');
+    const [desiredBusyness, setDesiredBusyness] = useState(
+        () => toBusynessFormValue(student.desiredBusyness),
+    );
+    const [busyness, setBusyness] = useState(
+        () => toBusynessFormValue(student.busyness),
+    );
     const [selectedSkillIds, setSelectedSkillIds] = useState(
         () => (Array.isArray(skills) ? skills : []).map((item) => String(item.id)).filter(Boolean),
     );
@@ -314,8 +328,8 @@ const ProfileSectionEditor = ({
             if (section === 'status') {
                 await patchStudentMe({
                     jobSearchStatus: jobSearchStatus || null,
-                    desiredBusyness: desiredBusyness || null,
-                    busyness: busyness || null,
+                    desiredBusyness: toBusynessApiValue(desiredBusyness),
+                    busyness: toBusynessApiValue(busyness),
                 });
             }
 
@@ -550,12 +564,15 @@ const ProfileSectionEditor = ({
                         value={desiredBusyness || ''}
                         onChange={setDesiredBusyness}
                         allowEmpty
+                        emptyLabel="Не указан"
                     />
                     <StatusChoiceGroup
                         label="Имеется занятость"
                         options={BUSYNESS_OPTIONS}
                         value={busyness || ''}
                         onChange={setBusyness}
+                        allowEmpty
+                        emptyLabel="Не указана"
                     />
                 </div>
             ) : null}
@@ -666,12 +683,15 @@ const ProfileSectionEditor = ({
                         value={desiredBusyness || ''}
                         onChange={setDesiredBusyness}
                         allowEmpty
+                        emptyLabel="Не указан"
                     />
                     <StatusChoiceGroup
                         label="Имеется занятость"
                         options={BUSYNESS_OPTIONS}
                         value={busyness || ''}
                         onChange={setBusyness}
+                        allowEmpty
+                        emptyLabel="Не указана"
                     />
                 </div>
             ) : null}

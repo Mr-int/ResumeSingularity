@@ -8,6 +8,8 @@ import expIcon from '../../assets/icons/exp.svg';
 import educationIcon from '../../assets/icons/education.svg';
 import shareIcon from '../../assets/icons/share-filled.svg';
 import statusLookingIcon from '../../assets/icons/status-looking.svg';
+import statusConsideringIcon from '../../assets/icons/status-considering.svg';
+import statusNotLookingIcon from '../../assets/icons/status-not-looking.svg';
 import busynessFulltimeIcon from '../../assets/icons/busyness-fulltime.svg';
 import busynessParttimeIcon from '../../assets/icons/busyness-parttime.svg';
 import busynessProjectIcon from '../../assets/icons/busyness-project.svg';
@@ -27,8 +29,8 @@ import {
     formatJobSearchStatusLabel,
     getBusynessIconKind,
     getBusynessMeta,
+    getJobSearchIconKind,
     getJobSearchMeta,
-    isLookingForJob,
 } from '../../utils/studentStatus.js';
 
 const BUSYNESS_ICONS = {
@@ -37,11 +39,24 @@ const BUSYNESS_ICONS = {
     project: busynessProjectIcon,
 };
 
+const JOB_SEARCH_ICONS = {
+    looking: statusLookingIcon,
+    considering: statusConsideringIcon,
+    notLooking: statusNotLookingIcon,
+};
+
 const BusynessIcon = ({ value }) => {
     const kind = getBusynessIconKind(value);
     const src = kind ? BUSYNESS_ICONS[kind] : null;
     if (!src) return null;
     return <img src={src} alt="" width={30} height={24} />;
+};
+
+const JobSearchIcon = ({ value }) => {
+    const kind = getJobSearchIconKind(value);
+    const src = kind ? JOB_SEARCH_ICONS[kind] : null;
+    if (!src) return null;
+    return <img src={src} alt="" width={16} height={16} />;
 };
 import { courseUiLabel } from '../resumeCreator/StepForm/StepForm.jsx';
 import { appPath } from '../../utils/appBase.js';
@@ -100,6 +115,25 @@ const MiniEdit = ({ visible, onClick, label }) => {
         >
             <IconEdit className="studentProfileResume__miniEditIcon" />
         </button>
+    );
+};
+
+/** UI kit: Info 14×14 + тултип-объяснение (как у Busyness / Search status). */
+const StatusInfoTip = ({ text }) => {
+    if (!text) return null;
+    return (
+        <span className="studentProfileResume__statusInfo">
+            <button
+                type="button"
+                className="studentProfileResume__statusInfoBtn"
+                aria-label="Подробнее"
+            >
+                <img src={infoHintIcon} alt="" width={14} height={14} aria-hidden="true" />
+            </button>
+            <span className="studentProfileResume__statusTooltip" role="tooltip">
+                {text}
+            </span>
+        </span>
     );
 };
 
@@ -217,7 +251,6 @@ const StudentProfileResume = ({
     const jobSearchMeta = getJobSearchMeta(student.jobSearchStatus);
     const desiredMeta = getBusynessMeta(student.desiredBusyness);
     const busynessMeta = getBusynessMeta(student.busyness);
-    const looking = isLookingForJob(student.jobSearchStatus);
     const jobSearchTone = jobSearchMeta?.tone || '';
 
     const skillList = Array.isArray(skills) && skills.length
@@ -406,15 +439,13 @@ const StudentProfileResume = ({
                         renderInlineEditor('status')
                     ) : (
                         <div className="studentProfileResume__statusBlock">
+                            <MiniEdit
+                                visible={isOwner}
+                                onClick={() => openSection('status')}
+                                label="Редактировать статус и занятость"
+                            />
                             <div className="studentProfileResume__statusRow">
-                                <div className="studentProfileResume__statusHead">
-                                    <p className="studentProfileResume__statusLabel">Статус поиска</p>
-                                    <MiniEdit
-                                        visible={isOwner}
-                                        onClick={() => openSection('status')}
-                                        label="Редактировать статус поиска"
-                                    />
-                                </div>
+                                <p className="studentProfileResume__statusLabel">Статус поиска</p>
                                 <div
                                     className={
                                         'studentProfileResume__statusValue'
@@ -422,60 +453,26 @@ const StudentProfileResume = ({
                                     }
                                 >
                                     <span>{jobSearchLabel || 'Не указан'}</span>
-                                    {looking ? (
-                                        <img src={statusLookingIcon} alt="" width={16} height={16} />
-                                    ) : null}
-                                    <img
-                                        src={infoHintIcon}
-                                        alt=""
-                                        width={14}
-                                        height={14}
-                                        title="Статус поиска: Ищу работу / Рассматриваю предложения / Не ищу работу"
-                                    />
+                                    <JobSearchIcon value={student.jobSearchStatus} />
+                                    <StatusInfoTip text={jobSearchMeta?.hint} />
                                 </div>
                             </div>
 
                             <div className="studentProfileResume__statusRow">
-                                <div className="studentProfileResume__statusHead">
-                                    <p className="studentProfileResume__statusLabel">Желаемый формат</p>
-                                    <MiniEdit
-                                        visible={isOwner}
-                                        onClick={() => openSection('status')}
-                                        label="Редактировать желаемый формат"
-                                    />
-                                </div>
+                                <p className="studentProfileResume__statusLabel">Желаемый формат</p>
                                 <div className="studentProfileResume__statusValue">
                                     <span>{desiredBusynessLabel || 'Не указан'}</span>
                                     <BusynessIcon value={student.desiredBusyness} />
-                                    <img
-                                        src={infoHintIcon}
-                                        alt=""
-                                        width={14}
-                                        height={14}
-                                        title={desiredMeta?.hint || 'Желаемый формат работы'}
-                                    />
+                                    <StatusInfoTip text={desiredMeta?.hint} />
                                 </div>
                             </div>
 
                             <div className="studentProfileResume__statusRow">
-                                <div className="studentProfileResume__statusHead">
-                                    <p className="studentProfileResume__statusLabel">Имеется занятость</p>
-                                    <MiniEdit
-                                        visible={isOwner}
-                                        onClick={() => openSection('status')}
-                                        label="Редактировать занятость"
-                                    />
-                                </div>
+                                <p className="studentProfileResume__statusLabel">Имеется занятость</p>
                                 <div className="studentProfileResume__statusValue">
                                     <span>{busynessLabel || 'Не указана'}</span>
                                     <BusynessIcon value={student.busyness} />
-                                    <img
-                                        src={infoHintIcon}
-                                        alt=""
-                                        width={14}
-                                        height={14}
-                                        title={busynessMeta?.hint || 'Текущая занятость'}
-                                    />
+                                    <StatusInfoTip text={busynessMeta?.hint} />
                                 </div>
                             </div>
                         </div>

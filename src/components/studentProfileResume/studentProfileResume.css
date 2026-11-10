@@ -235,7 +235,7 @@
 
 .studentProfileResume.is-editing .studentProfileResume__sectionHead,
 .studentProfileResume.is-editing .studentProfileResume__identity,
-.studentProfileResume.is-editing .studentProfileResume__statusHead {
+.studentProfileResume.is-editing .studentProfileResume__statusBlock {
     outline: 1px dashed transparent;
 }
 
@@ -274,14 +274,24 @@
     display: block;
 }
 
-/* Figma 10282:13126 — статусы между карточкой фото и кнопками */
+/* Figma 10282:13126 — статусы между карточкой фото и кнопками.
+   Одна ручка на весь блок (все три поля правятся вместе). */
 .studentProfileResume__statusBlock {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
     width: 100%;
     box-sizing: border-box;
+    padding-right: 28px;
+}
+
+.studentProfileResume__statusBlock > .studentProfileResume__miniEdit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
 }
 
 .studentProfileResume__statusRow {
@@ -290,23 +300,6 @@
     align-items: flex-start;
     gap: 4px;
     width: 100%;
-}
-
-.studentProfileResume__statusHead {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    width: 100%;
-    min-height: 17px;
-}
-
-.studentProfileResume__statusHead .studentProfileResume__miniEdit {
-    position: static;
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
 }
 
 .studentProfileResume__statusLabel {
@@ -343,10 +336,84 @@
     color: #B3B5B7;
 }
 
-.studentProfileResume__statusValue img {
+.studentProfileResume__statusValue > img {
     display: block;
     flex-shrink: 0;
     object-fit: contain;
+}
+
+/* Kit: [текст] [иконка типа] [i] — тултип как в Figma */
+.studentProfileResume__statusInfo {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.studentProfileResume__statusInfoBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: help;
+    line-height: 0;
+}
+
+.studentProfileResume__statusInfoBtn img {
+    display: block;
+    width: 14px;
+    height: 14px;
+    opacity: 0.85;
+}
+
+.studentProfileResume__statusInfoBtn:hover img,
+.studentProfileResume__statusInfoBtn:focus-visible img {
+    opacity: 1;
+}
+
+.studentProfileResume__statusTooltip {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    width: 232px;
+    box-sizing: border-box;
+    padding: 16px 20px;
+    border-radius: 12px;
+    background: #1a1b1d;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    text-align: left;
+    white-space: normal;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    z-index: 30;
+}
+
+.studentProfileResume__statusTooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #1a1b1d;
+}
+
+.studentProfileResume__statusInfo:hover .studentProfileResume__statusTooltip,
+.studentProfileResume__statusInfo:focus-within .studentProfileResume__statusTooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 .studentProfileResume__nav {

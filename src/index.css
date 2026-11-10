@@ -11,28 +11,31 @@ img {
   user-select: none;
 }
 
+/* Не ставим height:100% / overflow:hidden на html|body — это ломает обычный скролл.
+   overscroll-behavior только убирает «резинку» на Mac, скролл страницы остаётся. */
 html {
-  height: 100%;
   background-color: #000;
-  /* Mac overscroll / rubber-band: не давать «проскроллить» за край и не светить белым */
-  overscroll-behavior: none;
-  overscroll-behavior-y: none;
-}
-
-body, #root {
-  min-height: 100%;
-  min-height: 100dvh;
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  background-color: #000;
-  overscroll-behavior: none;
   overscroll-behavior-y: none;
 }
 
 body {
-  /* Safari iOS/macOS: фон за пределами документа */
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
   background-color: #000;
+  overflow-x: clip;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100vh;
+  background-color: #000;
+}
+
+@supports not (overflow-x: clip) {
+  body {
+    overflow-x: hidden;
+  }
 }
 
 .appRouteLoader {
