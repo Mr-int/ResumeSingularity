@@ -348,7 +348,15 @@ const ResumeCreator = () => {
     }, [maxReachedStep, step, validationCtx]);
 
     const updateProfile = (field, value) => {
-        setProfile((prev) => ({ ...prev, [field]: value }));
+        setProfile((prev) => {
+            const next = { ...prev, [field]: value };
+            // Сразу в ref — иначе flush до re-render уйдёт со старым городом.
+            profileAutosaveRef.current = {
+                ...profileAutosaveRef.current,
+                profile: next,
+            };
+            return next;
+        });
     };
 
     const showToast = (text, { error = false } = {}) => {
@@ -520,22 +528,26 @@ const ResumeCreator = () => {
         };
     }, []);
 
-    const buildPatchBody = () => {
+    const buildPatchBody = (source) => {
+        const p = source?.profile || profile;
+        const bioValue = source?.bio ?? bio;
+        const hh = source?.hhLink ?? hhLink;
+        const cityLegacy = source?.legacyCity ?? legacyCity;
         const body = {};
-        if (profile.firstName?.trim()) body.firstName = profile.firstName.trim();
-        if (profile.lastName?.trim()) body.lastName = profile.lastName.trim();
-        if (isAllowedProfileCity(profile.city, legacyCity)) {
-            body.city = profile.city.trim();
+        if (p.firstName?.trim()) body.firstName = p.firstName.trim();
+        if (p.lastName?.trim()) body.lastName = p.lastName.trim();
+        if (isAllowedProfileCity(p.city, cityLegacy)) {
+            body.city = p.city.trim();
         }
-        if (profile.birthDate) body.birthDate = profile.birthDate;
-        if (profile.course) body.course = toApiCourse(profile.course);
-        if (profile.gender) body.gender = profile.gender;
-        body.busyness = profile.busyness || 'FREE';
-        if (profile.specialityId != null && profile.specialityId !== '') {
-            body.specialityId = Number(profile.specialityId);
+        if (p.birthDate) body.birthDate = p.birthDate;
+        if (p.course) body.course = toApiCourse(p.course);
+        if (p.gender) body.gender = p.gender;
+        body.busyness = p.busyness || 'FREE';
+        if (p.specialityId != null && p.specialityId !== '') {
+            body.specialityId = Number(p.specialityId);
         }
-        if (bio?.trim()) body.bio = bio.trim();
-        if (hhLink?.trim()) body.hhLink = hhLink.trim();
+        if (bioValue?.trim()) body.bio = bioValue.trim();
+        if (hh?.trim()) body.hhLink = hh.trim();
         return body;
     };
 
@@ -577,16 +589,19 @@ const ResumeCreator = () => {
     };
 
     const persistProfile = async ({ syncSkills = false, applyResponse = true } = {}) => {
-        const body = buildPatchBody();
+        // Всегда актуальные поля из ref (важно для автосейва города до re-render).
+        const ctx = profileAutosaveRef.current;
+        const body = buildPatchBody(ctx);
         const sentCity = body.city;
-        const sentSkillIds = toPersistableSkillIds(selectedSkills);
+        const skillsNow = ctx.selectedSkills || selectedSkills;
+        const sentSkillIds = toPersistableSkillIds(skillsNow);
         // На шаге навыков всегда шлём ids (в т.ч. пустой). На других — только если есть что сохранить.
         if (syncSkills || sentSkillIds.length > 0) {
             body.skillsIds = sentSkillIds;
             // совместимость с DTO, где поле называется skillIds
             body.skillIds = sentSkillIds;
         }
-        if (syncSkills && selectedSkills.length > 0 && sentSkillIds.length === 0) {
+        if (syncSkills && skillsNow.length > 0 && sentSkillIds.length === 0) {
             throw new Error('Выбранные навыки нельзя сохранить — обновите страницу и выберите навыки из каталога');
         }
         await patchStudentMe(body);
@@ -607,6 +622,7 @@ const ResumeCreator = () => {
             cityMismatch: Boolean(sentCity && me.city !== sentCity),
             actualCity: me.city,
             skillsMismatch,
+            sentCity: sentCity || null,
         };
     };
 
@@ -616,6 +632,13 @@ const ResumeCreator = () => {
         hhLink: data.hhLink ?? '',
         selectedSkills: data.selectedSkills || [],
     });
+
+    const scheduleProfileAutosave = (delayMs = 400) => {
+        if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = window.setTimeout(() => {
+            flushProfileAutosaveRef.current?.();
+        }, delayMs);
+    };
 
     const flushProfileAutosave = async ({ forceSkills = false } = {}) => {
         const ctx = profileAutosaveRef.current;
@@ -632,7 +655,13 @@ const ResumeCreator = () => {
             persistProfile: persistFn,
         } = ctx;
 
-        if (!sid || booting || isSaving || autosaveInFlightRef.current || typeof persistFn !== 'function') {
+        if (!sid || booting || typeof persistFn !== 'function') {
+            return false;
+        }
+
+        // Пока идёт ручной Save/Next или другой autosave — не теряем изменения, дожимаем следом.
+        if (isSaving || autosaveInFlightRef.current) {
+            scheduleProfileAutosave(500);
             return false;
         }
 
@@ -651,24 +680,43 @@ const ResumeCreator = () => {
         });
         if (snapshot === lastPersistedSnapshotRef.current) return false;
 
+        // Черновик всегда до PATCH — даже если запрос оборвётся.
+        saveProfileDraft(sid, {
+            profile: currentProfile,
+            bio: currentBio,
+            hhLink: currentHh,
+            selectedSkills: currentSkills,
+        });
+
         autosaveInFlightRef.current = true;
         try {
+            const wantedCity = currentProfile?.city?.trim() || '';
             const result = await persistFn({
                 syncSkills: forceSkills || currentStep === 5,
                 applyResponse: false,
             });
             if (result?.cityMismatch || result?.skillsMismatch) {
+                scheduleProfileAutosave(800);
+                return false;
+            }
+            // Город выбран, но в PATCH не ушёл — не помечаем как сохранённый.
+            if (wantedCity && isAllowedProfileCity(wantedCity, currentLegacyCity) && !result?.sentCity) {
+                scheduleProfileAutosave(800);
                 return false;
             }
             lastPersistedSnapshotRef.current = snapshot;
             const latest = buildProfileAutosaveSnapshot(profileAutosaveRef.current);
             if (latest === snapshot) {
                 clearProfileDraft(sid);
+            } else {
+                // Пользователь успел изменить поля во время PATCH — дожать ещё раз.
+                scheduleProfileAutosave(300);
             }
             saveResumeCreatorStep(sid, currentStep);
             return true;
         } catch (err) {
             console.warn('[ResumeCreator] autosave failed', err?.message || err);
+            scheduleProfileAutosave(1200);
             return false;
         } finally {
             autosaveInFlightRef.current = false;
@@ -702,6 +750,20 @@ const ResumeCreator = () => {
     useEffect(() => {
         if (bootLoading || !studentId) return undefined;
 
+        // Держим ref в синхроне с state (bio/skills тоже).
+        profileAutosaveRef.current = {
+            ...profileAutosaveRef.current,
+            studentId,
+            bootLoading,
+            saving,
+            step,
+            profile,
+            bio,
+            hhLink,
+            selectedSkills,
+            legacyCity,
+        };
+
         const snapshot = buildProfileAutosaveSnapshot({
             profile,
             bio,
@@ -716,9 +778,7 @@ const ResumeCreator = () => {
                 // Черновик уже в state — не считаем его «сохранённым на сервере».
                 lastPersistedSnapshotRef.current = '';
                 saveProfileDraft(studentId, { profile, bio, hhLink, selectedSkills });
-                window.setTimeout(() => {
-                    flushProfileAutosaveRef.current?.();
-                }, 0);
+                scheduleProfileAutosave(0);
             } else {
                 lastPersistedSnapshotRef.current = snapshot;
             }
@@ -731,16 +791,12 @@ const ResumeCreator = () => {
         }
 
         saveProfileDraft(studentId, { profile, bio, hhLink, selectedSkills });
-
-        if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
-        autosaveTimerRef.current = window.setTimeout(() => {
-            flushProfileAutosaveRef.current?.();
-        }, 700);
+        scheduleProfileAutosave(400);
 
         return () => {
             if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
         };
-    }, [bootLoading, studentId, profile, bio, hhLink, selectedSkills, step, legacyCity]);
+    }, [bootLoading, studentId, profile, bio, hhLink, selectedSkills, step, legacyCity, saving]);
 
     useEffect(() => {
         const flush = () => {
