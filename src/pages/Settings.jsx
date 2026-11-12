@@ -9,7 +9,11 @@ import {
     getExperienceDetailsByStudentId,
     getPortfolioByStudentId,
 } from '../services/studentApi.js';
-import { logoutServer } from '../services/authApi.js';
+import {
+    fetchAuthMe,
+    getStoredAccountStatus,
+    logoutServer,
+} from '../services/authApi.js';
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
 
@@ -44,6 +48,7 @@ const SettingsPage = () => {
     const [portfolio, setPortfolio] = useState([]);
     const [experiences, setExperiences] = useState([]);
     const [educations, setEducations] = useState([]);
+    const [accountStatus, setAccountStatus] = useState(() => getStoredAccountStatus());
 
     const handleLogout = async () => {
         if (loggingOut) return;
@@ -65,6 +70,15 @@ const SettingsPage = () => {
                 const s = await getStudentMe();
                 setRole('student');
                 setProfile(s);
+
+                try {
+                    const authMe = await fetchAuthMe();
+                    if (authMe?.accountStatus) {
+                        setAccountStatus(String(authMe.accountStatus).toUpperCase());
+                    }
+                } catch {
+                    setAccountStatus((prev) => prev || getStoredAccountStatus());
+                }
 
                 const [portfolioResult, educationResult, experienceResult] = await Promise.allSettled([
                     getPortfolioByStudentId(s.id),
@@ -201,6 +215,7 @@ const SettingsPage = () => {
                                 portfolios={portfolio}
                                 avatarSrc={avatarUrl}
                                 verified={Boolean(profile.publicProfileConsent)}
+                                accountStatus={accountStatus}
                                 onEmployerView={() => navigate(`/profile/${profile.id}`)}
                                 onRefresh={() => loadProfile({ soft: true })}
                             />

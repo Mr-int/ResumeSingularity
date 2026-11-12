@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M72 16C41.072 16 16 41.072 16 72C16 102.928 41.072 128 72 128C82.92 128 93.112 124.872 101.6 119.44L132.24 150.08C134.56 152.4 138.32 152.4 140.64 150.08C142.96 147.76 142.96 144 140.64 141.68L110.08 111.12C117.2 101.896 121.6 90.56 121.6 78.08C121.6 47.152 96.528 16 72 16ZM72 28.8C89.472 28.8 103.2 42.528 103.2 60C103.2 77.472 89.472 91.2 72 91.2C54.528 91.2 40.8 77.472 40.8 60C40.8 42.528 54.528 28.8 72 28.8Z" fill="url(#paint_review)"/>
+<defs>
+<linearGradient id="paint_review" x1="-40" y1="-20" x2="140" y2="150" gradientUnits="userSpaceOnUse">
+<stop stop-color="#7EB6FF"/>
+<stop offset="1" stop-color="#1A2330"/>
+</linearGradient>
+</defs>
+</svg>

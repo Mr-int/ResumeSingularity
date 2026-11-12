@@ -8,12 +8,24 @@ export const STUDENT_STAGE = {
 };
 
 const PROFILE_SUBMITTED_KEY = 'resume:student-profile-submitted';
+const PROFILE_SUBMITTED_AT_KEY = 'resume:student-profile-submitted-at';
 const REGISTRATION_COMPLETED_KEY = 'resume:student-registration-completed';
+
+/** Окно «Отправляем на проверку…» после submit-for-review (как в макете). */
+export const RESUME_SUBMIT_GRACE_MS = 5 * 60 * 1000;
+
+export const RESUME_BANNER_STATUS = {
+    NOT_SUBMITTED: 'not_submitted',
+    AWAITING_SEND: 'awaiting_send',
+    IN_REVIEW: 'in_review',
+    REVISION: 'revision',
+};
 
 export const markStudentProfileSubmitted = (userId) => {
     if (!userId) return;
     try {
         localStorage.setItem(`${PROFILE_SUBMITTED_KEY}:${userId}`, '1');
+        localStorage.setItem(`${PROFILE_SUBMITTED_AT_KEY}:${userId}`, String(Date.now()));
     } catch {
         /* empty */
     }
@@ -28,13 +40,47 @@ export const isStudentProfileSubmittedLocally = (userId) => {
     }
 };
 
+export const getStudentProfileSubmittedAt = (userId) => {
+    if (!userId) return null;
+    try {
+        const raw = localStorage.getItem(`${PROFILE_SUBMITTED_AT_KEY}:${userId}`);
+        const ts = Number(raw);
+        return Number.isFinite(ts) && ts > 0 ? ts : null;
+    } catch {
+        return null;
+    }
+};
+
 export const clearStudentProfileSubmitted = (userId) => {
     if (!userId) return;
     try {
         localStorage.removeItem(`${PROFILE_SUBMITTED_KEY}:${userId}`);
+        localStorage.removeItem(`${PROFILE_SUBMITTED_AT_KEY}:${userId}`);
     } catch {
         /* empty */
     }
+};
+
+/**
+ * Баннер статуса резюме в ЛК.
+ * APPROVED → null (баннер не показываем).
+ */
+export const resolveResumeBannerStatus = (authMe, { now = Date.now() } = {}) => {
+    const status = String(authMe?.accountStatus || '').toUpperCase();
+    const userId = authMe?.id;
+
+    if (status === 'APPROVED') return null;
+    if (status === 'REJECTED') return RESUME_BANNER_STATUS.REVISION;
+
+    const submitted = isStudentProfileSubmittedLocally(userId);
+    if (!submitted) return RESUME_BANNER_STATUS.NOT_SUBMITTED;
+
+    const submittedAt = getStudentProfileSubmittedAt(userId);
+    if (submittedAt != null && now - submittedAt < RESUME_SUBMIT_GRACE_MS) {
+        return RESUME_BANNER_STATUS.AWAITING_SEND;
+    }
+
+    return RESUME_BANNER_STATUS.IN_REVIEW;
 };
 
 export const markStudentRegistrationCompleted = (userId) => {

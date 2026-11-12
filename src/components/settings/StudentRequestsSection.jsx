@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { filterRequests, postStudentDecision } from '../../services/requestApi.js';
 import { getRecruiterById } from '../../services/getApi.js';
 import './studentRequestsSection.css';
@@ -182,12 +181,9 @@ const StudentRequestsSection = ({ studentId }) => {
                             ) : null}
 
                             {req.appChatId ? (
-                                <Link
-                                    to={`/chats?chatId=${encodeURIComponent(req.appChatId)}`}
-                                    className="studentRequests__chatLink"
-                                >
-                                    Открыть чат
-                                </Link>
+                                <span className="studentRequests__chatLink studentRequests__chatLink--wip">
+                                    Чат в разработке
+                                </span>
                             ) : null}
                         </li>
                     );

@@ -69,10 +69,13 @@ import { buildPortfolioPayload, normalizePortfolioItem } from '../utils/portfoli
 import { crumbleSkillChip, flySkillChip } from '../utils/skillChipAnimations.js';
 import {
     clearExperienceDraft,
+    clearProfileDraft,
     clearResumeCreatorStep,
     loadExperienceDraft,
+    loadProfileDraft,
     loadResumeCreatorStep,
     saveExperienceDraft,
+    saveProfileDraft,
     saveResumeCreatorStep,
 } from './resumeCreatorStepStorage.js';
 
@@ -255,6 +258,13 @@ const ResumeCreator = () => {
     const toastTimerRef = useRef(null);
     /** Нужен POST complete-registration (письмо), если basics ещё не были на карточке. */
     const needsCompleteRegistrationRef = useRef(false);
+    const autosaveTimerRef = useRef(null);
+    const autosaveInFlightRef = useRef(false);
+    const autosaveReadyRef = useRef(false);
+    const pendingDraftAutosaveRef = useRef(false);
+    const lastPersistedSnapshotRef = useRef('');
+    const profileAutosaveRef = useRef({});
+    const flushProfileAutosaveRef = useRef(async () => false);
 
     const [step, setStep] = useState(1);
     /** Дальше этого шага по клику на прогресс нельзя — пока не пройдены обязательные шаги. */
@@ -395,7 +405,6 @@ const ResumeCreator = () => {
                         .map(normalizePortfolioItem)
                         .filter((item) => item.name || item.link || item.description),
                 );
-                setHhLink(me.hhLink || '');
                 setSpecialties(Array.isArray(specs) ? specs : []);
                 setCompaniesCatalog(Array.isArray(companies) ? companies : []);
                 const apiSkills = Array.isArray(skillsPage?.data)
@@ -446,7 +455,7 @@ const ResumeCreator = () => {
                     ?? me.speciality?.id
                     ?? null;
                 setLegacyCity((me.city || '').trim());
-                setProfile({
+                const fromServerProfile = {
                     firstName: me.firstName || '',
                     lastName: me.lastName || '',
                     city: me.city || '',
@@ -455,10 +464,32 @@ const ResumeCreator = () => {
                     gender: me.gender || '',
                     specialityId: resolvedSpecialityId,
                     busyness: me.busyness || 'FREE',
-                });
-                setBio(me.bio || '');
+                };
+                const fromServerSkills = meSkills
+                    .map((item) => skillEntityId(item))
+                    .filter((id) => id != null);
+                const profileDraft = loadProfileDraft(me.id);
+                const draftProfile = profileDraft?.profile && typeof profileDraft.profile === 'object'
+                    ? profileDraft.profile
+                    : null;
+                if (profileDraft) {
+                    pendingDraftAutosaveRef.current = true;
+                }
+                setProfile(draftProfile ? { ...fromServerProfile, ...draftProfile } : fromServerProfile);
+                setBio(
+                    profileDraft && typeof profileDraft.bio === 'string'
+                        ? profileDraft.bio
+                        : (me.bio || ''),
+                );
+                setHhLink(
+                    profileDraft && typeof profileDraft.hhLink === 'string'
+                        ? profileDraft.hhLink
+                        : (me.hhLink || ''),
+                );
                 setSelectedSkills(
-                    meSkills.map((item) => skillEntityId(item)).filter((id) => id != null),
+                    Array.isArray(profileDraft?.selectedSkills) && profileDraft.selectedSkills.length > 0
+                        ? profileDraft.selectedSkills
+                        : fromServerSkills,
                 );
                 if (me.imagePath) {
                     setPhotoPreview(getImageUrl(me.imagePath));
@@ -545,7 +576,7 @@ const ResumeCreator = () => {
         }
     };
 
-    const persistProfile = async ({ syncSkills = false } = {}) => {
+    const persistProfile = async ({ syncSkills = false, applyResponse = true } = {}) => {
         const body = buildPatchBody();
         const sentCity = body.city;
         const sentSkillIds = toPersistableSkillIds(selectedSkills);
@@ -566,13 +597,166 @@ const ResumeCreator = () => {
         const skillsMismatch = Boolean(body.skillsIds)
             && sentSkillIds.length > 0
             && !sentSkillIds.every((id) => serverSkillIds.includes(id));
-        applyMeToProfile(me, { keepLocalSkills: skillsMismatch });
+        // Автосейв не должен затирать поля, которые пользователь успел изменить во время PATCH.
+        if (applyResponse) {
+            applyMeToProfile(me, { keepLocalSkills: skillsMismatch });
+        } else if (me.city?.trim()) {
+            setLegacyCity(me.city.trim());
+        }
         return {
             cityMismatch: Boolean(sentCity && me.city !== sentCity),
             actualCity: me.city,
             skillsMismatch,
         };
     };
+
+    const buildProfileAutosaveSnapshot = (data = profileAutosaveRef.current) => JSON.stringify({
+        profile: data.profile || {},
+        bio: data.bio ?? '',
+        hhLink: data.hhLink ?? '',
+        selectedSkills: data.selectedSkills || [],
+    });
+
+    const flushProfileAutosave = async ({ forceSkills = false } = {}) => {
+        const ctx = profileAutosaveRef.current;
+        const {
+            studentId: sid,
+            bootLoading: booting,
+            saving: isSaving,
+            step: currentStep,
+            profile: currentProfile,
+            bio: currentBio,
+            hhLink: currentHh,
+            selectedSkills: currentSkills,
+            legacyCity: currentLegacyCity,
+            persistProfile: persistFn,
+        } = ctx;
+
+        if (!sid || booting || isSaving || autosaveInFlightRef.current || typeof persistFn !== 'function') {
+            return false;
+        }
+
+        const check = validatePartialSave({
+            profile: currentProfile,
+            bio: currentBio,
+            legacyCity: currentLegacyCity,
+        });
+        if (!check.valid) return false;
+
+        const snapshot = buildProfileAutosaveSnapshot({
+            profile: currentProfile,
+            bio: currentBio,
+            hhLink: currentHh,
+            selectedSkills: currentSkills,
+        });
+        if (snapshot === lastPersistedSnapshotRef.current) return false;
+
+        autosaveInFlightRef.current = true;
+        try {
+            const result = await persistFn({
+                syncSkills: forceSkills || currentStep === 5,
+                applyResponse: false,
+            });
+            if (result?.cityMismatch || result?.skillsMismatch) {
+                return false;
+            }
+            lastPersistedSnapshotRef.current = snapshot;
+            const latest = buildProfileAutosaveSnapshot(profileAutosaveRef.current);
+            if (latest === snapshot) {
+                clearProfileDraft(sid);
+            }
+            saveResumeCreatorStep(sid, currentStep);
+            return true;
+        } catch (err) {
+            console.warn('[ResumeCreator] autosave failed', err?.message || err);
+            return false;
+        } finally {
+            autosaveInFlightRef.current = false;
+        }
+    };
+
+    profileAutosaveRef.current = {
+        studentId,
+        bootLoading,
+        saving,
+        step,
+        profile,
+        bio,
+        hhLink,
+        selectedSkills,
+        legacyCity,
+        persistProfile,
+    };
+    flushProfileAutosaveRef.current = flushProfileAutosave;
+
+    const markProfilePersisted = () => {
+        lastPersistedSnapshotRef.current = buildProfileAutosaveSnapshot({
+            profile,
+            bio,
+            hhLink,
+            selectedSkills,
+        });
+        clearProfileDraft(studentId);
+    };
+
+    useEffect(() => {
+        if (bootLoading || !studentId) return undefined;
+
+        const snapshot = buildProfileAutosaveSnapshot({
+            profile,
+            bio,
+            hhLink,
+            selectedSkills,
+        });
+
+        if (!autosaveReadyRef.current) {
+            autosaveReadyRef.current = true;
+            if (pendingDraftAutosaveRef.current) {
+                pendingDraftAutosaveRef.current = false;
+                // Черновик уже в state — не считаем его «сохранённым на сервере».
+                lastPersistedSnapshotRef.current = '';
+                saveProfileDraft(studentId, { profile, bio, hhLink, selectedSkills });
+                window.setTimeout(() => {
+                    flushProfileAutosaveRef.current?.();
+                }, 0);
+            } else {
+                lastPersistedSnapshotRef.current = snapshot;
+            }
+            return undefined;
+        }
+
+        if (snapshot === lastPersistedSnapshotRef.current) {
+            clearProfileDraft(studentId);
+            return undefined;
+        }
+
+        saveProfileDraft(studentId, { profile, bio, hhLink, selectedSkills });
+
+        if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
+        autosaveTimerRef.current = window.setTimeout(() => {
+            flushProfileAutosaveRef.current?.();
+        }, 700);
+
+        return () => {
+            if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
+        };
+    }, [bootLoading, studentId, profile, bio, hhLink, selectedSkills, step, legacyCity]);
+
+    useEffect(() => {
+        const flush = () => {
+            flushProfileAutosaveRef.current?.();
+        };
+        const onVisibility = () => {
+            if (document.visibilityState === 'hidden') flush();
+        };
+        window.addEventListener('pagehide', flush);
+        document.addEventListener('visibilitychange', onVisibility);
+        return () => {
+            flush();
+            window.removeEventListener('pagehide', flush);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
+    }, []);
 
     const refreshPortfolios = async () => {
         if (!studentId) return [];
@@ -711,6 +895,10 @@ const ResumeCreator = () => {
             showToast(check.message, { error: true });
             return;
         }
+        if (autosaveTimerRef.current) {
+            window.clearTimeout(autosaveTimerRef.current);
+            autosaveTimerRef.current = null;
+        }
         setSaving(true);
         try {
             const result = await persistProfile({ syncSkills: step === 5 });
@@ -725,6 +913,7 @@ const ResumeCreator = () => {
                 showToast('Навыки не сохранились на сервере. Попробуйте ещё раз.', { error: true });
                 return;
             }
+            markProfilePersisted();
             await flushExperienceDraftIfReady();
             saveResumeCreatorStep(studentId, step);
             showToast('Прогресс успешно сохранён');
@@ -743,6 +932,10 @@ const ResumeCreator = () => {
             return;
         }
 
+        if (autosaveTimerRef.current) {
+            window.clearTimeout(autosaveTimerRef.current);
+            autosaveTimerRef.current = null;
+        }
         setSaving(true);
         try {
             if (step === 1 || step === 2 || step === 4 || step === 5) {
@@ -758,6 +951,7 @@ const ResumeCreator = () => {
                     showToast('Навыки не сохранились на сервере. Попробуйте ещё раз.', { error: true });
                     return;
                 }
+                markProfilePersisted();
                 if (
                     step === 1
                     && needsCompleteRegistrationRef.current
@@ -796,6 +990,7 @@ const ResumeCreator = () => {
                     );
                     return;
                 }
+                markProfilePersisted();
 
                 let authMe = null;
                 try {
@@ -833,6 +1028,7 @@ const ResumeCreator = () => {
                     markStudentProfileSubmitted(authMe?.id);
                     clearResumeCreatorStep(studentId);
                     clearExperienceDraft(studentId);
+                    clearProfileDraft(studentId);
                     setResumeComplete(true);
                     if (submitted) {
                         showToast('Анкета отправлена на проверку');
@@ -843,6 +1039,7 @@ const ResumeCreator = () => {
 
                 clearResumeCreatorStep(studentId);
                 clearExperienceDraft(studentId);
+                clearProfileDraft(studentId);
                 setResumeComplete(true);
                 showToast('Резюме сохранено');
                 navigate('/profile', { replace: true });
@@ -859,7 +1056,12 @@ const ResumeCreator = () => {
         }
     };
 
-    const handleBack = () => {
+    const handleBack = async () => {
+        if (autosaveTimerRef.current) {
+            window.clearTimeout(autosaveTimerRef.current);
+            autosaveTimerRef.current = null;
+        }
+        await flushProfileAutosaveRef.current?.();
         if (step <= 1) {
             navigate('/');
             return;
@@ -869,7 +1071,7 @@ const ResumeCreator = () => {
         setStep(prevStep);
     };
 
-    const handleStepSelect = (targetStep) => {
+    const handleStepSelect = async (targetStep) => {
         if (saving) return;
         if (targetStep < 1 || targetStep > TOTAL_STEPS) return;
         if (targetStep > maxReachableStep) {
@@ -877,6 +1079,11 @@ const ResumeCreator = () => {
             return;
         }
         if (targetStep === step) return;
+        if (autosaveTimerRef.current) {
+            window.clearTimeout(autosaveTimerRef.current);
+            autosaveTimerRef.current = null;
+        }
+        await flushProfileAutosaveRef.current?.();
         saveResumeCreatorStep(studentId, targetStep);
         setMaxReachedStep((prev) => Math.max(prev, targetStep));
         setStep(targetStep);
