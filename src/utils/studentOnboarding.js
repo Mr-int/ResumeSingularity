@@ -61,26 +61,60 @@ export const clearStudentProfileSubmitted = (userId) => {
     }
 };
 
+const REJECTION_REASON_LABELS = {
+    INCOMPLETE_PROFILE: 'неполный профиль',
+    INVALID_DATA: 'некорректные данные',
+    NOT_ELIGIBLE: 'не подходит по требованиям',
+    DUPLICATE: 'дубликат аккаунта',
+    OTHER: 'другое',
+};
+
+/** Текст причины отказа из AuthMeDTO. */
+export const formatRejectionMessage = (authMe) => {
+    const comment = String(authMe?.rejectionComment || '').trim();
+    if (comment) return comment;
+    const reason = String(authMe?.rejectionReason || '').trim().toUpperCase();
+    return REJECTION_REASON_LABELS[reason] || '';
+};
+
+const hasPendingReviewVersion = (versions) => {
+    if (!Array.isArray(versions) || versions.length === 0) return false;
+    return versions.some((item) => String(item?.status || '').toUpperCase() === 'PENDING_REVIEW');
+};
+
 /**
  * Баннер статуса резюме в ЛК.
- * APPROVED → null (баннер не показываем).
+ * Источник: GET /auth/me (+ опционально GET /student/me/versions).
+ * APPROVED → null.
  */
-export const resolveResumeBannerStatus = (authMe, { now = Date.now() } = {}) => {
+export const resolveResumeBannerStatus = (authMe, versions = [], { now = Date.now() } = {}) => {
     const status = String(authMe?.accountStatus || '').toUpperCase();
     const userId = authMe?.id;
 
     if (status === 'APPROVED') return null;
     if (status === 'REJECTED') return RESUME_BANNER_STATUS.REVISION;
 
-    const submitted = isStudentProfileSubmittedLocally(userId);
-    if (!submitted) return RESUME_BANNER_STATUS.NOT_SUBMITTED;
+    const graceEndsAt = authMe?.draftGraceEndsAt
+        ? Date.parse(authMe.draftGraceEndsAt)
+        : NaN;
+    if (Number.isFinite(graceEndsAt) && graceEndsAt > now) {
+        return RESUME_BANNER_STATUS.AWAITING_SEND;
+    }
+
+    if (hasPendingReviewVersion(versions)) {
+        return RESUME_BANNER_STATUS.IN_REVIEW;
+    }
 
     const submittedAt = getStudentProfileSubmittedAt(userId);
     if (submittedAt != null && now - submittedAt < RESUME_SUBMIT_GRACE_MS) {
         return RESUME_BANNER_STATUS.AWAITING_SEND;
     }
 
-    return RESUME_BANNER_STATUS.IN_REVIEW;
+    if (isStudentProfileSubmittedLocally(userId)) {
+        return RESUME_BANNER_STATUS.IN_REVIEW;
+    }
+
+    return RESUME_BANNER_STATUS.NOT_SUBMITTED;
 };
 
 export const markStudentRegistrationCompleted = (userId) => {

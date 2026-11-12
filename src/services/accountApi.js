@@ -37,6 +37,22 @@ export const getCommunicationReadiness = (opts = {}) =>
         ...opts,
     });
 
+/** GET /student/me/versions — версии анкеты для статуса модерации. */
+export const getStudentProfileVersions = (opts = {}) =>
+    apiClientJson('student/me/versions', {
+        method: 'GET',
+        ...opts,
+    });
+
+/**
+ * POST /student/me/revert-draft — откат черновика в окне draftGraceEndsAt.
+ * Ответ 204.
+ */
+export const revertStudentDraft = () =>
+    apiClientJson('student/me/revert-draft', {
+        method: 'POST',
+    });
+
 /** PATCH /student/{id} — частичное обновление профиля студента (ADMIN). */
 export const patchStudent = (studentId, body) =>
     apiClientJson(`student/${studentId}`, {

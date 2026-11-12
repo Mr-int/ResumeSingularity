@@ -20,18 +20,41 @@
 }
 
 .resumeStatusBanner--neutral {
-    background: rgba(255, 255, 255, 0.12);
+    flex-direction: row;
+    align-items: center;
+    gap: 42px;
+    background: rgba(255, 255, 255, 0.2);
     border-color: #5f5f5f;
 }
 
 .resumeStatusBanner--review {
-    background: rgba(62, 142, 255, 0.16);
+    background: rgba(62, 142, 255, 0.2);
     border-color: #3e8eff;
 }
 
 .resumeStatusBanner--danger {
-    background: rgba(255, 122, 122, 0.18);
-    border-color: #ff7a7a;
+    background: rgba(233, 90, 87, 0.2);
+    border-color: #e95a57;
+}
+
+.resumeStatusBanner__stack {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    width: 100%;
+}
+
+.resumeStatusBanner__row {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    width: 100%;
 }
 
 .resumeStatusBanner__body {
@@ -42,6 +65,12 @@
     align-items: flex-start;
     gap: 16px;
     max-width: min(100%, 640px);
+}
+
+.resumeStatusBanner__body--wide {
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
 }
 
 .resumeStatusBanner__title,
@@ -86,6 +115,43 @@
     opacity: 0.92;
 }
 
+.resumeStatusBanner__chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 8px 16px;
+    border-radius: 7px;
+    box-sizing: border-box;
+}
+
+.resumeStatusBanner__chip span {
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.resumeStatusBanner__chip img {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.resumeStatusBanner__chip--review {
+    background: #3e8eff;
+}
+
+.resumeStatusBanner__chip--danger {
+    background: #e95a57;
+}
+
 .resumeStatusBanner__art {
     position: absolute;
     right: -8px;
@@ -110,24 +176,22 @@
     right: 36px;
 }
 
-.resumeStatusBanner__art--review {
-    width: min(160px, 24vw);
-    height: auto;
-    right: 28px;
-}
-
-.resumeStatusBanner__art--revision {
-    width: min(198px, 28vw);
-    height: auto;
-    right: 24px;
-    top: 42%;
-    transform: translateY(-50%) rotate(12.28deg);
-}
-
 @media (max-width: 720px) {
     .resumeStatusBanner {
         padding: 24px 20px;
         gap: 20px;
+    }
+
+    .resumeStatusBanner--neutral {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .resumeStatusBanner__row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
     }
 
     .resumeStatusBanner__btn {
@@ -140,13 +204,11 @@
         right: -20px;
     }
 
-    .resumeStatusBanner__art--alert,
-    .resumeStatusBanner__art--revision {
+    .resumeStatusBanner__art--alert {
         width: 140px;
     }
 
-    .resumeStatusBanner__art--clock,
-    .resumeStatusBanner__art--review {
+    .resumeStatusBanner__art--clock {
         width: 110px;
     }
 }
