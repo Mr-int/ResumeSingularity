@@ -18,6 +18,7 @@ export const RESUME_BANNER_STATUS = {
     NOT_SUBMITTED: 'not_submitted',
     AWAITING_SEND: 'awaiting_send',
     IN_REVIEW: 'in_review',
+    IN_REVISION: 'in_revision',
     REVISION: 'revision',
     APPROVED: 'approved',
 };
@@ -87,7 +88,8 @@ export const resolveResumeBannerStatus = (authMe) => {
     if (status === 'APPROVED') return RESUME_BANNER_STATUS.APPROVED;
     if (status === 'REJECTED') return RESUME_BANNER_STATUS.REVISION;
     if (status === 'PENDING_APPROVAL') return RESUME_BANNER_STATUS.IN_REVIEW;
-    if (status === 'REGISTRATION' || status === 'IN_REVISION') return RESUME_BANNER_STATUS.NOT_SUBMITTED;
+    if (status === 'IN_REVISION') return RESUME_BANNER_STATUS.IN_REVISION;
+    if (status === 'REGISTRATION') return RESUME_BANNER_STATUS.NOT_SUBMITTED;
     return null;
 };
 

@@ -67,6 +67,47 @@ export const patchRecruiter = (recruiterId, body) =>
         body: JSON.stringify(body),
     });
 
+const postRecruiterPhotoOnce = (recruiterId, file) => {
+    const formData = new FormData();
+    formData.append('avatarFile', file);
+    return fetch(`${API_BASE_URL}recruiter/photo/${recruiterId}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+    });
+};
+
+/** POST /recruiter/photo/{id} — multipart, поле avatarFile. */
+export const uploadRecruiterPhoto = async (recruiterId, file) => {
+    let response = await postRecruiterPhotoOnce(recruiterId, file);
+    if (response.status === 401) {
+        try {
+            await refreshSession();
+            response = await postRecruiterPhotoOnce(recruiterId, file);
+        } catch {
+            clearLocalAuth();
+            window.location.href = appPath('login');
+            throw new Error('HTTP error! status: 401 - Unauthorized');
+        }
+    }
+    if (response.status === 401) {
+        throw new Error('HTTP error! status: 401 - Unauthorized');
+    }
+    if (!response.ok) {
+        const text = await response.text();
+        let msg = text;
+        try {
+            const parsed = JSON.parse(text);
+            msg = parsed.message || text;
+        } catch {
+            /* empty */
+        }
+        const err = new Error(msg || `Ошибка ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+};
+
 const postStudentPhotoOnce = (studentId, file) => {
     const formData = new FormData();
     formData.append('avatarFile', file);

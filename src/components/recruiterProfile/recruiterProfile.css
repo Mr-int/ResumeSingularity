@@ -4,13 +4,94 @@
     overflow: visible;
 }
 
-.recruiterProfile .studentProfileResume__about {
-    flex-direction: column;
+.recruiterProfile__panel {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #41464B;
+    border-radius: 32px;
+    background: linear-gradient(90deg, #202123 0%, #121315 100%);
+    padding: 20px 24px;
 }
 
-.recruiterProfile .studentProfileResume__bio {
-    flex: none;
-    padding-bottom: 30px;
+.recruiterProfile__toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.recruiterProfile__chevron {
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+}
+
+.recruiterProfile__chevron.is-open {
+    transform: rotate(-135deg);
+}
+
+.recruiterProfile__body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.recruiterProfile__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.recruiterProfile__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #B3B5B7;
+    font-size: 13px;
+    font-family: 'StratosSemiLight', sans-serif;
+}
+
+.recruiterProfile__field input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 41px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid #41464B;
+    background: #131313;
+    color: #ffffff;
+    font: inherit;
+}
+
+.recruiterProfile__field input[readonly] {
+    opacity: 0.7;
+}
+
+.recruiterProfile__subtitle {
+    margin: 8px 0 0;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+@media (max-width: 700px) {
+    .recruiterProfile__grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .recruiterProfile__initials {
@@ -71,7 +152,15 @@
 .recruiterProfile__save {
     width: auto;
     align-self: flex-start;
+    height: 46px;
     padding: 0 24px;
+    border: none;
+    border-radius: 12px;
+    background: #3E8EFF;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
 }
 
 .recruiterProfile__save:disabled {

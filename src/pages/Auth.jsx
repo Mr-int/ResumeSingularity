@@ -4,7 +4,14 @@ import LoginModal from '../components/auth/LoginModal.jsx';
 import RegisterModal from '../components/auth/RegisterModal.jsx';
 import RegisterForm from '../components/auth/RegisterForm.jsx';
 import ForgotPasswordModal from '../components/auth/ForgotPasswordModal.jsx';
-import { EMAIL_CONFIRMATION_PENDING_KEY, fetchAuthMe, isAuthenticated } from '../services/authApi.js';
+import {
+    EMAIL_CONFIRMATION_PENDING_KEY,
+    EMAIL_CONFIRMATION_EMAIL_KEY,
+    REGISTRATION_PENDING_ROLE_KEY,
+    REGISTRATION_USERNAME_KEY,
+    fetchAuthMe,
+    isAuthenticated,
+} from '../services/authApi.js';
 import { resolveStudentOnboarding } from '../services/studentOnboardingApi.js';
 
 const Auth = () => {
@@ -43,6 +50,17 @@ const Auth = () => {
                 return path || '/resume/create';
             }
             if (role === 'RECRUITER') {
+                if (me?.emailVerified === false) {
+                    sessionStorage.setItem(EMAIL_CONFIRMATION_PENDING_KEY, '1');
+                    sessionStorage.setItem(REGISTRATION_PENDING_ROLE_KEY, 'recruiter');
+                    if (me.username) {
+                        sessionStorage.setItem(REGISTRATION_USERNAME_KEY, me.username);
+                    }
+                    if (me.email) {
+                        sessionStorage.setItem(EMAIL_CONFIRMATION_EMAIL_KEY, me.email);
+                    }
+                    return '/registration?role=recruiter';
+                }
                 return '/profile';
             }
         } catch {
