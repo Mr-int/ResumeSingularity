@@ -60,7 +60,11 @@ export const filterCityNames = async () => {
 };
 
 // ---- Requests ----
-export const getRequestById = (id) => apiClientJson(`request/${id}`, { method: 'GET' });
+export const getRequestById = () => {
+    const err = new Error('Заявки временно недоступны');
+    err.status = 0;
+    return Promise.reject(err);
+};
 
 // ---- Main ----
 export const getMainStatus = () => apiClientJson('main/status', { method: 'GET' });

@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import convertImg from '../assets/other/convert.jpg';
-import resumatorImg from '../assets/other/resumator.jpg';
+import dogRepairmanImg from '../assets/other/dog-repairman.png';
+import '../components/projects/projects.css';
 import './careerCenter.css';
 
 /**
@@ -50,45 +51,16 @@ const CareerCenter = () => {
                         </div>
 
                         <div className="careerCenter__messagesCard">
-                            <div className="careerCenter__messagesBadge">+1 новых</div>
-
-                            <button
-                                type="button"
-                                className="careerCenter__messageItem"
-                                onClick={() => navigate('/chats')}
-                            >
-                                <div className="careerCenter__messageAvatar" aria-hidden="true">
-                                    <img
-                                        src={resumatorImg}
-                                        alt=""
-                                        className="careerCenter__messageAvatarImg"
-                                        width={40}
-                                        height={40}
-                                    />
-                                </div>
-                                <div className="careerCenter__messageBody">
-                                    <h3 className="careerCenter__messageAuthor">Резюматор</h3>
-                                    <p className="careerCenter__messageText">
-                                        Привет! Я твой помощник в Центре карьеры, для начала надо создать ...
-                                    </p>
-                                </div>
-                                <div className="careerCenter__messageMeta">
-                                    <span className="careerCenter__messageTime">Сейчас</span>
-                                    <span className="careerCenter__messageCount">1</span>
-                                </div>
-                            </button>
-
-                            <div className="careerCenter__messagesEmpty">
-                                Больше нет новых сообщений
+                            <div className="projects__wip careerCenter__wip">
+                                <img
+                                    className="projects__wipImg"
+                                    src={dogRepairmanImg}
+                                    alt=""
+                                    width={180}
+                                    height={180}
+                                />
+                                <p className="projects__wipText">не грусти собачка, страница в разработке</p>
                             </div>
-
-                            <button
-                                type="button"
-                                className="careerCenter__messagesOpen"
-                                onClick={() => navigate('/chats')}
-                            >
-                                Открыть
-                            </button>
                         </div>
                     </div>
                 </div>

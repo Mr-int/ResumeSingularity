@@ -1,7 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { filterRequests } from '../../services/requestApi.js';
-import { getStudentById } from '../../services/studentApi.js';
 
 const RESULT_LABELS = {
     CREATION: 'Создана',
@@ -14,42 +12,11 @@ const RESULT_LABELS = {
     REFUSAL: 'Отклонена',
 };
 
-const RecruiterRequestsSection = ({ recruiterId }) => {
-    const [requests, setRequests] = useState([]);
-    const [students, setStudents] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    const load = useCallback(async () => {
-        if (!recruiterId) return;
-        setLoading(true);
-        setError('');
-        try {
-            const res = await filterRequests({ recruiterId }, 0, 50);
-            const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
-            setRequests(rows);
-            const map = {};
-            await Promise.all(
-                [...new Set(rows.map((r) => r.studentId).filter(Boolean))].map(async (sid) => {
-                    try {
-                        map[sid] = await getStudentById(sid);
-                    } catch {
-                        map[sid] = null;
-                    }
-                }),
-            );
-            setStudents(map);
-        } catch (e) {
-            setError(e.message || 'Не удалось загрузить заявки');
-            setRequests([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [recruiterId]);
-
-    useEffect(() => {
-        load();
-    }, [load]);
+const RecruiterRequestsSection = ({ recruiterId: _recruiterId }) => {
+    const [requests] = useState([]);
+    const [students] = useState({});
+    const [loading] = useState(false);
+    const [error] = useState('');
 
     return (
         <section className="accountPage__card">
