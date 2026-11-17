@@ -3,31 +3,11 @@
     max-width: 100%;
     box-sizing: border-box;
     flex: 0 0 auto;
-    min-height: 0;
     background-color: #131313;
     border-radius: 16px;
     padding: 24px;
     color: #ffffff;
-    /* Если памятка не помещается целиком — скроллится она сама,
-       а не обрезается краем родительского блока */
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
-}
-
-.memoBlock::-webkit-scrollbar {
-    width: 6px;
-}
-
-.memoBlock::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.memoBlock::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background-color: rgba(65, 70, 75, 0.55);
+    overflow: visible;
 }
 
 .memoBlock__header {

@@ -2,34 +2,22 @@
     position: relative;
     box-sizing: border-box;
     width: 100%;
-    height: 100%;
-    max-height: 450px;
+    height: auto;
+    max-height: none;
     border: 1px solid #2F2F2F;
     border-radius: 24px;
     background: linear-gradient(110deg, #191A1B 0.86%, #131313 97.54%);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .portfolioAside__scroll {
     box-sizing: border-box;
-    height: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+    height: auto;
+    overflow: visible;
     padding: 23px 27px 48px;
     display: flex;
     flex-direction: column;
     gap: 56px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
-}
-
-.portfolioAside__scroll::-webkit-scrollbar {
-    width: 6px;
-}
-
-.portfolioAside__scroll::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background-color: rgba(65, 70, 75, 0.55);
 }
 
 .portfolioAside__folders {
@@ -164,13 +152,7 @@
 }
 
 .portfolioAside__fade {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 36px;
-    pointer-events: none;
-    background: linear-gradient(to bottom, rgba(19, 19, 19, 0), #131313);
+    display: none;
 }
 
 @media (max-width: 600px) {
