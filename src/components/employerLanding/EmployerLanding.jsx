@@ -23,6 +23,7 @@ import quote from '../../assets/employerLanding/quote.png';
 import './employerLanding.css';
 
 const LOGIN = '/login';
+const REGISTER = '/registration';
 const ringFront = 'M230.39016 93.2769 C247 64.5 288 65 305 77 C324 90.4 319.5 106.5 308.2285 118.6892';
 const ringBack = `${ringFront} C283 146 229 138 227 111 C226.5 104 227.5 98.3 230.39016 93.2769 Z`;
 const holePath = 'M225 103 C226.5 99.5 228.2 97.1 230.39016 93.2769 C247 64.5 288 65 305 77 C324 90.4 319.5 106.5 308.2285 118.6892 C304.5 122.7 301.5 125.2 298 127';
@@ -60,7 +61,7 @@ function Header() {
         ))}
       </nav>
       <div className="site-header__actions">
-        <LandingButton className="button--header" to={LOGIN}>Регистрация</LandingButton>
+        <LandingButton className="button--header" to={REGISTER}>Регистрация</LandingButton>
         <LandingButton className="button--header" variant="quiet" to={LOGIN}>Войти</LandingButton>
       </div>
     </header>
@@ -93,7 +94,7 @@ function HeroVisual() {
             <div className="project-keychain__copy">
               <p className="project-keychain__label">Проект</p>
               <h2>Дизайн таблички<br />на памятник с AR-шоу</h2>
-              <Link to={LOGIN}>Смотреть работу <img src={arrowUp} alt="" aria-hidden="true" /></Link>
+              <Link to={REGISTER}>Смотреть работу <img src={arrowUp} alt="" aria-hidden="true" /></Link>
             </div>
           </article>
           <img className="keychain-key" src={heroKey} alt="" aria-hidden="true" />
@@ -132,7 +133,7 @@ function Hero() {
             </p>
           </div>
           <div className="hero__actions">
-            <LandingButton arrow="up-right" to={LOGIN}>Зарегистрироваться</LandingButton>
+            <LandingButton arrow="up-right" to={REGISTER}>Зарегистрироваться</LandingButton>
             <LandingButton variant="outline" arrow="down" onClick={() => scrollToSection('students-projects', 'students-title')}>
               Узнать больше
             </LandingButton>
@@ -237,7 +238,7 @@ function StudentsRail() {
                       </span>
                     </button>
                     {open ? (
-                      <Link className="student-card__project-link" to={LOGIN}>
+                      <Link className="student-card__project-link" to={REGISTER}>
                         Смотреть проект <img src={arrowUp} alt="" aria-hidden="true" />
                       </Link>
                     ) : null}
@@ -257,8 +258,8 @@ function StudentsRail() {
           </div>
         </div>
         <div className="students-projects__actions">
-          <LandingButton arrow="up-right" to={LOGIN}>Все студенты</LandingButton>
-          <LandingButton variant="outline" arrow="up-right" to={LOGIN}>Все проекты</LandingButton>
+          <LandingButton arrow="up-right" to={REGISTER}>Все студенты</LandingButton>
+          <LandingButton variant="outline" arrow="up-right" to={REGISTER}>Все проекты</LandingButton>
         </div>
       </div>
     </section>
@@ -323,7 +324,7 @@ function WorkTypes() {
                       aria-hidden="true"
                     />
                     {open ? (
-                      <LandingButton className="cooperation-card__action cooperation-card__action--link" arrow="up-right" to={LOGIN}>
+                      <LandingButton className="cooperation-card__action cooperation-card__action--link" arrow="up-right" to={REGISTER}>
                         Отправить предложение
                       </LandingButton>
                     ) : null}
@@ -465,7 +466,7 @@ function StartCooperation() {
               <p className="start-cooperation__description">{stepDescriptions[step]}</p>
             </div>
             <div className={`start-cooperation__completion${complete ? ' is-visible' : ''}`}>
-              <LandingButton className="start-cooperation__action" arrow="up-right" to={LOGIN}>Зарегистрироваться</LandingButton>
+              <LandingButton className="start-cooperation__action" arrow="up-right" to={REGISTER}>Зарегистрироваться</LandingButton>
             </div>
           </div>
           <CooperationScene step={step} />
@@ -514,7 +515,7 @@ function Partners() {
             ))}
           </div>
         </div>
-        <LandingButton className="partners__action" arrow="up-right" to={LOGIN}>Стать партнером</LandingButton>
+        <LandingButton className="partners__action" arrow="up-right" to={REGISTER}>Стать партнером</LandingButton>
       </div>
     </section>
   );
@@ -528,7 +529,7 @@ function FinalCta() {
       </div>
       <div className="final-cta__heading">
         <h2 id="final-cta-title" tabIndex={-1}>Найдите того,<br />кто усилит вашу команду</h2>
-        <LandingButton className="final-cta__action" arrow="up-right" to={LOGIN}>Зарегистрироваться</LandingButton>
+        <LandingButton className="final-cta__action" arrow="up-right" to={REGISTER}>Зарегистрироваться</LandingButton>
       </div>
       <div className="final-cta__fan" aria-hidden="true">
         {fanCards.map((card, index) => {
