@@ -1105,9 +1105,12 @@ const ResumeCreator = () => {
                 } catch {
                     authMe = null;
                 }
-                const pending = String(authMe?.accountStatus || '').toUpperCase() === 'PENDING_APPROVAL';
+                const accountStatus = String(authMe?.accountStatus || '').toUpperCase();
+                const canSubmit = accountStatus === 'PENDING_APPROVAL'
+                    || accountStatus === 'REGISTRATION'
+                    || accountStatus === 'IN_REVISION';
 
-                if (pending) {
+                if (canSubmit) {
                     // communication-readiness временно не блокируем — сразу submit-for-review
                     let submitted = false;
                     try {
