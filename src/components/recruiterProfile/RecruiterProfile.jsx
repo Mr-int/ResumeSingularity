@@ -1,29 +1,15 @@
 import { useEffect, useState } from 'react';
-import { patchRecruiter } from '../../services/accountApi.js';
+import { patchRecruiter, uploadRecruiterPhoto } from '../../services/accountApi.js';
+import { getImageUrl } from '../../config/api.js';
 import '../studentProfileResume/studentProfileResume.css';
 import './recruiterProfile.css';
 
 const COOPERATION_OPTIONS = [
-    {
-        value: 'SEMESTER_PROJECT',
-        label: 'Проектная активность на семестр (может не оплачиваться)',
-    },
-    {
-        value: 'SUMMER_PRACTICE',
-        label: 'Летняя профессиональная практика (может не оплачиваться)',
-    },
-    {
-        value: 'INTERNSHIP',
-        label: 'Стажировка (оплачивается, оформление по СМЗ/ИП)',
-    },
-    {
-        value: 'VACANCY',
-        label: 'Вакансия (оплачивается, оформление по ТК РФ)',
-    },
-    {
-        value: 'OTHER',
-        label: 'Другое',
-    },
+    { value: 'SEMESTER_PROJECT', label: 'Проектная активность на семестр (может не оплачиваться)' },
+    { value: 'SUMMER_PRACTICE', label: 'Летняя профессиональная практика (может не оплачиваться)' },
+    { value: 'INTERNSHIP', label: 'Стажировка (оплачивается, оформление по СМЗ/ИП)' },
+    { value: 'VACANCY', label: 'Вакансия (оплачивается, оформление по ТК РФ)' },
+    { value: 'OTHER', label: 'Другое' },
 ];
 
 const READY_OPTIONS = [
@@ -45,30 +31,60 @@ const initialsOf = (profile) => {
     return letters || 'Р';
 };
 
-const readyFromProfile = (value) => {
-    if (value === true || value === false) return value;
-    return null;
-};
+const readyFromProfile = (value) => (value === true || value === false ? value : null);
+
+const sameText = (left, right) => String(left ?? '').trim() === String(right ?? '').trim();
 
 const RecruiterProfile = ({ profile, onSaved }) => {
-    const [format, setFormat] = useState(() => profile?.cooperationFormat || '');
+    const [open, setOpen] = useState(false);
+    const [firstName, setFirstName] = useState(profile?.firstName || '');
+    const [lastName, setLastName] = useState(profile?.lastName || '');
+    const [middleName, setMiddleName] = useState(profile?.middleName || '');
+    const [companyName, setCompanyName] = useState(profile?.companyName || '');
+    const [city, setCity] = useState(profile?.city || '');
+    const [email, setEmail] = useState(profile?.email || '');
+    const [phoneNumber, setPhoneNumber] = useState(profile?.phoneNumber || '');
+    const [telegramUsername, setTelegramUsername] = useState(profile?.telegramUsername || '');
+    const [format, setFormat] = useState(profile?.cooperationFormat || '');
     const [ready, setReady] = useState(() => readyFromProfile(profile?.readyToRequestStudents));
+    const [photoFile, setPhotoFile] = useState(null);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [saved, setSaved] = useState(false);
 
     useEffect(() => {
+        setFirstName(profile?.firstName || '');
+        setLastName(profile?.lastName || '');
+        setMiddleName(profile?.middleName || '');
+        setCompanyName(profile?.companyName || '');
+        setCity(profile?.city || '');
+        setEmail(profile?.email || '');
+        setPhoneNumber(profile?.phoneNumber || '');
+        setTelegramUsername(profile?.telegramUsername || '');
         setFormat(profile?.cooperationFormat || '');
         setReady(readyFromProfile(profile?.readyToRequestStudents));
+        setPhotoFile(null);
     }, [profile]);
 
     const handleSave = async () => {
         const body = {};
-        if (format) body.cooperationFormat = format;
-        if (ready === true || ready === false) body.readyToRequestStudents = ready;
-        if (Object.keys(body).length === 0) {
+        if (!sameText(firstName, profile?.firstName) && firstName.trim()) body.firstName = firstName.trim();
+        if (!sameText(lastName, profile?.lastName) && lastName.trim()) body.lastName = lastName.trim();
+        if (!sameText(middleName, profile?.middleName) && middleName.trim()) body.middleName = middleName.trim();
+        if (!sameText(companyName, profile?.companyName) && companyName.trim()) body.companyName = companyName.trim();
+        if (!sameText(city, profile?.city) && city.trim()) body.city = city.trim();
+        if (!sameText(email, profile?.email) && email.trim()) body.email = email.trim();
+        if (!sameText(phoneNumber, profile?.phoneNumber) && phoneNumber.trim()) body.phoneNumber = phoneNumber.trim();
+        if (!sameText(telegramUsername, profile?.telegramUsername) && telegramUsername.trim()) {
+            body.telegramUsername = telegramUsername.trim();
+        }
+        if (format && format !== profile?.cooperationFormat) body.cooperationFormat = format;
+        const savedReady = readyFromProfile(profile?.readyToRequestStudents);
+        if ((ready === true || ready === false) && ready !== savedReady) body.readyToRequestStudents = ready;
+
+        if (Object.keys(body).length === 0 && !photoFile) {
             setSaved(false);
-            setError('Выберите ответ, который нужно сохранить');
+            setError('Нет изменений для сохранения');
             return;
         }
 
@@ -76,7 +92,12 @@ const RecruiterProfile = ({ profile, onSaved }) => {
         setError('');
         setSaved(false);
         try {
-            await patchRecruiter(profile.id, body);
+            if (Object.keys(body).length > 0) {
+                await patchRecruiter(profile.id, body);
+            }
+            if (photoFile) {
+                await uploadRecruiterPhoto(profile.id, photoFile);
+            }
             setSaved(true);
             await onSaved?.();
         } catch (err) {
@@ -86,8 +107,9 @@ const RecruiterProfile = ({ profile, onSaved }) => {
         }
     };
 
-    const firstName = profile?.firstName || 'Имя';
-    const lastName = profile?.lastName || 'Фамилия';
+    const photoUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : '';
+    const shownFirst = profile?.firstName || 'Имя';
+    const shownLast = profile?.lastName || 'Фамилия';
     const company = profile?.companyName || 'Компания';
 
     return (
@@ -95,13 +117,17 @@ const RecruiterProfile = ({ profile, onSaved }) => {
             <div className="studentProfileResume__layout">
                 <aside className="studentProfileResume__sidebar">
                     <header className="studentProfileResume__profileCard">
-                        <div className="studentProfileResume__avatar" aria-hidden="true">
-                            <span className="recruiterProfile__initials">{initialsOf(profile)}</span>
+                        <div className="studentProfileResume__avatar">
+                            {photoUrl ? (
+                                <img src={photoUrl} alt="" className="studentProfileResume__avatarImg" />
+                            ) : (
+                                <span className="recruiterProfile__initials">{initialsOf(profile)}</span>
+                            )}
                         </div>
                         <div className="studentProfileResume__identity">
                             <h1 className="studentProfileResume__name">
-                                <span>{firstName}</span>
-                                <span>{lastName}</span>
+                                <span>{shownFirst}</span>
+                                <span>{shownLast}</span>
                             </h1>
                         </div>
                         <div className="studentProfileResume__identity studentProfileResume__identity--specialty">
@@ -111,32 +137,74 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                 </aside>
 
                 <main className="studentProfileResume__main">
-                    <section className="studentProfileResume__about" aria-label="Профиль работодателя">
-                        <div className="studentProfileResume__bio">
-                            <div className="studentProfileResume__sectionHead">
-                                <h2 className="studentProfileResume__sectionTitle">Контакты</h2>
-                            </div>
-                            <div className="studentProfileResume__infoText">
-                                <p>Город: {textOrEmpty(profile?.city)}</p>
-                                <p>Отчество: {textOrEmpty(profile?.middleName)}</p>
-                                <p>Логин: {textOrEmpty(profile?.username)}</p>
-                                <p>Почта: {textOrEmpty(profile?.email)}</p>
-                                <p>Телефон: {textOrEmpty(profile?.phoneNumber)}</p>
-                                <p>Telegram: {textOrEmpty(profile?.telegramUsername)}</p>
-                            </div>
-                        </div>
+                    <section className="recruiterProfile__panel" aria-label="Профиль работодателя">
+                        <button
+                            type="button"
+                            className="recruiterProfile__toggle"
+                            aria-expanded={open}
+                            onClick={() => setOpen((prev) => !prev)}
+                        >
+                            <span>Анкета работодателя</span>
+                            <span className={`recruiterProfile__chevron${open ? ' is-open' : ''}`} aria-hidden="true" />
+                        </button>
 
-                        <div className="studentProfileResume__infoSkills">
-                            <div className="studentProfileResume__infoBlock">
-                                <h3 className="studentProfileResume__sectionTitle">Формат сотрудничества</h3>
+                        {open ? (
+                            <div className="recruiterProfile__body">
+                                <label className="recruiterProfile__field">
+                                    <span>Фото</span>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(event) => setPhotoFile(event.target.files?.[0] || null)}
+                                    />
+                                </label>
+                                <div className="recruiterProfile__grid">
+                                    <label className="recruiterProfile__field">
+                                        <span>Имя</span>
+                                        <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                                    </label>
+                                    <label className="recruiterProfile__field">
+                                        <span>Фамилия</span>
+                                        <input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                                    </label>
+                                </div>
+                                <label className="recruiterProfile__field">
+                                    <span>Отчество</span>
+                                    <input value={middleName} onChange={(e) => setMiddleName(e.target.value)} />
+                                </label>
+                                <label className="recruiterProfile__field">
+                                    <span>Компания</span>
+                                    <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                                </label>
+                                <label className="recruiterProfile__field">
+                                    <span>Город</span>
+                                    <input value={city} onChange={(e) => setCity(e.target.value)} />
+                                </label>
+                                <label className="recruiterProfile__field">
+                                    <span>Логин</span>
+                                    <input value={textOrEmpty(profile?.username)} readOnly />
+                                </label>
+                                <label className="recruiterProfile__field">
+                                    <span>Почта</span>
+                                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                                </label>
+                                <div className="recruiterProfile__grid">
+                                    <label className="recruiterProfile__field">
+                                        <span>Телефон</span>
+                                        <input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                                    </label>
+                                    <label className="recruiterProfile__field">
+                                        <span>Telegram</span>
+                                        <input value={telegramUsername} onChange={(e) => setTelegramUsername(e.target.value)} />
+                                    </label>
+                                </div>
+
+                                <h3 className="recruiterProfile__subtitle">Формат сотрудничества</h3>
                                 <div className="recruiterProfile__choices" role="radiogroup" aria-label="Формат сотрудничества">
                                     {COOPERATION_OPTIONS.map((option) => (
                                         <label
                                             key={option.value}
-                                            className={
-                                                'recruiterProfile__choice'
-                                                + (format === option.value ? ' is-selected' : '')
-                                            }
+                                            className={`recruiterProfile__choice${format === option.value ? ' is-selected' : ''}`}
                                         >
                                             <input
                                                 type="radio"
@@ -149,12 +217,8 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                                         </label>
                                     ))}
                                 </div>
-                            </div>
 
-                            <div className="studentProfileResume__infoBlock">
-                                <h3 className="studentProfileResume__sectionTitle">
-                                    Готовы подать запрос на подбор студентов?
-                                </h3>
+                                <h3 className="recruiterProfile__subtitle">Готовы подать запрос на подбор студентов?</h3>
                                 <p className="recruiterProfile__hint">
                                     Мы свяжемся с Вами для уточнения деталей по заявке или поможем оформить ее
                                 </p>
@@ -162,10 +226,7 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                                     {READY_OPTIONS.map((option) => (
                                         <label
                                             key={String(option.value)}
-                                            className={
-                                                'recruiterProfile__choice'
-                                                + (ready === option.value ? ' is-selected' : '')
-                                            }
+                                            className={`recruiterProfile__choice${ready === option.value ? ' is-selected' : ''}`}
                                         >
                                             <input
                                                 type="radio"
@@ -177,23 +238,19 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                                         </label>
                                     ))}
                                 </div>
-                            </div>
 
-                            {error ? (
-                                <p className="accountPage__error recruiterProfile__note" role="alert">{error}</p>
-                            ) : null}
-                            {saved ? (
-                                <p className="accountPage__ok recruiterProfile__note" role="status">Сохранено</p>
-                            ) : null}
-                            <button
-                                type="button"
-                                className="studentProfileResume__btn studentProfileResume__btn--primary recruiterProfile__save"
-                                onClick={handleSave}
-                                disabled={saving}
-                            >
-                                {saving ? 'Сохраняем…' : 'Сохранить'}
-                            </button>
-                        </div>
+                                {error ? <p className="accountPage__error recruiterProfile__note" role="alert">{error}</p> : null}
+                                {saved ? <p className="accountPage__ok recruiterProfile__note" role="status">Сохранено</p> : null}
+                                <button
+                                    type="button"
+                                    className="recruiterProfile__save"
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                >
+                                    {saving ? 'Сохраняем…' : 'Сохранить'}
+                                </button>
+                            </div>
+                        ) : null}
                     </section>
                 </main>
             </div>
