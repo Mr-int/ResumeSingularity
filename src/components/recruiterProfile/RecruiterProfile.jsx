@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { patchRecruiter, uploadRecruiterPhoto } from '../../services/accountApi.js';
+import { filterCityNames } from '../../services/getApi.js';
 import { getImageUrl } from '../../config/api.js';
+import { formatRuPhoneInput } from '../../utils/registrationIdentity.js';
+import CitySelect from '../resumeCreator/StepForm/CitySelect/CitySelect.jsx';
 import '../studentProfileResume/studentProfileResume.css';
 import './recruiterProfile.css';
 
@@ -43,7 +46,9 @@ const RecruiterProfile = ({ profile, onSaved }) => {
     const [companyName, setCompanyName] = useState(profile?.companyName || '');
     const [city, setCity] = useState(profile?.city || '');
     const [email, setEmail] = useState(profile?.email || '');
-    const [phoneNumber, setPhoneNumber] = useState(profile?.phoneNumber || '');
+    const [phoneNumber, setPhoneNumber] = useState(() => formatRuPhoneInput(profile?.phoneNumber || ''));
+    const [cityOptions, setCityOptions] = useState([]);
+    const photoInputRef = useRef(null);
     const [telegramUsername, setTelegramUsername] = useState(profile?.telegramUsername || '');
     const [format, setFormat] = useState(profile?.cooperationFormat || '');
     const [ready, setReady] = useState(() => readyFromProfile(profile?.readyToRequestStudents));
@@ -59,12 +64,26 @@ const RecruiterProfile = ({ profile, onSaved }) => {
         setCompanyName(profile?.companyName || '');
         setCity(profile?.city || '');
         setEmail(profile?.email || '');
-        setPhoneNumber(profile?.phoneNumber || '');
+        setPhoneNumber(formatRuPhoneInput(profile?.phoneNumber || ''));
         setTelegramUsername(profile?.telegramUsername || '');
         setFormat(profile?.cooperationFormat || '');
         setReady(readyFromProfile(profile?.readyToRequestStudents));
         setPhotoFile(null);
     }, [profile]);
+
+    useEffect(() => {
+        let cancelled = false;
+        filterCityNames()
+            .then((names) => {
+                if (!cancelled) setCityOptions(names);
+            })
+            .catch(() => {
+                if (!cancelled) setCityOptions([]);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const handleSave = async () => {
         const body = {};
@@ -74,7 +93,8 @@ const RecruiterProfile = ({ profile, onSaved }) => {
         if (!sameText(companyName, profile?.companyName) && companyName.trim()) body.companyName = companyName.trim();
         if (!sameText(city, profile?.city) && city.trim()) body.city = city.trim();
         if (!sameText(email, profile?.email) && email.trim()) body.email = email.trim();
-        if (!sameText(phoneNumber, profile?.phoneNumber) && phoneNumber.trim()) body.phoneNumber = phoneNumber.trim();
+        const savedPhone = formatRuPhoneInput(profile?.phoneNumber || '');
+        if (!sameText(phoneNumber, savedPhone) && phoneNumber.trim()) body.phoneNumber = phoneNumber.trim();
         if (!sameText(telegramUsername, profile?.telegramUsername) && telegramUsername.trim()) {
             body.telegramUsername = telegramUsername.trim();
         }
@@ -150,52 +170,101 @@ const RecruiterProfile = ({ profile, onSaved }) => {
 
                         {open ? (
                             <div className="recruiterProfile__body">
-                                <label className="recruiterProfile__field">
+                                <div className="recruiterProfile__field">
                                     <span>Фото</span>
+                                    <button
+                                        type="button"
+                                        className="recruiterProfile__drop"
+                                        onClick={() => photoInputRef.current?.click()}
+                                    >
+                                        <span className="recruiterProfile__dropTitle">
+                                            {photoFile ? photoFile.name : 'Нажмите, чтобы выбрать фото'}
+                                        </span>
+                                        <span className="recruiterProfile__dropHint">JPG или PNG</span>
+                                    </button>
                                     <input
+                                        ref={photoInputRef}
+                                        className="recruiterProfile__file"
                                         type="file"
                                         accept="image/*"
                                         onChange={(event) => setPhotoFile(event.target.files?.[0] || null)}
                                     />
-                                </label>
+                                </div>
                                 <div className="recruiterProfile__grid">
                                     <label className="recruiterProfile__field">
                                         <span>Имя</span>
-                                        <input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                                        <input
+                                            value={firstName}
+                                            placeholder="Иван"
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                        />
                                     </label>
                                     <label className="recruiterProfile__field">
                                         <span>Фамилия</span>
-                                        <input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                                        <input
+                                            value={lastName}
+                                            placeholder="Иванов"
+                                            onChange={(e) => setLastName(e.target.value)}
+                                        />
                                     </label>
                                 </div>
                                 <label className="recruiterProfile__field">
                                     <span>Отчество</span>
-                                    <input value={middleName} onChange={(e) => setMiddleName(e.target.value)} />
+                                    <input
+                                        value={middleName}
+                                        placeholder="Иванович"
+                                        onChange={(e) => setMiddleName(e.target.value)}
+                                    />
                                 </label>
                                 <label className="recruiterProfile__field">
                                     <span>Компания</span>
-                                    <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                                    <input
+                                        value={companyName}
+                                        placeholder="Название компании"
+                                        onChange={(e) => setCompanyName(e.target.value)}
+                                    />
                                 </label>
-                                <label className="recruiterProfile__field">
+                                <div className="recruiterProfile__field">
                                     <span>Город</span>
-                                    <input value={city} onChange={(e) => setCity(e.target.value)} />
-                                </label>
+                                    <CitySelect
+                                        id="recruiter-city"
+                                        value={city}
+                                        options={cityOptions}
+                                        placeholder="Выберите город"
+                                        onChange={setCity}
+                                    />
+                                </div>
                                 <label className="recruiterProfile__field">
                                     <span>Логин</span>
                                     <input value={textOrEmpty(profile?.username)} readOnly />
                                 </label>
                                 <label className="recruiterProfile__field">
                                     <span>Почта</span>
-                                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        placeholder="name@company.ru"
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
                                 </label>
                                 <div className="recruiterProfile__grid">
                                     <label className="recruiterProfile__field">
                                         <span>Телефон</span>
-                                        <input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+                                        <input
+                                            type="tel"
+                                            inputMode="tel"
+                                            value={phoneNumber}
+                                            placeholder="+7"
+                                            onChange={(e) => setPhoneNumber(formatRuPhoneInput(e.target.value))}
+                                        />
                                     </label>
                                     <label className="recruiterProfile__field">
                                         <span>Telegram</span>
-                                        <input value={telegramUsername} onChange={(e) => setTelegramUsername(e.target.value)} />
+                                        <input
+                                            value={telegramUsername}
+                                            placeholder="@username"
+                                            onChange={(e) => setTelegramUsername(e.target.value)}
+                                        />
                                     </label>
                                 </div>
 
@@ -207,6 +276,7 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                                             className={`recruiterProfile__choice${format === option.value ? ' is-selected' : ''}`}
                                         >
                                             <input
+                                                className="recruiterProfile__radio"
                                                 type="radio"
                                                 name="cooperationFormat"
                                                 value={option.value}
@@ -229,6 +299,7 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                                             className={`recruiterProfile__choice${ready === option.value ? ' is-selected' : ''}`}
                                         >
                                             <input
+                                                className="recruiterProfile__radio"
                                                 type="radio"
                                                 name="readyToRequestStudents"
                                                 checked={ready === option.value}
