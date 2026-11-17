@@ -7,6 +7,17 @@
     display: flex;
     flex-direction: column;
     gap: 56px;
+    /* Колонка больше не режет памятку: скроллится только список карточек */
+    overflow: hidden;
+}
+
+/* Скролл перенесён со всей колонки на список карточек */
+.educationAside__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-gutter: stable;
@@ -14,20 +25,13 @@
     scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
 }
 
-.educationAside::-webkit-scrollbar {
+.educationAside__cards::-webkit-scrollbar {
     width: 6px;
 }
 
-.educationAside::-webkit-scrollbar-thumb {
+.educationAside__cards::-webkit-scrollbar-thumb {
     border-radius: 999px;
     background-color: rgba(65, 70, 75, 0.55);
-}
-
-.educationAside__cards {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    flex-shrink: 0;
 }
 
 .educationAside__card {
@@ -224,4 +228,12 @@
 .educationAside .memoBlock {
     flex: 0 0 auto;
     min-height: 0;
+    /* Памятка всегда целиком внутри колонки; если контента больше,
+       скроллится она сама, а не обрезается краем колонки */
+    max-height: 60%;
+}
+
+/* Без карточек памятка может занять всю высоту колонки */
+.educationAside:not(:has(.educationAside__cards)) .memoBlock {
+    max-height: 100%;
 }
