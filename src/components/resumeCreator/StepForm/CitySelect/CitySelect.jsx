@@ -1,10 +1,10 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { CAMPUS_OPTIONS } from '../../../../constants/campusCities.js';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import './citySelect.css';
 
 const CitySelect = ({
     id = 'student-city',
     value = '',
+    options = [],
     onChange,
     placeholder = 'Выберите город',
 }) => {
@@ -12,8 +12,16 @@ const CitySelect = ({
     const rootRef = useRef(null);
     const listId = useId();
 
-    const options = CAMPUS_OPTIONS;
-    const displayValue = CAMPUS_OPTIONS.includes(value) ? value : '';
+    const displayValue = String(value || '').trim();
+    const menuOptions = useMemo(() => {
+        const names = (Array.isArray(options) ? options : [])
+            .map((name) => String(name || '').trim())
+            .filter(Boolean);
+        if (displayValue && !names.includes(displayValue)) {
+            return [displayValue, ...names];
+        }
+        return names;
+    }, [options, displayValue]);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -60,7 +68,7 @@ const CitySelect = ({
                     role="listbox"
                     aria-label="Город"
                 >
-                    {options.map((name) => {
+                    {menuOptions.map((name) => {
                         const selected = displayValue === name;
                         return (
                             <button

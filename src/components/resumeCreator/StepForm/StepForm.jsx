@@ -28,6 +28,7 @@ const StepForm = ({
     onCourseChange,
     onGenderChange,
     onSpecialtyChange,
+    cityOptions = [],
 }) => {
     const {
         firstName = '',
@@ -72,6 +73,7 @@ const StepForm = ({
                     <CitySelect
                         id="student-city"
                         value={city}
+                        options={cityOptions}
                         onChange={(next) => onChange?.('city', next)}
                     />
                 </div>
