@@ -536,16 +536,10 @@ export const getSkillsByStudentId = async (studentId) => {
     }
 };
 
-export const sendStudentRequest = async (requestData) => {
-    try {
-        const data = await apiClientJson('request', {
-            method: 'POST',
-            body: JSON.stringify(requestData)
-        });
-        return data;
-    } catch (error) {
-        throw error;
-    }
+export const sendStudentRequest = async () => {
+    const err = new Error('Заявки временно недоступны');
+    err.status = 0;
+    throw err;
 };
 
 export const createRecruiterRequest = async (recruiterData) => {

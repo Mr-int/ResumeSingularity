@@ -1,41 +1,14 @@
-import { apiClientJson } from '../utils/apiClient.js';
-
-const pageQuery = (page, size) => {
-    const p = new URLSearchParams();
-    p.set('page', String(page));
-    p.set('size', String(size));
-    return p.toString();
+const disabled = () => {
+    const err = new Error('Заявки временно недоступны');
+    err.status = 0;
+    return Promise.reject(err);
 };
 
-/**
- * POST /request — заявка рекрутера студенту
- */
-export const createRequest = (body) =>
-    apiClientJson('request', {
-        method: 'POST',
-        body: JSON.stringify(body),
-    });
+/** Заявки request/ на публичном фронте отключены. */
+export const createRequest = () => disabled();
 
-/**
- * GET /request/{id}
- */
-export const getRequestById = (id) =>
-    apiClientJson(`request/${id}`, { method: 'GET' });
+export const getRequestById = () => disabled();
 
-/**
- * POST /request/filter
- */
-export const filterRequests = (filter = {}, page = 0, size = 50) =>
-    apiClientJson(`request/filter?${pageQuery(page, size)}`, {
-        method: 'POST',
-        body: JSON.stringify(filter),
-    });
+export const filterRequests = () => disabled();
 
-/**
- * POST /request/{id}/student-decision
- */
-export const postStudentDecision = (requestId, payload) =>
-    apiClientJson(`request/${requestId}/student-decision`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-    });
+export const postStudentDecision = () => disabled();

@@ -1,6 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { filterRequests, postStudentDecision } from '../../services/requestApi.js';
-import { getRecruiterById } from '../../services/getApi.js';
+import React, { useState } from 'react';
 import './studentRequestsSection.css';
 
 const RESULT_LABELS = {
@@ -26,59 +24,18 @@ const statusTone = (result) => {
     return 'muted';
 };
 
-const StudentRequestsSection = ({ studentId }) => {
-    const [requests, setRequests] = useState([]);
-    const [recruiters, setRecruiters] = useState({});
-    const [loading, setLoading] = useState(true);
+const StudentRequestsSection = ({ studentId: _studentId }) => {
+    const [requests] = useState([]);
+    const [recruiters] = useState({});
+    const [loading] = useState(false);
     const [error, setError] = useState('');
     const [busyId, setBusyId] = useState(null);
     const [comments, setComments] = useState({});
 
-    const load = useCallback(async () => {
-        if (!studentId) return;
-        setLoading(true);
-        setError('');
-        try {
-            const res = await filterRequests({ studentId }, 0, 50);
-            const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res?.content) ? res.content : [];
-            setRequests(rows);
-            const recruiterMap = {};
-            await Promise.all(
-                [...new Set(rows.map((r) => r.recruiterId).filter(Boolean))].map(async (rid) => {
-                    try {
-                        recruiterMap[rid] = await getRecruiterById(rid);
-                    } catch {
-                        recruiterMap[rid] = null;
-                    }
-                }),
-            );
-            setRecruiters(recruiterMap);
-        } catch (e) {
-            setError(e.message || 'Не удалось загрузить заявки');
-            setRequests([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [studentId]);
-
-    useEffect(() => {
-        load();
-    }, [load]);
-
-    const handleDecision = async (requestId, accepted) => {
+    const handleDecision = async (requestId) => {
         setBusyId(requestId);
-        setError('');
-        try {
-            await postStudentDecision(requestId, {
-                accepted,
-                studentResponseText: (comments[requestId] || '').trim() || undefined,
-            });
-            await load();
-        } catch (e) {
-            setError(e.message || 'Не удалось отправить ответ');
-        } finally {
-            setBusyId(null);
-        }
+        setError('Ответ по заявке временно недоступен.');
+        setBusyId(null);
     };
 
     return (

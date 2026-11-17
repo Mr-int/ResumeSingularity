@@ -6,7 +6,6 @@ import successIcon from '../../assets/icons/success.svg';
 import sunIcon from '../../assets/other/sun.png';
 import cloudMailIcon from '../../assets/other/cloudMail.png';
 import { apiClientJson } from '../../utils/apiClient.js';
-import { createRequest } from '../../services/requestApi.js';
 import { ANALYTICS_EVENT, trackAnalyticsEvent } from '../../services/analyticsApi.js';
 
 const getInputNumbersValue = (value) => String(value ?? '').replace(/\D/g, '');
@@ -373,14 +372,17 @@ const ApplicationForm = ({ studentName, studentId, onClose, onSubmit, onGoToChat
             // Два режима:
             // 1) со страницы студента -> создаем request со studentId
             // 2) общая заявка без студента -> создаем/обновляем профиль recruiter
-            const requestData = hasStudent ? { ...baseData, studentId } : baseData;
+            if (hasStudent) {
+                setError('Заявка студенту временно не отправляется.');
+                return;
+            }
 
-            const response = hasStudent
-                ? await createRequest(requestData)
-                : await apiClientJson('recruiter', {
-                      method: 'POST',
-                      body: JSON.stringify(requestData),
-                  });
+            const requestData = baseData;
+
+            const response = await apiClientJson('recruiter', {
+                method: 'POST',
+                body: JSON.stringify(requestData),
+            });
 
             trackAnalyticsEvent(
                 hasStudent
