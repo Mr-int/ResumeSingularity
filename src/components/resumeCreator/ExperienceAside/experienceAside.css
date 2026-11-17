@@ -9,6 +9,7 @@
     gap: 56px;
     overflow-x: hidden;
     overflow-y: auto;
+    scrollbar-gutter: stable;
     scrollbar-width: thin;
     scrollbar-color: rgba(65, 70, 75, 0.55) transparent;
 }
@@ -202,6 +203,6 @@
 }
 
 .experienceAside .memoBlock {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
 }
