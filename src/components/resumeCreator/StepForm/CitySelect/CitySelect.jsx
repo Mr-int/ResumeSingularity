@@ -12,9 +12,8 @@ const CitySelect = ({
     const rootRef = useRef(null);
     const listId = useId();
 
-    const options = value && !CAMPUS_OPTIONS.includes(value)
-        ? [value, ...CAMPUS_OPTIONS]
-        : CAMPUS_OPTIONS;
+    const options = CAMPUS_OPTIONS;
+    const displayValue = CAMPUS_OPTIONS.includes(value) ? value : '';
 
     useEffect(() => {
         if (!open) return undefined;
@@ -37,7 +36,7 @@ const CitySelect = ({
 
     return (
         <div
-            className={`citySelect${open ? ' is-open' : ''}${value ? ' has-value' : ''}`}
+            className={`citySelect${open ? ' is-open' : ''}${displayValue ? ' has-value' : ''}`}
             ref={rootRef}
         >
             <button
@@ -50,7 +49,7 @@ const CitySelect = ({
                 onClick={() => setOpen((prev) => !prev)}
             >
                 <span className="citySelect__value">
-                    {value || placeholder}
+                    {displayValue || placeholder}
                 </span>
             </button>
 
@@ -62,7 +61,7 @@ const CitySelect = ({
                     aria-label="Город"
                 >
                     {options.map((name) => {
-                        const selected = value === name;
+                        const selected = displayValue === name;
                         return (
                             <button
                                 key={name}

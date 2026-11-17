@@ -14,14 +14,5 @@ export const isCampusCity = (city) => {
     return Boolean(trimmed && CAMPUS_OPTIONS.includes(trimmed));
 };
 
-/**
- * Для PATCH/валидации: кампусный город или уже сохранённый на сервере
- * (старые профили вне списка кампусов не блокируем).
- */
-export const isAllowedProfileCity = (city, legacyCity = '') => {
-    const trimmed = city?.trim();
-    if (!trimmed) return false;
-    if (isCampusCity(trimmed)) return true;
-    const legacy = legacyCity?.trim();
-    return Boolean(legacy && trimmed === legacy);
-};
+/** Для PATCH/валидации — только город из CAMPUS_OPTIONS. */
+export const isAllowedProfileCity = (city) => isCampusCity(city);

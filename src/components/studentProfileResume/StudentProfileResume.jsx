@@ -836,22 +836,6 @@ const StudentProfileResume = ({
                             <p className="studentProfileResume__empty">Образование пока не добавлено</p>
                         )}
                     </section>
-
-                    {isOwner ? (
-                        <footer className="studentProfileResume__banner">
-                            <p>
-                                Вы можете отредактировать ваше резюме, изменив его, вы снова отправляете ваше резюме на проверку.
-                            </p>
-                            <button
-                                type="button"
-                                className="studentProfileResume__btn studentProfileResume__btn--primary"
-                                onClick={goToResumeCreator}
-                            >
-                                Редактировать
-                                <IconEdit filled className="studentProfileResume__btnIcon studentProfileResume__btnIcon--edit" />
-                            </button>
-                        </footer>
-                    ) : null}
                 </main>
             </div>
         </div>

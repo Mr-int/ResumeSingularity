@@ -15,6 +15,7 @@ import {
     updateInstitution,
     updatePortfolio,
 } from '../../services/studentApi.js';
+import { CAMPUS_OPTIONS, isCampusCity } from '../../constants/campusCities.js';
 import { packExperienceAdditionalInfo } from '../../utils/experienceWebUrl.js';
 import { buildPortfolioPayload, normalizePortfolioItem } from '../../utils/portfolio.js';
 import {
@@ -323,8 +324,12 @@ const ProfileSectionEditor = ({
             }
 
             if (section === 'info') {
+                const nextCity = city.trim();
+                if (nextCity && !isCampusCity(nextCity)) {
+                    throw new Error('Выберите город из списка');
+                }
                 await patchStudentMe({
-                    city: city.trim() || null,
+                    city: nextCity || null,
                     birthDate: birthDate || null,
                 });
             }
@@ -544,7 +549,12 @@ const ProfileSectionEditor = ({
                 <>
                     <label className="profileSectionEditor__field">
                         <span>Город</span>
-                        <input value={city} onChange={(e) => setCity(e.target.value)} />
+                        <select value={isCampusCity(city) ? city : ''} onChange={(e) => setCity(e.target.value)}>
+                            <option value="">Выберите город</option>
+                            {CAMPUS_OPTIONS.map((name) => (
+                                <option key={name} value={name}>{name}</option>
+                            ))}
+                        </select>
                     </label>
                     <label className="profileSectionEditor__field">
                         <span>Дата рождения</span>
@@ -666,9 +676,16 @@ const ProfileSectionEditor = ({
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                     />
-                    <InlineField label="Город">
-                        <input value={city} placeholder="Город" onChange={(e) => setCity(e.target.value)} />
-                    </InlineField>
+                    <InlineSelect
+                        label="Город"
+                        value={isCampusCity(city) ? city : ''}
+                        onChange={(e) => setCity(e.target.value)}
+                    >
+                        <option value="">Выберите город</option>
+                        {CAMPUS_OPTIONS.map((name) => (
+                            <option key={name} value={name}>{name}</option>
+                        ))}
+                    </InlineSelect>
                 </div>
             ) : null}
 
