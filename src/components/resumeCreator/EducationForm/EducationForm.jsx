@@ -28,8 +28,11 @@ const currentYear = new Date().getFullYear();
 const EducationForm = ({
     values = {},
     educations = [],
+    editingId = null,
     onChange,
     onAdd,
+    onUpdate,
+    onCancelEdit,
 }) => {
     const {
         educationKind = 'gov',
@@ -49,6 +52,7 @@ const EducationForm = ({
 
     const fileInputRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
+    const isEditing = editingId != null && editingId !== '';
     const selectedKind = educationKind === 'course' ? 'course' : 'gov';
     const isGov = selectedKind === 'gov';
 
@@ -107,8 +111,12 @@ const EducationForm = ({
     };
 
     const handleAdd = () => {
+        const submit = isEditing ? onUpdate : onAdd;
+        const base = isEditing ? { id: editingId } : {};
+
         if (isGov) {
-            onAdd?.({
+            submit?.({
+                ...base,
                 educationKind: 'gov',
                 educationId: educationId === '' ? undefined : Number(educationId),
                 institutionName: institutionName.trim(),
@@ -121,8 +129,10 @@ const EducationForm = ({
             return;
         }
 
-        onAdd?.({
+        submit?.({
+            ...base,
             educationKind: 'course',
+            educationId: educationId === '' ? undefined : Number(educationId),
             institutionName: (platform || courseName).trim(),
             courseName: courseName.trim(),
             courseLink: courseLink.trim(),
@@ -393,9 +403,20 @@ const EducationForm = ({
                     </div>
                 )}
 
-                <button type="button" className="educationForm__add" onClick={handleAdd}>
-                    Добавить
-                </button>
+                <div className="educationForm__actions">
+                    <button type="button" className="educationForm__add" onClick={handleAdd}>
+                        {isEditing ? 'Сохранить' : 'Добавить'}
+                    </button>
+                    {isEditing ? (
+                        <button
+                            type="button"
+                            className="educationForm__cancel"
+                            onClick={() => onCancelEdit?.()}
+                        >
+                            Отмена
+                        </button>
+                    ) : null}
+                </div>
             </div>
         </section>
     );

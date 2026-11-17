@@ -15,6 +15,7 @@ import {
     ExperienceForm,
     ExperienceAside,
     EducationForm,
+    EducationAside,
     PortfolioLinksForm,
     PortfolioLinksAside,
 } from '../components/resumeCreator/index.js';
@@ -48,12 +49,14 @@ import {
     updateExperience,
     deleteExperience,
     createInstitution,
+    updateInstitution,
+    deleteInstitution,
     createPortfolio,
     updatePortfolio,
     deletePortfolio,
     getAllCompanies,
     getExperienceDetailsByStudentId,
-    getInstitutionsByStudentId,
+    getEducationDetailsByStudentId,
     getPortfolioByStudentId,
     resolveCompanyId,
     resolveEducationId,
@@ -117,6 +120,49 @@ const isPersistedExperienceId = (id) => {
     const num = Number(id);
     if (Number.isFinite(num)) return num > 0;
     return !String(id).startsWith('exp-');
+};
+
+/** id записи /institution (не путать с educationId из справочника /education). */
+const pickInstitutionId = (payload) => {
+    if (payload == null || typeof payload !== 'object') return null;
+    const candidates = [
+        payload.institution?.id,
+        payload.id,
+        payload.institutionId,
+        payload.data?.id,
+        payload.data?.institution?.id,
+    ];
+    for (const raw of candidates) {
+        if (raw == null || raw === '') continue;
+        const num = Number(raw);
+        if (Number.isFinite(num) && num > 0) return num;
+    }
+    return null;
+};
+
+const isPersistedInstitutionId = (id) => {
+    if (id == null || id === '') return false;
+    const num = Number(id);
+    return Number.isFinite(num) && num > 0;
+};
+
+/** InstitutionDTO из getEducationDetailsByStudentId → черновик EducationForm. */
+const educationEntryFromDetails = (item) => {
+    const isCourse = String(item?.educationType || '').toUpperCase() === 'COURSE';
+    const startYear = item?.startYear ?? '';
+    const endYear = item?.endYear ?? '';
+    return {
+        id: pickInstitutionId(item),
+        educationId: item?.educationId != null ? item.educationId : '',
+        institutionName: item?.institution || '',
+        direction: item?.direction || '',
+        educationLevel: item?.educationLevel || '',
+        startYear: startYear === null ? '' : String(startYear),
+        endYear: endYear === null ? '' : String(endYear),
+        educationKind: isCourse ? 'course' : 'gov',
+        educationType: isCourse ? 'COURSE' : 'STATE',
+        webUrl: item?.webUrl || '',
+    };
 };
 
 const PHOTO_EXAMPLES = [
@@ -293,8 +339,8 @@ const ResumeCreator = () => {
     const [educationDraft, setEducationDraft] = useState({});
     const [experiences, setExperiences] = useState([]);
     const [editingExperienceId, setEditingExperienceId] = useState(null);
-    const [educationsAdded, setEducationsAdded] = useState([]);
-    const [savedInstitutionCount, setSavedInstitutionCount] = useState(0);
+    const [educations, setEducations] = useState([]);
+    const [editingEducationId, setEditingEducationId] = useState(null);
 
     const [profile, setProfile] = useState({
         firstName: '',
@@ -319,13 +365,12 @@ const ResumeCreator = () => {
             hhLink,
             selectedSkills,
             photoPreview,
-            educationsAdded,
-            savedInstitutionCount,
+            educationsAdded: educations,
             legacyCity,
         }),
         [
             profile, bio, hhLink,
-            selectedSkills, photoPreview, educationsAdded, savedInstitutionCount, legacyCity,
+            selectedSkills, photoPreview, educations, legacyCity,
         ],
     );
 
@@ -396,11 +441,11 @@ const ResumeCreator = () => {
                 }
 
                 const me = await getStudentMe();
-                const [specs, skillsPage, edus, institutions, experienceDetails, companies, portfolio] = await Promise.all([
+                const [specs, skillsPage, edus, educationDetails, experienceDetails, companies, portfolio] = await Promise.all([
                     getAllSpecialities(),
                     filterSkills({}, { page: 0, size: 500 }),
                     getAllEducation(),
-                    getInstitutionsByStudentId(me.id),
+                    getEducationDetailsByStudentId(me.id),
                     getExperienceDetailsByStudentId(me.id),
                     getAllCompanies(),
                     getPortfolioByStudentId(me.id),
@@ -428,7 +473,13 @@ const ResumeCreator = () => {
                 setSkillsCatalog([...catalogById.values()]);
                 setEducationsCatalog(Array.isArray(edus) ? edus : []);
 
-                setSavedInstitutionCount(Array.isArray(institutions) ? institutions.length : 0);
+                setEducations(
+                    Array.isArray(educationDetails)
+                        ? educationDetails
+                            .map(educationEntryFromDetails)
+                            .filter((item) => isPersistedInstitutionId(item.id))
+                        : [],
+                );
                 setExperiences(
                     Array.isArray(experienceDetails)
                         ? experienceDetails
@@ -1435,70 +1486,79 @@ const ResumeCreator = () => {
         }
     };
 
-    const handleAddEducation = async (entry) => {
+    const clearEducationEditor = () => {
+        setEditingEducationId(null);
+        setEducationDraft({});
+    };
+
+    const validateEducationEntry = (entry) => {
         const kind = entry?.educationKind === 'course' ? 'course' : 'gov';
         const institutionName = entry?.institutionName?.trim() || '';
         if (kind === 'course') {
             if (!entry?.courseName?.trim() && !entry?.platform?.trim()) {
-                showToast('Укажите название курса или платформу', { error: true });
-                return;
+                return 'Укажите название курса или платформу';
             }
         } else if (!(Number(entry?.educationId) > 0) && !institutionName) {
-            showToast('Укажите образовательную организацию', { error: true });
-            return;
+            return 'Укажите образовательную организацию';
         }
-        if (entry.startYear == null || entry.endYear == null) {
-            showToast('Укажите год начала и год окончания обучения', { error: true });
-            return;
+        const hasStart = entry?.startYear != null && entry.startYear !== '';
+        const hasEnd = entry?.endYear != null && entry.endYear !== '';
+        if (!hasStart || !hasEnd) {
+            return 'Укажите год начала и год окончания обучения';
         }
-        setSaving(true);
-        try {
-            // Бэкенд требует educationId > 0; без id ищет «education with id0»
-            const educationId = await resolveEducationId(
-                institutionName,
-                entry.educationId,
-                educationsCatalog,
-                {
-                    webUrl: entry.webUrl || entry.courseLink || '',
-                    additionalInfo: entry.educationLevel
-                        || entry.direction
-                        || entry.courseName
-                        || institutionName,
-                },
-            );
-            const educationType = kind === 'course' ? 'COURSE' : 'STATE';
-            const direction = (entry.direction || entry.courseName || '').trim();
-            const educationLevel = (entry.educationLevel || '').trim();
-            // POST /institution — запись обучения на карточке студента
-            const created = await createInstitution({
+        return '';
+    };
+
+    /** POST/PUT /institution: educationId > 0 обязателен, иначе бэкенд ищет «education with id0». */
+    const buildEducationBody = async (entry) => {
+        const kind = entry?.educationKind === 'course' ? 'course' : 'gov';
+        const institutionName = entry?.institutionName?.trim() || '';
+        const educationId = await resolveEducationId(
+            institutionName,
+            entry.educationId,
+            educationsCatalog,
+            {
+                webUrl: entry.webUrl || entry.courseLink || '',
+                additionalInfo: entry.educationLevel
+                    || entry.direction
+                    || entry.courseName
+                    || institutionName,
+            },
+        );
+        const educationType = kind === 'course' ? 'COURSE' : 'STATE';
+        const direction = (entry.direction || entry.courseName || '').trim();
+        const educationLevel = (entry.educationLevel || '').trim();
+        const resolvedName = educationsCatalog.find(
+            (item) => Number(item.id) === Number(educationId),
+        )?.institution || institutionName;
+
+        const rememberCatalogEntry = () => {
+            setEducationsCatalog((prev) => (
+                prev.some((item) => Number(item.id) === Number(educationId))
+                    ? prev
+                    : [
+                        ...prev,
+                        {
+                            id: educationId,
+                            institution: resolvedName,
+                            additionalInfo: educationLevel || resolvedName,
+                            webUrl: entry.webUrl || entry.courseLink || '',
+                        },
+                    ]
+            ));
+        };
+
+        return {
+            body: {
                 studentId,
                 educationId,
-                startYear: entry.startYear,
-                endYear: entry.endYear,
+                startYear: Number(entry.startYear),
+                endYear: Number(entry.endYear),
                 educationType,
                 ...(direction ? { direction } : {}),
                 ...(educationLevel ? { educationLevel } : {}),
-            });
-            const resolvedName = educationsCatalog.find(
-                (item) => Number(item.id) === Number(educationId),
-            )?.institution || institutionName;
-            const institutionRecordId = created?.institution?.id
-                ?? created?.id
-                ?? null;
-
-            if (!educationsCatalog.some((item) => Number(item.id) === Number(educationId))) {
-                setEducationsCatalog((prev) => [
-                    ...prev,
-                    {
-                        id: educationId,
-                        institution: resolvedName,
-                        additionalInfo: educationLevel || resolvedName,
-                        webUrl: entry.webUrl || entry.courseLink || '',
-                    },
-                ]);
-            }
-
-            setEducationsAdded((prev) => [...prev, {
+            },
+            saved: {
                 ...entry,
                 educationKind: kind,
                 educationType,
@@ -1506,12 +1566,118 @@ const ResumeCreator = () => {
                 educationLevel,
                 educationId,
                 institutionName: resolvedName,
-                id: institutionRecordId,
-            }]);
-            setEducationDraft({ educationKind: kind });
-            showToast(kind === 'course' ? 'Курс добавлен' : 'Образование добавлено');
+            },
+            rememberCatalogEntry,
+        };
+    };
+
+    const persistEducationEntry = async (entry) => {
+        const { body, saved, rememberCatalogEntry } = await buildEducationBody(entry);
+        const created = await createInstitution(body);
+        const id = pickInstitutionId(created);
+        if (!isPersistedInstitutionId(id)) {
+            throw new Error('Сервер не вернул id записи — обновите страницу');
+        }
+        rememberCatalogEntry();
+        const record = { ...saved, id };
+        setEducations((prev) => [...prev, record]);
+        clearEducationEditor();
+        return record;
+    };
+
+    const persistEducationUpdate = async (entry, id) => {
+        const { body, saved, rememberCatalogEntry } = await buildEducationBody(entry);
+        await updateInstitution(id, body);
+        rememberCatalogEntry();
+        const record = { ...saved, id };
+        setEducations((prev) => prev.map((item) => (
+            String(item.id) === String(id) ? { ...item, ...record } : item
+        )));
+        clearEducationEditor();
+        return record;
+    };
+
+    const handleSelectEducation = (item) => {
+        if (!item) return;
+        if (!isPersistedInstitutionId(item.id)) {
+            showToast('У этой записи нет id — обновите страницу', { error: true });
+            return;
+        }
+        const isCourse = item.educationType === 'COURSE' || item.educationKind === 'course';
+        const webUrl = item.webUrl || '';
+        setEditingEducationId(item.id);
+        setEducationDraft({
+            id: item.id,
+            educationId: item.educationId != null ? String(item.educationId) : '',
+            educationKind: isCourse ? 'course' : 'gov',
+            institutionName: item.institutionName || '',
+            courseName: isCourse ? (item.direction || '') : '',
+            platform: isCourse ? (item.institutionName || '') : '',
+            direction: item.direction || '',
+            educationLevel: item.educationLevel || '',
+            startYear: item.startYear ?? '',
+            endYear: item.endYear ?? '',
+            webUrl,
+            courseLink: isCourse ? webUrl : '',
+        });
+    };
+
+    const handleAddEducation = async (entry) => {
+        const error = validateEducationEntry(entry);
+        if (error) {
+            showToast(error, { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            const saved = await persistEducationEntry(entry);
+            setEducationDraft({ educationKind: saved.educationKind });
+            showToast(saved.educationKind === 'course' ? 'Курс добавлен' : 'Образование добавлено');
         } catch (err) {
             showToast(err?.message || 'Не удалось добавить образование', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleUpdateEducation = async (entry) => {
+        const id = entry?.id ?? editingEducationId;
+        if (!isPersistedInstitutionId(id)) {
+            showToast('Не удалось сохранить образование без id', { error: true });
+            return;
+        }
+        const error = validateEducationEntry(entry);
+        if (error) {
+            showToast(error, { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            const saved = await persistEducationUpdate(entry, id);
+            setEducationDraft({ educationKind: saved.educationKind });
+            showToast('Образование обновлено');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось обновить образование', { error: true });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleDeleteEducation = async (item) => {
+        if (!isPersistedInstitutionId(item?.id)) {
+            showToast('Нельзя удалить образование без id', { error: true });
+            return;
+        }
+        setSaving(true);
+        try {
+            await deleteInstitution(item.id);
+            setEducations((prev) => prev.filter((row) => String(row.id) !== String(item.id)));
+            if (String(editingEducationId) === String(item.id)) {
+                clearEducationEditor();
+            }
+            showToast('Образование удалено');
+        } catch (err) {
+            showToast(err?.message || 'Не удалось удалить образование', { error: true });
         } finally {
             setSaving(false);
         }
@@ -1677,10 +1843,13 @@ const ResumeCreator = () => {
                     <EducationForm
                         values={educationDraft}
                         educations={educationsCatalog}
+                        editingId={editingEducationId}
                         onChange={(patch) => {
                             setEducationDraft((prev) => ({ ...prev, ...patch }));
                         }}
                         onAdd={handleAddEducation}
+                        onUpdate={handleUpdateEducation}
+                        onCancelEdit={clearEducationEditor}
                     />
                 );
             case 8:
@@ -1744,6 +1913,17 @@ const ResumeCreator = () => {
                     memoItems={MEMO_BY_STEP[6] || []}
                     onEdit={handleSelectExperience}
                     onDelete={handleDeleteExperience}
+                />
+            );
+        }
+        if (step === 7) {
+            return (
+                <EducationAside
+                    items={educations}
+                    editingId={editingEducationId}
+                    memoItems={MEMO_BY_STEP[7] || []}
+                    onEdit={handleSelectEducation}
+                    onDelete={handleDeleteEducation}
                 />
             );
         }
