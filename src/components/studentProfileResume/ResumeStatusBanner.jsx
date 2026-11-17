@@ -1,48 +1,30 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     RESUME_BANNER_STATUS,
+    formatMissingProfileFields,
     formatRejectionMessage,
     resolveResumeBannerStatus,
 } from '../../utils/studentOnboarding.js';
 import { fetchAuthMe, getStoredAccountStatus, getStoredUserId } from '../../services/authApi.js';
-import { getStudentProfileVersions } from '../../services/accountApi.js';
+import { submitStudentForReview } from '../../services/accountApi.js';
 import alertIcon from '../../assets/icons/resume-status-alert.svg';
-import clockIcon from '../../assets/icons/resume-status-clock.svg';
 import progressIcon from '../../assets/icons/resume-status-progress.svg';
 import rejectedIcon from '../../assets/icons/resume-status-rejected.svg';
 import './resumeStatusBanner.css';
 
 const ResumeStatusBanner = ({ accountStatus, userId }) => {
-    const navigate = useNavigate();
     const [bannerStatus, setBannerStatus] = useState(null);
     const [rejectionText, setRejectionText] = useState('');
+    const [missingText, setMissingText] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
-        let timerId = null;
 
-        const apply = (authMe, versions = []) => {
+        const apply = (authMe) => {
             if (cancelled) return;
-            if (timerId) {
-                window.clearTimeout(timerId);
-                timerId = null;
-            }
-            const next = resolveResumeBannerStatus(authMe, versions);
-            setBannerStatus(next);
+            setBannerStatus(resolveResumeBannerStatus(authMe));
             setRejectionText(formatRejectionMessage(authMe));
-
-            const ends = authMe?.draftGraceEndsAt ? Date.parse(authMe.draftGraceEndsAt) : NaN;
-            if (Number.isFinite(ends) && ends > Date.now()) {
-                const left = ends - Date.now();
-                timerId = window.setTimeout(() => {
-                    if (cancelled) return;
-                    setBannerStatus(resolveResumeBannerStatus(
-                        { ...authMe, draftGraceEndsAt: null },
-                        versions,
-                    ));
-                }, left + 50);
-            }
         };
 
         const boot = async () => {
@@ -50,33 +32,44 @@ const ResumeStatusBanner = ({ accountStatus, userId }) => {
                 id: userId || getStoredUserId(),
                 accountStatus: accountStatus || getStoredAccountStatus() || '',
             };
-            apply(localAuth, []);
-
-            let authMe = localAuth;
+            apply(localAuth);
             try {
-                authMe = await fetchAuthMe();
+                const authMe = await fetchAuthMe();
+                apply(authMe || localAuth);
             } catch {
                 /* локальный fallback */
             }
-            if (cancelled) return;
-
-            let versions = [];
-            try {
-                const raw = await getStudentProfileVersions();
-                versions = Array.isArray(raw) ? raw : [];
-            } catch {
-                versions = [];
-            }
-            if (cancelled) return;
-            apply(authMe || localAuth, versions);
         };
 
         boot();
         return () => {
             cancelled = true;
-            if (timerId) window.clearTimeout(timerId);
         };
     }, [accountStatus, userId]);
+
+    const submitResume = async () => {
+        if (submitting) return;
+        setSubmitting(true);
+        setMissingText('');
+        try {
+            await submitStudentForReview();
+            const authMe = await fetchAuthMe();
+            setBannerStatus(resolveResumeBannerStatus(authMe));
+            setRejectionText(formatRejectionMessage(authMe));
+        } catch (error) {
+            const body = error?.responseBody;
+            if (error?.status === 403 && body?.code === 'PROFILE_INCOMPLETE') {
+                const missing = formatMissingProfileFields(body.missingFields);
+                setMissingText(missing
+                    ? `Для модерации ещё нужно: ${missing}`
+                    : (body.message || 'Дозаполните профиль для модерации'));
+            } else {
+                setMissingText(error?.message || 'Отправить на проверку не удалось');
+            }
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     if (!bannerStatus) return null;
 
@@ -86,14 +79,15 @@ const ResumeStatusBanner = ({ accountStatus, userId }) => {
                 <div className="resumeStatusBanner__body">
                     <p className="resumeStatusBanner__title">Не отправлено</p>
                     <p className="resumeStatusBanner__text">
-                        Твоё резюме ещё не отправлено на проверку, заверши резюме что бы мы смогли его опубликовать
+                        {missingText || 'Резюме ещё не отправлено на проверку.'}
                     </p>
                     <button
                         type="button"
                         className="resumeStatusBanner__btn"
-                        onClick={() => navigate('/resume/create')}
+                        onClick={submitResume}
+                        disabled={submitting}
                     >
-                        Доделать резюме
+                        {submitting ? 'Отправка…' : 'Отправить на проверку'}
                     </button>
                 </div>
                 <img
@@ -106,18 +100,26 @@ const ResumeStatusBanner = ({ accountStatus, userId }) => {
         );
     }
 
-    if (bannerStatus === RESUME_BANNER_STATUS.AWAITING_SEND) {
+    if (bannerStatus === RESUME_BANNER_STATUS.IN_REVISION) {
         return (
-            <aside className="resumeStatusBanner resumeStatusBanner--neutral" aria-live="polite">
-                <div className="resumeStatusBanner__body resumeStatusBanner__body--wide">
-                    <p className="resumeStatusBanner__title">Отправляем на проверку...</p>
+            <aside className="resumeStatusBanner resumeStatusBanner--warn" aria-live="polite">
+                <div className="resumeStatusBanner__body">
+                    <p className="resumeStatusBanner__title">На доработке</p>
                     <p className="resumeStatusBanner__text">
-                        Резюме будет отправлено на проверку через 5 минут, в это время вы можете поправить резюме.
+                        {missingText || 'Правки сохранены. Отправьте резюме на проверку, когда будете готовы.'}
                     </p>
+                    <button
+                        type="button"
+                        className="resumeStatusBanner__btn"
+                        onClick={submitResume}
+                        disabled={submitting}
+                    >
+                        {submitting ? 'Отправка…' : 'Отправить на проверку'}
+                    </button>
                 </div>
                 <img
-                    className="resumeStatusBanner__art resumeStatusBanner__art--clock"
-                    src={clockIcon}
+                    className="resumeStatusBanner__art resumeStatusBanner__art--alert"
+                    src={alertIcon}
                     alt=""
                     aria-hidden="true"
                 />
@@ -132,12 +134,31 @@ const ResumeStatusBanner = ({ accountStatus, userId }) => {
                     <div className="resumeStatusBanner__body resumeStatusBanner__body--wide">
                         <p className="resumeStatusBanner__title">Резюме на проверке</p>
                         <p className="resumeStatusBanner__text">
-                            Вы снова сможете редактировать резюме, после проверки.
+                            Резюме проверяют. Новые правки не публикуются, пока вы снова не отправите его.
                         </p>
                     </div>
                     <div className="resumeStatusBanner__chip resumeStatusBanner__chip--review">
                         <img src={progressIcon} alt="" width={20} height={20} />
                         <span>На проверке</span>
+                    </div>
+                </div>
+            </aside>
+        );
+    }
+
+    if (bannerStatus === RESUME_BANNER_STATUS.APPROVED) {
+        return (
+            <aside className="resumeStatusBanner resumeStatusBanner--approved" aria-live="polite">
+                <div className="resumeStatusBanner__row">
+                    <div className="resumeStatusBanner__body resumeStatusBanner__body--wide">
+                        <p className="resumeStatusBanner__title">Резюме одобрено</p>
+                        <p className="resumeStatusBanner__text">
+                            Анкета опубликована и видна работодателям.
+                        </p>
+                    </div>
+                    <div className="resumeStatusBanner__chip resumeStatusBanner__chip--approved">
+                        <img src={progressIcon} alt="" width={20} height={20} />
+                        <span>Одобрено</span>
                     </div>
                 </div>
             </aside>
@@ -150,24 +171,16 @@ const ResumeStatusBanner = ({ accountStatus, userId }) => {
                 <div className="resumeStatusBanner__stack">
                     <div className="resumeStatusBanner__row">
                         <div className="resumeStatusBanner__body resumeStatusBanner__body--wide">
-                            <p className="resumeStatusBanner__title">Резюме было отправлено на доработку</p>
+                            <p className="resumeStatusBanner__title">Отклонено</p>
                             <p className="resumeStatusBanner__text">
-                                Правки и комментарии к резюме были отправлены в сообщения.
-                                {rejectionText ? ` ${rejectionText}` : ''}
+                                {rejectionText || 'Анкета отклонена. Исправьте её и отправьте снова.'}
                             </p>
                         </div>
                         <div className="resumeStatusBanner__chip resumeStatusBanner__chip--danger">
                             <img src={rejectedIcon} alt="" width={20} height={20} />
-                            <span>На доработке</span>
+                            <span>Отклонено</span>
                         </div>
                     </div>
-                    <button
-                        type="button"
-                        className="resumeStatusBanner__btn"
-                        onClick={() => navigate('/chats')}
-                    >
-                        Открыть комментарии
-                    </button>
                 </div>
             </aside>
         );

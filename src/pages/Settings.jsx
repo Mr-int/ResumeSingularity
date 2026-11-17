@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/header/Header.jsx';
 import StudentProfileResume from '../components/studentProfileResume/StudentProfileResume.jsx';
+import RecruiterProfile from '../components/recruiterProfile/RecruiterProfile.jsx';
 import RecruiterRequestsSection from '../components/settings/RecruiterRequestsSection.jsx';
 import { getStudentMe, getRecruiterMe } from '../services/getApi.js';
 import {
@@ -17,19 +18,6 @@ import {
 import { getImageUrl } from '../config/api.js';
 import './accountPage.css';
 
-const recruiterToForm = (r) => ({
-    companyName: r.companyName || '',
-    firstName: r.firstName || '',
-    lastName: r.lastName || '',
-    email: r.email || '',
-    phoneNumber: r.phoneNumber || '',
-    telegramUsername: r.telegramUsername || '',
-});
-
-const ReadOnlyInput = ({ value, ...rest }) => (
-    <input {...rest} value={value ?? ''} readOnly className="accountPage__inputReadonly" />
-);
-
 const specialtyLabel = (student) => {
     if (!student) return '';
     if (typeof student.speciality === 'string') return student.speciality;
@@ -44,7 +32,6 @@ const SettingsPage = () => {
     const [error, setError] = useState('');
     const [role, setRole] = useState(null);
     const [profile, setProfile] = useState(null);
-    const [recruiterForm, setRecruiterForm] = useState(recruiterToForm({}));
     const [portfolio, setPortfolio] = useState([]);
     const [experiences, setExperiences] = useState([]);
     const [educations, setEducations] = useState([]);
@@ -130,7 +117,6 @@ const SettingsPage = () => {
                 const r = await getRecruiterMe();
                 setRole('recruiter');
                 setProfile(r);
-                setRecruiterForm(recruiterToForm(r));
             } catch (e2) {
                 if (e2.status === 404) {
                     setRole('recruiter_pending');
@@ -155,13 +141,14 @@ const SettingsPage = () => {
 
     const avatarUrl = profile?.imagePath ? getImageUrl(profile.imagePath) : null;
     const isStudentProfile = role === 'student' && profile;
-    const showStudentShell = loading || isStudentProfile;
+    const isRecruiterProfile = role === 'recruiter' && profile;
+    const showProfileShell = loading || isStudentProfile || isRecruiterProfile;
 
     return (
         <>
             <Header />
-            <main className={`accountPage${showStudentShell ? ' accountPage--profile' : ''}`}>
-                <div className={`accountPage__inner${showStudentShell ? ' accountPage__inner--wide' : ''}`}>
+            <main className={`accountPage${showProfileShell ? ' accountPage--profile' : ''}`}>
+                <div className={`accountPage__inner${showProfileShell ? ' accountPage__inner--wide' : ''}`}>
                     {loading ? (
                         <div className="accountPage__muted">Загрузка…</div>
                     ) : null}
@@ -222,61 +209,15 @@ const SettingsPage = () => {
                         </>
                     ) : null}
 
-                    {!loading && role === 'recruiter' && profile && (
+                    {!loading && isRecruiterProfile ? (
                         <>
-                            <h1 className="accountPage__title">Настройки</h1>
-                            <p className="accountPage__lead">
-                                Просмотр профиля. Изменения в анкете вносит администратор после модерации.
-                            </p>
-                            <p className="accountPage__settingsNav">
-                                <Link to="/chats" className="accountPage__settingsNavLink">
-                                    Перейти к чатам
-                                </Link>
-                                <button
-                                    type="button"
-                                    className="accountPage__settingsNavLink accountPage__settingsNavLink--btn"
-                                    onClick={handleLogout}
-                                    disabled={loggingOut}
-                                >
-                                    {loggingOut ? 'Выходим…' : 'Выйти'}
-                                </button>
-                            </p>
-                            <section className="accountPage__card">
-                                <h2 className="accountPage__cardTitle">Профиль рекрутера</h2>
-                                <div className="accountPage__form accountPage__form--readonly">
-                                    <label className="accountPage__field">
-                                        <span>Компания</span>
-                                        <ReadOnlyInput value={recruiterForm.companyName} />
-                                    </label>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Имя</span>
-                                            <ReadOnlyInput value={recruiterForm.firstName} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Фамилия</span>
-                                            <ReadOnlyInput value={recruiterForm.lastName} />
-                                        </label>
-                                    </div>
-                                    <label className="accountPage__field">
-                                        <span>Email</span>
-                                        <ReadOnlyInput value={recruiterForm.email} />
-                                    </label>
-                                    <div className="accountPage__grid2">
-                                        <label className="accountPage__field">
-                                            <span>Телефон</span>
-                                            <ReadOnlyInput value={recruiterForm.phoneNumber} />
-                                        </label>
-                                        <label className="accountPage__field">
-                                            <span>Telegram</span>
-                                            <ReadOnlyInput value={recruiterForm.telegramUsername} />
-                                        </label>
-                                    </div>
-                                </div>
-                            </section>
+                            <RecruiterProfile
+                                profile={profile}
+                                onSaved={() => loadProfile({ soft: true })}
+                            />
                             <RecruiterRequestsSection recruiterId={profile.id} />
                         </>
-                    )}
+                    ) : null}
                 </div>
             </main>
         </>

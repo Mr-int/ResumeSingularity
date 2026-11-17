@@ -25,6 +25,7 @@ import correctPhoto2 from '../assets/photoExamples/CorrectPhoto2.png';
 import wrongPhoto from '../assets/photoExamples/wrongPhoto.png';
 import { getImageUrl } from '../config/api.js';
 import { isAllowedProfileCity } from '../constants/campusCities.js';
+import { filterCityNames } from '../services/getApi.js';
 import { getStudentMe } from '../services/getApi.js';
 import {
     completeStudentRegistration,
@@ -319,6 +320,7 @@ const ResumeCreator = () => {
     const [studentId, setStudentId] = useState(null);
     /** Город с сервера при boot — старые профили вне кампусного списка не блокируем. */
     const [legacyCity, setLegacyCity] = useState('');
+    const [cityNames, setCityNames] = useState(null);
     const [specialties, setSpecialties] = useState([]);
     const [skillsCatalog, setSkillsCatalog] = useState([]);
     const [educationsCatalog, setEducationsCatalog] = useState([]);
@@ -367,10 +369,11 @@ const ResumeCreator = () => {
             photoPreview,
             educationsAdded: educations,
             legacyCity,
+            cityNames,
         }),
         [
             profile, bio, hhLink,
-            selectedSkills, photoPreview, educations, legacyCity,
+            selectedSkills, photoPreview, educations, legacyCity, cityNames,
         ],
     );
 
@@ -579,15 +582,29 @@ const ResumeCreator = () => {
         };
     }, []);
 
+    useEffect(() => {
+        let cancelled = false;
+        filterCityNames()
+            .then((names) => {
+                if (!cancelled) setCityNames(names);
+            })
+            .catch(() => {
+                if (!cancelled) setCityNames([]);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
     const buildPatchBody = (source) => {
         const p = source?.profile || profile;
         const bioValue = source?.bio ?? bio;
-        const hh = source?.hhLink ?? hhLink;
         const cityLegacy = source?.legacyCity ?? legacyCity;
+        const catalog = source?.cityNames ?? cityNames;
         const body = {};
         if (p.firstName?.trim()) body.firstName = p.firstName.trim();
         if (p.lastName?.trim()) body.lastName = p.lastName.trim();
-        if (isAllowedProfileCity(p.city, cityLegacy)) {
+        if (isAllowedProfileCity(p.city, cityLegacy, catalog)) {
             body.city = p.city.trim();
         }
         if (p.birthDate) body.birthDate = p.birthDate;
@@ -598,7 +615,6 @@ const ResumeCreator = () => {
             body.specialityId = Number(p.specialityId);
         }
         if (bioValue?.trim()) body.bio = bioValue.trim();
-        if (hh?.trim()) body.hhLink = hh.trim();
         return body;
     };
 
@@ -703,6 +719,7 @@ const ResumeCreator = () => {
             hhLink: currentHh,
             selectedSkills: currentSkills,
             legacyCity: currentLegacyCity,
+            cityNames: currentCityNames,
             persistProfile: persistFn,
         } = ctx;
 
@@ -720,6 +737,7 @@ const ResumeCreator = () => {
             profile: currentProfile,
             bio: currentBio,
             legacyCity: currentLegacyCity,
+            cityNames: currentCityNames,
         });
         if (!check.valid) return false;
 
@@ -742,6 +760,10 @@ const ResumeCreator = () => {
         autosaveInFlightRef.current = true;
         try {
             const wantedCity = currentProfile?.city?.trim() || '';
+            if (wantedCity && !Array.isArray(currentCityNames)) {
+                scheduleProfileAutosave(400);
+                return false;
+            }
             const result = await persistFn({
                 syncSkills: forceSkills || currentStep === 5,
                 applyResponse: false,
@@ -751,7 +773,7 @@ const ResumeCreator = () => {
                 return false;
             }
             // Город выбран, но в PATCH не ушёл — не помечаем как сохранённый.
-            if (wantedCity && isAllowedProfileCity(wantedCity, currentLegacyCity) && !result?.sentCity) {
+            if (wantedCity && isAllowedProfileCity(wantedCity, currentLegacyCity, currentCityNames) && !result?.sentCity) {
                 scheduleProfileAutosave(800);
                 return false;
             }
@@ -784,6 +806,7 @@ const ResumeCreator = () => {
         hhLink,
         selectedSkills,
         legacyCity,
+        cityNames,
         persistProfile,
     };
     flushProfileAutosaveRef.current = flushProfileAutosave;
@@ -813,6 +836,7 @@ const ResumeCreator = () => {
             hhLink,
             selectedSkills,
             legacyCity,
+            cityNames,
         };
 
         const snapshot = buildProfileAutosaveSnapshot({
@@ -847,7 +871,7 @@ const ResumeCreator = () => {
         return () => {
             if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
         };
-    }, [bootLoading, studentId, profile, bio, hhLink, selectedSkills, step, legacyCity, saving]);
+    }, [bootLoading, studentId, profile, bio, hhLink, selectedSkills, step, legacyCity, cityNames, saving]);
 
     useEffect(() => {
         const flush = () => {
@@ -1064,7 +1088,7 @@ const ResumeCreator = () => {
                     && needsCompleteRegistrationRef.current
                     && profile.birthDate
                     && profile.course
-                    && isAllowedProfileCity(profile.city, legacyCity)
+                    && isAllowedProfileCity(profile.city, legacyCity, cityNames)
                 ) {
                     try {
                         await completeStudentRegistration({
@@ -1105,9 +1129,12 @@ const ResumeCreator = () => {
                 } catch {
                     authMe = null;
                 }
-                const pending = String(authMe?.accountStatus || '').toUpperCase() === 'PENDING_APPROVAL';
+                const accountStatus = String(authMe?.accountStatus || '').toUpperCase();
+                const canSubmit = accountStatus === 'PENDING_APPROVAL'
+                    || accountStatus === 'REGISTRATION'
+                    || accountStatus === 'IN_REVISION';
 
-                if (pending) {
+                if (canSubmit) {
                     // communication-readiness временно не блокируем — сразу submit-for-review
                     let submitted = false;
                     try {
@@ -1766,6 +1793,7 @@ const ResumeCreator = () => {
                         onCourseChange={(course) => updateProfile('course', course)}
                         onGenderChange={(gender) => updateProfile('gender', gender)}
                         onSpecialtyChange={(id) => updateProfile('specialityId', id)}
+                        cityOptions={Array.isArray(cityNames) ? cityNames : []}
                     />
                 );
             case 3:
@@ -1789,9 +1817,7 @@ const ResumeCreator = () => {
                 return (
                     <ResumeBioForm
                         value={bio}
-                        hhLink={hhLink}
                         onChange={setBio}
-                        onHhLinkChange={setHhLink}
                     />
                 );
             case 5:

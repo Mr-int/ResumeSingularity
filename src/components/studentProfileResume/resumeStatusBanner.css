@@ -32,6 +32,11 @@
     border-color: #3e8eff;
 }
 
+.resumeStatusBanner--approved {
+    background: rgba(99, 218, 110, 0.2);
+    border-color: #63DA6E;
+}
+
 .resumeStatusBanner--danger {
     background: rgba(233, 90, 87, 0.2);
     border-color: #e95a57;
@@ -146,6 +151,11 @@
 
 .resumeStatusBanner__chip--review {
     background: #3e8eff;
+}
+
+.resumeStatusBanner__chip--approved {
+    background: #63DA6E;
+    color: #12301a;
 }
 
 .resumeStatusBanner__chip--danger {

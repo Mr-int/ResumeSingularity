@@ -40,8 +40,31 @@ export const getExperienceById = (id) => apiClientJson(`experience/${id}`, { met
 export const getEducationById = (id) => apiClientJson(`education/${id}`, { method: 'GET' });
 export const getCompanyById = (id) => apiClientJson(`company/${id}`, { method: 'GET' });
 
+/** POST /city/filter — справочник городов, без входа. */
+export const filterCityNames = async () => {
+    const resp = await apiClientJson('city/filter?page=0&size=200', {
+        method: 'POST',
+        body: JSON.stringify({ name: '' }),
+    });
+    const rows = Array.isArray(resp?.data) ? resp.data : [];
+    const names = [];
+    const seen = new Set();
+    rows.forEach((item) => {
+        const name = String(item?.name || '').trim();
+        const key = name.toLowerCase();
+        if (!name || seen.has(key)) return;
+        seen.add(key);
+        names.push(name);
+    });
+    return names;
+};
+
 // ---- Requests ----
-export const getRequestById = (id) => apiClientJson(`request/${id}`, { method: 'GET' });
+export const getRequestById = () => {
+    const err = new Error('Заявки временно недоступны');
+    err.status = 0;
+    return Promise.reject(err);
+};
 
 // ---- Main ----
 export const getMainStatus = () => apiClientJson('main/status', { method: 'GET' });

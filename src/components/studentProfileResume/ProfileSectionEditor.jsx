@@ -15,7 +15,7 @@ import {
     updateInstitution,
     updatePortfolio,
 } from '../../services/studentApi.js';
-import { CAMPUS_OPTIONS, isCampusCity } from '../../constants/campusCities.js';
+import { filterCityNames } from '../../services/getApi.js';
 import { packExperienceAdditionalInfo } from '../../utils/experienceWebUrl.js';
 import { buildPortfolioPayload, normalizePortfolioItem } from '../../utils/portfolio.js';
 import {
@@ -206,6 +206,7 @@ const ProfileSectionEditor = ({
     const [specialityId, setSpecialityId] = useState(student.specialityId || '');
     const [bio, setBio] = useState(student.bio || '');
     const [city, setCity] = useState(student.city || '');
+    const [cityOptions, setCityOptions] = useState([]);
     const [birthDate, setBirthDate] = useState(student.birthDate || '');
     const [jobSearchStatus, setJobSearchStatus] = useState(student.jobSearchStatus || '');
     const [desiredBusyness, setDesiredBusyness] = useState(
@@ -257,6 +258,14 @@ const ProfileSectionEditor = ({
     useEffect(() => {
         let cancelled = false;
         const loadCatalogs = async () => {
+            if (section === 'info') {
+                try {
+                    const names = await filterCityNames();
+                    if (!cancelled) setCityOptions(names);
+                } catch {
+                    if (!cancelled) setCityOptions([]);
+                }
+            }
             if (section === 'specialty') {
                 const list = await getAllSpecialities();
                 if (!cancelled) setSpecialities(Array.isArray(list) ? list : []);
@@ -278,6 +287,17 @@ const ProfileSectionEditor = ({
             cancelled = true;
         };
     }, [section]);
+
+    const cityChoices = useMemo(() => {
+        const names = cityOptions
+            .map((name) => String(name || '').trim())
+            .filter(Boolean);
+        const current = String(city || '').trim();
+        if (current && !names.includes(current)) {
+            return [current, ...names];
+        }
+        return names;
+    }, [cityOptions, city]);
 
     const title = SECTION_TITLES[section] || 'Редактирование';
 
@@ -336,7 +356,10 @@ const ProfileSectionEditor = ({
 
             if (section === 'info') {
                 const nextCity = city.trim();
-                if (nextCity && !isCampusCity(nextCity)) {
+                const known = new Set(cityOptions.map((name) => String(name).trim()));
+                const savedCity = String(student.city || '').trim();
+                if (savedCity) known.add(savedCity);
+                if (nextCity && !known.has(nextCity)) {
                     throw new Error('Выберите город из списка');
                 }
                 await patchStudentMe({
@@ -560,9 +583,9 @@ const ProfileSectionEditor = ({
                 <>
                     <label className="profileSectionEditor__field">
                         <span>Город</span>
-                        <select value={isCampusCity(city) ? city : ''} onChange={(e) => setCity(e.target.value)}>
+                        <select value={city || ''} onChange={(e) => setCity(e.target.value)}>
                             <option value="">Выберите город</option>
-                            {CAMPUS_OPTIONS.map((name) => (
+                            {cityChoices.map((name) => (
                                 <option key={name} value={name}>{name}</option>
                             ))}
                         </select>
@@ -690,11 +713,11 @@ const ProfileSectionEditor = ({
                     />
                     <InlineSelect
                         label="Город"
-                        value={isCampusCity(city) ? city : ''}
+                        value={city || ''}
                         onChange={(e) => setCity(e.target.value)}
                     >
                         <option value="">Выберите город</option>
-                        {CAMPUS_OPTIONS.map((name) => (
+                        {cityChoices.map((name) => (
                             <option key={name} value={name}>{name}</option>
                         ))}
                     </InlineSelect>

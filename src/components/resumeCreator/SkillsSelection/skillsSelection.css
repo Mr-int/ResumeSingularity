@@ -3,11 +3,10 @@
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    height: 100%;
-    min-height: 0;
+    height: auto;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .skillsSelection__title {
@@ -79,9 +78,7 @@
     flex-wrap: wrap;
     align-content: flex-start;
     gap: 7px 5px;
-    min-height: 0;
-    overflow-y: auto;
-    padding-right: 4px;
+    overflow: visible;
 }
 
 .skillsSelection__poolBadge {

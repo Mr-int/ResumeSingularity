@@ -18,6 +18,7 @@ export const validateResumeStep = (step, ctx) => {
         educationsAdded = [],
         savedInstitutionCount = 0,
         legacyCity = '',
+        cityNames,
     } = ctx;
 
     switch (step) {
@@ -25,7 +26,7 @@ export const validateResumeStep = (step, ctx) => {
             if (!profile.firstName?.trim()) return fail('Укажите имя');
             if (!profile.lastName?.trim()) return fail('Укажите фамилию');
             if (!profile.birthDate) return fail('Укажите дату рождения');
-            if (!isAllowedProfileCity(profile.city, legacyCity)) {
+            if (!isAllowedProfileCity(profile.city, legacyCity, cityNames)) {
                 return fail('Выберите город из списка');
             }
             if (!profile.course) return fail('Выберите курс');
@@ -71,12 +72,12 @@ export const validateResumeStep = (step, ctx) => {
 
 /** Частичное сохранение: только то, что может сломать PATCH или ввести в заблуждение. */
 export const validatePartialSave = (ctx) => {
-    const { profile = {}, bio = '', legacyCity = '' } = ctx;
+    const { profile = {}, bio = '', legacyCity = '', cityNames } = ctx;
     if (bio.length > 2000) {
         return fail('Описание не должно превышать 2000 символов');
     }
     const city = profile.city?.trim();
-    if (city && !isAllowedProfileCity(city, legacyCity)) {
+    if (city && !isAllowedProfileCity(city, legacyCity, cityNames)) {
         return fail('Выберите город из списка или сбросьте поле');
     }
     return ok();
@@ -101,6 +102,7 @@ export const resumeValidationContext = ({
     educationsAdded,
     savedInstitutionCount,
     legacyCity = '',
+    cityNames,
     hhLink = '',
 }) => ({
     profile,
@@ -110,5 +112,6 @@ export const resumeValidationContext = ({
     educationsAdded,
     savedInstitutionCount,
     legacyCity,
+    cityNames,
     hhLink,
 });

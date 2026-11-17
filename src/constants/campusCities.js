@@ -14,5 +14,15 @@ export const isCampusCity = (city) => {
     return Boolean(trimmed && CAMPUS_OPTIONS.includes(trimmed));
 };
 
-/** Для PATCH/валидации — только город из CAMPUS_OPTIONS. */
-export const isAllowedProfileCity = (city) => isCampusCity(city);
+/**
+ * Город можно сохранить, если он уже был в анкете или есть в загруженном справочнике.
+ * Пока справочник не пришёл (catalogNames не массив), новый город не принимаем.
+ */
+export const isAllowedProfileCity = (city, legacyCity = '', catalogNames) => {
+    const trimmed = String(city ?? '').trim();
+    if (!trimmed) return false;
+    const legacy = String(legacyCity ?? '').trim();
+    if (legacy && trimmed === legacy) return true;
+    if (!Array.isArray(catalogNames)) return false;
+    return catalogNames.some((name) => String(name).trim() === trimmed);
+};

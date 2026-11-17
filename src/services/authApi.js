@@ -429,6 +429,13 @@ export const registerRecruiter = async (body) => {
         err.status = response.status;
         throw err;
     }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    try {
+        await fetchAuthMe();
+    } catch {
+        /* cookie уже есть — me подтянется в кабинете */
+    }
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
