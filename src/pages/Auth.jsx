@@ -42,6 +42,9 @@ const Auth = () => {
                 const { path } = await resolveStudentOnboarding();
                 return path || '/resume/create';
             }
+            if (role === 'RECRUITER') {
+                return '/profile';
+            }
         } catch {
             /* fall through */
         }
@@ -110,12 +113,12 @@ const Auth = () => {
             navigate('/resume/create', { replace: true });
             return;
         }
-        const loginLine = username ? ` Логин для входа: ${username}.` : '';
-        if (role === 'student') {
-            alert(`Аккаунт создан! Профиль появится у рекрутеров после модерации администратором.${loginLine}`);
-        } else {
-            alert(`Заявка на регистрацию принята. Вход будет доступен после одобрения администратором.${loginLine}`);
+        if (role === 'recruiter') {
+            navigate('/profile', { replace: true });
+            return;
         }
+        const loginLine = username ? ` Логин для входа: ${username}.` : '';
+        alert(`Аккаунт создан! Профиль появится у рекрутеров после модерации администратором.${loginLine}`);
         goToLogin();
     };
 
