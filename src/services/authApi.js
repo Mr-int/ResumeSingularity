@@ -436,7 +436,7 @@ export const registerRecruiter = async (body) => {
     return {};
 };
 
-const parseAuthError = async (response) => {
+const parseAuthError = async (response) => {    
     const text = await response.text();
     let msg = text;
     try {
@@ -447,7 +447,7 @@ const parseAuthError = async (response) => {
     const err = new Error(msg || `Ошибка ${response.status}`);
     err.status = response.status;
     return err;
-};
+};  
 
 /**
  * POST /auth/confirm-email

@@ -697,3 +697,86 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Статусы поиска — новый дизайн */
+
+.sprStatusChoices--jobSearch {
+    gap: 0;
+    width: 100%;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoices__label {
+    margin-bottom: 8px;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoices__list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+
+    width: auto;
+    min-height: 0;
+    padding: 0;
+
+    border: none;
+    border-radius: 0;
+    background: transparent;
+
+    font-family: 'Skyeng SemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0;
+
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice:hover {
+    border: none;
+    background: transparent;
+    opacity: 0.8;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice.is-active {
+    border: none;
+    background: transparent;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--looking {
+    color: #84FF79;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--considering {
+    color: #FFB253;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--notLooking {
+    color: #FF908E;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice__text {
+    white-space: nowrap;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice__icon--search {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice__icon img {
+    display: block;
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}

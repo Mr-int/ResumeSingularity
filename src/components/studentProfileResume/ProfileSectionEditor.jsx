@@ -27,9 +27,9 @@ import {
 } from '../../utils/studentStatus.js';
 import calendarIcon from '../../assets/icons/calendar.svg';
 import arrowIcon from '../../assets/icons/arrow_small.svg';
-import statusLookingIcon from '../../assets/icons/status-looking.svg';
-import statusConsideringIcon from '../../assets/icons/status-considering.svg';
-import statusNotLookingIcon from '../../assets/icons/status-not-looking.svg';
+import statusLookingIcon from '../../assets/icons/search.svg';
+import statusConsideringIcon from '../../assets/icons/looking.svg';
+import statusNotLookingIcon from '../../assets/icons/not.svg';
 import busynessFulltimeIcon from '../../assets/icons/busyness-fulltime.svg';
 import busynessParttimeIcon from '../../assets/icons/busyness-parttime.svg';
 import busynessProjectIcon from '../../assets/icons/busyness-project.svg';
@@ -105,8 +105,16 @@ const InlineFilePicker = ({ label = 'Выбрать файл', accept, fileName,
     );
 };
 
-const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false, emptyLabel = 'Не указан' }) => (
-    <div className="sprStatusChoices">
+const StatusChoiceGroup = ({
+    label,
+    options,
+    value,
+    onChange,
+    allowEmpty = false,
+    emptyLabel = 'Не указан',
+    className = '',
+}) => (
+    <div className={`sprStatusChoices ${className}`}>
         <span className="sprStatusChoices__label">{label}</span>
         <div className="sprStatusChoices__list" role="radiogroup" aria-label={label}>
             {allowEmpty ? (
@@ -120,12 +128,14 @@ const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false
                     <span className="sprStatusChoice__text">{emptyLabel}</span>
                 </button>
             ) : null}
+
             {options.map((item) => {
                 const active = String(value) === String(item.value);
                 const busynessIcon = item.icon ? BUSYNESS_ICONS[item.icon] : null;
                 const searchIcon = item.icon ? JOB_SEARCH_ICONS[item.icon] : null;
                 const iconSrc = searchIcon || busynessIcon;
                 const iconKind = searchIcon ? 'search' : busynessIcon ? 'busyness' : null;
+
                 return (
                     <button
                         key={item.value}
@@ -141,6 +151,7 @@ const StatusChoiceGroup = ({ label, options, value, onChange, allowEmpty = false
                         onClick={() => onChange(item.value)}
                     >
                         <span className="sprStatusChoice__text">{item.label}</span>
+
                         {iconSrc && iconKind ? (
                             <span
                                 className={`sprStatusChoice__icon sprStatusChoice__icon--${iconKind}`}
@@ -571,6 +582,7 @@ const ProfileSectionEditor = ({
                         value={jobSearchStatus || ''}
                         onChange={setJobSearchStatus}
                         allowEmpty
+                        className="sprStatusChoices--jobSearch"
                     />
                     <StatusChoiceGroup
                         label="Желаемый формат"
@@ -697,6 +709,7 @@ const ProfileSectionEditor = ({
                         value={jobSearchStatus || ''}
                         onChange={setJobSearchStatus}
                         allowEmpty
+                        className="sprStatusChoices--jobSearch"
                     />
                     <StatusChoiceGroup
                         label="Желаемый формат"
