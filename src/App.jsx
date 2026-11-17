@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import CareerCenter from './pages/CareerCenter.jsx';
+import EmployerLanding from './pages/EmployerLanding.jsx';
+import { getStoredRole, isAuthenticated } from './services/authApi.js';
 import Students from "./pages/Students.jsx";
 import Resume from "./pages/Resume.jsx";
 import Settings from "./pages/Settings.jsx";
@@ -26,7 +28,7 @@ const ProfileIdRedirect = () => {
 };
 
 /**
- * `/` — CareerCenter.
+ * `/` — лендинг работодателя для гостя и рекрутера, центр карьеры для студента.
  * `/#projects` — заглушка «страница в разработке».
  */
 const CareerOrLegacyHome = () => {
@@ -34,7 +36,10 @@ const CareerOrLegacyHome = () => {
   if (hash === '#projects') {
     return <ProjectsPage />;
   }
-  return <CareerCenter />;
+  if (isAuthenticated() && getStoredRole() === 'STUDENT') {
+    return <CareerCenter />;
+  }
+  return <EmployerLanding />;
 };
 
 const AppRoutes = () => {
