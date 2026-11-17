@@ -19,6 +19,7 @@ import {
     isUsernameTakenError,
     isValidEmail,
     normalizePhoneNumber,
+    recruiterUsername,
     usernameFromName,
     usernameWithSuffix,
 } from '../../utils/registrationIdentity.js';
@@ -177,6 +178,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     );
     const [code, setCode] = useState(['', '', '', '']);
     const codeRowRef = useRef(null);
+    const recruiterStampRef = useRef(Date.now());
+    const recruiterNameKeyRef = useRef('');
 
     const [messageVisible, setMessageVisible] = useState(false);
     const [messageLeaving, setMessageLeaving] = useState(false);
@@ -436,7 +439,11 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
         setLoading(true);
         try {
-            const base = usernameFromName(formData.lastName, formData.firstName);
+            const base = recruiterUsername(
+                formData.lastName,
+                formData.firstName,
+                recruiterStampRef.current,
+            );
             const username = await registerWithFreeUsername(base, (login) => registerRecruiter({
                 ...accountPayload(login),
                 companyName: formData.companyName.trim(),
@@ -1153,9 +1160,20 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         return 'Далее';
     };
 
+    const lastNameTrim = formData.lastName.trim();
+    const firstNameTrim = formData.firstName.trim();
+    if (!isStudent && lastNameTrim && firstNameTrim) {
+        const nameKey = `${lastNameTrim}|${firstNameTrim}`;
+        if (recruiterNameKeyRef.current !== nameKey) {
+            recruiterNameKeyRef.current = nameKey;
+            recruiterStampRef.current = Date.now();
+        }
+    }
     const loginPreview = assignedUsername
-        || (formData.lastName.trim() && formData.firstName.trim()
-            ? usernameWithSuffix(usernameFromName(formData.lastName, formData.firstName), 1)
+        || (lastNameTrim && firstNameTrim
+            ? (isStudent
+                ? usernameWithSuffix(usernameFromName(formData.lastName, formData.firstName), 1)
+                : recruiterUsername(formData.lastName, formData.firstName, recruiterStampRef.current))
             : '');
 
     return (
