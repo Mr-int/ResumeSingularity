@@ -4,9 +4,7 @@ const ResumeBioForm = ({
     value = '',
     maxLength = 2000,
     minLength = 30,
-    hhLink = '',
     onChange,
-    onHhLinkChange,
 }) => {
     const length = value.length;
     const isEmpty = length === 0;
@@ -16,8 +14,7 @@ const ResumeBioForm = ({
         <section className="resumeBioForm">
             <h2 className="resumeBioForm__title">Заполните описание резюме</h2>
             <p className="resumeBioForm__subtitle">
-                «О себе» — не короче {minLength} символов. Ссылку на HH можно добавить сейчас
-                или позже, ссылки портфолио — на последнем шаге.
+                «О себе» — не короче {minLength} символов. Ссылки портфолио — на последнем шаге.
             </p>
 
             <div className="resumeBioForm__box">
@@ -41,22 +38,6 @@ const ResumeBioForm = ({
                         {length}
                     </span>
                     {` / ${maxLength} симв. (мин. ${minLength})`}
-                </div>
-            </div>
-
-            <div className="resumeBioForm__extra">
-                <div className="resumeBioForm__field">
-                    <label htmlFor="student-hh" className="resumeBioForm__label">
-                        Ссылка на HH
-                    </label>
-                    <input
-                        id="student-hh"
-                        type="url"
-                        className="resumeBioForm__input"
-                        placeholder="https://hh.ru/resume/…"
-                        value={hhLink}
-                        onChange={(e) => onHhLinkChange?.(e.target.value)}
-                    />
                 </div>
             </div>
         </section>
