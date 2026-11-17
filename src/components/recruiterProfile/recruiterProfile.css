@@ -1,0 +1,84 @@
+.recruiterProfile.studentProfileResume .studentProfileResume__profileCard {
+    height: auto;
+    min-height: 368px;
+    overflow: visible;
+}
+
+.recruiterProfile .studentProfileResume__about {
+    flex-direction: column;
+}
+
+.recruiterProfile .studentProfileResume__bio {
+    flex: none;
+    padding-bottom: 30px;
+}
+
+.recruiterProfile__initials {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #333;
+    color: #ffffff;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 48px;
+    letter-spacing: 0.04em;
+}
+
+.recruiterProfile__hint {
+    margin: 8px 0 0;
+    color: #B3B5B7;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.recruiterProfile__choices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.recruiterProfile__choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #41464B;
+    background: #232323;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.recruiterProfile__choice.is-selected {
+    border-color: #3E8EFF;
+    background: rgba(62, 142, 255, 0.12);
+}
+
+.recruiterProfile__choice input {
+    margin-top: 3px;
+    flex-shrink: 0;
+    accent-color: #3E8EFF;
+}
+
+.recruiterProfile__save {
+    width: auto;
+    align-self: flex-start;
+    padding: 0 24px;
+}
+
+.recruiterProfile__save:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.recruiterProfile__note {
+    margin: 0;
+}
