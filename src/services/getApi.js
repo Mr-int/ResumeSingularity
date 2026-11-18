@@ -41,10 +41,11 @@ export const getEducationById = (id) => apiClientJson(`education/${id}`, { metho
 export const getCompanyById = (id) => apiClientJson(`company/${id}`, { method: 'GET' });
 
 /** POST /city/filter — справочник городов, без входа. */
-export const filterCityNames = async () => {
+export const filterCityNames = async (options = {}) => {
     const resp = await apiClientJson('city/filter?page=0&size=200', {
         method: 'POST',
         body: JSON.stringify({ name: '' }),
+        ...options,
     });
     const rows = Array.isArray(resp?.data) ? resp.data : [];
     const names = [];

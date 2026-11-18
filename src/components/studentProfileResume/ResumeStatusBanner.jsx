@@ -12,6 +12,9 @@ import progressIcon from '../../assets/icons/resume-status-progress.svg';
 import rejectedIcon from '../../assets/icons/resume-status-rejected.svg';
 import './resumeStatusBanner.css';
 
+const NOT_SUBMITTED_TEXT = 'Заполните и проверьте все обязательные разделы, чтобы отправить резюме на проверку. '
+    + 'После одобрения ваша страница будет доступна для работодателей.';
+
 const ResumeStatusBanner = ({ accountStatus, userId }) => {
     const [bannerStatus, setBannerStatus] = useState(null);
     const [rejectionText, setRejectionText] = useState('');
@@ -73,40 +76,16 @@ const ResumeStatusBanner = ({ accountStatus, userId }) => {
 
     if (!bannerStatus) return null;
 
-    if (bannerStatus === RESUME_BANNER_STATUS.NOT_SUBMITTED) {
+    if (
+        bannerStatus === RESUME_BANNER_STATUS.NOT_SUBMITTED
+        || bannerStatus === RESUME_BANNER_STATUS.IN_REVISION
+    ) {
         return (
             <aside className="resumeStatusBanner resumeStatusBanner--warn" aria-live="polite">
                 <div className="resumeStatusBanner__body">
                     <p className="resumeStatusBanner__title">Не отправлено</p>
                     <p className="resumeStatusBanner__text">
-                        {missingText || 'Резюме ещё не отправлено на проверку.'}
-                    </p>
-                    <button
-                        type="button"
-                        className="resumeStatusBanner__btn"
-                        onClick={submitResume}
-                        disabled={submitting}
-                    >
-                        {submitting ? 'Отправка…' : 'Отправить на проверку'}
-                    </button>
-                </div>
-                <img
-                    className="resumeStatusBanner__art resumeStatusBanner__art--alert"
-                    src={alertIcon}
-                    alt=""
-                    aria-hidden="true"
-                />
-            </aside>
-        );
-    }
-
-    if (bannerStatus === RESUME_BANNER_STATUS.IN_REVISION) {
-        return (
-            <aside className="resumeStatusBanner resumeStatusBanner--warn" aria-live="polite">
-                <div className="resumeStatusBanner__body">
-                    <p className="resumeStatusBanner__title">На доработке</p>
-                    <p className="resumeStatusBanner__text">
-                        {missingText || 'Правки сохранены. Отправьте резюме на проверку, когда будете готовы.'}
+                        {missingText || NOT_SUBMITTED_TEXT}
                     </p>
                     <button
                         type="button"

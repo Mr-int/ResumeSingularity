@@ -24,6 +24,7 @@ import {
     usernameWithSuffix,
 } from '../../utils/registrationIdentity.js';
 import { completeStudentRegistration } from '../../services/accountApi.js';
+import { filterCityNames } from '../../services/getApi.js';
 import { markStudentRegistrationCompleted } from '../../utils/studentOnboarding.js';
 import { ANALYTICS_EVENT, trackAnalyticsEvent } from '../../services/analyticsApi.js';
 import './registerForm.css';
@@ -202,10 +203,27 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         companyName: '',
         city: '',
     });
+    /** Справочник городов работодателя: null — загружается, [] — недоступен (тогда текстовое поле). */
+    const [cityNames, setCityNames] = useState(null);
 
     useEffect(() => {
         trackAnalyticsEvent(ANALYTICS_EVENT.REGISTRATION_STARTED);
     }, []);
+
+    useEffect(() => {
+        if (isStudent) return undefined;
+        let cancelled = false;
+        filterCityNames({ skipAuthRedirect: true })
+            .then((names) => {
+                if (!cancelled) setCityNames(Array.isArray(names) ? names : []);
+            })
+            .catch(() => {
+                if (!cancelled) setCityNames([]);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, [isStudent]);
 
     const clearMessageTimers = () => {
         if (hideTimerRef.current) {
@@ -786,6 +804,32 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         return 'registerForm__emailInput' + (invalid || (error && step === 1) ? ' registerForm__emailInput--error' : '');
     };
 
+    const renderRecruiterCityField = () => {
+        const disabled = loading || recruiterAccountCreated;
+        if (cityNames === null) {
+            return (
+                <select name="city" value="" disabled>
+                    <option value="">Загружаем города…</option>
+                </select>
+            );
+        }
+        if (cityNames.length === 0) {
+            return (
+                <input type="text" name="city" autoComplete="address-level2" value={formData.city} onChange={handleChange} disabled={disabled} />
+            );
+        }
+        const current = formData.city.trim();
+        const options = current && !cityNames.includes(current) ? [current, ...cityNames] : cityNames;
+        return (
+            <select name="city" value={current} onChange={handleChange} disabled={disabled}>
+                <option value="">Выберите город</option>
+                {options.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                ))}
+            </select>
+        );
+    };
+
     const renderCodeStep = () => (
         <>
             <h2 className="registerForm__heading">Введите код из письма</h2>
@@ -938,7 +982,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             </div>
                             <div className="registerForm__inputGroup">
                                 <label>Город</label>
-                                <input type="text" name="city" autoComplete="address-level2" value={formData.city} onChange={handleChange} disabled={loading || recruiterAccountCreated} />
+                                {renderRecruiterCityField()}
                             </div>
                         </>
                     );
