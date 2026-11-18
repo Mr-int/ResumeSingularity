@@ -56,6 +56,14 @@ const RecruiterRequestsSection = ({ recruiterId: _recruiterId }) => {
                     );
                 })}
             </ul>
+            <a
+                className="accountPage__requestBtn"
+                href="https://docs.google.com/forms/d/e/1FAIpQLScFrsm1Vt04Y-rsjeapoDDsl4URtwsCMaZ_kFNRGxZ82oM5HQ/viewform"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Оставить заявку
+            </a>
         </section>
     );
 };
