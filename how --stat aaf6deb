@@ -1,0 +1,22 @@
+*   [33md0af386[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m)[m Merge branch 'develop' of https://github.com/Mr-int/ResumeSingularity into develop
+[31m|[m[32m\[m  
+[31m|[m * [33mf5fd1c1[m[33m ([m[1;31morigin/develop[m[33m)[m fix: кнопка карточек на лендинге и город при регистрации работодателя
+[31m|[m * [33mec4d436[m feat(recruiter-profile): добавить валидацию анкеты работодателя
+* [32m|[m [33maaf6deb[m feat: кнопка с оставлением заявки у рекрутера
+[32m|[m[32m/[m  
+* [33m7bd1884[m fix: исправил иконки и сжим текста
+* [33m4dd2f93[m fix: исправил иконки и сжим текста
+*   [33m8e1e53a[m Merge branch 'develop' of https://github.com/Mr-int/ResumeSingularity into develop t
+[33m|[m[34m\[m  
+[33m|[m *   [33m302e3a7[m Merge pull request #15 from Mr-int/feat/release-1-0-7
+[33m|[m [35m|[m[36m\[m  
+[33m|[m [35m|[m * [33ma133d87[m[33m ([m[1;31morigin/feat/release-1-0-7[m[33m)[m fix: поля анкеты работодателя в стиле сайта
+[33m|[m [35m|[m * [33m6f9a811[m fix: уникальный короткий логин работодателя
+[33m|[m * [36m|[m [33m5699b50[m Merge pull request #14 from Mr-int/feat/release-1-0-7
+[33m|[m [1;31m|[m[36m\[m[36m|[m 
+[33m|[m [1;31m|[m * [33m5ce3abe[m feat: баннер статусов, анкета работодателя и шаг подтверждения почты
+[33m|[m * [1;32m|[m [33m5a2c7d7[m Merge pull request #13 from Mr-int/feat/release-1-0-7
+[33m|[m [1;33m|[m[1;32m\[m[1;32m|[m 
+[33m|[m [1;33m|[m * [33m318ecc6[m fix: закрыть чаты заглушкой и отключить request/
+[33m|[m * [1;34m|[m [33mcb40196[m Merge pull request #12 from Mr-int/feat/release-1-0-7
+[33m|[m [1;35m|[m[1;34m\[m[1;34m|[m 

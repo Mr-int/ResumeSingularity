@@ -21,10 +21,13 @@ const NAV_DEFS = [
 const navIdFromLocation = (pathname, hash) => {
     // ЛК студента (/profile) и просмотр резюме (/profile/:id) — активен «Резюме»
     if (pathname === '/profile' || /^\/profile\/[^/]+/.test(pathname)) return 'resume';
+
     // Создание / редактирование — ни один пункт не активен
     if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return null;
+
     if (pathname === '/' && hash === '#projects') return 'projects';
     if (pathname === '/') return 'career';
+
     return null;
 };
 
@@ -40,9 +43,12 @@ const Header = ({
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
+
     const routeActiveId = navIdFromLocation(location.pathname, location.hash);
+
     const [loadedAvatarSrc, setLoadedAvatarSrc] = useState(null);
     const [avatarExpanded, setAvatarExpanded] = useState(false);
+
     const [profileUser, setProfileUser] = useState({
         firstName: '',
         lastName: '',
@@ -55,6 +61,7 @@ const Header = ({
 
     useEffect(() => {
         setAvatarExpanded(false);
+
         if (!isAuthenticated()) {
             setLoadedAvatarSrc(null);
             setProfileUser({ firstName: '', lastName: '', roleLabel: '' });
@@ -62,35 +69,48 @@ const Header = ({
         }
 
         let cancelled = false;
+
         const loadAvatar = async () => {
             const role = getStoredRole();
+
             const tryStudent = async () => {
                 const me = await getStudentMe();
+
                 if (cancelled) return true;
+
                 setProfileUser({
                     firstName: me.firstName || '',
                     lastName: me.lastName || '',
                     roleLabel: 'Студент',
                 });
+
                 if (!avatarSrc && hasStudentProfilePhoto(me)) {
-                    setLoadedAvatarSrc(getImageUrl(me.imagePath || me.image || me.photo || me.avatar));
+                    setLoadedAvatarSrc(
+                        getImageUrl(me.imagePath || me.image || me.photo || me.avatar)
+                    );
                 } else if (!avatarSrc) {
                     setLoadedAvatarSrc(null);
                 }
+
                 return true;
             };
+
             const tryRecruiter = async () => {
                 const me = await getRecruiterMe();
+
                 if (cancelled) return true;
+
                 setProfileUser({
                     firstName: me.firstName || '',
                     lastName: me.lastName || '',
-                    roleLabel: 'Рекрутер',
+                    roleLabel: 'Партнер',
                 });
+
                 if (!avatarSrc) {
                     const path = me?.imagePath || me?.image || me?.photo || me?.avatar;
                     setLoadedAvatarSrc(path ? getImageUrl(path) : null);
                 }
+
                 return true;
             };
 
@@ -103,6 +123,7 @@ const Header = ({
                     } catch {
                         /* fallback ниже */
                     }
+
                     try {
                         await tryStudent();
                         return;
@@ -116,6 +137,7 @@ const Header = ({
                     } catch {
                         /* fallback ниже */
                     }
+
                     try {
                         await tryRecruiter();
                         return;
@@ -123,6 +145,7 @@ const Header = ({
                         /* empty */
                     }
                 }
+
                 if (!cancelled) {
                     setLoadedAvatarSrc(null);
                     setProfileUser({ firstName: '', lastName: '', roleLabel: '' });
@@ -136,6 +159,7 @@ const Header = ({
         };
 
         loadAvatar();
+
         return () => {
             cancelled = true;
         };
@@ -143,11 +167,14 @@ const Header = ({
 
     const items = useMemo(() => {
         const source = navItems || NAV_DEFS;
+
         return source.map((item) => {
             const isVacancies = item.id === 'vacancies';
+
             const disabled = isVacancies
                 ? !resumeComplete
                 : Boolean(item.disabled);
+
             return {
                 ...item,
                 active: item.id === currentActive,
@@ -161,6 +188,7 @@ const Header = ({
             navigate(path);
             return;
         }
+
         navigate('/login', { state: { from: path } });
     };
 
@@ -169,17 +197,21 @@ const Header = ({
             navigate('/');
             return;
         }
+
         if (item.id === 'projects') {
             if (location.pathname === '/') {
                 const el = document.getElementById('projects');
+
                 if (el) {
                     el.scrollIntoView({ behavior: 'smooth' });
                     return;
                 }
             }
+
             navigate('/#projects');
             return;
         }
+
         if (item.id === 'resume') {
             goAuthed('/profile');
         }
@@ -190,11 +222,14 @@ const Header = ({
             event.preventDefault();
             return;
         }
+
         onNavChange?.(item.id);
+
         if (item.onClick) {
             item.onClick(event);
             return;
         }
+
         defaultNavigate(item);
     };
 
@@ -203,6 +238,7 @@ const Header = ({
             onMessagesClick();
             return;
         }
+
         goAuthed('/chats');
     };
 
@@ -211,6 +247,7 @@ const Header = ({
             setAvatarExpanded(false);
             return;
         }
+
         if (action?.type === 'expand') {
             setAvatarExpanded(true);
         }
@@ -218,22 +255,27 @@ const Header = ({
 
     const handleAvatarMenu = async (actionId) => {
         setAvatarExpanded(false);
+
         if (actionId === 'account') {
             if (onAvatarClick) {
                 onAvatarClick();
                 return;
             }
+
             goAuthed('/profile');
             return;
         }
+
         if (actionId === 'students') {
             navigate('/students');
             return;
         }
+
         if (actionId === 'bug') {
             window.location.href = 'mailto:support@resumesingularity.ru?subject=Нашли%20ошибку';
             return;
         }
+
         if (actionId === 'logout') {
             try {
                 await logoutServer();
@@ -274,6 +316,7 @@ const Header = ({
                                     height={18}
                                 />
                             </IconButton>
+
                             <Avatar
                                 src={displayAvatarSrc}
                                 onClick={handleAvatar}
@@ -283,6 +326,7 @@ const Header = ({
                                 firstName={profileUser.firstName}
                                 lastName={profileUser.lastName}
                                 roleLabel={profileUser.roleLabel}
+                                isRecruiter={profileUser.roleLabel === 'Партнер'}
                             />
                         </>
                     ) : (
@@ -294,6 +338,7 @@ const Header = ({
                             >
                                 Регистрация
                             </button>
+
                             <button
                                 type="button"
                                 className="studentCreatorHeader__loginBtn studentCreatorHeader__loginBtn--login"
