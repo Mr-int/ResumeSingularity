@@ -2,6 +2,7 @@ const TOTAL_STEPS = 8;
 
 const storageKey = (studentId) => `resumeCreator.step.${studentId}`;
 const experienceDraftKey = (studentId) => `resumeCreator.experienceDraft.${studentId}`;
+const profileDraftKey = (studentId) => `resumeCreator.profileDraft.${studentId}`;
 
 export const loadResumeCreatorStep = (studentId) => {
     if (studentId == null) return null;
@@ -74,6 +75,43 @@ export const clearExperienceDraft = (studentId) => {
     if (studentId == null) return;
     try {
         localStorage.removeItem(experienceDraftKey(studentId));
+    } catch {
+        /* ignore */
+    }
+};
+
+/** Черновик шагов 1/2/4/5: профиль, bio, hh, навыки — пока PATCH ещё не ушёл. */
+export const loadProfileDraft = (studentId) => {
+    if (studentId == null) return null;
+    try {
+        const raw = localStorage.getItem(profileDraftKey(studentId));
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+        return null;
+    }
+};
+
+export const saveProfileDraft = (studentId, draft) => {
+    if (studentId == null || !draft) return;
+    try {
+        localStorage.setItem(profileDraftKey(studentId), JSON.stringify({
+            profile: draft.profile || {},
+            bio: draft.bio ?? '',
+            hhLink: draft.hhLink ?? '',
+            selectedSkills: Array.isArray(draft.selectedSkills) ? draft.selectedSkills : [],
+            savedAt: Date.now(),
+        }));
+    } catch {
+        /* ignore */
+    }
+};
+
+export const clearProfileDraft = (studentId) => {
+    if (studentId == null) return;
+    try {
+        localStorage.removeItem(profileDraftKey(studentId));
     } catch {
         /* ignore */
     }

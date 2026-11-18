@@ -16,6 +16,17 @@
     height: 100%;
 }
 
+.chatsPage--wip {
+    background: #000;
+    overflow: auto;
+}
+
+.chatsPage__wip {
+    flex: 1 1 auto;
+    min-height: 100%;
+    width: 100%;
+}
+
 .chatsView__container {
     display: flex;
     width: 100%;

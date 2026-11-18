@@ -1,10 +1,10 @@
-import { useEffect, useId, useRef, useState } from 'react';
-import { CAMPUS_OPTIONS } from '../../../../constants/campusCities.js';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import './citySelect.css';
 
 const CitySelect = ({
     id = 'student-city',
     value = '',
+    options = [],
     onChange,
     placeholder = 'Выберите город',
 }) => {
@@ -12,9 +12,16 @@ const CitySelect = ({
     const rootRef = useRef(null);
     const listId = useId();
 
-    const options = value && !CAMPUS_OPTIONS.includes(value)
-        ? [value, ...CAMPUS_OPTIONS]
-        : CAMPUS_OPTIONS;
+    const displayValue = String(value || '').trim();
+    const menuOptions = useMemo(() => {
+        const names = (Array.isArray(options) ? options : [])
+            .map((name) => String(name || '').trim())
+            .filter(Boolean);
+        if (displayValue && !names.includes(displayValue)) {
+            return [displayValue, ...names];
+        }
+        return names;
+    }, [options, displayValue]);
 
     useEffect(() => {
         if (!open) return undefined;
@@ -37,7 +44,7 @@ const CitySelect = ({
 
     return (
         <div
-            className={`citySelect${open ? ' is-open' : ''}${value ? ' has-value' : ''}`}
+            className={`citySelect${open ? ' is-open' : ''}${displayValue ? ' has-value' : ''}`}
             ref={rootRef}
         >
             <button
@@ -50,7 +57,7 @@ const CitySelect = ({
                 onClick={() => setOpen((prev) => !prev)}
             >
                 <span className="citySelect__value">
-                    {value || placeholder}
+                    {displayValue || placeholder}
                 </span>
             </button>
 
@@ -61,8 +68,8 @@ const CitySelect = ({
                     role="listbox"
                     aria-label="Город"
                 >
-                    {options.map((name) => {
-                        const selected = value === name;
+                    {menuOptions.map((name) => {
+                        const selected = displayValue === name;
                         return (
                             <button
                                 key={name}

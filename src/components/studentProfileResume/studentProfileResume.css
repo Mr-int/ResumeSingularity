@@ -1038,31 +1038,6 @@ a.studentProfileResume__portfolioFolder:hover {
     font-size: 14px;
 }
 
-.studentProfileResume__banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    background-color: var(--spr-card);
-    border: 1px dashed var(--spr-accent);
-    border-radius: 20px;
-    padding: 20px 30px;
-    margin-top: 10px;
-}
-
-.studentProfileResume__banner p {
-    color: var(--spr-muted);
-    font-size: 14px;
-    max-width: 600px;
-    margin: 0;
-}
-
-.studentProfileResume__banner .studentProfileResume__btn {
-    width: auto;
-    padding: 14px 30px;
-    flex-shrink: 0;
-}
-
 @media (max-width: 1024px) {
     .studentProfileResume__layout {
         flex-direction: column;
@@ -1116,10 +1091,5 @@ a.studentProfileResume__portfolioFolder:hover {
 
     .studentProfileResume__nav {
         width: 100%;
-    }
-
-    .studentProfileResume__banner {
-        flex-direction: column;
-        text-align: center;
     }
 }

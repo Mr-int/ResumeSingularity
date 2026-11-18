@@ -8,12 +8,26 @@ export const STUDENT_STAGE = {
 };
 
 const PROFILE_SUBMITTED_KEY = 'resume:student-profile-submitted';
+const PROFILE_SUBMITTED_AT_KEY = 'resume:student-profile-submitted-at';
 const REGISTRATION_COMPLETED_KEY = 'resume:student-registration-completed';
+
+/** Окно «Отправляем на проверку…» после submit-for-review (как в макете). */
+export const RESUME_SUBMIT_GRACE_MS = 5 * 60 * 1000;
+
+export const RESUME_BANNER_STATUS = {
+    NOT_SUBMITTED: 'not_submitted',
+    AWAITING_SEND: 'awaiting_send',
+    IN_REVIEW: 'in_review',
+    IN_REVISION: 'in_revision',
+    REVISION: 'revision',
+    APPROVED: 'approved',
+};
 
 export const markStudentProfileSubmitted = (userId) => {
     if (!userId) return;
     try {
         localStorage.setItem(`${PROFILE_SUBMITTED_KEY}:${userId}`, '1');
+        localStorage.setItem(`${PROFILE_SUBMITTED_AT_KEY}:${userId}`, String(Date.now()));
     } catch {
         /* empty */
     }
@@ -28,13 +42,55 @@ export const isStudentProfileSubmittedLocally = (userId) => {
     }
 };
 
+export const getStudentProfileSubmittedAt = (userId) => {
+    if (!userId) return null;
+    try {
+        const raw = localStorage.getItem(`${PROFILE_SUBMITTED_AT_KEY}:${userId}`);
+        const ts = Number(raw);
+        return Number.isFinite(ts) && ts > 0 ? ts : null;
+    } catch {
+        return null;
+    }
+};
+
 export const clearStudentProfileSubmitted = (userId) => {
     if (!userId) return;
     try {
         localStorage.removeItem(`${PROFILE_SUBMITTED_KEY}:${userId}`);
+        localStorage.removeItem(`${PROFILE_SUBMITTED_AT_KEY}:${userId}`);
     } catch {
         /* empty */
     }
+};
+
+const REJECTION_REASON_LABELS = {
+    INCOMPLETE_PROFILE: 'неполный профиль',
+    INVALID_DATA: 'некорректные данные',
+    NOT_ELIGIBLE: 'не подходит по требованиям',
+    DUPLICATE: 'дубликат аккаунта',
+    OTHER: 'другое',
+};
+
+/** Текст причины отказа из AuthMeDTO. */
+export const formatRejectionMessage = (authMe) => {
+    const comment = String(authMe?.rejectionComment || '').trim();
+    if (comment) return comment;
+    const reason = String(authMe?.rejectionReason || '').trim().toUpperCase();
+    return REJECTION_REASON_LABELS[reason] || '';
+};
+
+/**
+ * Баннер статуса резюме в ЛК.
+ * Источник: accountStatus из GET /auth/me.
+ */
+export const resolveResumeBannerStatus = (authMe) => {
+    const status = String(authMe?.accountStatus || '').toUpperCase();
+    if (status === 'APPROVED') return RESUME_BANNER_STATUS.APPROVED;
+    if (status === 'REJECTED') return RESUME_BANNER_STATUS.REVISION;
+    if (status === 'PENDING_APPROVAL') return RESUME_BANNER_STATUS.IN_REVIEW;
+    if (status === 'IN_REVISION') return RESUME_BANNER_STATUS.IN_REVISION;
+    if (status === 'REGISTRATION') return RESUME_BANNER_STATUS.NOT_SUBMITTED;
+    return null;
 };
 
 export const markStudentRegistrationCompleted = (userId) => {

@@ -51,12 +51,7 @@ const CareerCenter = () => {
 
                         <div className="careerCenter__messagesCard">
                             <div className="careerCenter__messagesBadge">+1 новых</div>
-
-                            <button
-                                type="button"
-                                className="careerCenter__messageItem"
-                                onClick={() => navigate('/chats')}
-                            >
+                            <button type="button" className="careerCenter__messageItem">
                                 <div className="careerCenter__messageAvatar" aria-hidden="true">
                                     <img
                                         src={resumatorImg}
@@ -77,16 +72,10 @@ const CareerCenter = () => {
                                     <span className="careerCenter__messageCount">1</span>
                                 </div>
                             </button>
-
                             <div className="careerCenter__messagesEmpty">
                                 Больше нет новых сообщений
                             </div>
-
-                            <button
-                                type="button"
-                                className="careerCenter__messagesOpen"
-                                onClick={() => navigate('/chats')}
-                            >
+                            <button type="button" className="careerCenter__messagesOpen">
                                 Открыть
                             </button>
                         </div>

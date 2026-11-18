@@ -2,10 +2,12 @@
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+    flex: 0 0 auto;
     background-color: #131313;
     border-radius: 16px;
     padding: 24px;
     color: #ffffff;
+    overflow: visible;
 }
 
 .memoBlock__header {

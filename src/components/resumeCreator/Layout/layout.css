@@ -1,7 +1,8 @@
 .studentCreatorLayout {
-    height: 100%;
-    max-height: 100%;
-    overflow: hidden;
+    min-height: 100vh;
+    height: auto;
+    max-height: none;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     background-color: #131313;
@@ -14,8 +15,7 @@
 }
 
 .studentCreatorLayout__content {
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -24,25 +24,23 @@
     padding: 20px;
     width: 100%;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .studentCreatorLayout__stage {
     width: 100%;
     max-width: 1240px;
-    flex: 1 1 auto;
-    min-height: 0;
+    flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .studentCreatorLayout__stage .studentCreatorGrid {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: 530px;
-    height: 100%;
+    flex: 0 0 auto;
+    height: auto;
+    max-height: none;
 }
 
 .studentCreatorLayout__stage .stepperFooter {
@@ -86,10 +84,9 @@
 @media (max-width: 1100px) {
     .studentCreatorLayout {
         height: auto;
-        min-height: 100%;
+        min-height: 100vh;
         max-height: none;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: visible;
     }
 
     .studentCreatorLayout__content {

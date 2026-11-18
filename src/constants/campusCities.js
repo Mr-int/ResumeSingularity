@@ -15,13 +15,14 @@ export const isCampusCity = (city) => {
 };
 
 /**
- * Для PATCH/валидации: кампусный город или уже сохранённый на сервере
- * (старые профили вне списка кампусов не блокируем).
+ * Город можно сохранить, если он уже был в анкете или есть в загруженном справочнике.
+ * Пока справочник не пришёл (catalogNames не массив), новый город не принимаем.
  */
-export const isAllowedProfileCity = (city, legacyCity = '') => {
-    const trimmed = city?.trim();
+export const isAllowedProfileCity = (city, legacyCity = '', catalogNames) => {
+    const trimmed = String(city ?? '').trim();
     if (!trimmed) return false;
-    if (isCampusCity(trimmed)) return true;
-    const legacy = legacyCity?.trim();
-    return Boolean(legacy && trimmed === legacy);
+    const legacy = String(legacyCity ?? '').trim();
+    if (legacy && trimmed === legacy) return true;
+    if (!Array.isArray(catalogNames)) return false;
+    return catalogNames.some((name) => String(name).trim() === trimmed);
 };

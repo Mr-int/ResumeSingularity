@@ -1,0 +1,215 @@
+.educationAside {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    max-height: none;
+    display: flex;
+    flex-direction: column;
+    gap: 56px;
+    overflow: visible;
+}
+
+.educationAside__cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 0 0 auto;
+    overflow: visible;
+}
+
+.educationAside__card {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 187px;
+    padding: 24px 32px;
+    border: 1px solid #41464B;
+    border-radius: 24px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 16px;
+    transition: border-color 0.2s ease;
+}
+
+.educationAside__card--blue {
+    background: rgba(62, 142, 255, 0.1);
+}
+
+.educationAside__card--green {
+    background: rgba(153, 255, 105, 0.1);
+}
+
+.educationAside__card.is-active {
+    border-color: #3E8EFF;
+}
+
+.educationAside__main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.educationAside__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.educationAside__title {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.3px;
+    color: #ffffff;
+}
+
+.educationAside__period {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.26px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.educationAside__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.educationAside__direction {
+    margin: 0;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.28px;
+    color: #ffffff;
+}
+
+.educationAside__link {
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.educationAside__card--blue .educationAside__link {
+    color: #3E8EFF;
+}
+
+.educationAside__card--blue .educationAside__link:hover {
+    color: #60a5fa;
+}
+
+.educationAside__card--green .educationAside__link {
+    color: #C5FF74;
+}
+
+.educationAside__card--green .educationAside__link:hover {
+    color: #d7ffa0;
+}
+
+.educationAside__tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    box-sizing: border-box;
+    width: fit-content;
+    max-width: 100%;
+    padding: 7px 16px;
+    border-radius: 50px;
+    font-family: 'StratosSemiLight', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.24px;
+    white-space: nowrap;
+}
+
+.educationAside__card--blue .educationAside__tag {
+    border: 0.5px solid #3E8EFF;
+    background: rgba(62, 142, 255, 0.1);
+    color: #3E8EFF;
+}
+
+.educationAside__card--green .educationAside__tag {
+    border: 0.5px solid #C5FF74;
+    background: rgba(197, 255, 116, 0.1);
+    color: #C5FF74;
+}
+
+.educationAside__tools {
+    flex: 0 0 auto;
+    width: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.educationAside__delete,
+.educationAside__edit {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.educationAside__delete {
+    color: #8B4545;
+}
+
+.educationAside__delete:hover {
+    color: #A85A5A;
+    background-color: rgba(139, 69, 69, 0.16);
+}
+
+.educationAside__trashIcon {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.educationAside__edit {
+    opacity: 0.8;
+}
+
+.educationAside__edit:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.educationAside__editIcon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    display: block;
+}
+
+.educationAside .memoBlock {
+    flex: 0 0 auto;
+    max-height: none;
+}

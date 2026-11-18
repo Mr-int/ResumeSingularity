@@ -32,6 +32,7 @@ import {
     getJobSearchIconKind,
     getJobSearchMeta,
 } from '../../utils/studentStatus.js';
+import ResumeStatusBanner from './ResumeStatusBanner.jsx';
 
 const BUSYNESS_ICONS = {
     fulltime: busynessFulltimeIcon,
@@ -195,6 +196,7 @@ const StudentProfileResume = ({
     avatarSrc,
     verified = true,
     variant = 'owner',
+    accountStatus,
     onEdit,
     onEditAvatar,
     onEmployerView,
@@ -516,6 +518,16 @@ const StudentProfileResume = ({
                 </aside>
 
                 <main className="studentProfileResume__main">
+                    {isOwner ? (
+                        <ResumeStatusBanner
+                            accountStatus={
+                                accountStatus
+                                ?? student.accountStatus
+                                ?? student.userAccountStatus
+                            }
+                            userId={studentId}
+                        />
+                    ) : null}
                     <section className="studentProfileResume__about" aria-labelledby="spr-about-title">
                         <div className="studentProfileResume__bio">
                             <div className="studentProfileResume__sectionHead">
@@ -824,22 +836,6 @@ const StudentProfileResume = ({
                             <p className="studentProfileResume__empty">Образование пока не добавлено</p>
                         )}
                     </section>
-
-                    {isOwner ? (
-                        <footer className="studentProfileResume__banner">
-                            <p>
-                                Вы можете отредактировать ваше резюме, изменив его, вы снова отправляете ваше резюме на проверку.
-                            </p>
-                            <button
-                                type="button"
-                                className="studentProfileResume__btn studentProfileResume__btn--primary"
-                                onClick={goToResumeCreator}
-                            >
-                                Редактировать
-                                <IconEdit filled className="studentProfileResume__btnIcon studentProfileResume__btnIcon--edit" />
-                            </button>
-                        </footer>
-                    ) : null}
                 </main>
             </div>
         </div>

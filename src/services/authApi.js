@@ -429,6 +429,13 @@ export const registerRecruiter = async (body) => {
         err.status = response.status;
         throw err;
     }
+    localStorage.setItem(AUTH_FLAG_KEY, 'true');
+    localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    try {
+        await fetchAuthMe();
+    } catch {
+        /* cookie уже есть — me подтянется в кабинете */
+    }
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
@@ -436,7 +443,7 @@ export const registerRecruiter = async (body) => {
     return {};
 };
 
-const parseAuthError = async (response) => {
+const parseAuthError = async (response) => {    
     const text = await response.text();
     let msg = text;
     try {
@@ -447,7 +454,7 @@ const parseAuthError = async (response) => {
     const err = new Error(msg || `Ошибка ${response.status}`);
     err.status = response.status;
     return err;
-};
+};  
 
 /**
  * POST /auth/confirm-email

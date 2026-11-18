@@ -697,3 +697,109 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Статусы поиска — новый дизайн */
+
+.sprStatusChoices--jobSearch {
+    gap: 0;
+    width: 100%;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoices__label {
+    margin-bottom: 8px;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoices__list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+
+    /* Кнопка занимает ширину контейнера, чтобы текст мог переноситься */
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 36px;
+    padding: 8px 10px;
+
+    /* Цвет рамки наследуется от конкретного статуса ниже */
+    border: 1px solid currentColor;
+    border-radius: 8px;
+    background: transparent;
+
+    font-family: 'Skyeng SemiLight', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-align: left;
+
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice.is-active {
+    border-width: 2px;
+    padding: 7px 9px;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--looking.is-active {
+    background: rgba(132, 255, 121, 0.10);
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--considering.is-active {
+    background: rgba(255, 178, 83, 0.10);
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--notLooking.is-active {
+    background: rgba(255, 144, 142, 0.10);
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--looking {
+    color: #84FF79;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--considering {
+    color: #FFB253;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--notLooking {
+    color: #FF908E;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice__text {
+    /* Длинный текст переносится, не залезая на SVG */
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice__icon--search {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    margin-left: auto;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice__icon img {
+    display: block;
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}

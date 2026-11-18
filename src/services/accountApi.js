@@ -37,6 +37,22 @@ export const getCommunicationReadiness = (opts = {}) =>
         ...opts,
     });
 
+/** GET /student/me/versions — версии анкеты для статуса модерации. */
+export const getStudentProfileVersions = (opts = {}) =>
+    apiClientJson('student/me/versions', {
+        method: 'GET',
+        ...opts,
+    });
+
+/**
+ * POST /student/me/revert-draft — откат черновика в окне draftGraceEndsAt.
+ * Ответ 204.
+ */
+export const revertStudentDraft = () =>
+    apiClientJson('student/me/revert-draft', {
+        method: 'POST',
+    });
+
 /** PATCH /student/{id} — частичное обновление профиля студента (ADMIN). */
 export const patchStudent = (studentId, body) =>
     apiClientJson(`student/${studentId}`, {
@@ -50,6 +66,47 @@ export const patchRecruiter = (recruiterId, body) =>
         method: 'PATCH',
         body: JSON.stringify(body),
     });
+
+const postRecruiterPhotoOnce = (recruiterId, file) => {
+    const formData = new FormData();
+    formData.append('avatarFile', file);
+    return fetch(`${API_BASE_URL}recruiter/photo/${recruiterId}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+    });
+};
+
+/** POST /recruiter/photo/{id} — multipart, поле avatarFile. */
+export const uploadRecruiterPhoto = async (recruiterId, file) => {
+    let response = await postRecruiterPhotoOnce(recruiterId, file);
+    if (response.status === 401) {
+        try {
+            await refreshSession();
+            response = await postRecruiterPhotoOnce(recruiterId, file);
+        } catch {
+            clearLocalAuth();
+            window.location.href = appPath('login');
+            throw new Error('HTTP error! status: 401 - Unauthorized');
+        }
+    }
+    if (response.status === 401) {
+        throw new Error('HTTP error! status: 401 - Unauthorized');
+    }
+    if (!response.ok) {
+        const text = await response.text();
+        let msg = text;
+        try {
+            const parsed = JSON.parse(text);
+            msg = parsed.message || text;
+        } catch {
+            /* empty */
+        }
+        const err = new Error(msg || `Ошибка ${response.status}`);
+        err.status = response.status;
+        throw err;
+    }
+};
 
 const postStudentPhotoOnce = (studentId, file) => {
     const formData = new FormData();

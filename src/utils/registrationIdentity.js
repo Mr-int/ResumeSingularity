@@ -25,6 +25,17 @@ export const usernameFromName = (lastName, firstName) => {
     return raw.slice(0, 64);
 };
 
+/** Четыре символа времени в base36: короткий и почти не повторяется. */
+export const recruiterTimeSuffix = (stamp = Date.now()) =>
+    Math.max(0, stamp).toString(36).slice(-4).padStart(4, '0');
+
+/** Логин работодателя: ФИО плюс короткий суффикс, не длиннее 64. */
+export const recruiterUsername = (lastName, firstName, stamp = Date.now()) => {
+    const base = usernameFromName(lastName, firstName);
+    const tail = `_${recruiterTimeSuffix(stamp)}`;
+    return `${base.slice(0, 64 - tail.length)}${tail}`;
+};
+
 export const usernameWithSuffix = (base, attempt) => {
     if (attempt <= 1) return base.slice(0, 64);
     const suffix = `_${attempt}`;

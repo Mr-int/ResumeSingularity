@@ -19,6 +19,7 @@ import {
     isUsernameTakenError,
     isValidEmail,
     normalizePhoneNumber,
+    recruiterUsername,
     usernameFromName,
     usernameWithSuffix,
 } from '../../utils/registrationIdentity.js';
@@ -158,10 +159,11 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     const hadPendingOnOpen = isRegistrationPendingForRole(role);
 
     // Студент: 0 продолжение → 1 email → 2 ФИО → 3 пароль+телефон (register, логин из ФИО) → 4 код → 5 курс
-    const [step, setStep] = useState(hadPendingOnOpen ? 0 : 1);
+    const [step, setStep] = useState(hadPendingOnOpen ? (isStudent ? 0 : 5) : 1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [studentAccountCreated, setStudentAccountCreated] = useState(hadPendingOnOpen && isStudent);
+    const [recruiterAccountCreated, setRecruiterAccountCreated] = useState(hadPendingOnOpen && !isStudent);
     const [emailConfirmed, setEmailConfirmed] = useState(false);
     /** После 204 complete-registration кнопку блокируем (повтор шлёт письмо снова). */
     const [registrationCompleted, setRegistrationCompleted] = useState(false);
@@ -176,6 +178,8 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     );
     const [code, setCode] = useState(['', '', '', '']);
     const codeRowRef = useRef(null);
+    const recruiterStampRef = useRef(Date.now());
+    const recruiterNameKeyRef = useRef('');
 
     const [messageVisible, setMessageVisible] = useState(false);
     const [messageLeaving, setMessageLeaving] = useState(false);
@@ -249,6 +253,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         clearRegistrationDraft();
         await clearServerSessionBeforeLogin().catch(() => {});
         setStudentAccountCreated(false);
+        setRecruiterAccountCreated(false);
         setEmailConfirmed(false);
         setAssignedUsername('');
         setCode(['', '', '', '']);
@@ -278,14 +283,15 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             ...prev,
             email: email || prev.email,
         }));
-        setStudentAccountCreated(true);
+        setStudentAccountCreated(isStudent);
+        setRecruiterAccountCreated(!isStudent);
         setAssignedUsername(sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || '');
         if (email) {
             const login = sessionStorage.getItem(REGISTRATION_USERNAME_KEY) || assignedUsername || '';
             markEmailConfirmationPending(email, login, role);
         }
         setCode(['', '', '', '']);
-        setStep(4);
+        setStep(isStudent ? 4 : 5);
     };
 
     const emailErrorText = (value = formData.email) => {
@@ -427,22 +433,55 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
     });
 
     const submitRecruiter = async () => {
+        if (recruiterAccountCreated) {
+            setStep(5);
+            return;
+        }
         setLoading(true);
         try {
-            const base = usernameFromName(formData.lastName, formData.firstName);
+            const base = recruiterUsername(
+                formData.lastName,
+                formData.firstName,
+                recruiterStampRef.current,
+            );
             const username = await registerWithFreeUsername(base, (login) => registerRecruiter({
                 ...accountPayload(login),
                 companyName: formData.companyName.trim(),
                 city: formData.city.trim(),
             }));
-            trackAnalyticsEvent(ANALYTICS_EVENT.REGISTRATION_COMPLETED);
-            onSuccess(role, username);
+            markEmailConfirmationPending(formData.email.trim(), username, role);
+            setAssignedUsername(username);
+            setRecruiterAccountCreated(true);
+            setCode(['', '', '', '']);
+            setStep(5);
         } catch (err) {
             const message = humanizeRegisterError(err);
             if (isEmailTakenError(err)) {
                 rememberTakenEmail(formData.email);
                 setStep(1);
             }
+            setError(message);
+            showMessage(message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const confirmRecruiterEmail = async () => {
+        const fullCode = code.join('').trim();
+        if (!/^\d{4}$/.test(fullCode)) {
+            setErrorAndShow('Введите код из 4 цифр');
+            return;
+        }
+        setLoading(true);
+        try {
+            await confirmEmail(fullCode);
+            clearRegistrationDraft();
+            trackAnalyticsEvent(ANALYTICS_EVENT.REGISTRATION_COMPLETED);
+            onSuccess(role, assignedUsername);
+        } catch (err) {
+            const message = err.message || 'Неверный код';
+            setCode(['', '', '', '']);
             setError(message);
             showMessage(message);
         } finally {
@@ -642,9 +681,17 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                 return;
             }
             if (step === 4) {
+                if (recruiterAccountCreated) {
+                    setStep(5);
+                    return;
+                }
                 if (!formData.companyName.trim()) { setErrorAndShow('Укажите название компании'); return; }
                 if (!formData.city.trim()) { setErrorAndShow('Укажите город'); return; }
                 submitRecruiter();
+                return;
+            }
+            if (step === 5) {
+                confirmRecruiterEmail();
             }
             return;
         }
@@ -716,6 +763,11 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         }
 
         // С кода — назад к паролю; с пароля после создания аккаунта ФИО уже нельзя менять
+        if (!isStudent && step === 5) {
+            setStep(4);
+            return;
+        }
+
         if (isStudent && step === 4) {
             setStep(3);
             return;
@@ -733,6 +785,43 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
         const invalid = emailTouched && Boolean(emailErrorText());
         return 'registerForm__emailInput' + (invalid || (error && step === 1) ? ' registerForm__emailInput--error' : '');
     };
+
+    const renderCodeStep = () => (
+        <>
+            <h2 className="registerForm__heading">Введите код из письма</h2>
+            <p className="registerForm__subheading">
+                Отправили на почтовый ящик {formData.email || pendingEmail}, если входящих нет, проверьте спам
+            </p>
+            <div
+                className="registerForm__codeRow"
+                ref={codeRowRef}
+                onClick={handleCodeRowClick}
+            >
+                {code.map((digit, index) => (
+                    <input
+                        key={index}
+                        id={`registerForm-code-${index}`}
+                        type="text"
+                        inputMode="numeric"
+                        name="one-time-code"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleCodeChange(index, e.target.value)}
+                        onKeyDown={(e) => handleCodeKeyDown(index, e)}
+                        onPaste={handleCodePaste}
+                        onFocus={(e) => e.target.select()}
+                        disabled={loading}
+                        className={
+                            'registerForm__codeInput' +
+                            (digit ? ' registerForm__codeInput--filled' : '') +
+                            (error ? ' registerForm__codeInput--error' : '')
+                        }
+                        autoComplete="one-time-code"
+                    />
+                ))}
+            </div>
+        </>
+    );
 
     const renderStepContent = () => {
         if (!isStudent) {
@@ -845,14 +934,16 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             <h2 className="registerForm__heading registerForm__heading--step">Шаг 3 из 3</h2>
                             <div className="registerForm__inputGroup">
                                 <label>Официальное название компании</label>
-                                <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} disabled={loading} />
+                                <input type="text" name="companyName" autoComplete="organization" value={formData.companyName} onChange={handleChange} disabled={loading || recruiterAccountCreated} />
                             </div>
                             <div className="registerForm__inputGroup">
                                 <label>Город</label>
-                                <input type="text" name="city" value={formData.city} onChange={handleChange} disabled={loading} />
+                                <input type="text" name="city" autoComplete="address-level2" value={formData.city} onChange={handleChange} disabled={loading || recruiterAccountCreated} />
                             </div>
                         </>
                     );
+                case 5:
+                    return renderCodeStep();
                 default:
                     return null;
             }
@@ -1004,41 +1095,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     </>
                 );
             case 4:
-                return (
-                    <>
-                        <h2 className="registerForm__heading">Введите код из письма</h2>
-                        <p className="registerForm__subheading">
-                            Отправили на почтовый ящик {formData.email || pendingEmail}, если входящих нет, проверьте спам
-                        </p>
-                        <div
-                            className="registerForm__codeRow"
-                            ref={codeRowRef}
-                            onClick={handleCodeRowClick}
-                        >
-                            {code.map((digit, index) => (
-                                <input
-                                    key={index}
-                                    id={`registerForm-code-${index}`}
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={1}
-                                    value={digit}
-                                    onChange={(e) => handleCodeChange(index, e.target.value)}
-                                    onKeyDown={(e) => handleCodeKeyDown(index, e)}
-                                    onPaste={handleCodePaste}
-                                    onFocus={(e) => e.target.select()}
-                                    disabled={loading}
-                                    className={
-                                        'registerForm__codeInput' +
-                                        (digit ? ' registerForm__codeInput--filled' : '') +
-                                        (error ? ' registerForm__codeInput--error' : '')
-                                    }
-                                    autoComplete="one-time-code"
-                                />
-                            ))}
-                        </div>
-                    </>
-                );
+                return renderCodeStep();
             case 5:
                 return (
                     <>
@@ -1098,9 +1155,26 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
             if (step === 3) return studentAccountCreated ? 'К коду' : 'Получить код';
             return 'Далее';
         }
-        if (step === 4) return 'Зарегистрироваться';
+        if (step === 5) return 'Подтвердить';
+        if (step === 4) return recruiterAccountCreated ? 'К коду' : 'Зарегистрироваться';
         return 'Далее';
     };
+
+    const lastNameTrim = formData.lastName.trim();
+    const firstNameTrim = formData.firstName.trim();
+    if (!isStudent && lastNameTrim && firstNameTrim) {
+        const nameKey = `${lastNameTrim}|${firstNameTrim}`;
+        if (recruiterNameKeyRef.current !== nameKey) {
+            recruiterNameKeyRef.current = nameKey;
+            recruiterStampRef.current = Date.now();
+        }
+    }
+    const loginPreview = assignedUsername
+        || (lastNameTrim && firstNameTrim
+            ? (isStudent
+                ? usernameWithSuffix(usernameFromName(formData.lastName, formData.firstName), 1)
+                : recruiterUsername(formData.lastName, formData.firstName, recruiterStampRef.current))
+            : '');
 
     return (
         <div className="registerForm__overlay">
@@ -1118,13 +1192,31 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                     <img src={LogoImage} alt="Resume Singularity" className="registerForm__logoImage" />
                 </div>
 
-                <div className="registerForm__form">
+                <form
+                    className="registerForm__form"
+                    method="post"
+                    action="/registration"
+                    autoComplete="on"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        if (step === 0) return;
+                        handleNextStep();
+                    }}
+                >
                     {renderStepContent()}
 
-                    {assignedUsername && ((isStudent && step >= 3 && step !== 0) || (!isStudent && step >= 3)) ? (
-                        <p className="registerForm__subheading">
-                            Логин для входа: {assignedUsername}
-                        </p>
+                    {loginPreview && ((isStudent && step >= 3 && step !== 0) || (!isStudent && step >= 3)) ? (
+                        <label className="registerForm__loginLabel">
+                            Логин для входа
+                            <input
+                                className="registerForm__usernameInput"
+                                type="text"
+                                name="username"
+                                autoComplete="username"
+                                value={loginPreview}
+                                readOnly
+                            />
+                        </label>
                     ) : null}
 
                     {step === 0 ? (
@@ -1148,16 +1240,15 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                         </>
                     ) : (
                         <button
-                            type="button"
+                            type="submit"
                             className="registerForm__primaryBtn"
-                            onClick={handleNextStep}
                             disabled={loading || (isStudent && step === 5 && registrationCompleted)}
                         >
                             {primaryLabel()}
                         </button>
                     )}
 
-                    {isStudent && step === 4 ? (
+                    {(isStudent && step === 4) || (!isStudent && step === 5) ? (
                         <button
                             type="button"
                             className="registerForm__primaryBtn registerForm__primaryBtn--secondary"
@@ -1167,7 +1258,7 @@ const RegisterForm = ({ role, onBack, onSuccess }) => {
                             Получить новый код
                         </button>
                     ) : null}
-                </div>
+                </form>
             </div>
 
             {messageVisible && messageText ? (
