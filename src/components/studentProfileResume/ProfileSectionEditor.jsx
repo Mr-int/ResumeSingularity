@@ -27,9 +27,9 @@ import {
 } from '../../utils/studentStatus.js';
 import calendarIcon from '../../assets/icons/calendar.svg';
 import arrowIcon from '../../assets/icons/arrow_small.svg';
-import statusLookingIcon from '../../assets/icons/search.svg';
-import statusConsideringIcon from '../../assets/icons/looking.svg';
-import statusNotLookingIcon from '../../assets/icons/not.svg';
+import statusLookingIcon from '../../../search.svg';
+import statusConsideringIcon from '../../../looking.svg';
+import statusNotLookingIcon from '../../../not.svg';
 import busynessFulltimeIcon from '../../assets/icons/busyness-fulltime.svg';
 import busynessParttimeIcon from '../../assets/icons/busyness-parttime.svg';
 import busynessProjectIcon from '../../assets/icons/busyness-project.svg';
