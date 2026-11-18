@@ -324,7 +324,7 @@ function WorkTypes() {
                       aria-hidden="true"
                     />
                     {open ? (
-                      <LandingButton className="cooperation-card__action cooperation-card__action--link" arrow="up-right" to={REGISTER}>
+                      <LandingButton variant="quiet" className="cooperation-card__action cooperation-card__action--link" arrow="up-right" to={REGISTER}>
                         Отправить предложение
                       </LandingButton>
                     ) : null}

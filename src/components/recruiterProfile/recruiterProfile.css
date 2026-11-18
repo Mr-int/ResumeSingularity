@@ -247,3 +247,17 @@
 .recruiterProfile__note {
     margin: 0;
 }
+
+.recruiterProfile__field--error input,
+.recruiterProfile .recruiterProfile__field--error .citySelect__trigger,
+.recruiterProfile__field--error .recruiterProfile__drop {
+    border-color: #E95A57;
+    box-shadow: 0 0 0 1px #E95A57 inset;
+}
+
+.recruiterProfile__fieldError {
+    margin: 0;
+    color: #E95A57;
+    font-size: 12px;
+    line-height: 1.3;
+}

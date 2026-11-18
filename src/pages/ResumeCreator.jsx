@@ -314,6 +314,10 @@ const ResumeCreator = () => {
     const flushProfileAutosaveRef = useRef(async () => false);
 
     const [step, setStep] = useState(1);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [step]);
+
     /** Дальше этого шага по клику на прогресс нельзя — пока не пройдены обязательные шаги. */
     const [maxReachedStep, setMaxReachedStep] = useState(1);
     const [resumeComplete, setResumeComplete] = useState(false);
@@ -560,7 +564,6 @@ const ResumeCreator = () => {
 
                 const savedStep = loadResumeCreatorStep(me.id);
                 if (savedStep) {
-                    setStep(savedStep);
                     setMaxReachedStep(savedStep);
                 }
             } catch (err) {
