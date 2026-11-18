@@ -727,11 +727,12 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    min-height: 0;
-    padding: 0;
+    min-height: 36px;
+    padding: 8px 10px;
 
-    border: none;
-    border-radius: 0;
+    /* Цвет рамки наследуется от конкретного статуса ниже */
+    border: 1px solid currentColor;
+    border-radius: 8px;
     background: transparent;
 
     font-family: 'Skyeng SemiLight', sans-serif;
@@ -742,18 +743,28 @@
     text-align: left;
 
     cursor: pointer;
-    transition: opacity 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
 .sprStatusChoices--jobSearch .sprStatusChoice:hover {
-    border: none;
-    background: transparent;
-    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .sprStatusChoices--jobSearch .sprStatusChoice.is-active {
-    border: none;
-    background: transparent;
+    border-width: 2px;
+    padding: 7px 9px;
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--looking.is-active {
+    background: rgba(132, 255, 121, 0.10);
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--considering.is-active {
+    background: rgba(255, 178, 83, 0.10);
+}
+
+.sprStatusChoices--jobSearch .sprStatusChoice--notLooking.is-active {
+    background: rgba(255, 144, 142, 0.10);
 }
 
 .sprStatusChoices--jobSearch .sprStatusChoice--looking {
