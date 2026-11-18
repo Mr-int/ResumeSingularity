@@ -17,18 +17,22 @@ const Avatar = ({
     firstName = '',
     lastName = '',
     roleLabel = '',
+    isRecruiter = false,
 }) => {
     const rootRef = useRef(null);
     const displayName = [firstName, lastName].filter(Boolean).join(' ').trim() || 'Пользователь';
 
     useEffect(() => {
         if (!expanded) return undefined;
+
         const onDocPointer = (event) => {
             if (!rootRef.current?.contains(event.target)) {
                 onClick?.({ type: 'collapse' });
             }
         };
+
         document.addEventListener('pointerdown', onDocPointer);
+
         return () => document.removeEventListener('pointerdown', onDocPointer);
     }, [expanded, onClick]);
 
@@ -53,11 +57,15 @@ const Avatar = ({
                 {expanded ? (
                     <span className="studentCreatorHeader__avatarMeta">
                         <span className="studentCreatorHeader__avatarName">{displayName}</span>
+
                         {roleLabel ? (
-                            <span className="studentCreatorHeader__avatarRole">{roleLabel}</span>
+                            <span className="studentCreatorHeader__avatarRole">
+                                {roleLabel}
+                            </span>
                         ) : null}
                     </span>
                 ) : null}
+
                 <img
                     src={src || profileStockIco}
                     alt={alt}
@@ -83,7 +91,9 @@ const Avatar = ({
                             }
                             onClick={() => onMenuAction?.(item.id)}
                         >
-                            {item.label}
+                            {item.id === 'students' && isRecruiter
+                                ? 'Студенты'
+                                : item.label}
                         </button>
                     ))}
                 </div>
