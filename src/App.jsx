@@ -1,5 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, useLocation, useParams, Navigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigationType, useParams, Navigate } from 'react-router-dom';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import CareerCenter from './pages/CareerCenter.jsx';
 import EmployerLanding from './pages/EmployerLanding.jsx';
 import { getStoredRole, isAuthenticated } from './services/authApi.js';
@@ -42,6 +42,19 @@ const CareerOrLegacyHome = () => {
   return <EmployerLanding />;
 };
 
+/** Якоря и «Назад»/«Вперёд» браузера не трогаем: там своя позиция прокрутки. */
+const ScrollToTop = () => {
+  const { pathname, hash } = useLocation();
+  const navigationType = useNavigationType();
+
+  useLayoutEffect(() => {
+    if (hash || navigationType === 'POP') return;
+    window.scrollTo(0, 0);
+  }, [pathname, hash, navigationType]);
+
+  return null;
+};
+
 const AppRoutes = () => {
   const location = useLocation();
   const [isRouteLoading, setIsRouteLoading] = useState(false);
@@ -66,6 +79,7 @@ const AppRoutes = () => {
   return (
       <>
         <AnalyticsPageViews />
+        <ScrollToTop />
         <Routes>
           <Route path='/' element={<CareerOrLegacyHome />} />
           <Route path='/login' element={<Auth />} />
