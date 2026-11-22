@@ -6,7 +6,7 @@ import './careerCenter.css';
 
 /**
  * Новая заглушка «Центр карьеры».
- * Старый лендинг — pages/Home.jsx (не удалять; используется для /#projects).
+ * Старый лендинг — pages/Home.jsx. Проекты открываются на /projects.
  */
 const CareerCenter = () => {
     const navigate = useNavigate();

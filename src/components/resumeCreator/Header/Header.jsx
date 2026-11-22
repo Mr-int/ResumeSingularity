@@ -13,7 +13,8 @@ import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js
 
 const NAV_DEFS = [
     { id: 'career', label: 'Центр карьеры', path: '/' },
-    { id: 'projects', label: 'Проекты', path: '/#projects' },
+    { id: 'projects', label: 'Проекты', path: '/projects' },
+    { id: 'requests', label: 'Заявки', path: '/recruitment-requests' },
     { id: 'resume', label: 'Резюме', path: '/profile' },
     { id: 'vacancies', label: 'Вакансии', path: null },
 ];
@@ -25,7 +26,8 @@ const navIdFromLocation = (pathname, hash) => {
     // Создание / редактирование — ни один пункт не активен
     if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return null;
 
-    if (pathname === '/' && hash === '#projects') return 'projects';
+    if (pathname === '/projects' || pathname.startsWith('/projects/')) return 'projects';
+    if (pathname === '/recruitment-requests' || pathname.startsWith('/recruitment-requests/')) return 'requests';
     if (pathname === '/') return 'career';
 
     return null;
@@ -199,16 +201,12 @@ const Header = ({
         }
 
         if (item.id === 'projects') {
-            if (location.pathname === '/') {
-                const el = document.getElementById('projects');
+            goAuthed('/projects');
+            return;
+        }
 
-                if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' });
-                    return;
-                }
-            }
-
-            navigate('/#projects');
+        if (item.id === 'requests') {
+            goAuthed('/recruitment-requests');
             return;
         }
 

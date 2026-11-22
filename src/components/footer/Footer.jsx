@@ -19,7 +19,7 @@ const Footer = () => {
                     <Link to="/">Главная</Link>
                     <Link to="/students">Студенты</Link>
                     <a href="https://singularity.academy/college" target="_blank" rel="noreferrer">Обучение</a>
-                    <Link to="/#projects">Проекты</Link>
+                    <Link to="/projects">Проекты</Link>
                 </div>
 
                 <div className='footer__contacts'>

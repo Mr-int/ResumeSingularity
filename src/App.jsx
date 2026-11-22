@@ -13,6 +13,9 @@ import Auth from './pages/Auth.jsx';
 import StatusError from './pages/StatusError.jsx';
 import ResumeCreator from './pages/ResumeCreator.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
+import ProjectPage from './pages/ProjectPage.jsx';
+import RecruitmentRequestsPage from './pages/RecruitmentRequestsPage.jsx';
+import RecruitmentRequestPage from './pages/RecruitmentRequestPage.jsx';
 import { routerBasename } from './utils/appBase.js';
 import AnalyticsPageViews from './components/analytics/AnalyticsPageViews.jsx';
 
@@ -29,13 +32,8 @@ const ProfileIdRedirect = () => {
 
 /**
  * `/` — лендинг работодателя для гостя и рекрутера, центр карьеры для студента.
- * `/#projects` — заглушка «страница в разработке».
  */
 const CareerOrLegacyHome = () => {
-  const { hash } = useLocation();
-  if (hash === '#projects') {
-    return <ProjectsPage />;
-  }
   if (isAuthenticated() && getStoredRole() === 'STUDENT') {
     return <CareerCenter />;
   }
@@ -85,6 +83,26 @@ const AppRoutes = () => {
           <Route path='/login' element={<Auth />} />
           <Route path='/registration' element={<Auth />} />
           <Route path='/forgot-password' element={<Auth />} />
+          <Route path='/projects' element={
+            <ProtectedRoute>
+              <ProjectsPage />
+            </ProtectedRoute>
+          } />
+          <Route path='/projects/:id' element={
+            <ProtectedRoute>
+              <ProjectPage />
+            </ProtectedRoute>
+          } />
+          <Route path='/recruitment-requests' element={
+            <ProtectedRoute>
+              <RecruitmentRequestsPage />
+            </ProtectedRoute>
+          } />
+          <Route path='/recruitment-requests/:id' element={
+            <ProtectedRoute>
+              <RecruitmentRequestPage />
+            </ProtectedRoute>
+          } />
           <Route path='/students' element={
             <ProtectedRoute>
               <Students />
