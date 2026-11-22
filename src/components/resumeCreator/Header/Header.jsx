@@ -13,9 +13,10 @@ import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js
 
 const NAV_DEFS = [
     { id: 'career', label: 'Центр карьеры', path: '/' },
-    { id: 'projects', label: 'Проекты', path: '/#projects' },
+    { id: 'projects', label: 'Проекты', path: '/projects' },
+    { id: 'requests', label: 'Заявки', path: '/recruitment-requests', authOnly: true },
     { id: 'resume', label: 'Резюме', path: '/profile' },
-    { id: 'vacancies', label: 'Вакансии', path: null },
+    { id: 'vacancies', label: 'Вакансии', path: null, studentOnly: true },
 ];
 
 const navIdFromLocation = (pathname, hash) => {
@@ -25,6 +26,8 @@ const navIdFromLocation = (pathname, hash) => {
     // Создание / редактирование — ни один пункт не активен
     if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return null;
 
+    if (pathname === '/projects' || pathname.startsWith('/projects/')) return 'projects';
+    if (pathname === '/recruitment-requests' || pathname.startsWith('/recruitment-requests/')) return 'requests';
     if (pathname === '/' && hash === '#projects') return 'projects';
     if (pathname === '/') return 'career';
 
@@ -43,6 +46,10 @@ const Header = ({
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
+
+    const storedRole = getStoredRole();
+    const isRecruiter = storedRole === 'RECRUITER';
+    const isAuthed = isAuthenticated();
 
     const routeActiveId = navIdFromLocation(location.pathname, location.hash);
 
@@ -168,20 +175,32 @@ const Header = ({
     const items = useMemo(() => {
         const source = navItems || NAV_DEFS;
 
-        return source.map((item) => {
-            const isVacancies = item.id === 'vacancies';
+        return source
+            .filter((item) => {
+                if (item.authOnly && !isAuthed) return false;
+                // «Вакансии» — студенческий раздел: партнёру не показываем
+                if (item.studentOnly && isRecruiter) return false;
+                return true;
+            })
+            .map((item) => {
+                const isVacancies = item.id === 'vacancies';
 
-            const disabled = isVacancies
-                ? !resumeComplete
-                : Boolean(item.disabled);
+                const disabled = isVacancies
+                    ? !resumeComplete
+                    : Boolean(item.disabled);
 
-            return {
-                ...item,
-                active: item.id === currentActive,
-                disabled,
-            };
-        });
-    }, [navItems, currentActive, resumeComplete]);
+                let label = item.label;
+                if (isRecruiter && item.id === 'requests') label = 'Мои заявки';
+                if (isRecruiter && item.id === 'resume') label = 'Профиль';
+
+                return {
+                    ...item,
+                    label,
+                    active: item.id === currentActive,
+                    disabled,
+                };
+            });
+    }, [navItems, currentActive, resumeComplete, isAuthed, isRecruiter]);
 
     const goAuthed = (path) => {
         if (isAuthenticated()) {
@@ -199,16 +218,12 @@ const Header = ({
         }
 
         if (item.id === 'projects') {
-            if (location.pathname === '/') {
-                const el = document.getElementById('projects');
+            goAuthed('/projects');
+            return;
+        }
 
-                if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' });
-                    return;
-                }
-            }
-
-            navigate('/#projects');
+        if (item.id === 'requests') {
+            goAuthed('/recruitment-requests');
             return;
         }
 
@@ -326,7 +341,7 @@ const Header = ({
                                 firstName={profileUser.firstName}
                                 lastName={profileUser.lastName}
                                 roleLabel={profileUser.roleLabel}
-                                isRecruiter={profileUser.roleLabel === 'Партнер'}
+                                isRecruiter={isRecruiter || profileUser.roleLabel === 'Партнер'}
                             />
                         </>
                     ) : (
