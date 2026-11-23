@@ -1,5 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import AppHeader from '../header/Header.jsx';
+import { AUTH_CHANGE_EVENT, getStoredRole, isAuthenticated } from '../../services/authApi.js';
 import { LandingButton, scrollToSection } from './LandingButton.jsx';
 import { fanCards, formats, partners, stepDescriptions, steps, students } from './landingData.js';
 import logo from '../../assets/employerLanding/logo-BP31CTL4.svg';
@@ -45,7 +47,8 @@ function Ring({ hole, back }) {
   );
 }
 
-function Header() {
+/** Публичный маркетинговый header — только для гостей и не-рекрутеров. */
+function LandingHeader() {
   return (
     <header className="site-header">
       <div className="site-header__brand">
@@ -592,10 +595,34 @@ function Footer() {
 }
 
 export function EmployerLanding() {
+  const [, refreshAuthState] = useReducer((value) => value + 1, 0);
+
+  useEffect(() => {
+    const readAuthSnapshot = () => `${isAuthenticated()}:${getStoredRole()}`;
+    let lastSnapshot = readAuthSnapshot();
+    const handleAuthChange = () => {
+      const snapshot = readAuthSnapshot();
+      if (snapshot === lastSnapshot) return;
+      lastSnapshot = snapshot;
+      refreshAuthState();
+    };
+
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+    window.addEventListener('storage', handleAuthChange);
+    return () => {
+      window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
+
+  // Авторизованный партнёр видит тот же header, что и на внутренних страницах.
+  // Гости сохраняют прежний публичный лендинг; студенческий интерфейс не затрагивается.
+  const isRecruiter = isAuthenticated() && getStoredRole() === 'RECRUITER';
+
   return (
     <div className="employer-landing">
       <a className="skip-link" href="#main">Перейти к содержимому</a>
-      <Header />
+      {isRecruiter ? <AppHeader /> : <LandingHeader />}
       <main id="main" tabIndex={-1}>
         <Hero />
         <StudentsRail />

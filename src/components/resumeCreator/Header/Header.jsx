@@ -190,6 +190,9 @@ const Header = ({
                     : Boolean(item.disabled);
 
                 let label = item.label;
+                // Только для партнёра: на лендинге и внутренних страницах один и тот же пункт «Главная».
+                // Студенческий Header сохраняет прежние подписи и пункты.
+                if (isRecruiter && item.id === 'career') label = 'Главная';
                 if (isRecruiter && item.id === 'requests') label = 'Мои заявки';
                 if (isRecruiter && item.id === 'resume') label = 'Профиль';
 

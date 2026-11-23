@@ -21,6 +21,15 @@ export const AUTH_EMAIL_VERIFIED_KEY = 'resumeAuthEmailVerified';
 
 let refreshInFlight = null;
 
+/** Кастомное событие об изменении состояния авторизации в этой вкладке. */
+export const AUTH_CHANGE_EVENT = 'resume:auth-change';
+
+const notifyAuthChange = () => {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+    }
+};
+
 const normalizeRole = (raw) => {
     const value = String(raw || '').trim().toUpperCase().replace(/^ROLE_/, '');
     return value || null;
@@ -81,6 +90,7 @@ export const applyAuthMeToStorage = (me) => {
     if (typeof me.emailVerified === 'boolean') {
         localStorage.setItem(AUTH_EMAIL_VERIFIED_KEY, me.emailVerified ? '1' : '0');
     }
+    notifyAuthChange();
 };
 
 export const getStoredAccountStatus = () =>
@@ -220,6 +230,7 @@ export const clearServerSessionBeforeLogin = async () => {
     localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
     localStorage.removeItem(AUTH_ROLE_KEY);
     clearStoredSessionProfile();
+    notifyAuthChange();
 };
 
 /**
@@ -303,6 +314,7 @@ export const login = async (username, password) => {
         } catch (e) {
             console.warn('[AUTH] post-login auth/me failed', e);
         }
+        notifyAuthChange();
 
         return data || { success: true };
     } catch (error) {
@@ -339,6 +351,7 @@ export const isAuthenticated = () => {
             if (timeDiff > hours24) {
                 localStorage.removeItem(AUTH_FLAG_KEY);
                 localStorage.removeItem(`${AUTH_FLAG_KEY}_time`);
+                queueMicrotask(notifyAuthChange);
                 return false;
             }
         }
@@ -367,6 +380,7 @@ export const clearLocalAuth = () => {
             .replace(/^ +/, '')
             .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
     });
+    notifyAuthChange();
 };
 
 /**
@@ -592,6 +606,7 @@ const postRefresh = async (path) => {
     }
     localStorage.setItem(AUTH_FLAG_KEY, 'true');
     localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+    notifyAuthChange();
     const contentType = response.headers.get('content-type');
     if (contentType?.includes('application/json')) {
         return response.json();
@@ -632,6 +647,7 @@ const refreshSessionInternal = async () => {
         if (role) setStoredRole(role);
         localStorage.setItem(AUTH_FLAG_KEY, 'true');
         localStorage.setItem(`${AUTH_FLAG_KEY}_time`, Date.now().toString());
+        notifyAuthChange();
         // Access уже валиден — повторный refresh только ломает сессию при гонках.
         return me;
     }
