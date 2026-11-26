@@ -80,7 +80,7 @@ const Avatar = ({
 
             {expanded ? (
                 <div className="studentCreatorHeader__avatarMenu" role="menu">
-                    {MENU_ITEMS.map((item) => (
+                    {MENU_ITEMS.filter((item) => item.id !== 'students' || isRecruiter).map((item) => (
                         <button
                             key={item.id}
                             type="button"

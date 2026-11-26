@@ -1,9 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import {
-    clearServerSessionBeforeLogin,
-    isEmailConfirmationPending,
-    login,
-} from '../../services/authApi.js';
+import React, { useState } from 'react';
+import { login } from '../../services/authApi.js';
 import './loginModal.css';
 import BackIcon from '../../assets/icons/vectorAuth.svg';
 import LogoImage from '../../assets/logos/resume_logo_mini.png';
@@ -29,13 +25,8 @@ const LoginModal = ({ onClose, onSuccess, onRegisterClick, onForgotClick }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Сброс протухшего JWT перед логином. НЕ трогаем сессию, если ждём код подтверждения почты —
-    // register-student уже создал аккаунт, confirm-email нужен тот же cookie.
-    useEffect(() => {
-        if (isEmailConfirmationPending()) return;
-        clearServerSessionBeforeLogin().catch(() => {});
-    }, []);
-
+    // Сброс протухшего JWT выполняется в login() в момент отправки формы.
+    // Не делаем его на монтировании: открытие /login не должно завершать живую сессию.
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
