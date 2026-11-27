@@ -91,6 +91,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     const [cityLoading, setCityLoading] = useState(false);
     const [cityLoadingMore, setCityLoadingMore] = useState(false);
     const [cityError, setCityError] = useState('');
+    const [cityDropdownStyle, setCityDropdownStyle] = useState({});
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
     const filtersRef = useRef(null);
@@ -99,6 +100,35 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     const cityBtnRef = useRef(null);
     const cityDropdownRef = useRef(null);
     const cityRequest = useRef(0);
+
+    // Список городов рендерится порталом в body: он не должен обрезаться
+    // overflow-ом модального контейнера или выходить за край экрана.
+    const updateCityDropdownPosition = useCallback(() => {
+        const button = cityBtnRef.current;
+        if (!button) return;
+
+        const rect = button.getBoundingClientRect();
+        const gap = 8;
+        const margin = 12;
+        const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
+        const anchorTop = clamp(rect.top, margin, window.innerHeight - margin);
+        const anchorBottom = clamp(rect.bottom, margin, window.innerHeight - margin);
+        const width = Math.max(160, Math.min(rect.width, window.innerWidth - margin * 2));
+        const left = clamp(rect.left, margin, window.innerWidth - width - margin);
+        const spaceBelow = window.innerHeight - anchorBottom - gap - margin;
+        const spaceAbove = anchorTop - gap - margin;
+        const openUp = spaceBelow < 160 && spaceAbove > spaceBelow;
+        const maxHeight = Math.max(80, Math.min(300, openUp ? spaceAbove : spaceBelow));
+
+        setCityDropdownStyle({
+            left,
+            width,
+            maxHeight,
+            ...(openUp
+                ? { top: 'auto', bottom: Math.max(margin, window.innerHeight - anchorTop + gap) }
+                : { top: Math.min(anchorBottom + gap, window.innerHeight - maxHeight - margin), bottom: 'auto' }),
+        });
+    }, []);
 
     useEffect(() => {
         if (showFilters && !isMobile && filterRef?.current) {
@@ -160,6 +190,20 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     }, [cityDropdownOpen, cityQuery]);
 
     useEffect(() => {
+        if (!cityDropdownOpen) return undefined;
+        updateCityDropdownPosition();
+
+        const handleViewportChange = () => updateCityDropdownPosition();
+        window.addEventListener('resize', handleViewportChange);
+        document.addEventListener('scroll', handleViewportChange, true);
+
+        return () => {
+            window.removeEventListener('resize', handleViewportChange);
+            document.removeEventListener('scroll', handleViewportChange, true);
+        };
+    }, [cityDropdownOpen, updateCityDropdownPosition]);
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (specialtyDropdownOpen &&
                 specialtyBtnRef.current &&
@@ -219,6 +263,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
 
     const handleCityClick = (e) => {
         e.stopPropagation();
+        if (!cityDropdownOpen) updateCityDropdownPosition();
         setCityDropdownOpen((prev) => !prev);
         setSpecialtyDropdownOpen(false);
     };
@@ -352,51 +397,56 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                         </span>
                         <img src={arrowIcon} alt="" className="specialty-btn__arrow" />
                     </button>
-                    <div
-                        ref={cityDropdownRef}
-                        className={`specialty-dropdown city-dropdown ${cityDropdownOpen ? 'open' : ''}`}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <input
-                            type="text"
-                            className="city-search"
-                            placeholder="Поиск города"
-                            value={cityQuery}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => { e.stopPropagation(); setCityQuery(e.target.value); }}
-                        />
-                        {cityLoading && <div className="city-status">Загрузка городов…</div>}
-                        {!cityLoading && cityError && (
-                            <div className="city-status city-status--error">{cityError}</div>
-                        )}
-                        {!cityLoading && !cityError && cityRows.length === 0 && (
-                            <div className="city-status">Города не найдены</div>
-                        )}
-                        {cityRows.map((city) => {
-                            const selected = selectedCity.some((item) => Number(item.id) === city.id);
-                            return (
-                                <div
-                                    key={city.id}
-                                    className={`specialty-option ${selected ? 'selected' : ''}`}
-                                    onClick={(e) => { e.stopPropagation(); handleCitySelect(city); }}
-                                >
-                                    {city.name}
-                                </div>
-                            );
-                        })}
-                        {!cityLoading && !cityError && cityPage + 1 < cityTotalPages && (
-                            <button
-                                type="button"
-                                className="city-load-more"
-                                onClick={(e) => { e.stopPropagation(); loadMoreCities(); }}
-                                disabled={cityLoadingMore}
-                            >
-                                {cityLoadingMore ? 'Загрузка…' : 'Показать ещё'}
-                            </button>
-                        )}
-                    </div>
                 </div>
             </div>
+
+            {cityDropdownOpen && ReactDOM.createPortal(
+                <div
+                    ref={cityDropdownRef}
+                    className={`specialty-dropdown city-dropdown open ${isMobile ? '' : 'city-dropdown--light'}`}
+                    style={cityDropdownStyle}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <input
+                        type="text"
+                        className="city-search"
+                        placeholder="Поиск города"
+                        value={cityQuery}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => { e.stopPropagation(); setCityQuery(e.target.value); }}
+                    />
+                    {cityLoading && <div className="city-status">Загрузка городов…</div>}
+                    {!cityLoading && cityError && (
+                        <div className="city-status city-status--error">{cityError}</div>
+                    )}
+                    {!cityLoading && !cityError && cityRows.length === 0 && (
+                        <div className="city-status">Города не найдены</div>
+                    )}
+                    {cityRows.map((city) => {
+                        const selected = selectedCity.some((item) => Number(item.id) === city.id);
+                        return (
+                            <div
+                                key={city.id}
+                                className={`specialty-option ${selected ? 'selected' : ''}`}
+                                onClick={(e) => { e.stopPropagation(); handleCitySelect(city); }}
+                            >
+                                {city.name}
+                            </div>
+                        );
+                    })}
+                    {!cityLoading && !cityError && cityPage + 1 < cityTotalPages && (
+                        <button
+                            type="button"
+                            className="city-load-more"
+                            onClick={(e) => { e.stopPropagation(); loadMoreCities(); }}
+                            disabled={cityLoadingMore}
+                        >
+                            {cityLoadingMore ? 'Загрузка…' : 'Показать ещё'}
+                        </button>
+                    )}
+                </div>,
+                document.body
+            )}
 
             <div className="action-buttons">
                 <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApply(); setShowFilters(false); }}>

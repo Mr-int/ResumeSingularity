@@ -874,9 +874,42 @@
     color: #3E8EFF;
 }
 
-/* Справочник городов: использует существующий dropdown без новой дизайн-системы */
+/* Справочник городов рендерится порталом в body: родительский scroll его не обрезает */
 .city-dropdown {
+    position: fixed;
+    z-index: 1100;
+    box-sizing: border-box;
     padding: 8px;
+    max-height: 300px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* Светлая тема десктопа сохраняется и после выноса списка из контейнера фильтров */
+.city-dropdown--light {
+    background-color: #f5f5f5;
+    border: 1px solid #E4E4E4;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.city-dropdown--light .specialty-option {
+    color: #141414;
+}
+
+.city-dropdown--light .specialty-option:hover {
+    background-color: #e8e8e8;
+}
+
+.city-dropdown--light .specialty-option.selected {
+    background-color: #e0e0e0;
+}
+
+.city-dropdown .specialty-option {
+    min-width: 0;
+    padding-right: 36px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .city-search {
@@ -908,12 +941,12 @@
     font-family: 'StratosSemiLight', sans-serif;
 }
 
-.filters-container--dropdown .city-status {
+.city-dropdown--light .city-status {
     color: #525252;
 }
 
 .city-status--error,
-.filters-container--dropdown .city-status--error {
+.city-dropdown--light .city-status--error {
     color: #E95A57;
 }
 
@@ -935,7 +968,7 @@
     cursor: default;
 }
 
-.filters-container--dropdown .city-load-more {
+.city-dropdown--light .city-load-more {
     color: #525252;
 }
 
