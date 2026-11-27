@@ -289,26 +289,15 @@ const StudentsList = () => {
     const searchRef = useRef(null);
     const filterRef = useRef(null);
     const searchInputRef = useRef(null);
+    const requestGeneration = useRef(0);
 
-    /** Каталог: только POST /student/cardsFilter */
+    /** Каталог: только POST /student/cardsFilter. Состояние меняет только актуальный запрос. */
     const fetchFilteredStudents = useCallback(async (filters) => {
-        try {
-            setLoading(true);
-            setError(null);
-            const filterData = buildStudentFilterReq(filters);
-            return await fetchAllCardPages(
-                (req, pageable) => filterStudentCardsPage(req, pageable, { skipAuthRedirect: true }),
-                filterData,
-            );
-        } catch (err) {
-            console.error('Failed to fetch filtered students:', err);
-            if (err?.status !== 403) {
-                setError(err.message);
-            }
-            return [];
-        } finally {
-            setLoading(false);
-        }
+        const filterData = buildStudentFilterReq(filters);
+        return fetchAllCardPages(
+            (req, pageable) => filterStudentCardsPage(req, pageable, { skipAuthRedirect: true }),
+            filterData,
+        );
     }, []);
 
     useEffect(() => {
@@ -332,17 +321,30 @@ const StudentsList = () => {
         loadSpecialities();
     }, []);
 
-    // Загрузка каталога: только cardsFilter, один раз на набор фильтров
+    // Загрузка каталога: только cardsFilter, один раз на набор фильтров.
+    // Устаревший ответ не должен менять список, ошибку или индикатор загрузки.
     useEffect(() => {
-        let cancelled = false;
-        const applyFilters = async () => {
-            const data = await fetchFilteredStudents(currentFilters);
-            if (!cancelled) setAllStudents(data);
-        };
+        const token = requestGeneration.current + 1;
+        requestGeneration.current = token;
+        setLoading(true);
+        setError(null);
 
-        applyFilters();
+        fetchFilteredStudents(currentFilters)
+            .then((data) => {
+                if (requestGeneration.current === token) setAllStudents(data);
+            })
+            .catch((err) => {
+                console.error('Failed to fetch filtered students:', err);
+                if (requestGeneration.current !== token) return;
+                setAllStudents([]);
+                if (err?.status !== 403) setError(err.message);
+            })
+            .finally(() => {
+                if (requestGeneration.current === token) setLoading(false);
+            });
+
         return () => {
-            cancelled = true;
+            requestGeneration.current += 1;
         };
     }, [currentFilters, fetchFilteredStudents]);
 

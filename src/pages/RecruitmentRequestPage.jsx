@@ -107,9 +107,10 @@ const RecruitmentRequestPage = () => {
     const accepted = responses.filter((row) => row?.status === 'ACCEPTED').length;
     const hasPlaces = accepted < needed;
 
-    const ownResponse = isStudent && responses.length
-        ? responses.find((row) => row?.studentId != null && String(row.studentId) === String(userId))
-            || (responses.length === 1 && responses[0]?.studentId == null ? responses[0] : null)
+    // Отклик без studentId не считаем своим: иначе студент увидит чужой отклик
+    // как «Мой отклик» и не сможет отправить свой. Идентификаторы не выдумываем.
+    const ownResponse = isStudent && userId
+        ? responses.find((row) => row?.studentId != null && String(row.studentId) === String(userId)) || null
         : null;
 
     async function handleSave(event) {
@@ -383,7 +384,12 @@ const RecruitmentRequestPage = () => {
                                                 <li key={row?.id || name} className="catalog__response">
                                                     <div>
                                                         {row?.studentId ? (
-                                                            <Link className="catalog__responseName" to={`/profile/${row.studentId}`}>{name}</Link>
+                                                            <Link
+                                                                className="catalog__responseName"
+                                                                to={`/profile/${encodeURIComponent(String(row.studentId))}`}
+                                                            >
+                                                                {name}
+                                                            </Link>
                                                         ) : (
                                                             <p className="catalog__personName">{name}</p>
                                                         )}

@@ -71,7 +71,7 @@ const clearStoredSessionProfile = () => {
 };
 
 /** Кэш полей AuthMeDTO после GET /auth/me. */
-export const applyAuthMeToStorage = (me) => {
+export const applyAuthMeToStorage = (me, { notify = true } = {}) => {
     if (!me || typeof me !== 'object') return;
     const role = extractRoleFromMe(me);
     if (role) setStoredRole(role);
@@ -90,7 +90,7 @@ export const applyAuthMeToStorage = (me) => {
     if (typeof me.emailVerified === 'boolean') {
         localStorage.setItem(AUTH_EMAIL_VERIFIED_KEY, me.emailVerified ? '1' : '0');
     }
-    notifyAuthChange();
+    if (notify) notifyAuthChange();
 };
 
 export const getStoredAccountStatus = () =>
@@ -107,10 +107,7 @@ export const getStoredUserId = () => localStorage.getItem(AUTH_USER_ID_KEY) || n
 
 export const getStoredRole = () => normalizeRole(localStorage.getItem(AUTH_ROLE_KEY));
 
-/**
- * GET /auth/me — роль, accountStatus, emailVerified и id в localStorage.
- */
-export const fetchAuthMe = async () => {
+const requestAuthMe = async () => {
     const response = await fetch(`${API_BASE_URL}auth/me`, {
         method: 'GET',
         credentials: 'include',
@@ -129,8 +126,27 @@ export const fetchAuthMe = async () => {
             data = {};
         }
     }
-    applyAuthMeToStorage(data);
     return data;
+};
+
+/**
+ * GET /auth/me — роль, accountStatus, emailVerified и id в localStorage.
+ */
+export const fetchAuthMe = async (options) => {
+    const data = await requestAuthMe();
+    // notify:false — обновляем кэш, но не провоцируем повторный AUTH_CHANGE_EVENT.
+    applyAuthMeToStorage(data, options);
+    return data;
+};
+
+/**
+ * Роль из серверного /auth/me без записи в localStorage и без события AUTH_CHANGE_EVENT.
+ * Нужна компонентам, которые обязаны читать сервер, но не должны сами провоцировать
+ * повторный fetch (иначе зацикливание слушателя AUTH_CHANGE_EVENT).
+ */
+export const fetchAuthMeRole = async () => {
+    const data = await requestAuthMe();
+    return extractRoleFromMe(data);
 };
 
 const shouldSkipServerLogout = async () => {

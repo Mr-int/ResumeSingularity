@@ -29,6 +29,14 @@ const personPhoto = (person) => {
     return null;
 };
 
+/** В ответе проекта у участника подтверждён только id — выдумывать studentId не нужно. */
+const personProfilePath = (person) => {
+    if (person?.id == null) return null;
+    const id = String(person.id).trim();
+    if (!id || id === '0' || id === 'NaN') return null;
+    return `/profile/${encodeURIComponent(id)}`;
+};
+
 const personMeta = (person) => {
     const course = courseUiLabel(person.course);
     const courseLabel = course === '★' ? '5 курс' : course ? `${course} курс` : '';
@@ -43,6 +51,7 @@ const ProjectPage = () => {
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [brokenAvatars, setBrokenAvatars] = useState(() => new Set());
     const generation = useRef(0);
 
     const load = useCallback(async () => {
@@ -50,6 +59,7 @@ const ProjectPage = () => {
         generation.current = token;
         setLoading(true);
         setError('');
+        setBrokenAvatars(new Set());
         try {
             const row = await getProject(id);
             if (generation.current === token) setProject(row);
@@ -155,26 +165,34 @@ const ProjectPage = () => {
                                     <ul className="catalog__people">
                                         {students.map((person, index) => {
                                             const name = [person?.firstName, person?.lastName]
+                                                .map((part) => String(part || '').trim())
                                                 .filter(Boolean)
-                                                .join(' ')
-                                                .trim() || 'Студент';
+                                                .join(' ') || 'Студент';
                                             const photo = personPhoto(person);
                                             const initials = name.slice(0, 1).toUpperCase();
+                                            const profilePath = personProfilePath(person);
+                                            const personKey = person?.id != null ? String(person.id) : `${name}-${index}`;
+                                            const avatarKey = `${personKey}:${photo || ''}`;
+                                            const showAvatar = Boolean(photo) && !brokenAvatars.has(avatarKey);
                                             return (
-                                                <li key={person?.id || `${name}-${index}`} className="catalog__person">
+                                                <li key={personKey} className="catalog__person">
                                                     <div className="catalog__personIdentity">
-                                                        {photo ? (
+                                                        {showAvatar ? (
                                                             <img
                                                                 className="catalog__avatar"
                                                                 src={photo}
                                                                 alt=""
-                                                                onError={hideBrokenImage}
+                                                                onError={() => setBrokenAvatars((prev) => new Set(prev).add(avatarKey))}
                                                             />
                                                         ) : (
                                                             <span className="catalog__avatar" aria-hidden="true">{initials}</span>
                                                         )}
                                                         <div>
-                                                            <p className="catalog__personName">{name}</p>
+                                                            <p className="catalog__personName">
+                                                                {profilePath ? (
+                                                                    <Link className="catalog__personLink" to={profilePath}>{name}</Link>
+                                                                ) : name}
+                                                            </p>
                                                             <p className="catalog__meta">{personMeta(person || {})}</p>
                                                         </div>
                                                     </div>

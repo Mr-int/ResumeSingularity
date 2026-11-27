@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './header.css';
 import Logo from './Logo/Logo.jsx';
@@ -8,7 +8,14 @@ import Avatar from './Avatar/Avatar.jsx';
 import chatsIco from '../../../assets/icons/chatsIco.svg';
 import { getImageUrl } from '../../../config/api.js';
 import { getRecruiterMe, getStudentMe } from '../../../services/getApi.js';
-import { getStoredRole, isAuthenticated, logoutServer } from '../../../services/authApi.js';
+import {
+    AUTH_CHANGE_EVENT,
+    fetchAuthMe,
+    fetchAuthMeRole,
+    getStoredRole,
+    isAuthenticated,
+    logoutServer,
+} from '../../../services/authApi.js';
 import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js';
 
 const NAV_DEFS = [
@@ -47,11 +54,61 @@ const Header = ({
     const navigate = useNavigate();
     const location = useLocation();
 
-    const storedRole = getStoredRole();
-    const isRecruiter = storedRole === 'RECRUITER';
     const isAuthed = isAuthenticated();
+    // localStorage — только кэш; источник роли — серверный GET /auth/me.
+    const [role, setRole] = useState(() => (isAuthenticated() ? getStoredRole() : null));
+    const isRecruiter = role === 'RECRUITER';
 
     const routeActiveId = navIdFromLocation(location.pathname, location.hash);
+
+    const roleRequest = useRef(0);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const isCurrent = (token) => !cancelled && roleRequest.current === token && isAuthenticated();
+
+        // Старый ответ не должен вернуть роль после логаута или входа другого пользователя.
+        const refreshRole = async () => {
+            const token = ++roleRequest.current;
+            if (!isAuthenticated()) {
+                if (!cancelled && roleRequest.current === token) setRole(null);
+                return;
+            }
+            try {
+                const serverRole = await fetchAuthMeRole();
+                if (isCurrent(token)) setRole(serverRole || getStoredRole());
+            } catch {
+                // Сервер недоступен — используем кэш, но не делаем вид, что роль подтверждена.
+                if (isCurrent(token)) setRole(getStoredRole());
+            }
+        };
+
+        const loadRole = async () => {
+            const token = ++roleRequest.current;
+            if (!isAuthenticated()) {
+                if (!cancelled && roleRequest.current === token) setRole(null);
+                return;
+            }
+            try {
+                // Источник роли — серверный GET /auth/me через fetchAuthMe; кэш обновляется
+                // без повторного AUTH_CHANGE_EVENT, чтобы не зациклить слушатель.
+                await fetchAuthMe({ notify: false });
+                if (isCurrent(token)) setRole(getStoredRole());
+            } catch {
+                if (isCurrent(token)) setRole(getStoredRole());
+            }
+        };
+
+        loadRole();
+        window.addEventListener(AUTH_CHANGE_EVENT, refreshRole);
+        window.addEventListener('storage', refreshRole);
+        return () => {
+            cancelled = true;
+            window.removeEventListener(AUTH_CHANGE_EVENT, refreshRole);
+            window.removeEventListener('storage', refreshRole);
+        };
+    }, []);
 
     const [loadedAvatarSrc, setLoadedAvatarSrc] = useState(null);
     const [avatarExpanded, setAvatarExpanded] = useState(false);
@@ -78,8 +135,6 @@ const Header = ({
         let cancelled = false;
 
         const loadAvatar = async () => {
-            const role = getStoredRole();
-
             const tryStudent = async () => {
                 const me = await getStudentMe();
 
@@ -170,7 +225,7 @@ const Header = ({
         return () => {
             cancelled = true;
         };
-    }, [avatarSrc, location.pathname]);
+    }, [avatarSrc, location.pathname, role]);
 
     const items = useMemo(() => {
         const source = navItems || NAV_DEFS;

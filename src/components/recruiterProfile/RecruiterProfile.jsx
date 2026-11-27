@@ -128,6 +128,8 @@ const RecruiterProfile = ({ profile, onSaved }) => {
     }, []);
 
     const clearFieldError = (key) => {
+        // Сообщение об успехе относится только к последнему сохранению.
+        if (saved) setSaved(false);
         setFieldErrors((prev) => {
             if (!prev[key]) return prev;
             const next = { ...prev };
@@ -174,14 +176,15 @@ const RecruiterProfile = ({ profile, onSaved }) => {
         const body = {};
         if (!sameText(firstName, profile?.firstName) && firstName.trim()) body.firstName = firstName.trim();
         if (!sameText(lastName, profile?.lastName) && lastName.trim()) body.lastName = lastName.trim();
-        if (!sameText(middleName, profile?.middleName) && middleName.trim()) body.middleName = middleName.trim();
+        // Необязательные поля можно очистить: пустое значение тоже является изменением.
+        if (!sameText(middleName, profile?.middleName)) body.middleName = middleName.trim();
         if (!sameText(companyName, profile?.companyName) && companyName.trim()) body.companyName = companyName.trim();
         if (!sameText(city, profile?.city) && city.trim()) body.city = city.trim();
         const savedPhone = formatRuPhoneInput(profile?.phoneNumber || '');
-        if (!sameText(phoneNumber, savedPhone) && hasPhoneDigits(phoneNumber)) {
-            body.phoneNumber = normalizePhoneNumber(phoneNumber);
+        if (!sameText(phoneNumber, savedPhone)) {
+            body.phoneNumber = hasPhoneDigits(phoneNumber) ? normalizePhoneNumber(phoneNumber) : '';
         }
-        if (!sameText(telegramUsername, profile?.telegramUsername) && hasTelegramName(telegramUsername)) {
+        if (!sameText(telegramUsername, profile?.telegramUsername)) {
             body.telegramUsername = telegramUsername.trim();
         }
         if (format && format !== profile?.cooperationFormat) body.cooperationFormat = format;
@@ -216,6 +219,7 @@ const RecruiterProfile = ({ profile, onSaved }) => {
     const handlePhotoChange = (event) => {
         const file = event.target.files?.[0] || null;
         setPhotoFile(file);
+        if (saved) setSaved(false);
         const message = photoError(file);
         setFieldErrors((prev) => {
             const next = { ...prev };
@@ -430,7 +434,7 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                                                 name="cooperationFormat"
                                                 value={option.value}
                                                 checked={format === option.value}
-                                                onChange={() => setFormat(option.value)}
+                                                onChange={() => { setFormat(option.value); setSaved(false); }}
                                             />
                                             <span>{option.label}</span>
                                         </label>
@@ -452,7 +456,7 @@ const RecruiterProfile = ({ profile, onSaved }) => {
                                                 type="radio"
                                                 name="readyToRequestStudents"
                                                 checked={ready === option.value}
-                                                onChange={() => setReady(option.value)}
+                                                onChange={() => { setReady(option.value); setSaved(false); }}
                                             />
                                             <span>{option.label}</span>
                                         </label>

@@ -605,6 +605,15 @@
     color: var(--catalog-blue);
 }
 
+.catalog__personLink {
+    color: inherit;
+    text-decoration: none;
+}
+
+.catalog__personLink:hover {
+    color: var(--catalog-blue);
+}
+
 .catalog__form {
     display: flex;
     flex-direction: column;
