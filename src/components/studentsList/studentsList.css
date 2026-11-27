@@ -874,6 +874,71 @@
     color: #3E8EFF;
 }
 
+/* Справочник городов: использует существующий dropdown без новой дизайн-системы */
+.city-dropdown {
+    padding: 8px;
+}
+
+.city-search {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 100%;
+    height: 36px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+    border: 1px solid #D8D8D8;
+    border-radius: 6px;
+    background: #fff;
+    color: #141414;
+    font-size: 15px;
+    font-family: 'StratosSemiLight', sans-serif;
+    outline: none;
+}
+
+.city-search:focus {
+    border-color: #3E8EFF;
+}
+
+.city-status {
+    padding: 10px 16px;
+    color: #fff;
+    font-size: 14px;
+    font-family: 'StratosSemiLight', sans-serif;
+}
+
+.filters-container--dropdown .city-status {
+    color: #525252;
+}
+
+.city-status--error,
+.filters-container--dropdown .city-status--error {
+    color: #E95A57;
+}
+
+.city-load-more {
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: 8px 12px;
+    border: 1px solid #525252;
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    font-size: 14px;
+    font-family: 'StratosSemiLight', sans-serif;
+    cursor: pointer;
+}
+
+.city-load-more:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.filters-container--dropdown .city-load-more {
+    color: #525252;
+}
+
 .action-buttons {
     display: flex;
     gap: 16px;

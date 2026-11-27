@@ -1,0 +1,1713 @@
+diff --git a/src/App.jsx b/src/App.jsx
+index 66e6ced..0c4afd5 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -13,6 +13,9 @@ import Auth from './pages/Auth.jsx';
+ import StatusError from './pages/StatusError.jsx';
+ import ResumeCreator from './pages/ResumeCreator.jsx';
+ import ProjectsPage from './pages/ProjectsPage.jsx';
++import ProjectPage from './pages/ProjectPage.jsx';
++import RecruitmentRequestsPage from './pages/RecruitmentRequestsPage.jsx';
++import RecruitmentRequestPage from './pages/RecruitmentRequestPage.jsx';
+ import { routerBasename } from './utils/appBase.js';
+ import AnalyticsPageViews from './components/analytics/AnalyticsPageViews.jsx';
+ 
+@@ -29,13 +32,8 @@ const ProfileIdRedirect = () => {
+ 
+ /**
+  * `/` — лендинг работодателя для гостя и рекрутера, центр карьеры для студента.
+- * `/#projects` — заглушка «страница в разработке».
+  */
+ const CareerOrLegacyHome = () => {
+-  const { hash } = useLocation();
+-  if (hash === '#projects') {
+-    return <ProjectsPage />;
+-  }
+   if (isAuthenticated() && getStoredRole() === 'STUDENT') {
+     return <CareerCenter />;
+   }
+@@ -85,6 +83,26 @@ const AppRoutes = () => {
+           <Route path='/login' element={<Auth />} />
+           <Route path='/registration' element={<Auth />} />
+           <Route path='/forgot-password' element={<Auth />} />
++          <Route path='/projects' element={
++            <ProtectedRoute>
++              <ProjectsPage />
++            </ProtectedRoute>
++          } />
++          <Route path='/projects/:id' element={
++            <ProtectedRoute>
++              <ProjectPage />
++            </ProtectedRoute>
++          } />
++          <Route path='/recruitment-requests' element={
++            <ProtectedRoute>
++              <RecruitmentRequestsPage />
++            </ProtectedRoute>
++          } />
++          <Route path='/recruitment-requests/:id' element={
++            <ProtectedRoute>
++              <RecruitmentRequestPage />
++            </ProtectedRoute>
++          } />
+           <Route path='/students' element={
+             <ProtectedRoute>
+               <Students />
+diff --git a/src/components/footer/Footer.jsx b/src/components/footer/Footer.jsx
+index e012b09..d854004 100644
+--- a/src/components/footer/Footer.jsx
++++ b/src/components/footer/Footer.jsx
+@@ -19,7 +19,7 @@ const Footer = () => {
+                     <Link to="/">Главная</Link>
+                     <Link to="/students">Студенты</Link>
+                     <a href="https://singularity.academy/college" target="_blank" rel="noreferrer">Обучение</a>
+-                    <Link to="/#projects">Проекты</Link>
++                    <Link to="/projects">Проекты</Link>
+                 </div>
+ 
+                 <div className='footer__contacts'>
+diff --git a/src/components/header/Header.jsx b/src/components/header/Header.jsx
+index 773a749..2db9fa1 100644
+--- a/src/components/header/Header.jsx
++++ b/src/components/header/Header.jsx
+@@ -1,6 +1,6 @@
+ /**
+  * Основной header приложения — studentCreatorHeader.
+- * Навигация: Центр карьеры (/), Проекты (/#projects), Резюме (/profile — ЛК), Вакансии (disabled).
++ * Навигация: Центр карьеры (/), Проекты (/projects), Заявки (/recruitment-requests), Резюме (/profile — ЛК), Вакансии (disabled).
+  * Actions: чаты, профиль (/profile).
+  */
+ export { default } from '../resumeCreator/Header/Header.jsx';
+diff --git a/src/components/projects/Projects.jsx b/src/components/projects/Projects.jsx
+deleted file mode 100644
+index 7ac125b..0000000
+--- a/src/components/projects/Projects.jsx
++++ /dev/null
+@@ -1,20 +0,0 @@
+-import React from 'react';
+-import './projects.css';
+-import dogRepairmanImg from '../../assets/other/dog-repairman.png';
+-
+-const Projects = () => (
+-    <section id="projects" className="projects projects--wip">
+-        <div className="projects__wip">
+-            <img
+-                className="projects__wipImg"
+-                src={dogRepairmanImg}
+-                alt=""
+-                width={280}
+-                height={280}
+-            />
+-            <p className="projects__wipText">не грусти собачка, страница в разработке</p>
+-        </div>
+-    </section>
+-);
+-
+-export default Projects;
+diff --git a/src/components/recruitment/RecruitmentRequestForm.jsx b/src/components/recruitment/RecruitmentRequestForm.jsx
+new file mode 100644
+index 0000000..f76adcc
+--- /dev/null
++++ b/src/components/recruitment/RecruitmentRequestForm.jsx
+@@ -0,0 +1,106 @@
++import {
++    COOPERATION_FORMAT,
++} from '../../pages/catalogFormat.js';
++
++function toggleId(ids, id) {
++    const next = ids.map(Number);
++    const value = Number(id);
++    if (next.includes(value)) return next.filter((item) => item !== value);
++    return [...next, value];
++}
++
++const RecruitmentRequestForm = ({ form, onChange, specialities, cities, disabled }) => {
++    const set = (patch) => onChange({ ...form, ...patch });
++
++    return (
++        <div className="catalog__form">
++            <div className="catalog__field">
++                <label htmlFor="rr-tasks">Задачи</label>
++                <textarea id="rr-tasks" required rows={4} disabled={disabled} value={form.tasks} onChange={(e) => set({ tasks: e.target.value })} />
++            </div>
++            <div className="catalog__field">
++                <label htmlFor="rr-qual">Требования к квалификации</label>
++                <textarea id="rr-qual" required rows={4} disabled={disabled} value={form.qualificationRequirements} onChange={(e) => set({ qualificationRequirements: e.target.value })} />
++            </div>
++            <div className="catalog__field">
++                <label htmlFor="rr-work">Условия работы</label>
++                <textarea id="rr-work" required rows={4} disabled={disabled} value={form.workConditions} onChange={(e) => set({ workConditions: e.target.value })} />
++            </div>
++            <div className="catalog__split">
++                <div className="catalog__field">
++                    <label htmlFor="rr-count">Сколько студентов нужно</label>
++                    <input id="rr-count" type="number" min="1" required disabled={disabled} value={form.studentCount} onChange={(e) => set({ studentCount: e.target.value })} />
++                </div>
++                <div className="catalog__field">
++                    <label htmlFor="rr-format">Формат</label>
++                    <select id="rr-format" disabled={disabled} value={form.cooperationFormat} onChange={(e) => set({ cooperationFormat: e.target.value })}>
++                        <option value="">Не указан</option>
++                        {Object.entries(COOPERATION_FORMAT).map(([id, label]) => (
++                            <option key={id} value={id}>{label}</option>
++                        ))}
++                    </select>
++                </div>
++                <div className="catalog__field">
++                    <label htmlFor="rr-ready">Готовы запросить студентов</label>
++                    <select id="rr-ready" disabled={disabled} value={form.readyToRequestStudents} onChange={(e) => set({ readyToRequestStudents: e.target.value })}>
++                        <option value="">Не указано</option>
++                        <option value="yes">Да</option>
++                        <option value="no">Нет</option>
++                    </select>
++                </div>
++            </div>
++            <div className="catalog__field">
++                <label>Специальности</label>
++                <div className="catalog__checks">
++                    {specialities.map((item) => (
++                        <label key={item.id}>
++                            <input
++                                type="checkbox"
++                                disabled={disabled}
++                                checked={form.specialityIds.map(Number).includes(Number(item.id))}
++                                onChange={() => set({ specialityIds: toggleId(form.specialityIds, item.id) })}
++                            />
++                            {item.name}
++                        </label>
++                    ))}
++                </div>
++            </div>
++            <div className="catalog__field">
++                <label>Города</label>
++                <div className="catalog__checks">
++                    {cities.map((item) => (
++                        <label key={item.id}>
++                            <input
++                                type="checkbox"
++                                disabled={disabled}
++                                checked={form.cityIds.map(Number).includes(Number(item.id))}
++                                onChange={() => set({ cityIds: toggleId(form.cityIds, item.id) })}
++                            />
++                            {item.name}
++                        </label>
++                    ))}
++                </div>
++            </div>
++            <div className="catalog__field">
++                <label htmlFor="rr-schedule">Сроки работы</label>
++                <textarea id="rr-schedule" rows={3} disabled={disabled} value={form.scheduleNote} onChange={(e) => set({ scheduleNote: e.target.value })} />
++            </div>
++            <div className="catalog__field">
++                <label htmlFor="rr-extra">Прочая информация</label>
++                <textarea id="rr-extra" rows={3} disabled={disabled} value={form.extraInfo} onChange={(e) => set({ extraInfo: e.target.value })} />
++            </div>
++            <div className="catalog__split">
++                <div className="catalog__field">
++                    <label htmlFor="rr-from">Публикация с</label>
++                    <input id="rr-from" type="datetime-local" disabled={disabled} value={form.publishedFrom} onChange={(e) => set({ publishedFrom: e.target.value })} />
++                </div>
++                <div className="catalog__field">
++                    <label htmlFor="rr-to">Публикация до</label>
++                    <input id="rr-to" type="datetime-local" disabled={disabled} value={form.publishedTo} onChange={(e) => set({ publishedTo: e.target.value })} />
++                </div>
++            </div>
++        </div>
++    );
++};
++
++export default RecruitmentRequestForm;
+diff --git a/src/components/resumeCreator/Header/Header.jsx b/src/components/resumeCreator/Header/Header.jsx
+index 512dec8..710972d 100644
+--- a/src/components/resumeCreator/Header/Header.jsx
++++ b/src/components/resumeCreator/Header/Header.jsx
+@@ -13,7 +13,8 @@ import { hasStudentProfilePhoto } from '../../../utils/hasStudentProfilePhoto.js
+ 
+ const NAV_DEFS = [
+     { id: 'career', label: 'Центр карьеры', path: '/' },
+-    { id: 'projects', label: 'Проекты', path: '/#projects' },
++    { id: 'projects', label: 'Проекты', path: '/projects' },
++    { id: 'requests', label: 'Заявки', path: '/recruitment-requests' },
+     { id: 'resume', label: 'Резюме', path: '/profile' },
+     { id: 'vacancies', label: 'Вакансии', path: null },
+ ];
+@@ -25,7 +26,8 @@ const navIdFromLocation = (pathname, hash) => {
+     // Создание / редактирование — ни один пункт не активен
+     if (pathname.startsWith('/resume/create') || pathname.startsWith('/plug')) return null;
+ 
+-    if (pathname === '/' && hash === '#projects') return 'projects';
++    if (pathname === '/projects' || pathname.startsWith('/projects/')) return 'projects';
++    if (pathname === '/recruitment-requests' || pathname.startsWith('/recruitment-requests/')) return 'requests';
+     if (pathname === '/') return 'career';
+ 
+     return null;
+@@ -199,16 +201,12 @@ const Header = ({
+         }
+ 
+         if (item.id === 'projects') {
+-            if (location.pathname === '/') {
+-                const el = document.getElementById('projects');
+-
+-                if (el) {
+-                    el.scrollIntoView({ behavior: 'smooth' });
+-                    return;
+-                }
+-            }
++            goAuthed('/projects');
++            return;
++        }
+ 
+-            navigate('/#projects');
++        if (item.id === 'requests') {
++            goAuthed('/recruitment-requests');
+             return;
+         }
+ 
+diff --git a/src/pages/CareerCenter.jsx b/src/pages/CareerCenter.jsx
+index 5f20535..2713d33 100644
+--- a/src/pages/CareerCenter.jsx
++++ b/src/pages/CareerCenter.jsx
+@@ -6,7 +6,7 @@ import './careerCenter.css';
+ 
+ /**
+  * Новая заглушка «Центр карьеры».
+- * Старый лендинг — pages/Home.jsx (не удалять; используется для /#projects).
++ * Старый лендинг — pages/Home.jsx. Проекты открываются на /projects.
+  */
+ const CareerCenter = () => {
+     const navigate = useNavigate();
+diff --git a/src/pages/Home.jsx b/src/pages/Home.jsx
+index 1aa844f..3a83bfe 100644
+--- a/src/pages/Home.jsx
++++ b/src/pages/Home.jsx
+@@ -5,7 +5,6 @@ import Hero from "../components/hero/Hero.jsx";
+ import StudentSlider from "../components/studentSlider/StudentSlider.jsx";
+ import Footer from "../components/footer/Footer.jsx";
+ import Benefits from "../components/benefits/Benefits.jsx";
+-import Projects from "../components/projects/Projects.jsx";
+ import Banner from "../components/banner/Banner.jsx";
+ 
+ const Home = () => {
+@@ -26,7 +25,6 @@ const Home = () => {
+             <Hero />
+             <StudentSlider />
+             <Benefits />
+-            <Projects />
+             <Banner />
+             <Footer />
+         </>
+diff --git a/src/pages/ProjectPage.jsx b/src/pages/ProjectPage.jsx
+new file mode 100644
+index 0000000..43373a3
+--- /dev/null
++++ b/src/pages/ProjectPage.jsx
+@@ -0,0 +1,108 @@
++import { useEffect, useState } from 'react';
++import { Link, useParams } from 'react-router-dom';
++import Header from '../components/header/Header.jsx';
++import { getProject } from '../services/projectsApi.js';
++import { getImageUrl } from '../config/api.js';
++import { courseUiLabel } from '../components/resumeCreator/StepForm/StepForm.jsx';
++import { projectImageSrc, sortedImages } from './catalogFormat.js';
++import './catalog.css';
++
++const ProjectPage = () => {
++    const { id } = useParams();
++    const [project, setProject] = useState(null);
++    const [loading, setLoading] = useState(true);
++    const [error, setError] = useState('');
++
++    useEffect(() => {
++        let cancelled = false;
++        setLoading(true);
++        setError('');
++        getProject(id)
++            .then((row) => {
++                if (!cancelled) setProject(row);
++            })
++            .catch((err) => {
++                if (!cancelled) setError(err.message || 'Проект не найден');
++            })
++            .finally(() => {
++                if (!cancelled) setLoading(false);
++            });
++        return () => {
++            cancelled = true;
++        };
++    }, [id]);
++
++    const images = sortedImages(project?.images);
++    const cover = projectImageSrc(images[0]);
++    const students = Array.isArray(project?.students) ? project.students : null;
++
++    return (
++        <div className="catalog">
++            <Header />
++            <main className="catalog__main">
++                <p><Link className="catalog__back" to="/projects">К проектам</Link></p>
++                {loading ? <p className="catalog__note">Загрузка…</p> : null}
++                {error ? <p className="catalog__error" role="alert">{error}</p> : null}
++                {project ? (
++                    <article className="catalog__article">
++                        <header className="catalog__head">
++                            <div>
++                                {project.section ? <p className="catalog__eyebrow">{project.section}</p> : null}
++                                <h1>{project.title}</h1>
++                                {project.summary ? <p className="catalog__lead">{project.summary}</p> : null}
++                            </div>
++                        </header>
++                        {cover ? (
++                            <div className="catalog__hero">
++                                <img src={cover} alt="" />
++                            </div>
++                        ) : null}
++                        {project.body ? <p className="catalog__prose">{project.body}</p> : null}
++                        {(project.skills || []).length ? (
++                            <div className="catalog__chips">
++                                {project.skills.map((skill) => (
++                                    <span key={skill.id} className="catalog__chip">{skill.name}</span>
++                                ))}
++                            </div>
++                        ) : null}
++                        {images.length > 1 ? (
++                            <div className="catalog__gallery">
++                                {images.slice(1).map((image) => {
++                                    const src = projectImageSrc(image);
++                                    if (!src) return null;
++                                    return <img key={image.id || src} src={src} alt="" />;
++                                })}
++                            </div>
++                        ) : null}
++                        {students ? (
++                            <section className="catalog__block">
++                                <h2>Участники</h2>
++                                {students.length === 0 ? <p className="catalog__meta">Состав пока не указан.</p> : null}
++                                <ul className="catalog__people">
++                                    {students.map((person) => {
++                                        const name = `${person.firstName || ''} ${person.lastName || ''}`.trim() || 'Студент';
++                                        const photo = person.imagePath ? getImageUrl(person.imagePath) : null;
++                                        const course = courseUiLabel(person.course);
++                                        return (
++                                            <li key={person.id} className="catalog__person">
++                                                {photo ? <img src={photo} alt="" /> : <span className="catalog__avatar" aria-hidden="true" />}
++                                                <div>
++                                                    <strong>{name}</strong>
++                                                    <p className="catalog__meta">
++                                                        {[person.speciality, course === '★' ? '5 курс' : course ? `${course} курс` : ''].filter(Boolean).join(' · ') || '—'}
++                                                    </p>
++                                                </div>
++                                            </li>
++                                        );
++                                    })}
++                                </ul>
++                            </section>
++                        ) : null}
++                    </article>
++                ) : null}
++            </main>
++        </div>
++    );
++};
++
++export default ProjectPage;
+diff --git a/src/pages/ProjectsPage.jsx b/src/pages/ProjectsPage.jsx
+index bc5430d..d898de0 100644
+--- a/src/pages/ProjectsPage.jsx
++++ b/src/pages/ProjectsPage.jsx
+@@ -1,12 +1,76 @@
++import { useEffect, useState } from 'react';
++import { Link } from 'react-router-dom';
+ import Header from '../components/header/Header.jsx';
+-import Projects from '../components/projects/Projects.jsx';
+-import './projectsPage.css';
+-
+-const ProjectsPage = () => (
+-    <div className="projectsPage">
+-        <Header />
+-        <Projects />
+-    </div>
+-);
++import { filterProjects } from '../services/projectsApi.js';
++import { projectImageSrc, sortedImages } from './catalogFormat.js';
++import './catalog.css';
++
++const ProjectsPage = () => {
++    const [rows, setRows] = useState([]);
++    const [loading, setLoading] = useState(true);
++    const [error, setError] = useState('');
++
++    useEffect(() => {
++        let cancelled = false;
++        filterProjects()
++            .then((list) => {
++                if (!cancelled) setRows(list);
++            })
++            .catch((err) => {
++                if (!cancelled) setError(err.message || 'Не удалось загрузить проекты');
++            })
++            .finally(() => {
++                if (!cancelled) setLoading(false);
++            });
++        return () => {
++            cancelled = true;
++        };
++    }, []);
++
++    return (
++        <div className="catalog">
++            <Header />
++            <main className="catalog__main">
++                <header className="catalog__head">
++                    <div>
++                        <p className="catalog__eyebrow">Лента</p>
++                        <h1>Проекты</h1>
++                        <p className="catalog__lead">Работы студентов, которые сейчас в окне публикации.</p>
++                    </div>
++                </header>
++                {error ? <p className="catalog__error" role="alert">{error}</p> : null}
++                {loading ? <p className="catalog__note">Загрузка…</p> : null}
++                {!loading && !error && rows.length === 0 ? (
++                    <p className="catalog__note">Сейчас в ленте нет проектов.</p>
++                ) : null}
++                <div className="catalog__grid">
++                    {rows.map((project) => {
++                        const cover = projectImageSrc(sortedImages(project.images)[0]);
++                        return (
++                            <Link key={project.id} className="catalog__card" to={`/projects/${project.id}`}>
++                                <div className="catalog__cover">
++                                    {cover ? <img src={cover} alt="" /> : null}
++                                    <span className="catalog__coverMark" aria-hidden="true" />
++                                </div>
++                                <div className="catalog__cardBody">
++                                    {project.section ? <p className="catalog__section">{project.section}</p> : null}
++                                    <h2>{project.title}</h2>
++                                    {project.summary ? <p className="catalog__summary">{project.summary}</p> : null}
++                                    {(project.skills || []).length ? (
++                                        <div className="catalog__chips">
++                                            {project.skills.map((skill) => (
++                                                <span key={skill.id} className="catalog__chip">{skill.name}</span>
++                                            ))}
++                                        </div>
++                                    ) : null}
++                                </div>
++                            </Link>
++                        );
++                    })}
++                </div>
++            </main>
++        </div>
++    );
++};
+ 
+ export default ProjectsPage;
+diff --git a/src/pages/RecruitmentRequestPage.jsx b/src/pages/RecruitmentRequestPage.jsx
+new file mode 100644
+index 0000000..8b828f9
+--- /dev/null
++++ b/src/pages/RecruitmentRequestPage.jsx
+@@ -0,0 +1,285 @@
++import { useCallback, useEffect, useState } from 'react';
++import { Link, useParams } from 'react-router-dom';
++import Header from '../components/header/Header.jsx';
++import RecruitmentRequestForm from '../components/recruitment/RecruitmentRequestForm.jsx';
++import { getStoredRole } from '../services/authApi.js';
++import { getAllSpecialities } from '../services/studentApi.js';
++import {
++    acceptRecruitmentResponse,
++    archiveRecruitmentRequest,
++    closeRecruitmentRequest,
++    getRecruitmentRequest,
++    listCatalogCities,
++    listRecruitmentResponses,
++    rejectRecruitmentResponse,
++    respondToRecruitment,
++    updateRecruitmentRequest,
++} from '../services/recruitmentApi.js';
++import {
++    COOPERATION_FORMAT,
++    REQUEST_STATUS,
++    RESPONSE_STATUS,
++    formFromRequest,
++    formatWhen,
++    labelOf,
++    namesById,
++    payloadFromForm,
++} from './catalogFormat.js';
++import './catalog.css';
++
++const readyLabel = (value) => {
++    if (value === true) return 'Да';
++    if (value === false) return 'Нет';
++    return 'Не указано';
++};
++
++const RecruitmentRequestPage = () => {
++    const { id } = useParams();
++    const isRecruiter = getStoredRole() === 'RECRUITER';
++    const [request, setRequest] = useState(null);
++    const [form, setForm] = useState(null);
++    const [responses, setResponses] = useState([]);
++    const [specialities, setSpecialities] = useState([]);
++    const [cities, setCities] = useState([]);
++    const [loading, setLoading] = useState(true);
++    const [error, setError] = useState('');
++    const [notice, setNotice] = useState('');
++    const [saving, setSaving] = useState(false);
++    const [busyId, setBusyId] = useState(null);
++
++    const load = useCallback(async () => {
++        setLoading(true);
++        setError('');
++        try {
++            const [row, responseRows, specialityRows, cityRows] = await Promise.all([
++                getRecruitmentRequest(id),
++                listRecruitmentResponses(id),
++                getAllSpecialities(),
++                listCatalogCities(),
++            ]);
++            setRequest(row);
++            setForm(formFromRequest(row));
++            setResponses(responseRows);
++            setSpecialities(specialityRows || []);
++            setCities(cityRows || []);
++        } catch (err) {
++            setError(err.message || 'Заявка не найдена');
++            setRequest(null);
++        } finally {
++            setLoading(false);
++        }
++    }, [id]);
++
++    useEffect(() => {
++        load();
++    }, [load]);
++
++    async function handleSave(event) {
++        event.preventDefault();
++        setSaving(true);
++        setNotice('');
++        setError('');
++        try {
++            const saved = await updateRecruitmentRequest(id, payloadFromForm(form));
++            setRequest(saved);
++            setForm(formFromRequest(saved));
++            setNotice('Заявка сохранена');
++        } catch (err) {
++            setError(err.message || 'Не удалось сохранить');
++        } finally {
++            setSaving(false);
++        }
++    }
++
++    async function handleClose() {
++        setSaving(true);
++        setNotice('');
++        setError('');
++        try {
++            await closeRecruitmentRequest(id);
++            setNotice('Заявка закрыта. Уже принятые отклики остаются.');
++            await load();
++        } catch (err) {
++            setError(err.message || 'Не удалось закрыть заявку');
++        } finally {
++            setSaving(false);
++        }
++    }
++
++    async function handleArchive() {
++        setSaving(true);
++        setNotice('');
++        setError('');
++        try {
++            await archiveRecruitmentRequest(id);
++            setNotice('Заявка в архиве');
++            await load();
++        } catch (err) {
++            setError(err.message || 'Не удалось отправить в архив');
++        } finally {
++            setSaving(false);
++        }
++    }
++
++    async function handleRespond() {
++        setSaving(true);
++        setNotice('');
++        setError('');
++        try {
++            const created = await respondToRecruitment(id);
++            setResponses([created]);
++            setNotice('Отклик отправлен');
++        } catch (err) {
++            if (err.status === 409) {
++                setNotice('Отклик на эту заявку уже есть');
++            } else {
++                setError(err.message || 'Не удалось откликнуться');
++            }
++        } finally {
++            setSaving(false);
++        }
++    }
++
++    async function handleDecision(responseId, accept) {
++        setBusyId(responseId);
++        setNotice('');
++        setError('');
++        try {
++            const updated = accept
++                ? await acceptRecruitmentResponse(id, responseId)
++                : await rejectRecruitmentResponse(id, responseId);
++            setResponses((rows) => rows.map((row) => (row.id === updated.id ? updated : row)));
++            setNotice(accept ? 'Отклик принят. Заявка остаётся открытой.' : 'Отклик отклонён');
++        } catch (err) {
++            setError(err.message || 'Не удалось обновить отклик');
++        } finally {
++            setBusyId(null);
++        }
++    }
++
++    const accepted = responses.filter((row) => row.status === 'ACCEPTED').length;
++    const ownResponse = !isRecruiter ? responses[0] : null;
++    const archived = request?.status === 'ARCHIVED';
++
++    return (
++        <div className="catalog">
++            <Header />
++            <main className="catalog__main">
++                <p><Link className="catalog__back" to="/recruitment-requests">К заявкам</Link></p>
++                {loading ? <p className="catalog__note">Загрузка…</p> : null}
++                {notice ? <p className="catalog__ok">{notice}</p> : null}
++                {error ? <p className="catalog__error" role="alert">{error}</p> : null}
++                {request ? (
++                    <article className="catalog__article">
++                        <header className="catalog__head">
++                            <div>
++                                <p className="catalog__eyebrow">{labelOf(REQUEST_STATUS, request.status)}</p>
++                                <h1>{request.companyName || 'Заявка'}</h1>
++                                <p className="catalog__lead">
++                                    Нужно {request.studentCount}. Принято {accepted}. Формат: {labelOf(COOPERATION_FORMAT, request.cooperationFormat)}. Готовы запросить: {readyLabel(request.readyToRequestStudents)}.
++                                </p>
++                                <p className="catalog__meta">
++                                    Публикация: {formatWhen(request.publishedFrom)} — {formatWhen(request.publishedTo)}
++                                </p>
++                            </div>
++                            {isRecruiter ? (
++                                <div className="catalog__actions">
++                                    {request.status === 'OPEN' ? (
++                                        <button type="button" className="catalog__btn catalog__btn--ghost" disabled={saving} onClick={handleClose}>
++                                            Закрыть
++                                        </button>
++                                    ) : null}
++                                    {request.status === 'OPEN' || request.status === 'CLOSED' ? (
++                                        <button type="button" className="catalog__btn catalog__btn--quiet" disabled={saving} onClick={handleArchive}>
++                                            В архив
++                                        </button>
++                                    ) : null}
++                                </div>
++                            ) : null}
++                        </header>
++
++                        <section className="catalog__block">
++                            <h2>Задачи</h2>
++                            <p className="catalog__prose">{request.tasks}</p>
++                        </section>
++                        <section className="catalog__block">
++                            <h2>Требования</h2>
++                            <p className="catalog__prose">{request.qualificationRequirements}</p>
++                        </section>
++                        <section className="catalog__block">
++                            <h2>Условия</h2>
++                            <p className="catalog__prose">{request.workConditions}</p>
++                        </section>
++                        <p className="catalog__meta">Города: {namesById(request.cityIds, cities)}</p>
++                        <p className="catalog__meta">Специальности: {namesById(request.specialityIds, specialities)}</p>
++                        {request.scheduleNote ? <p className="catalog__prose">{request.scheduleNote}</p> : null}
++                        {request.extraInfo ? <p className="catalog__prose">{request.extraInfo}</p> : null}
++
++                        {!isRecruiter ? (
++                            <div className="catalog__actions">
++                                {ownResponse ? (
++                                    <span className={`catalog__status catalog__status--${ownResponse.status}`}>
++                                        {labelOf(RESPONSE_STATUS, ownResponse.status)}
++                                    </span>
++                                ) : (
++                                    <button type="button" className="catalog__btn" disabled={saving || request.status !== 'OPEN'} onClick={handleRespond}>
++                                        Откликнуться
++                                    </button>
++                                )}
++                            </div>
++                        ) : null}
++
++                        {isRecruiter && !archived && form ? (
++                            <section className="catalog__block">
++                                <h2>Правка</h2>
++                                <form onSubmit={handleSave}>
++                                    <RecruitmentRequestForm
++                                        form={form}
++                                        onChange={setForm}
++                                        specialities={specialities}
++                                        cities={cities}
++                                        disabled={saving}
++                                    />
++                                    <button type="submit" className="catalog__btn" disabled={saving} style={{ marginTop: 14 }}>
++                                        {saving ? 'Сохранение…' : 'Сохранить'}
++                                    </button>
++                                </form>
++                            </section>
++                        ) : null}
++
++                        {isRecruiter ? (
++                            <section className="catalog__block">
++                                <h2>Отклики · принято {accepted}</h2>
++                                {responses.length === 0 ? <p className="catalog__meta">Откликов нет.</p> : null}
++                                {responses.map((row) => {
++                                    const name = `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Студент';
++                                    return (
++                                        <div key={row.id} className="catalog__response">
++                                            <div>
++                                                {row.studentId ? <Link to={`/profile/${row.studentId}`}>{name}</Link> : name}
++                                                <p className="catalog__meta">{row.speciality || '—'}</p>
++                                            </div>
++                                            <span className={`catalog__status catalog__status--${row.status}`}>
++                                                {labelOf(RESPONSE_STATUS, row.status)}
++                                            </span>
++                                            <div className="catalog__actions">
++                                                <button type="button" className="catalog__btn" disabled={busyId === row.id || row.status === 'ACCEPTED'} onClick={() => handleDecision(row.id, true)}>
++                                                    Принять
++                                                </button>
++                                                <button type="button" className="catalog__btn catalog__btn--quiet" disabled={busyId === row.id || row.status === 'REJECTED'} onClick={() => handleDecision(row.id, false)}>
++                                                    Отказать
++                                                </button>
++                                            </div>
++                                        </div>
++                                    );
++                                })}
++                            </section>
++                        ) : null}
++                    </article>
++                ) : null}
++            </main>
++        </div>
++    );
++};
++
++export default RecruitmentRequestPage;
+diff --git a/src/pages/RecruitmentRequestsPage.jsx b/src/pages/RecruitmentRequestsPage.jsx
+new file mode 100644
+index 0000000..da99599
+--- /dev/null
++++ b/src/pages/RecruitmentRequestsPage.jsx
+@@ -0,0 +1,193 @@
++import { useCallback, useEffect, useState } from 'react';
++import { Link } from 'react-router-dom';
++import Header from '../components/header/Header.jsx';
++import RecruitmentRequestForm from '../components/recruitment/RecruitmentRequestForm.jsx';
++import { getStoredRole } from '../services/authApi.js';
++import { getAllSpecialities } from '../services/studentApi.js';
++import {
++    createRecruitmentRequest,
++    filterRecruitmentRequests,
++    listCatalogCities,
++} from '../services/recruitmentApi.js';
++import {
++    REQUEST_STATUS,
++    emptyRequestForm,
++    labelOf,
++    namesById,
++    payloadFromForm,
++} from './catalogFormat.js';
++import './catalog.css';
++
++const PAGE_SIZE = 20;
++const FILTERS = [
++    { id: '', label: 'Все' },
++    { id: 'OPEN', label: 'Открытые' },
++    { id: 'CLOSED', label: 'Закрытые' },
++    { id: 'ARCHIVED', label: 'Архив' },
++];
++
++const RecruitmentRequestsPage = () => {
++    const isRecruiter = getStoredRole() === 'RECRUITER';
++    const [status, setStatus] = useState('');
++    const [page, setPage] = useState(0);
++    const [result, setResult] = useState(null);
++    const [specialities, setSpecialities] = useState([]);
++    const [cities, setCities] = useState([]);
++    const [loading, setLoading] = useState(true);
++    const [error, setError] = useState('');
++    const [notice, setNotice] = useState('');
++    const [creating, setCreating] = useState(false);
++    const [form, setForm] = useState(emptyRequestForm);
++    const [saving, setSaving] = useState(false);
++
++    const load = useCallback(async () => {
++        setLoading(true);
++        setError('');
++        try {
++            const [pageResult, specialityRows, cityRows] = await Promise.all([
++                filterRecruitmentRequests({
++                    status: isRecruiter ? status || undefined : undefined,
++                    page,
++                    size: PAGE_SIZE,
++                }),
++                getAllSpecialities(),
++                listCatalogCities(),
++            ]);
++            setResult(pageResult);
++            setSpecialities(specialityRows || []);
++            setCities(cityRows || []);
++        } catch (err) {
++            setError(err.message || 'Не удалось загрузить заявки');
++            setResult(null);
++        } finally {
++            setLoading(false);
++        }
++    }, [isRecruiter, page, status]);
++
++    useEffect(() => {
++        load();
++    }, [load]);
++
++    async function handleCreate(event) {
++        event.preventDefault();
++        setNotice('');
++        setSaving(true);
++        try {
++            await createRecruitmentRequest(payloadFromForm(form));
++            setForm(emptyRequestForm());
++            setCreating(false);
++            setNotice('Заявка создана');
++            if (page === 0 && !status) await load();
++            else {
++                setPage(0);
++                setStatus('');
++            }
++        } catch (err) {
++            setError(err.message || 'Не удалось создать заявку');
++        } finally {
++            setSaving(false);
++        }
++    }
++
++    const rows = result?.data || [];
++
++    return (
++        <div className="catalog">
++            <Header />
++            <main className="catalog__main">
++                <header className="catalog__head">
++                    <div>
++                        <p className="catalog__eyebrow">Набор</p>
++                        <h1>{isRecruiter ? 'Мои заявки' : 'Заявки'}</h1>
++                        <p className="catalog__lead">
++                            {isRecruiter
++                                ? 'Заявки вашей компании: открытые, закрытые и архив.'
++                                : 'Открытые заявки, на которые можно откликнуться.'}
++                        </p>
++                    </div>
++                    {isRecruiter ? (
++                        <button type="button" className="catalog__btn catalog__btn--ghost" onClick={() => setCreating((value) => !value)}>
++                            {creating ? 'Скрыть форму' : 'Новая заявка'}
++                        </button>
++                    ) : null}
++                </header>
++
++                {notice ? <p className="catalog__ok">{notice}</p> : null}
++                {error ? <p className="catalog__error" role="alert">{error}</p> : null}
++
++                {isRecruiter && creating ? (
++                    <section className="catalog__block">
++                        <h2>Новая заявка</h2>
++                        <form onSubmit={handleCreate}>
++                            <RecruitmentRequestForm
++                                form={form}
++                                onChange={setForm}
++                                specialities={specialities}
++                                cities={cities}
++                                disabled={saving}
++                            />
++                            <button type="submit" className="catalog__btn" disabled={saving} style={{ marginTop: 14 }}>
++                                {saving ? 'Создание…' : 'Создать'}
++                            </button>
++                        </form>
++                    </section>
++                ) : null}
++
++                {isRecruiter ? (
++                    <div className="catalog__filters" style={{ margin: '18px 0' }}>
++                        {FILTERS.map((item) => (
++                            <button
++                                key={item.id || 'all'}
++                                type="button"
++                                className={`catalog__btn catalog__btn--ghost${status === item.id ? ' is-on' : ''}`}
++                                onClick={() => {
++                                    setStatus(item.id);
++                                    setPage(0);
++                                }}
++                            >
++                                {item.label}
++                            </button>
++                        ))}
++                    </div>
++                ) : null}
++
++                {loading ? <p className="catalog__note">Загрузка…</p> : null}
++                {!loading && !error && rows.length === 0 ? (
++                    <p className="catalog__note">Заявок нет.</p>
++                ) : null}
++
++                <div className="catalog__list">
++                    {rows.map((row) => (
++                        <Link key={row.id} className="catalog__row" to={`/recruitment-requests/${row.id}`}>
++                            <div>
++                                <h2>{row.companyName || 'Компания'}</h2>
++                                <p className="catalog__meta">
++                                    Нужно {row.studentCount}. {namesById(row.cityIds, cities)}
++                                </p>
++                                <p className="catalog__meta">{namesById(row.specialityIds, specialities)}</p>
++                            </div>
++                            <span className={`catalog__status catalog__status--${row.status}`}>
++                                {labelOf(REQUEST_STATUS, row.status)}
++                            </span>
++                            <span className="catalog__meta">Открыть</span>
++                        </Link>
++                    ))}
++                </div>
++
++                {(result?.totalPages || 0) > 1 ? (
++                    <div className="catalog__pager">
++                        <button type="button" className="catalog__btn catalog__btn--ghost" disabled={page <= 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>
++                            Назад
++                        </button>
++                        <span>Стр. {(result?.page ?? page) + 1} из {result.totalPages} · {result.totalElements}</span>
++                        <button type="button" className="catalog__btn catalog__btn--ghost" disabled={page >= result.totalPages - 1} onClick={() => setPage((value) => value + 1)}>
++                            Дальше
++                        </button>
++                    </div>
++                ) : null}
++            </main>
++        </div>
++    );
++};
++
++export default RecruitmentRequestsPage;
+diff --git a/src/pages/catalog.css b/src/pages/catalog.css
+new file mode 100644
+index 0000000..6e73cdc
+--- /dev/null
++++ b/src/pages/catalog.css
+@@ -0,0 +1,480 @@
++.catalog {
++    --catalog-bg: #131313;
++    --catalog-text: #f4f4f2;
++    --catalog-muted: #b3b5b7;
++    --catalog-line: #41464b;
++    --catalog-blue: #3e8eff;
++    --catalog-magenta: #e53bcf;
++    --catalog-card: #1b1b1b;
++    min-height: 100vh;
++    min-height: 100dvh;
++    background: var(--catalog-bg);
++    color: var(--catalog-text);
++    font-family: 'StratosSemiLight', sans-serif;
++}
++
++.catalog__main {
++    width: min(1120px, calc(100% - 40px));
++    margin: 0 auto;
++    padding: 36px 0 72px;
++}
++
++.catalog__head {
++    display: flex;
++    flex-wrap: wrap;
++    align-items: flex-end;
++    justify-content: space-between;
++    gap: 16px 24px;
++    margin-bottom: 28px;
++}
++
++.catalog__eyebrow {
++    margin: 0 0 8px;
++    color: var(--catalog-magenta);
++    font-size: 13px;
++    letter-spacing: 0.08em;
++    text-transform: uppercase;
++}
++
++.catalog__head h1,
++.catalog__title {
++    margin: 0;
++    font-size: clamp(32px, 4vw, 48px);
++    font-weight: 400;
++    letter-spacing: -0.04em;
++    line-height: 1.05;
++}
++
++.catalog__lead {
++    margin: 10px 0 0;
++    max-width: 46ch;
++    color: var(--catalog-muted);
++    font-size: 16px;
++    line-height: 1.45;
++}
++
++.catalog__back {
++    color: var(--catalog-text);
++    text-decoration: none;
++    border-bottom: 1px solid var(--catalog-line);
++    padding-bottom: 2px;
++}
++
++.catalog__back:hover {
++    border-bottom-color: var(--catalog-blue);
++}
++
++.catalog__back:focus-visible,
++.catalog__card:focus-visible,
++.catalog__btn:focus-visible,
++.catalog__field input:focus-visible,
++.catalog__field textarea:focus-visible,
++.catalog__field select:focus-visible {
++    outline: 2px solid var(--catalog-blue);
++    outline-offset: 3px;
++}
++
++.catalog__note,
++.catalog__error,
++.catalog__ok {
++    margin: 0 0 16px;
++    padding: 12px 14px;
++    border-radius: 14px;
++    border: 1px solid var(--catalog-line);
++}
++
++.catalog__error {
++    border-color: var(--catalog-magenta);
++    color: #ffd6f6;
++}
++
++.catalog__ok {
++    border-color: var(--catalog-blue);
++}
++
++.catalog__grid {
++    display: grid;
++    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
++    gap: 18px;
++}
++
++.catalog__card {
++    display: flex;
++    flex-direction: column;
++    min-height: 100%;
++    padding: 0;
++    border: 1px solid var(--catalog-line);
++    border-radius: 28px;
++    background: var(--catalog-card);
++    color: inherit;
++    text-decoration: none;
++    overflow: hidden;
++}
++
++.catalog__card:hover {
++    border-color: var(--catalog-blue);
++}
++
++.catalog__cover {
++    position: relative;
++    aspect-ratio: 16 / 10;
++    background:
++        linear-gradient(160deg, rgba(62, 142, 255, 0.35), rgba(229, 59, 207, 0.18)),
++        #242424;
++}
++
++.catalog__cover img {
++    width: 100%;
++    height: 100%;
++    object-fit: cover;
++    display: block;
++}
++
++.catalog__coverMark {
++    position: absolute;
++    left: 16px;
++    bottom: 14px;
++    width: 28px;
++    height: 3px;
++    border-radius: 99px;
++    background: var(--catalog-magenta);
++}
++
++.catalog__cardBody {
++    display: flex;
++    flex-direction: column;
++    gap: 8px;
++    padding: 16px 18px 18px;
++}
++
++.catalog__section {
++    margin: 0;
++    color: var(--catalog-blue);
++    font-size: 13px;
++}
++
++.catalog__card h2,
++.catalog__card h3 {
++    margin: 0;
++    font-size: 22px;
++    font-weight: 400;
++    letter-spacing: -0.03em;
++    line-height: 1.2;
++}
++
++.catalog__summary {
++    margin: 0;
++    color: var(--catalog-muted);
++    font-size: 14px;
++    line-height: 1.45;
++}
++
++.catalog__chips {
++    display: flex;
++    flex-wrap: wrap;
++    gap: 6px;
++    margin-top: 4px;
++}
++
++.catalog__chip {
++    padding: 4px 8px;
++    border-radius: 999px;
++    border: 1px solid var(--catalog-line);
++    color: var(--catalog-muted);
++    font-size: 12px;
++}
++
++.catalog__status {
++    display: inline-flex;
++    align-items: center;
++    min-height: 28px;
++    padding: 0 10px;
++    border-radius: 999px;
++    border: 1px solid var(--catalog-line);
++    font-size: 13px;
++}
++
++.catalog__status--OPEN {
++    border-color: var(--catalog-blue);
++    color: #d6e7ff;
++}
++
++.catalog__status--CLOSED {
++    color: var(--catalog-muted);
++}
++
++.catalog__status--ARCHIVED {
++    color: #8d9094;
++}
++
++.catalog__status--ACCEPTED {
++    border-color: var(--catalog-blue);
++}
++
++.catalog__status--REJECTED {
++    border-color: var(--catalog-magenta);
++    color: #ffd6f6;
++}
++
++.catalog__list {
++    display: flex;
++    flex-direction: column;
++    gap: 12px;
++}
++
++.catalog__row {
++    display: grid;
++    grid-template-columns: minmax(0, 1.4fr) auto auto;
++    gap: 12px 20px;
++    align-items: center;
++    padding: 18px 20px;
++    border: 1px solid var(--catalog-line);
++    border-radius: 28px;
++    background: var(--catalog-card);
++    color: inherit;
++    text-decoration: none;
++}
++
++.catalog__row:hover {
++    border-color: var(--catalog-blue);
++}
++
++.catalog__row h2 {
++    margin: 0 0 6px;
++    font-size: 22px;
++    font-weight: 400;
++    letter-spacing: -0.03em;
++}
++
++.catalog__meta {
++    margin: 0;
++    color: var(--catalog-muted);
++    font-size: 14px;
++    line-height: 1.4;
++}
++
++.catalog__article {
++    display: flex;
++    flex-direction: column;
++    gap: 22px;
++}
++
++.catalog__hero {
++    border: 1px solid var(--catalog-line);
++    border-radius: 28px;
++    overflow: hidden;
++    background: #242424;
++}
++
++.catalog__hero img {
++    width: 100%;
++    max-height: 460px;
++    object-fit: cover;
++    display: block;
++}
++
++.catalog__gallery {
++    display: grid;
++    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
++    gap: 10px;
++}
++
++.catalog__gallery img {
++    width: 100%;
++    aspect-ratio: 4 / 3;
++    object-fit: cover;
++    border-radius: 18px;
++    border: 1px solid var(--catalog-line);
++}
++
++.catalog__prose {
++    margin: 0;
++    white-space: pre-wrap;
++    font-size: 16px;
++    line-height: 1.55;
++}
++
++.catalog__block {
++    padding: 22px;
++    border: 1px solid var(--catalog-line);
++    border-radius: 28px;
++    background: var(--catalog-card);
++}
++
++.catalog__block h2 {
++    margin: 0 0 14px;
++    font-size: 20px;
++    font-weight: 400;
++}
++
++.catalog__people {
++    display: flex;
++    flex-direction: column;
++    gap: 10px;
++    margin: 0;
++    padding: 0;
++    list-style: none;
++}
++
++.catalog__person {
++    display: flex;
++    align-items: center;
++    gap: 12px;
++}
++
++.catalog__person img,
++.catalog__person span.catalog__avatar {
++    width: 44px;
++    height: 44px;
++    border-radius: 14px;
++    object-fit: cover;
++    background: #242424;
++    display: inline-flex;
++    align-items: center;
++    justify-content: center;
++    color: var(--catalog-muted);
++}
++
++.catalog__actions,
++.catalog__filters {
++    display: flex;
++    flex-wrap: wrap;
++    gap: 8px;
++}
++
++.catalog__btn {
++    min-height: 44px;
++    padding: 0 16px;
++    border-radius: 14px;
++    border: 1px solid transparent;
++    background: var(--catalog-blue);
++    color: #fff;
++    font: inherit;
++    cursor: pointer;
++}
++
++.catalog__btn:hover {
++    filter: brightness(1.08);
++}
++
++.catalog__btn:disabled {
++    opacity: 0.45;
++    cursor: not-allowed;
++}
++
++.catalog__btn--ghost {
++    background: transparent;
++    border-color: var(--catalog-line);
++    color: var(--catalog-text);
++}
++
++.catalog__btn--quiet {
++    background: transparent;
++    border-color: var(--catalog-magenta);
++    color: #ffd6f6;
++}
++
++.catalog__btn.is-on {
++    background: #fff;
++    color: #131313;
++}
++
++.catalog__form {
++    display: flex;
++    flex-direction: column;
++    gap: 14px;
++}
++
++.catalog__field {
++    display: flex;
++    flex-direction: column;
++    gap: 6px;
++}
++
++.catalog__field label {
++    color: var(--catalog-muted);
++    font-size: 13px;
++}
++
++.catalog__field input,
++.catalog__field textarea,
++.catalog__field select {
++    width: 100%;
++    padding: 12px 14px;
++    border-radius: 14px;
++    border: 1px solid var(--catalog-line);
++    background: #131313;
++    color: var(--catalog-text);
++    font: inherit;
++}
++
++.catalog__split {
++    display: grid;
++    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
++    gap: 12px;
++}
++
++.catalog__checks {
++    display: flex;
++    flex-wrap: wrap;
++    gap: 8px;
++    max-height: 180px;
++    overflow: auto;
++    padding: 8px;
++    border: 1px solid var(--catalog-line);
++    border-radius: 14px;
++}
++
++.catalog__checks label {
++    display: inline-flex;
++    align-items: center;
++    gap: 6px;
++    color: var(--catalog-text);
++    font-size: 14px;
++}
++
++.catalog__pager {
++    display: flex;
++    justify-content: space-between;
++    align-items: center;
++    gap: 12px;
++    margin-top: 18px;
++    color: var(--catalog-muted);
++}
++
++.catalog__response {
++    display: grid;
++    grid-template-columns: minmax(0, 1fr) auto auto;
++    gap: 10px 14px;
++    align-items: center;
++    padding: 12px 0;
++    border-top: 1px solid var(--catalog-line);
++}
++
++.catalog__response a {
++    color: var(--catalog-text);
++}
++
++@media (max-width: 720px) {
++    .catalog__main {
++        width: min(1120px, calc(100% - 28px));
++    }
++
++    .catalog__row,
++    .catalog__response {
++        grid-template-columns: 1fr;
++    }
++
++    .catalog__btn,
++    .catalog__pager .catalog__btn {
++        width: 100%;
++    }
++}
++
++@media (prefers-reduced-motion: reduce) {
++    .catalog__card,
++    .catalog__row,
++    .catalog__btn {
++        transition: none;
++    }
++}
+diff --git a/src/pages/catalogFormat.js b/src/pages/catalogFormat.js
+new file mode 100644
+index 0000000..f481a31
+--- /dev/null
++++ b/src/pages/catalogFormat.js
+@@ -0,0 +1,140 @@
++import { getImageUrl } from '../config/api.js';
++
++export const REQUEST_STATUS = {
++    OPEN: 'Открыта',
++    CLOSED: 'Закрыта',
++    ARCHIVED: 'В архиве',
++};
++
++export const RESPONSE_STATUS = {
++    PENDING: 'Ждёт решения',
++    ACCEPTED: 'Принят',
++    REJECTED: 'Отказ',
++};
++
++export const COOPERATION_FORMAT = {
++    SEMESTER_PROJECT: 'Проект на семестр',
++    SUMMER_PRACTICE: 'Летняя практика',
++    INTERNSHIP: 'Стажировка',
++    VACANCY: 'Вакансия',
++    OTHER: 'Другое',
++};
++
++export function labelOf(map, key, fallback = 'Не указано') {
++    if (key == null || key === '') return fallback;
++    return map[key] || String(key);
++}
++
++export function namesById(ids, options) {
++    const byId = new Map((options || []).map((item) => [Number(item.id), item.name]));
++    const names = (ids || []).map((id) => byId.get(Number(id)) || String(id));
++    return names.length ? names.join(', ') : '—';
++}
++
++export function projectImageSrc(image) {
++    if (!image) return null;
++    if (image.imageUrl) return image.imageUrl;
++    return getImageUrl(image.imagePath);
++}
++
++export function sortedImages(images) {
++    return [...(images || [])].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
++}
++
++export function formatWhen(value) {
++    if (!value) return 'без ограничения';
++    return String(value).replace('T', ' ').slice(0, 16);
++}
++
++export function toApiDateTime(value) {
++    if (!value) return null;
++    const text = String(value).trim();
++    if (!text) return null;
++    if (text.length === 16) return `${text}:00`;
++    return text;
++}
++
++export function fromApiDateTime(value) {
++    if (!value) return '';
++    const text = String(value);
++    return text.length >= 16 ? text.slice(0, 16) : text;
++}
++
++export function emptyRequestForm() {
++    return {
++        tasks: '',
++        qualificationRequirements: '',
++        workConditions: '',
++        studentCount: '1',
++        cooperationFormat: '',
++        readyToRequestStudents: '',
++        scheduleNote: '',
++        extraInfo: '',
++        publishedFrom: '',
++        publishedTo: '',
++        specialityIds: [],
++        cityIds: [],
++    };
++}
++
++export function formFromRequest(row) {
++    let ready = '';
++    if (row?.readyToRequestStudents === true) ready = 'yes';
++    if (row?.readyToRequestStudents === false) ready = 'no';
++    return {
++        tasks: row?.tasks ?? '',
++        qualificationRequirements: row?.qualificationRequirements ?? '',
++        workConditions: row?.workConditions ?? '',
++        studentCount: String(row?.studentCount ?? 1),
++        cooperationFormat: row?.cooperationFormat ?? '',
++        readyToRequestStudents: ready,
++        scheduleNote: row?.scheduleNote ?? '',
++        extraInfo: row?.extraInfo ?? '',
++        publishedFrom: fromApiDateTime(row?.publishedFrom),
++        publishedTo: fromApiDateTime(row?.publishedTo),
++        specialityIds: (row?.specialityIds ?? []).map(Number),
++        cityIds: (row?.cityIds ?? []).map(Number),
++    };
++}
++
++export function payloadFromForm(form) {
++    const tasks = form.tasks.trim();
++    const qualificationRequirements = form.qualificationRequirements.trim();
++    const workConditions = form.workConditions.trim();
++    const studentCount = Number(form.studentCount);
++    const specialityIds = [...new Set(form.specialityIds.map(Number))].filter((id) => Number.isInteger(id) && id > 0);
++    const cityIds = [...new Set(form.cityIds.map(Number))].filter((id) => Number.isInteger(id) && id > 0);
++    const publishedFrom = toApiDateTime(form.publishedFrom);
++    const publishedTo = toApiDateTime(form.publishedTo);
++
++    if (!tasks || !qualificationRequirements || !workConditions) {
++        throw new Error('Заполните задачи, требования и условия работы');
++    }
++    if (!Number.isInteger(studentCount) || studentCount < 1) {
++        throw new Error('Укажите число студентов от 1');
++    }
++    if (!specialityIds.length) throw new Error('Выберите хотя бы одну специальность');
++    if (!cityIds.length) throw new Error('Выберите хотя бы один город');
++    if (publishedFrom && publishedTo && publishedFrom > publishedTo) {
++        throw new Error('Начало публикации позже её конца');
++    }
++
++    let readyToRequestStudents = null;
++    if (form.readyToRequestStudents === 'yes') readyToRequestStudents = true;
++    if (form.readyToRequestStudents === 'no') readyToRequestStudents = false;
++
++    return {
++        tasks,
++        qualificationRequirements,
++        workConditions,
++        studentCount,
++        cooperationFormat: form.cooperationFormat || null,
++        readyToRequestStudents,
++        scheduleNote: form.scheduleNote.trim() || null,
++        extraInfo: form.extraInfo.trim() || null,
++        publishedFrom,
++        publishedTo,
++        specialityIds,
++        cityIds,
++    };
++}
+diff --git a/src/services/projectsApi.js b/src/services/projectsApi.js
+new file mode 100644
+index 0000000..e33d3bb
+--- /dev/null
++++ b/src/services/projectsApi.js
+@@ -0,0 +1,11 @@
++import { apiClientJson } from '../utils/apiClient.js';
++
++export const filterProjects = async () => {
++    const data = await apiClientJson('projects/filter', {
++        method: 'POST',
++        body: JSON.stringify({}),
++    });
++    return Array.isArray(data) ? data : [];
++};
++
++export const getProject = (id) => apiClientJson(`projects/${id}`, { method: 'GET' });
+diff --git a/src/services/recruitmentApi.js b/src/services/recruitmentApi.js
+new file mode 100644
+index 0000000..d81386a
+--- /dev/null
++++ b/src/services/recruitmentApi.js
+@@ -0,0 +1,67 @@
++import { apiClientJson } from '../utils/apiClient.js';
++
++const pageQuery = (page, size) => `page=${page}&size=${size}`;
++
++export const filterRecruitmentRequests = async ({ status, page = 0, size = 20 } = {}) => {
++    const data = await apiClientJson(`recruitment-requests/filter?${pageQuery(page, size)}`, {
++        method: 'POST',
++        body: JSON.stringify(status ? { status } : {}),
++    });
++    return {
++        data: Array.isArray(data?.data) ? data.data : [],
++        page: data?.page ?? page,
++        size: data?.size ?? size,
++        totalElements: data?.totalElements ?? 0,
++        totalPages: data?.totalPages ?? 0,
++    };
++};
++
++export const getRecruitmentRequest = (id) =>
++    apiClientJson(`recruitment-requests/${id}`, { method: 'GET' });
++
++export const createRecruitmentRequest = (body) =>
++    apiClientJson('recruitment-requests', {
++        method: 'POST',
++        body: JSON.stringify(body),
++    });
++
++export const updateRecruitmentRequest = (id, body) =>
++    apiClientJson(`recruitment-requests/${id}`, {
++        method: 'PUT',
++        body: JSON.stringify(body),
++    });
++
++export const closeRecruitmentRequest = (id) =>
++    apiClientJson(`recruitment-requests/${id}/close`, { method: 'POST' });
++
++export const archiveRecruitmentRequest = (id) =>
++    apiClientJson(`recruitment-requests/${id}/archive`, { method: 'POST' });
++
++export const listRecruitmentResponses = async (id) => {
++    const data = await apiClientJson(`recruitment-requests/${id}/responses`, { method: 'GET' });
++    return Array.isArray(data) ? data : [];
++};
++
++export const respondToRecruitment = (id) =>
++    apiClientJson(`recruitment-requests/${id}/responses`, { method: 'POST' });
++
++export const acceptRecruitmentResponse = (id, responseId) =>
++    apiClientJson(`recruitment-requests/${id}/responses/${responseId}/accept`, { method: 'POST' });
++
++export const rejectRecruitmentResponse = (id, responseId) =>
++    apiClientJson(`recruitment-requests/${id}/responses/${responseId}/reject`, { method: 'POST' });
++
++export const listCatalogCities = async () => {
++    const all = [];
++    for (let page = 0; page < 20; page += 1) {
++        const res = await apiClientJson(`city/filter?page=${page}&size=200`, {
++            method: 'POST',
++            body: JSON.stringify({}),
++        });
++        const rows = Array.isArray(res?.data) ? res.data : [];
++        all.push(...rows);
++        const totalPages = res?.totalPages ?? 1;
++        if (!rows.length || page + 1 >= totalPages) break;
++    }
++    return all;
++};

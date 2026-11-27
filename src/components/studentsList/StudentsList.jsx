@@ -9,6 +9,7 @@ import {
     filterStudentCardsPage,
     getAllSpecialities,
 } from "../../services/studentApi.js";
+import { searchCityPage } from "../../services/getApi.js";
 const STUDENTS_PER_PAGE = 5;
 const MAX_VISIBLE_PAGES = 5;
 
@@ -36,6 +37,12 @@ const buildStudentFilterReq = (filters) => {
         .map((specialty) => Number(specialty?.id))
         .filter((id) => Number.isFinite(id));
     if (specialtyIds.length > 0) req.specialitiesIds = specialtyIds;
+
+    const selectedCities = Array.isArray(filters.city) ? filters.city : [];
+    const cityIds = selectedCities
+        .map((city) => Number(city?.id))
+        .filter((id) => Number.isInteger(id) && id > 0);
+    if (cityIds.length > 0) req.cityIds = cityIds;
 
     return req;
 };
@@ -73,11 +80,25 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
         Array.isArray(initialFilters.specialty) ? initialFilters.specialty : []
     );
     const [specialtyDropdownOpen, setSpecialtyDropdownOpen] = useState(false);
+    const [selectedCity, setSelectedCity] = useState(
+        Array.isArray(initialFilters.city) ? initialFilters.city : []
+    );
+    const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+    const [cityQuery, setCityQuery] = useState('');
+    const [cityRows, setCityRows] = useState([]);
+    const [cityPage, setCityPage] = useState(0);
+    const [cityTotalPages, setCityTotalPages] = useState(0);
+    const [cityLoading, setCityLoading] = useState(false);
+    const [cityLoadingMore, setCityLoadingMore] = useState(false);
+    const [cityError, setCityError] = useState('');
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
     const filtersRef = useRef(null);
     const specialtyBtnRef = useRef(null);
     const specialtyDropdownRef = useRef(null);
+    const cityBtnRef = useRef(null);
+    const cityDropdownRef = useRef(null);
+    const cityRequest = useRef(0);
 
     useEffect(() => {
         if (showFilters && !isMobile && filterRef?.current) {
@@ -95,6 +116,50 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     }, [showFilters, isMobile, filterRef]);
 
     useEffect(() => {
+        if (!showFilters) return;
+        setSelectedCity(Array.isArray(initialFilters.city) ? initialFilters.city : []);
+        setCityDropdownOpen(false);
+        setCityQuery('');
+    }, [showFilters, initialFilters]);
+
+    // Справочник городов ищём на сервере: пагинация приходит из POST /city/filter.
+    useEffect(() => {
+        if (!cityDropdownOpen) return undefined;
+        const controller = new AbortController();
+        const token = ++cityRequest.current;
+        setCityLoading(true);
+        setCityLoadingMore(false);
+        setCityError('');
+
+        const timer = window.setTimeout(async () => {
+            try {
+                const res = await searchCityPage(
+                    { name: cityQuery.trim(), page: 0, size: 20 },
+                    { signal: controller.signal },
+                );
+                if (cityRequest.current !== token) return;
+                setCityRows(res.rows);
+                setCityPage(0);
+                setCityTotalPages(res.totalPages);
+            } catch (err) {
+                if (controller.signal.aborted || cityRequest.current !== token) return;
+                setCityRows([]);
+                setCityPage(0);
+                setCityTotalPages(0);
+                setCityError(err?.message || 'Не удалось загрузить города');
+            } finally {
+                if (cityRequest.current === token) setCityLoading(false);
+            }
+        }, 300);
+
+        return () => {
+            window.clearTimeout(timer);
+            controller.abort();
+            cityRequest.current += 1;
+        };
+    }, [cityDropdownOpen, cityQuery]);
+
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (specialtyDropdownOpen &&
                 specialtyBtnRef.current &&
@@ -103,11 +168,20 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                 !specialtyDropdownRef.current.contains(event.target)) {
                 setSpecialtyDropdownOpen(false);
             }
+            if (cityDropdownOpen &&
+                cityBtnRef.current &&
+                !cityBtnRef.current.contains(event.target) &&
+                cityDropdownRef.current &&
+                !cityDropdownRef.current.contains(event.target)) {
+                setCityDropdownOpen(false);
+            }
         };
 
         const handleEscape = (event) => {
             if (event.key === 'Escape') {
-                if (specialtyDropdownOpen) {
+                if (cityDropdownOpen) {
+                    setCityDropdownOpen(false);
+                } else if (specialtyDropdownOpen) {
                     setSpecialtyDropdownOpen(false);
                 } else if (showFilters) {
                     setShowFilters(false);
@@ -122,7 +196,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('keydown', handleEscape);
         };
-    }, [showFilters, specialtyDropdownOpen, setShowFilters]);
+    }, [showFilters, specialtyDropdownOpen, cityDropdownOpen, setShowFilters]);
 
     const handleSpecialtySelect = (specialty) => {
         setSelectedSpecialty((prev) => {
@@ -143,11 +217,50 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
         );
     };
 
+    const handleCityClick = (e) => {
+        e.stopPropagation();
+        setCityDropdownOpen((prev) => !prev);
+        setSpecialtyDropdownOpen(false);
+    };
+
+    const handleCitySelect = (city) => {
+        setSelectedCity((prev) => {
+            const exists = prev.some((item) => Number(item.id) === city.id);
+            if (exists) return prev.filter((item) => Number(item.id) !== city.id);
+            return [...prev, city];
+        });
+    };
+
+    const loadMoreCities = async () => {
+        if (cityLoading || cityLoadingMore || cityPage + 1 >= cityTotalPages) return;
+        const token = cityRequest.current;
+        const name = cityQuery.trim();
+        const nextPage = cityPage + 1;
+        setCityLoadingMore(true);
+
+        try {
+            const res = await searchCityPage({ name, page: nextPage, size: 20 });
+            if (cityRequest.current !== token) return;
+            setCityRows((prev) => {
+                const seen = new Set(prev.map((item) => item.id));
+                return [...prev, ...res.rows.filter((item) => !seen.has(item.id))];
+            });
+            setCityPage(res.page);
+            setCityTotalPages(res.totalPages);
+        } catch (err) {
+            if (cityRequest.current !== token) return;
+            setCityError(err?.message || 'Не удалось загрузить города');
+        } finally {
+            if (cityRequest.current === token) setCityLoadingMore(false);
+        }
+    };
+
     const handleApply = () => {
         onApplyFilters({
             course: selectedCourse,
             adult: isAdult,
-            specialty: selectedSpecialty
+            specialty: selectedSpecialty,
+            city: selectedCity
         });
     };
 
@@ -155,7 +268,10 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
         setSelectedCourse([]);
         setIsAdult(false);
         setSelectedSpecialty([]);
+        setSelectedCity([]);
         setSpecialtyDropdownOpen(false);
+        setCityDropdownOpen(false);
+        setCityQuery('');
         onResetFilters();
     };
 
@@ -222,6 +338,66 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
                 </div>
             </div>
 
+            <div className="filter-section filter-section--city">
+                <div className="specialty-select">
+                    <button
+                        ref={cityBtnRef}
+                        className={`specialty-btn ${cityDropdownOpen ? 'active' : ''}`}
+                        onClick={handleCityClick}
+                    >
+                        <span className="specialty-btn__text">
+                            {selectedCity.length > 0
+                                ? `Города: ${selectedCity.length}`
+                                : "Город"}
+                        </span>
+                        <img src={arrowIcon} alt="" className="specialty-btn__arrow" />
+                    </button>
+                    <div
+                        ref={cityDropdownRef}
+                        className={`specialty-dropdown city-dropdown ${cityDropdownOpen ? 'open' : ''}`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <input
+                            type="text"
+                            className="city-search"
+                            placeholder="Поиск города"
+                            value={cityQuery}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => { e.stopPropagation(); setCityQuery(e.target.value); }}
+                        />
+                        {cityLoading && <div className="city-status">Загрузка городов…</div>}
+                        {!cityLoading && cityError && (
+                            <div className="city-status city-status--error">{cityError}</div>
+                        )}
+                        {!cityLoading && !cityError && cityRows.length === 0 && (
+                            <div className="city-status">Города не найдены</div>
+                        )}
+                        {cityRows.map((city) => {
+                            const selected = selectedCity.some((item) => Number(item.id) === city.id);
+                            return (
+                                <div
+                                    key={city.id}
+                                    className={`specialty-option ${selected ? 'selected' : ''}`}
+                                    onClick={(e) => { e.stopPropagation(); handleCitySelect(city); }}
+                                >
+                                    {city.name}
+                                </div>
+                            );
+                        })}
+                        {!cityLoading && !cityError && cityPage + 1 < cityTotalPages && (
+                            <button
+                                type="button"
+                                className="city-load-more"
+                                onClick={(e) => { e.stopPropagation(); loadMoreCities(); }}
+                                disabled={cityLoadingMore}
+                            >
+                                {cityLoadingMore ? 'Загрузка…' : 'Показать ещё'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+
             <div className="action-buttons">
                 <button className="action-btn apply-btn" onClick={(e) => { e.stopPropagation(); handleApply(); setShowFilters(false); }}>
                     <span className="apply-btn__text">Принять</span>
@@ -237,7 +413,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
         return ReactDOM.createPortal(
             <div
                 className="filters-overlay"
-                onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); }}
+                onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); setCityDropdownOpen(false); }}
             >
                 <div className="filters-container" ref={filtersRef} onClick={(e) => e.stopPropagation()}>
                     {filterContent}
@@ -250,7 +426,7 @@ const FiltersModal = ({ showFilters, setShowFilters, onApplyFilters, onResetFilt
     return ReactDOM.createPortal(
         <div
             className="filters-overlay filters-overlay--dropdown"
-            onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); }}
+            onClick={() => { setShowFilters(false); setSpecialtyDropdownOpen(false); setCityDropdownOpen(false); }}
         >
             <div
                 className="filters-dropdown"
@@ -281,6 +457,7 @@ const StudentsList = () => {
         course: [],
         adult: false,
         specialty: [],
+        city: [],
         searchQuery: "" // Добавляем searchQuery в фильтры
     });
     const [tempSearchQuery, setTempSearchQuery] = useState(""); // Для временного хранения значения в поле ввода
@@ -459,6 +636,7 @@ const StudentsList = () => {
             course: [],
             adult: false,
             specialty: [],
+            city: [],
             searchQuery: ""
         });
         setTempSearchQuery("");
@@ -497,6 +675,7 @@ const StudentsList = () => {
         (Array.isArray(currentFilters.course) && currentFilters.course.length > 0) ||
         currentFilters.adult ||
         (Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0) ||
+        (Array.isArray(currentFilters.city) && currentFilters.city.length > 0) ||
         currentFilters.searchQuery;
     // Список каталога — все карточки с API; placeholder-аватар рисует StudentsListCard
     const visibleStudents = allStudents;
@@ -622,6 +801,11 @@ const StudentsList = () => {
                             {Array.isArray(currentFilters.specialty) && currentFilters.specialty.length > 0 && (
                                 <div className="active-filter-tag">
                                     Спец.: {currentFilters.specialty.map((item) => item.name).join(", ")}
+                                </div>
+                            )}
+                            {Array.isArray(currentFilters.city) && currentFilters.city.length > 0 && (
+                                <div className="active-filter-tag">
+                                    Города: {currentFilters.city.map((item) => item.name).join(", ")}
                                 </div>
                             )}
                             {currentFilters.searchQuery && (

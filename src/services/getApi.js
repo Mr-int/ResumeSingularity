@@ -40,6 +40,28 @@ export const getExperienceById = (id) => apiClientJson(`experience/${id}`, { met
 export const getEducationById = (id) => apiClientJson(`education/${id}`, { method: 'GET' });
 export const getCompanyById = (id) => apiClientJson(`company/${id}`, { method: 'GET' });
 
+/** POST /city/filter — поиск городов с серверной пагинацией, без входа. */
+export const searchCityPage = async ({ name = '', page = 0, size = 20 } = {}, options = {}) => {
+    const resp = await apiClientJson(`city/filter?page=${page}&size=${size}`, {
+        method: 'POST',
+        body: JSON.stringify({ name: String(name || '') }),
+        ...options,
+    });
+    const rows = Array.isArray(resp?.data) ? resp.data : [];
+    const normalized = rows
+        .map((item) => ({
+            id: Number(item?.id),
+            name: String(item?.name || '').trim(),
+        }))
+        .filter((item) => Number.isInteger(item.id) && item.id > 0 && item.name);
+
+    return {
+        rows: normalized,
+        page: Number.isFinite(resp?.page) ? resp.page : page,
+        totalPages: Number.isFinite(resp?.totalPages) ? resp.totalPages : 0,
+    };
+};
+
 /** POST /city/filter — справочник городов, без входа. */
 export const filterCityNames = async (options = {}) => {
     const resp = await apiClientJson('city/filter?page=0&size=200', {
